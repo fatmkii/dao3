@@ -16,6 +16,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('GlobalSetting', function () {
             return new GlobalSettingClass();
         });
+
+        if ($this->app->environment('local')) {
+            //仅在本地环境注册使用telescope
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
