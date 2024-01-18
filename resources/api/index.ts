@@ -28,7 +28,12 @@ export const commonAlova = createAlova({
                     throw new Error(response.statusText);
                 }
 
-                window.$message.error(response.statusText, { closable: true, duration: 5000 })
+                const json = await response.json();
+                if (json.message) {
+                    window.$message.error(json.message, { closable: true, duration: 5000 })
+                } else {
+                    window.$message.error(response.statusText, { closable: true, duration: 5000 })
+                }
                 throw new Error(response.statusText);
             }
 
