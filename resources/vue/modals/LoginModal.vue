@@ -17,7 +17,7 @@
                 <n-flex>
                     <n-button round type="warning"> 我想领取新饼干！ </n-button>
                     <n-button style="margin-left: auto;" v-bind="themeStore.buttonThemeAttr" type="primary"
-                        @click="loginHandle">导入饼干</n-button>
+                        @click="loginHandle" :disabled="userLoginLoading">导入饼干</n-button>
                 </n-flex>
             </n-flex>
             <template #action>
@@ -66,16 +66,20 @@ defineExpose({ show })
 const inputBinggan = ref<string>('')
 const inputPassword = ref<string>('')
 
-//导入饼干
-function loginHandle() {
-    const { onSuccess, data } = useRequest(userLoginPoster(inputBinggan.value, inputPassword.value))
-    onSuccess(() => {
-        localStorage.Token = data.value.token
-        localStorage.Binggan = data.value.binggan
-        window.location.href = "/"; //因为希望从头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
-    })
-}
 
+
+//导入饼干
+const loginHandle = () => { userLoginSend(inputBinggan.value, inputPassword.value) }
+const { loading: userLoginLoading,
+    onSuccess: userLoginOnSuccess,
+    data: userLoginData,
+    send: userLoginSend }
+    = useRequest(userLoginPoster, { immediate: false })
+userLoginOnSuccess(() => {
+    localStorage.Token = userLoginData.value.token
+    localStorage.Binggan = userLoginData.value.binggan
+    window.location.href = "/"; //因为希望从头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
+})
 
 
 </script>
