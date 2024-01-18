@@ -13,6 +13,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+
+        //每天删除一次过期token
+        $schedule->command('sanctum:prune-expired --hours=24')->daily();
     }
 
     /**

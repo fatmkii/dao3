@@ -12,10 +12,7 @@
 </head>
 
 <body>
-    <div id='app' class='container'>
-        <router-view></router-view>
+    <div id='app' class="root-container">
+        <app></app>
     </div>
 </body>
-
-
-</html>

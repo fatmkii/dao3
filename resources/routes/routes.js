@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Test from '../vue/test.vue'
 
 const routes = [
-    { path: '/', component: Test },
+    { path: '/', name: 'Homepage', component: () => import('@/vue/Home.vue') },
+    { path: '/:pathMatch(.*)*', name: 'Page404', component: () => import('@/vue/errors/404.vue') },
 ]
 
 const router = createRouter({

@@ -1,0 +1,23 @@
+.root-container {
+    //根容器，写在index.blade.php上
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+a {
+    //所有超链接正常不要下划线
+    text-decoration: none;
+    &:hover {
+        //hover时才有下划线
+        text-decoration: underline;
+    }
+}
+
+.top-bar {
+    position: sticky;
+    top: 0;
+
+}
