@@ -19,7 +19,7 @@ use App\Http\Controllers\API\UserController;
 
 //Auth系列
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('auth:sanctum'); //导入饼干
+    Route::post('/login', [AuthController::class, 'login'])->Middleware('throttle:login')->withoutMiddleware('auth:sanctum'); //导入饼干
     // Route::post('/admin_login', [AuthController::class, 'admin_login']);  //管理员登录(计划废弃)
     Route::post('/logout', [AuthController::class, 'logout']); //退出饼干
     // Route::post('/set_password', [AuthController::class, 'set_password'])->middleware('CheckBinggan:create');   //设定饼干密码
