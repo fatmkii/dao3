@@ -69,7 +69,10 @@ const inputPassword = ref<string>('')
 
 
 //导入饼干
-const loginHandle = () => { userLoginSend(inputBinggan.value, inputPassword.value) }
+const loginHandle = () => {
+    userLoginSend(inputBinggan.value, inputPassword.value)
+    inputPassword.value = ""
+}
 const { loading: userLoginLoading,
     onSuccess: userLoginOnSuccess,
     data: userLoginData,
