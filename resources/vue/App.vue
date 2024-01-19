@@ -5,6 +5,10 @@
         <n-message-provider>
             <MessageApi />
         </n-message-provider>
+        <n-dialog-provider>
+            <DialogApi />
+        </n-dialog-provider>
+
 
         <TopBar />
         <router-view></router-view>
@@ -17,8 +21,8 @@
 import TopBar from '@/vue/TopBar.vue';
 import UnauthModal from './modals/UnauthModal.vue';
 import MessageApi from '@/vue/components/MessageApi.vue';
-import { onMounted } from 'vue';
-import { NConfigProvider, NMessageProvider, NGlobalStyle } from 'naive-ui'
+import DialogApi from '@/vue/components/DialogApi.vue'
+import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider } from 'naive-ui'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user';
 

@@ -4,11 +4,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { useMessage } from 'naive-ui'
+import { useDialog } from 'naive-ui'
 
 export default defineComponent({
     setup() {
-        window.$message = useMessage()
+        window.$dialog = useDialog()
     },
 })
 </script>
