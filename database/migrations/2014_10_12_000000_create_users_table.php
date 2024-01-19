@@ -22,6 +22,7 @@ return new class extends Migration
             $table->tinyInteger('locked_count')->default(0);//被锁定的计数器，超过3次就封饼干
             $table->tinyInteger('admin')->default(0); //1=一般管理员，99=超管
             $table->unsignedInteger('coin')->default(0); //通用货币olo
+            $table->unsignedInteger('coin_in_bank')->default(0); //粮仓olo
             $table->timestamp('last_login')->nullable();
             $table->string('created_ip')->nullable();
             $table->string('created_UUID')->nullable();
