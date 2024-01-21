@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
+use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
 use App\Models\User;
 use Carbon\Carbon;
@@ -155,14 +156,14 @@ class UserController extends Controller
         $created_UUID_short = substr($created_UUID, 10, 16);
         //并且字符串的开始应为：XiaoHuoGuo
         if (substr($created_UUID, 0, 10) != "XiaoHuoGuo") {
-            // ProcessUserActive::dispatch(
-            //     [
-            //         'user_id' => '0',
-            //         'binggan' => 'none',
-            //         'active' => '怀疑有人用脚本申请饼干',
-            //         'content' => sprintf('ip:%s  UUID:%s', $request->ip(), $created_UUID),
-            //     ]
-            // );
+            ProcessUserActive::dispatch(
+                [
+                    'user_id' => '0',
+                    'binggan' => 'none',
+                    'active' => '怀疑有人用脚本申请饼干',
+                    'content' => sprintf('ip:%s  UUID:%s', $request->ip(), $created_UUID),
+                ]
+            );
             return response()->json([
                 'code' => ResponseCode::USER_REGISTER_FAIL,
                 'message' => ResponseCode::$codeMap[ResponseCode::USER_REGISTER_FAIL] . '，是否使用了非正常手段申请饼干？如有疑问请联络：Bombaxceiba@protonmail.com',
@@ -172,18 +173,18 @@ class UserController extends Controller
 
         //确认UUID是否被ban
         if (DB::table('user_register')->where('created_UUID', $created_UUID_short)->value('is_banned')) {
-            // ProcessUserActive::dispatch(
-            //     [
-            //         'user_id' => 'none',
-            //         'active' => '申请饼干但UUID过多而失败',
-            //         'content' => 'ip:' . $request->ip() . ' UUID:' . $created_UUID_short,
-            //     ]
-            // );
+            ProcessUserActive::dispatch(
+                [
+                    'user_id' => 'none',
+                    'active' => '申请饼干但UUID过多而失败',
+                    'content' => 'ip:' . $request->ip() . ' UUID:' . $created_UUID_short,
+                ]
+            );
             return response()->json([
                 'code' => ResponseCode::USER_REGISTER_FAIL,
                 'message' => ResponseCode::$codeMap[ResponseCode::USER_REGISTER_FAIL] .
-                    '，是否申请了过多饼干？如有疑问请联络：Bombaxceiba@protonmail.com，' .
-                    '附带：' . $created_UUID_short,
+                    '。因为此申请码已被锁定，请联络管理员解锁：Bombaxceiba@protonmail.com，' .
+                    '附带此代码：' . $created_UUID_short,
                 'uuid' => $created_UUID_short,
             ]);
         }
@@ -232,7 +233,6 @@ class UserController extends Controller
 
         //用redis记录新饼干，24小时内不能发表回复。
         Redis::setex('new_user_' . $user->binggan, 24 * 3600, 1);
-
 
 
         //记录申请饼干IP所在地

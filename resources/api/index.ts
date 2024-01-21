@@ -31,10 +31,11 @@ export const commonAlova = createAlova({
                 const json = await response.json();
                 if (json.message) {
                     window.$message.error(json.message, { closable: true, duration: 5000 })
+                    throw new Error(json.message);
                 } else {
                     window.$message.error(response.statusText, { closable: true, duration: 5000 })
+                    throw new Error(response.statusText);
                 }
-                throw new Error(response.statusText);
             }
 
             const json = await response.json();

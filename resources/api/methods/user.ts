@@ -17,21 +17,39 @@ interface userData {
     "my_emoji": object | null
 }
 
-const userDataGetter = (binggan: string) =>
-    commonAlova.Post<userData>(
-        '/api/user/show',
-        {
-            binggan: binggan
-        },
-        {
-            //第三个参数是config
-            name: 'userDataGetter',
-            params: {},
-            localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-            hitSource: [],
-        }
-    )
+const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
+    '/api/user/show',
+    {
+        binggan: binggan
+    },
+    {
+        //第三个参数是config
+        name: 'userDataGetter',
+        params: {},
+        localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
+        hitSource: [],
+    }
+)
+
+interface userRegisterData {
+    "binggan": string,
+    "token": string,
+}
 
 
-export { userDataGetter }
+const userRegisterPoster = (registerKey: string) => commonAlova.Post<userRegisterData>(
+    'api/user/register',
+    {
+        register_key: registerKey
+    },
+    {
+        //第三个参数是config
+        name: 'userRegisterPoster',
+        params: {},
+        localCache: null,
+        hitSource: [],
+    }
+)
+
+export { userDataGetter, userRegisterPoster }
 export type { userData }

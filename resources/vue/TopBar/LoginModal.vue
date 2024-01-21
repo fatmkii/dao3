@@ -15,21 +15,20 @@
                         v-model:value="inputPassword" @keyup.enter="loginHandle" />
                 </n-input-group>
                 <n-flex>
-                    <n-button round type="warning"> 我想领取新饼干！ </n-button>
+                    <n-popover placement="bottom" trigger="hover" :disabled="newBingganEnable">
+                        <template #trigger>
+                            <n-button round type="warning" :disabled="userRegisterLoading || !newBingganEnable"
+                                @click="registerHandle"> 我想领取新饼干！
+                            </n-button>
+                        </template>
+                        <n-text>嗷！很抱歉，领取新饼干目前暂停中…… </n-text>
+                    </n-popover>
                     <n-button style="margin-left: auto;" v-bind="themeStore.buttonThemeAttr" type="primary"
                         @click="loginHandle" :disabled="userLoginLoading">导入饼干</n-button>
                 </n-flex>
             </n-flex>
             <template #action>
                 <n-flex justify="end">
-                    <n-popover placement="bottom" trigger="hover">
-                        <template #trigger>
-                            <n-tag style="margin-right: auto;" size="large"> 什么是饼干？ </n-tag>
-                        </template>
-                        <span>
-                            饼干就是你在小火锅的账号，<br>由随机分配的9位数字和字母组成。
-                        </span>
-                    </n-popover>
                     <n-button @click="showThis = false">关闭</n-button>
                 </n-flex>
             </template>
@@ -40,9 +39,13 @@
 
 <script setup lang="ts">
 import { userLoginPoster } from '@/api/methods/auth';
+import { newBingganEnableGetter } from '@/api/methods/globalSetting';
+import { userRegisterPoster } from '@/api/methods/user';
+import { getUUID } from '@/js/func/getUUID';
 import { usethemeStore } from '@/stores/theme';
+import { useUserStore } from '@/stores/user';
 import { useRequest } from 'alova';
-import { NButton, NCard, NFlex, NInput, NInputGroup, NInputGroupLabel, NModal, NPopover, NTag } from 'naive-ui';
+import { NButton, NCard, NFlex, NInput, NInputGroup, NInputGroupLabel, NModal, NText, NPopover } from 'naive-ui';
 import { computed, ref } from 'vue';
 
 const themeStore = usethemeStore()
@@ -67,6 +70,8 @@ const inputBinggan = ref<string>('')
 const inputPassword = ref<string>('')
 
 
+//向服务器确认是否可以申请饼干
+const { data: newBingganEnable } = useRequest(newBingganEnableGetter, { initialData: false })
 
 //导入饼干
 const loginHandle = () => {
@@ -83,6 +88,32 @@ userLoginOnSuccess(() => {
     localStorage.Binggan = userLoginData.value.binggan
     window.location.href = "/"; //因为希望从头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
 })
+
+//申请饼干
+const registerHandle = () => { userRegisterSend(getUUID()) }
+const { loading: userRegisterLoading,
+    onSuccess: userRegisterOnSuccess,
+    onError: userRegisterOnError,
+    data: userRegisterData,
+    send: userRegisterSend }
+    = useRequest(userRegisterPoster, { immediate: false })
+userRegisterOnSuccess(() => {
+    const userStore = useUserStore()
+    userStore.binggan = userRegisterData.value.binggan
+    localStorage.Token = userRegisterData.value.token
+    localStorage.Binggan = userRegisterData.value.binggan
+    showThis.value = false
+    emit('submitRegister')
+})
+userRegisterOnError((event) => {
+    window.$dialog.error({
+        title: '申请饼干失败',
+        content: event.error.message,
+    })
+})
+//用于成功申请饼干提示modal的事件
+const emit = defineEmits(['submitRegister'])
+
 
 
 </script>
