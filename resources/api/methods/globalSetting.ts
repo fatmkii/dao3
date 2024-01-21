@@ -14,7 +14,7 @@ const homeBannersGetter = commonAlova.Get<string[]>(
     {
         name: 'homeBannersGetter',
         params: {},
-        localCache: null,
+        localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
     }
 )
 
