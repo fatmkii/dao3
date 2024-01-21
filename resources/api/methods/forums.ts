@@ -23,4 +23,4 @@ const forumsDataGetter = commonAlova.Get<forumsData[]>(
     }
 )
 
-export { forumsDataGetter }
+export { forumsDataGetter, forumsData }
