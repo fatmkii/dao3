@@ -1,22 +1,22 @@
 
 <template>
-    <n-flex align="center" style="padding: 8px;" class="top-bar">
-        <img src="/favicon2.png" alt="" style="max-height: 32px;height: 100%; cursor: pointer;" @click="$router.push('/')">
+    <n-flex align="center" class="top-bar">
+        <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/"> 小火锅 </router-link>
-        <n-button @click="handleTest">测试</n-button>
+        <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
         <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-            <n-button style="margin-left: auto;">皮肤</n-button>
+            <n-button style="margin-left: auto;" :size="commonStore.buttonSize">皮肤</n-button>
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
-            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干"
-                style="max-height: 34px;cursor: pointer;" @mouseenter="refreshUserData">
+            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
         </n-dropdown>
 
-        <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus"
+        <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus" :size="commonStore.buttonSize"
             @click="loginModal?.show"> 导入饼干
         </n-button>
 
-        <LoginModal ref="loginModal" />
+        <LoginModal ref="loginModal" @submit-register="callRegisterHintModal" />
+        <RegisterHintModal ref="registerHintModal" />
     </n-flex>
 </template>
  
@@ -24,20 +24,23 @@
 <script setup lang="ts">
 import { userLogoutPoster } from '@/api/methods/auth';
 import { userLogout } from '@/js/func/logout';
+import { useCommonStore } from '@/stores/common';
 import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
-import LoginModal from '@/vue/modals/LoginModal.vue';
+import LoginModal from '@/vue/TopBar/LoginModal.vue';
+import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { Cog as CogIcon } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
 import { NButton, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui';
 import type { Component } from 'vue';
-import { h, onMounted, ref } from 'vue';
+import { computed, h, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 
 //基础数据
 const userStore = useUserStore()
+const commonStore = useCommonStore()
 
 //主题相关
 const themeStore = usethemeStore()
@@ -146,6 +149,12 @@ function refreshUserData() {
     userStore.refreshUserData()
 }
 
+//呼出申请饼干成功的提示modal
+const registerHintModal = ref<InstanceType<typeof RegisterHintModal> | null>(null)
+function callRegisterHintModal() {
+    registerHintModal.value?.show()
+}
+
 
 onMounted(() => {
     const route = useRoute();
@@ -170,11 +179,26 @@ function handleTest() {
     border-bottom-color: v-bind('themeVars.dividerColor');
     border-bottom-style: solid;
     border-bottom-width: 1px;
+
+    @media all and (min-width: 1200px) {
+        height: 34px;
+        padding: 8px;
+        font-size: 1.25rem;
+    }
+
+    @media not all and (min-width: 1200px) {
+        height: 28px;
+        padding: 6px;
+        font-size: 1rem;
+    }
 }
 
 a {
     color: v-bind('themeVars.textColor1');
-    font-size: 1.25rem;
 }
 
+img {
+    height: 100%;
+    cursor: pointer;
+}
 </style>

@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import TopBar from '@/vue/TopBar.vue';
+import TopBar from '@/vue/TopBar/TopBar.vue';
 import UnauthModal from './modals/UnauthModal.vue';
 import MessageApi from '@/vue/components/MessageApi.vue';
 import DialogApi from '@/vue/components/DialogApi.vue'
