@@ -6,11 +6,11 @@ const routes = [
     {
         path: '/forum/:forum_id/:page?',
         name: 'forum',
-        // props: route => ({
-        //     forum_id: parseInt(route.params.forum_id),
-        //     page: parseInt(isNaN(route.params.page) ? 1 : route.params.page),
-        // }),
-        component: null,//TODO
+        props: (route) => ({
+            forum_id: parseInt(route.params.forum_id),
+            page: route.params.page ? parseInt(route.params.page) : 1,
+        }),
+        component: () => import('@/vue/Forum/ForumPage.vue')
     },
 ]
 

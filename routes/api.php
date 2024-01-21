@@ -33,9 +33,9 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 });
 
 //Forum系列
-Route::prefix('forums')->group(function () {
+Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ForumController::class, 'index']); //查看板块列表
-    // Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表
+    Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表
     // Route::get('/delay/{forum_id}', [ForumController::class, 'show_delay'])->middleware('CheckBinggan:show'); //查看板块内延时发送主题列表
 });
 

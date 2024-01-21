@@ -39,16 +39,6 @@ class ForumController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -82,7 +72,7 @@ class ForumController extends Controller
         }
 
         $CurrentForum = Forum::find($forum_id);
-        $user = $request->user;
+        $user = $request->user();
         $threads_per_page = $request->threads_per_page ? $request->threads_per_page : 50; //默认值是50个主题每页
         $subtitles_excluded = json_decode($request->subtitles_excluded, true);
 
@@ -91,19 +81,20 @@ class ForumController extends Controller
             return response()->json([
                 'code' => ResponseCode::FORUM_NOT_FOUND,
                 'message' => ResponseCode::$codeMap[ResponseCode::FORUM_NOT_FOUND],
-                'forum_data' => "",
-                'threads_data' => "",
-                'subtitles_exclude' => "",
+                'forum_data' => null,
+                'threads_data' => null,
+                'subtitles_exclude' => null,
             ]);
         }
 
+        //3.0起所有内容均需要饼干访问
         //判断是否可无饼干访问的板块
-        if (!$CurrentForum->is_anonymous && !$user) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => '本小岛需要饼干才能查看喔',
-            ]);
-        }
+        // if (!$CurrentForum->is_anonymous && !$user) {
+        //     return response()->json([
+        //         'code' => ResponseCode::USER_NOT_FOUND,
+        //         'message' => '本小岛需要饼干才能查看喔',
+        //     ]);
+        // }
 
         //判断是否达到可以访问板块的最少奥利奥
         if ($CurrentForum->accessible_coin > 0) {
@@ -140,20 +131,6 @@ class ForumController extends Controller
             case 1: //按照8点日清模式
                 //新日清判断模式
                 $threads->where('has_nissined', 0);
-
-                // $hour_now = Carbon::now()->hour;
-                // if ($hour_now >= 8) { //根据时间确定8点日清的节点
-                //     $nissin_breakpoint = Carbon::today()->addHours(8);
-                // } else {
-                //     $nissin_breakpoint = Carbon::yesterday()->addHours(8);
-                // }
-                // $threads->where('created_at', '>', $nissin_breakpoint)
-                //     ->orWhere(function ($query) use ($forum_id) {  //但要把本版公告加回来(sub_id=10)
-                //         $query->where('forum_id', $forum_id)
-                //             ->where('sub_id', 10)
-                //             ->where('is_deleted', 0);
-                //     });
-                // break;
             case 2: //按照24小时日清模式(目前咒版不清标题)
                 break;
         }
@@ -170,24 +147,26 @@ class ForumController extends Controller
 
 
         //记录搜索行为
-        // if ($request->has('search_title')) {
-        //     ProcessUserActive::dispatch(
-        //         [
-        //             'binggan' => $user->binggan,
-        //             'user_id' => $user->id,
-        //             'active' => '用户进行了搜索',
-        //             'content' => '关键词：' . $request->query('search_title'),
-        //             'forum_id' => $forum_id,
-        //         ]
-        //     );
-        // }
+        if ($request->has('search_title')) {
+            ProcessUserActive::dispatch(
+                [
+                    'binggan' => $user->binggan,
+                    'user_id' => $user->id,
+                    'active' => '用户进行了搜索',
+                    'content' => '关键词：' . $request->query('search_title'),
+                    'forum_id' => $forum_id,
+                ]
+            );
+        }
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
-            'forum_data' => $CurrentForum->makeVisible('banners'),
-            'threads_data' => $threads->paginate($threads_per_page),
-            'subtitles_exclude' => $subtitles_excluded,
+            'data' => [
+                'forum_data' => $CurrentForum->makeVisible('banners'),
+                'threads_data' => $threads->paginate($threads_per_page),
+                'subtitles_exclude' => $subtitles_excluded,
+            ]
         ]);
     }
 
@@ -243,28 +222,5 @@ class ForumController extends Controller
             'forum_data' => $CurrentForum->makeVisible('banners'),
             'threads_data' => $threads,
         ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }

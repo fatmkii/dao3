@@ -39,4 +39,9 @@ class Forum extends Model
     // {
     //     return $this->hasMany(Thread::class);
     // }
+
+    public function Threads()
+    {
+        return $this->hasMany(Thread::class);
+    }
 }
