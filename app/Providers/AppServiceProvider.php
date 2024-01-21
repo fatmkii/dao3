@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Facades\GlobalSettingClass;
 use Illuminate\Support\ServiceProvider;
+use \Illuminate\Pagination\LengthAwarePaginator;
+use App\Common\MyPaginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        //自定义的分页器，减少多余的返回数据以节省流量
+        $this->app->bind(LengthAwarePaginator::class, MyPaginator::class);
+
         $this->app->bind('GlobalSetting', function () {
             return new GlobalSettingClass();
         });
