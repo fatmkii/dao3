@@ -9,5 +9,14 @@ const newBingganEnableGetter = commonAlova.Get<boolean>(
         localCache: null,
     }
 )
+const homeBannersGetter = commonAlova.Get<string[]>(
+    '/api/home_banners/',
+    {
+        name: 'homeBannersGetter',
+        params: {},
+        localCache: null,
+    }
+)
 
-export { newBingganEnableGetter }
+
+export { newBingganEnableGetter, homeBannersGetter }

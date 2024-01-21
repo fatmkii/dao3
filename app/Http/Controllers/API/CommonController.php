@@ -20,4 +20,15 @@ class CommonController extends Controller
             ],
         );
     }
+
+    public function get_home_banners(Request $request)
+    {
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获得主页banner数据',
+                'data' =>  GlobalSetting::get('home_banners'),
+            ],
+        );
+    }
 }

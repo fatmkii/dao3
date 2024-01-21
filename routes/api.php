@@ -41,3 +41,4 @@ Route::prefix('forums')->group(function () {
 
 //各种杂项
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']);
+Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
