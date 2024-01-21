@@ -75,13 +75,13 @@ const { data: newBingganEnable } = useRequest(newBingganEnableGetter, { initialD
 
 //导入饼干
 const loginHandle = () => {
-    userLoginSend(inputBinggan.value, inputPassword.value)
+    postUserLogin(inputBinggan.value, inputPassword.value)
     inputPassword.value = ""
 }
 const { loading: userLoginLoading,
     onSuccess: userLoginOnSuccess,
     data: userLoginData,
-    send: userLoginSend }
+    send: postUserLogin }
     = useRequest(userLoginPoster, { immediate: false })
 userLoginOnSuccess(() => {
     localStorage.Token = userLoginData.value.token
@@ -90,12 +90,12 @@ userLoginOnSuccess(() => {
 })
 
 //申请饼干
-const registerHandle = () => { userRegisterSend(getUUID()) }
+const registerHandle = () => { postUserRegister(getUUID()) }
 const { loading: userRegisterLoading,
     onSuccess: userRegisterOnSuccess,
     onError: userRegisterOnError,
     data: userRegisterData,
-    send: userRegisterSend }
+    send: postUserRegister }
     = useRequest(userRegisterPoster, { immediate: false })
 userRegisterOnSuccess(() => {
     const userStore = useUserStore()

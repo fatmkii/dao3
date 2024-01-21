@@ -26,7 +26,7 @@ export const useUserStore = defineStore('userStore', () => {
         "my_emoji": null
     }
 
-    const { loading: userDataLoading, data: userData, onSuccess: userDataOnSuccess, send: sendUserDataGetter } = useRequest(
+    const { loading: userDataLoading, data: userData, onSuccess: userDataOnSuccess, send: getUserData } = useRequest(
         userDataGetter,
         {
             initialData: userDataInit,
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('userStore', () => {
     })
 
     if (binggan && token) {//Localstorage中有token和饼干才请求用户数据
-        sendUserDataGetter(binggan)
+        getUserData(binggan)
     }
 
     //需要强制重新拉取user data时候用
