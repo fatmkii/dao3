@@ -38,7 +38,7 @@ import { useForumsStore } from '@/stores/forums'
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 import ForumsStar from '@/vue/Home/ForumsStar.vue'
-import type { forumsData } from '@/api/methods/forums'
+import type { forumData } from '@/api/methods/forums'
 import { useCommonStore } from '@/stores/common';
 
 
@@ -78,7 +78,7 @@ onMounted(() => {
         forumFavorites.value = JSON.parse(localStorage.forums_favorites);
     }
 })
-const forumsDataSorted = computed<forumsData[]>(() => {
+const forumsDataSorted = computed<forumData[]>(() => {
     const favorite = forumsStore.forumsData.filter((forumData) => forumFavorites.value.includes(forumData.id))
     const unfavorite = forumsStore.forumsData.filter((forumData) => !forumFavorites.value.includes(forumData.id))
     const result = favorite.concat(unfavorite)

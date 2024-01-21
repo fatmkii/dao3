@@ -1,6 +1,6 @@
 import { commonAlova, } from '@/api/index';
 
-interface forumsData {
+interface forumData {
     "id": number,
     "sub_id": number,
     "name": string,
@@ -14,7 +14,7 @@ interface forumsData {
     "deleted_at": string | null
 }
 
-const forumsDataGetter = commonAlova.Get<forumsData[]>(
+const forumsDataGetter = commonAlova.Get<forumData[]>(
     '/api/forums/',
     {
         name: 'forumsDataGetter',
@@ -23,4 +23,4 @@ const forumsDataGetter = commonAlova.Get<forumsData[]>(
     }
 )
 
-export { forumsDataGetter, forumsData }
+export { forumsDataGetter, forumData }
