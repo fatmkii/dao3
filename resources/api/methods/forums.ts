@@ -14,13 +14,20 @@ interface forumData {
     "deleted_at": string | null
 }
 
-const forumsDataGetter = commonAlova.Get<forumData[]>(
+const forumsDataGetter = commonAlova.Get(
     '/api/forums/',
     {
         name: 'forumsDataGetter',
         params: {},
-        localCache: 60 * 60 * 1000
+        localCache: 60 * 60 * 1000,
+        transformData(data: forumData[], headers) {
+            return data.map(item => ({
+                ...item,
+                banners: JSON.parse(item.banners) as string[]
+            }));
+        }
     }
+
 )
 
 export { forumsDataGetter, forumData }

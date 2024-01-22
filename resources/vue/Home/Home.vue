@@ -68,7 +68,6 @@ const forumCardsContentStyle = computed(() => {
     }
 })
 
-
 //收藏板块功能
 const forumFavorites = ref<number[]>([]);
 onMounted(() => {
@@ -78,7 +77,7 @@ onMounted(() => {
         forumFavorites.value = JSON.parse(localStorage.forums_favorites);
     }
 })
-const forumsDataSorted = computed<forumData[]>(() => {
+const forumsDataSorted = computed(() => {
     const favorite = forumsStore.forumsData.filter((forumData) => forumFavorites.value.includes(forumData.id))
     const unfavorite = forumsStore.forumsData.filter((forumData) => !forumFavorites.value.includes(forumData.id))
     const result = favorite.concat(unfavorite)
