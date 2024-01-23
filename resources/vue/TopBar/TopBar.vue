@@ -1,8 +1,9 @@
 
 <template>
-    <n-flex align="center" class="top-bar">
+    <n-flex class="top-bar">
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
-        <router-link to="/"> 小火锅 </router-link>
+        <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
+        <div id="topbar-nav" ref="topbarNav"></div>
         <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
         <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
             <n-button style="margin-left: auto;" :size="commonStore.buttonSize">皮肤</n-button>
@@ -11,8 +12,8 @@
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
         </n-dropdown>
 
-        <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus" :size="commonStore.buttonSize"
-            @click="loginModal?.show"> 导入饼干
+        <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus"
+            :size="commonStore.buttonSize" @click="loginModal?.show"> 导入饼干
         </n-button>
 
         <LoginModal ref="loginModal" @submit-register="callRegisterHintModal" />
@@ -167,12 +168,12 @@ onMounted(() => {
 
 
 function handleTest() {
-    userStore.refreshUserData()
+
 }
 
 </script>
 
-<style scoped>
+<style>
 .top-bar {
     color: v-bind('themeVars.textColor1');
     background-color: v-bind('themeVars.cardColor');
@@ -191,14 +192,14 @@ function handleTest() {
         padding: 6px;
         font-size: 1rem;
     }
-}
 
-a {
-    color: v-bind('themeVars.textColor1');
-}
+    a {
+        color: v-bind('themeVars.textColor1');
+    }
 
-img {
-    height: 100%;
-    cursor: pointer;
+    img {
+        height: 100%;
+        cursor: pointer;
+    }
 }
 </style>

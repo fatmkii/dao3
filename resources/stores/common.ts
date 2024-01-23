@@ -14,8 +14,10 @@ export const useCommonStore = defineStore('commonStore', () => {
     //按钮尺寸
     const buttonSize = computed<'tiny' | 'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
 
+    //是否显示topbar的“小火锅”
+    const showTopbarNav = ref<boolean>(true)
 
-    return { unauthModalShow, requestErrorCode, isMobile, buttonSize}
+    return { unauthModalShow, requestErrorCode, isMobile, buttonSize, showTopbarNav }
 
 })
 
