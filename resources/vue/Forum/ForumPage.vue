@@ -14,17 +14,20 @@
 
 <script setup lang="ts">
 import { NFlex, NTag } from 'naive-ui'
-import { useRouter } from 'vue-router'
 import { useThreadsStore } from '@/stores/threads'
 import { getThreadsDataParams } from '@/api/methods/threads'
-import { defineProps, onMounted, onUnmounted } from 'vue'
+import { defineProps } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
+import { useTopbarNavControl } from '@/js/func/topbarNav'
 
 //基础数据
 const threadsStore = useThreadsStore()
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+
+//用teleport组件替代掉topbar的“小火锅”
+useTopbarNavControl()
 
 //组件props
 interface Props {
@@ -33,13 +36,6 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 
-})
-
-onMounted(() => {
-    commonStore.showTopbarNav = false//使Topbar的“小火锅”隐藏
-})
-onUnmounted(() => {
-    commonStore.showTopbarNav = true//使Topbar的“小火锅”显示
 })
 
 
