@@ -1,22 +1,29 @@
 <template>
     <n-flex vertical>
+        <div class="carousel-box">
+            <n-skeleton class="carousel-skeleton" sharp v-if="threadsStore.threadsDataLoading" />
+            <n-carousel show-arrow trigger="hover" autoplay v-if="!threadsStore.threadsDataLoading" :interval="10000">
+                <img :src="banner" v-for="banner in threadsStore.threadsListData.forum_data.banners" class="carousel-img">
+            </n-carousel>
+        </div>
         这是forumPage
         <div>porps:{{ props }}</div>
         <div v-if="!threadsStore.threadsDataLoading">threadsListData:{{ threadsStore.threadsListData.threads_data.data }}
         </div>
         <Teleport to="#topbar-nav"><router-link to="/" v-if="!threadsStore.threadsDataLoading">
                 >{{ threadsStore.threadsListData.forum_data.name }}
-                <n-tag round :size="commonStore.buttonSize">{{ threadsStore.threadsListData.forum_data.id }}</n-tag>
+                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ threadsStore.threadsListData.forum_data.id
+                }}</n-tag>
             </router-link>
         </Teleport>
     </n-flex>
 </template>
 
 <script setup lang="ts">
-import { NFlex, NTag } from 'naive-ui'
+import { NFlex, NTag, NCarousel, NSkeleton, } from 'naive-ui'
 import { useThreadsStore } from '@/stores/threads'
 import { getThreadsDataParams } from '@/api/methods/threads'
-import { defineProps } from 'vue'
+import { defineProps, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
@@ -38,7 +45,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 })
 
-
 //获取主题列表数据
 const params: getThreadsDataParams = {
     forumId: props.forum_id,
@@ -51,3 +57,19 @@ const params: getThreadsDataParams = {
 threadsStore.getThreadsData(params)
 
 </script>
+
+<style scoped>
+.carousel-box {
+    height: v-bind('commonStore.bannerHeight')
+}
+
+.carousel-skeleton {
+    height: 100%;
+    width: 100%;
+}
+
+.carousel-img {
+    width: 100%;
+    object-fit: cover;
+}
+</style>

@@ -1,10 +1,12 @@
 
 <template>
     <n-flex justify="center" vertical>
-        <n-skeleton :style="{ height: NSkeletonHeight + 'px', }" sharp v-if="homeBannersLoading" />
-        <n-carousel show-arrow trigger="hover" autoplay v-if="!homeBannersLoading" :interval="10000">
-            <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
-        </n-carousel>
+        <div class="carousel-box">
+            <n-skeleton class="carousel-skeleton" sharp v-if="homeBannersLoading" />
+            <n-carousel show-arrow trigger="hover" autoplay v-if="!homeBannersLoading" :interval="10000">
+                <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
+            </n-carousel>
+        </div>
         <n-card title="小火锅公告" size="small">
             <div>这里个人论坛“小火锅”，欢迎来玩~</div>
             <div>QQ小火锅避难群：<n-text type="info">156840110</n-text></div>
@@ -53,9 +55,6 @@ const { loading: homeBannersLoading, data: homeBannersData } = useRequest(homeBa
 const homeBannersDataSorted = computed(() => homeBannersData.value.sort(() => 0.5 - Math.random()))
 
 //外观调整
-const rootContainer = document.getElementById('app');
-const rootContainerWidth = rootContainer!.offsetWidth - 24;//24是两边的padding
-const NSkeletonHeight = Math.ceil(rootContainerWidth * 250 / 920)//小火锅版头尺寸是920*250
 const forumCardsHeaderStyle = computed(() => {
     return {
         paddingBottom: commonStore.isMobile ? '6px' : '',
@@ -111,17 +110,25 @@ function forumClick(forumId: number, event: PointerEvent) {
 </script>
 
 <style scoped>
-.carousel-img {
-    width: 100%;
-    max-height: 310px;
-    object-fit: cover;
-}
-
 .forum-cards {
     cursor: pointer;
 
     &:hover {
         background-color: v-bind('themeVars.popoverColor');
     }
+}
+
+.carousel-box {
+    height: v-bind('commonStore.bannerHeight')
+}
+
+.carousel-skeleton {
+    height: 100%;
+    width: 100%;
+}
+
+.carousel-img {
+    width: 100%;
+    object-fit: cover;
 }
 </style>

@@ -17,7 +17,14 @@ export const useCommonStore = defineStore('commonStore', () => {
     //是否显示topbar的“小火锅”
     const showTopbarNav = ref<boolean>(true)
 
-    return { unauthModalShow, requestErrorCode, isMobile, buttonSize, showTopbarNav }
+    //版头高度计算
+    const bannerHeight = computed(() => {
+        const rootContainer = document.getElementById('app');
+        const rootContainerWidth = rootContainer!.offsetWidth - 24;//24是两边的padding
+        return Math.ceil(rootContainerWidth * 250 / 920) + 'px'//小火锅版头尺寸是920*250
+    })
+
+    return { unauthModalShow, requestErrorCode, isMobile, buttonSize, showTopbarNav, bannerHeight }
 
 })
 

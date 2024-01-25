@@ -3,10 +3,12 @@
     <n-flex class="top-bar">
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
-        <div id="topbar-nav" ref="topbarNav"></div>
+        <div id="topbar-nav"></div>
+        <div style="margin-left: auto;"></div>
+        <div id="topbar-icon"></div>
         <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
         <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-            <n-button style="margin-left: auto;" :size="commonStore.buttonSize">皮肤</n-button>
+            <n-button :size="commonStore.buttonSize">皮肤</n-button>
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
@@ -199,6 +201,10 @@ function handleTest() {
 
     img {
         height: 100%;
+        cursor: pointer;
+    }
+
+    .forum-tag {
         cursor: pointer;
     }
 }
