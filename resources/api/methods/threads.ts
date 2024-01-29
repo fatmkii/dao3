@@ -75,4 +75,4 @@ const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
 
 
 
-export { threadsDataGetter, threadsListData, getThreadsDataParams }
+export { threadsDataGetter, threadsListData, getThreadsDataParams, threadData }

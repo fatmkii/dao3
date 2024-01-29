@@ -12,6 +12,15 @@ const routes = [
         }),
         component: () => import('@/vue/Forum/ForumPage.vue')
     },
+    {
+        path: '/thread/:thread_id/:page?',
+        name: 'thread',
+        props: (route) => ({
+            thread_id: parseInt(route.params.thread_id),
+            page: route.params.page ? parseInt(route.params.page) : 1,
+        }),
+        component: () => import('@/vue/Thread/ThreadPage.vue')
+    },
 ]
 
 const router = createRouter({

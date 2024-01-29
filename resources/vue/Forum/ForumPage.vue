@@ -1,18 +1,15 @@
 <template>
     <n-flex vertical>
         <div class="carousel-box">
-            <n-skeleton class="carousel-skeleton" sharp v-if="threadsStore.threadsDataLoading" />
-            <n-carousel show-arrow trigger="hover" autoplay v-if="!threadsStore.threadsDataLoading" :interval="10000">
-                <img :src="banner" v-for="banner in threadsStore.threadsListData.forum_data.banners" class="carousel-img">
+            <n-skeleton class="carousel-skeleton" sharp v-if="threadsDataLoading" />
+            <n-carousel show-arrow trigger="hover" autoplay v-if="!threadsDataLoading" :interval="10000">
+                <img :src="banner" v-for="banner in threadsListData.forum_data.banners" class="carousel-img">
             </n-carousel>
         </div>
-        这是forumPage
-        <div>porps:{{ props }}</div>
-        <div v-if="!threadsStore.threadsDataLoading">threadsListData:{{ threadsStore.threadsListData.threads_data.data }}
-        </div>
-        <Teleport to="#topbar-nav"><router-link to="/" v-if="!threadsStore.threadsDataLoading">
-                >{{ threadsStore.threadsListData.forum_data.name }}
-                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ threadsStore.threadsListData.forum_data.id
+        <ThreadList :threads-list-data="threadsListData.threads_data.data" v-if="!threadsDataLoading"></ThreadList>
+        <Teleport to="#topbar-nav"><router-link to="/" v-if="!threadsDataLoading">
+                >{{ threadsListData.forum_data.name }}
+                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ threadsListData.forum_data.id
                 }}</n-tag>
             </router-link>
         </Teleport>
@@ -23,13 +20,14 @@
 import { NFlex, NTag, NCarousel, NSkeleton, } from 'naive-ui'
 import { useThreadsStore } from '@/stores/threads'
 import { getThreadsDataParams } from '@/api/methods/threads'
-import { defineProps, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
+import { threadsDataGetter } from '@/api/methods/threads';
+import { useRequest } from 'alova'
+import ThreadList from '@/vue/Forum/ThreadList.vue'
 
 //基础数据
-const threadsStore = useThreadsStore()
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 
@@ -54,7 +52,10 @@ const params: getThreadsDataParams = {
     subtitlesExcluded: [],
     searchTitle: ''
 }
-threadsStore.getThreadsData(params)
+const { loading: threadsDataLoading, data: threadsListData } = useRequest(
+    threadsDataGetter(params),
+    { initialData: [] }
+);
 
 </script>
 
