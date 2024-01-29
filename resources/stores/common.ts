@@ -8,8 +8,8 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     //根据屏幕显示尺寸确定是否手机版
     const isMobile = ref<boolean>(document.body.clientWidth < 1200)
-    const onResize = () => isMobile.value = document.body.clientWidth < 1200
-    window.addEventListener('resize', onResize)
+    const checkMobile = () => isMobile.value = document.body.clientWidth < 1200
+    window.addEventListener('resize', checkMobile)
 
     //按钮尺寸
     const buttonSize = computed<'tiny' | 'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
@@ -18,11 +18,14 @@ export const useCommonStore = defineStore('commonStore', () => {
     const showTopbarNav = ref<boolean>(true)
 
     //版头高度计算
-    const bannerHeight = computed(() => {
+    function getBannerHeight() {
         const rootContainer = document.getElementById('app');
         const rootContainerWidth = rootContainer!.offsetWidth - 24;//24是两边的padding
         return Math.ceil(rootContainerWidth * 250 / 920) + 'px'//小火锅版头尺寸是920*250
-    })
+    }
+    const bannerHeight = ref(getBannerHeight())
+    window.addEventListener('resize', () => bannerHeight.value = getBannerHeight())
+
 
     return { unauthModalShow, requestErrorCode, isMobile, buttonSize, showTopbarNav, bannerHeight }
 
