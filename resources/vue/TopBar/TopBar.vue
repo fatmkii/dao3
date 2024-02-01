@@ -186,7 +186,7 @@ function handleTest() {
     border-bottom-style: solid;
     border-bottom-width: 1px;
     z-index: 10;
-    border-radius: 8px;
+    border-radius: 10px;
 
     @media all and (min-width: 1200px) {
         height: 34px;

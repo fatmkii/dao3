@@ -129,7 +129,7 @@ function forumClick(forumId: number, event: PointerEvent) {
 
 .carousel-img {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
 }
 </style>
