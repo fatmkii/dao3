@@ -27,6 +27,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                         includeAbsolute: false,
                     },
                 },
+                script: {
+                    defineModel: true
+                }
             }),
 
         ],

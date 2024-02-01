@@ -8,8 +8,12 @@ export const useForumsStore = defineStore('forumsStore', () => {
         forumsDataGetter,
         { initialData: [] }
     );
-    
-    return { forumsDataLoading, forumsData }
+
+    function forumBanners(forumId: number): string[] {
+        return forumsData.value.find((forumData) => forumData.id === forumId)?.banners || []
+    }
+
+    return { forumsDataLoading, forumsData, forumBanners }
 
 })
 
