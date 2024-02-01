@@ -14,7 +14,8 @@
                 :last-page="threadsDataLoading ? 1 : threadsListData.threads_data.lastPage" />
         </n-flex>
 
-        <ThreadList :threads-list-data="threadsListData.threads_data.data" v-if="!threadsDataLoading"></ThreadList>
+        <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsListData.threads_data.data"
+            :show-this="!threadsDataLoading" />
 
         <Teleport to="#topbar-nav"><router-link to="/">
                 >{{ forumsStore.forumData(forum_id)?.name }}

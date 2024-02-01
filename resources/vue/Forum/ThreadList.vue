@@ -1,5 +1,5 @@
 <template>
-    <n-flex vertical :size="2">
+    <n-flex vertical :size="2" v-if="showThis">
         <n-card v-for=" threadData  in  threadsListData" size="small" :bordered="true" :key="threadData.id"
             class="thread-cards" :content-style="threadCardsContentStyle" hoverable>
             <n-flex vertical>
@@ -30,30 +30,30 @@
                 </n-flex>
             </n-flex>
         </n-card>
-
+    </n-flex>
+    <n-flex vertical :size="2" v-else>
+        <n-skeleton class="threads-card-skeleton" v-for="n in 50" />
     </n-flex>
 </template>
 
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useCommonStore } from '@/stores/common'
-import { NFlex, NTag, useThemeVars, NCard, NText } from 'naive-ui'
+import { NFlex, useThemeVars, NCard, NText, NSkeleton } from 'naive-ui'
 import type { threadData } from '@/api/methods/threads'
 
 
 //基础数据
 const commonStore = useCommonStore()
 const themeVars = useThemeVars()
-const router = useRouter()
 
 //组件props
 interface Props {
-    threadsListData: threadData[],
+    threadsListData: threadData[] | [],
+    showThis: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
-
 })
 
 
@@ -83,5 +83,11 @@ const threadCardsContentStyle = computed(() => {
     span {
         font-size: v-bind('commonStore.isMobile ? "0.6rem" : "0.8rem"')
     }
+}
+
+.threads-card-skeleton {
+    border-radius: 10px;
+    height: 65px;
+    width: 100%;
 }
 </style>
