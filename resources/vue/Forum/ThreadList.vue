@@ -70,14 +70,16 @@ const threadCardsContentStyle = computed(() => {
 
 
 
-<style>
+<style scoped>
 .thread-cards {
     &:hover {
-        background-color: v-bind('themeVars.popoverColor');
+        background-color: v-bind('themeVars.hoverColor');
     }
 }
 
 .thread-title-secondary {
+    font-size: v-bind('commonStore.isMobile ? "0.6rem" : "0.8rem"');
+
     span {
         font-size: v-bind('commonStore.isMobile ? "0.6rem" : "0.8rem"')
     }

@@ -114,12 +114,12 @@ function forumClick(forumId: number, event: PointerEvent) {
     cursor: pointer;
 
     &:hover {
-        background-color: v-bind('themeVars.popoverColor');
+        background-color: v-bind('themeVars.hoverColor');
     }
 }
 
 .carousel-box {
-    height: v-bind('commonStore.bannerHeight')
+    height: v-bind('commonStore.bannerHeight');
 }
 
 .carousel-skeleton {
@@ -129,6 +129,7 @@ function forumClick(forumId: number, event: PointerEvent) {
 
 .carousel-img {
     width: 100%;
+    border-radius: 8px;
     object-fit: cover;
 }
 </style>

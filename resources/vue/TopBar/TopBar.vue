@@ -4,13 +4,12 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-        <div style="margin-left: auto;"></div>
-        <div id="topbar-icon"></div>
-        <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
-        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
+        <div id="topbar-icon" style="margin-left: auto;"></div>
+        <n-button @click="handleTest" :size="commonStore.buttonSize" style="margin-left: auto;">测试</n-button>
+        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange" style="margin-left: auto;">
             <n-button :size="commonStore.buttonSize">皮肤</n-button>
         </n-dropdown>
-        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
+        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions"  style="margin-left: auto;">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
         </n-dropdown>
 
@@ -170,7 +169,11 @@ onMounted(() => {
 
 
 function handleTest() {
-
+    const centerX = Math.floor(window.innerHeight / 2);
+    const centerY = Math.floor(window.innerWidth / 2);
+    const el = document.elementFromPoint(centerX, centerY)
+    console.log(el)
+    console.log(el?.getAttribute('id'))
 }
 
 </script>
@@ -182,6 +185,8 @@ function handleTest() {
     border-bottom-color: v-bind('themeVars.dividerColor');
     border-bottom-style: solid;
     border-bottom-width: 1px;
+    z-index: 10;
+    border-radius: 8px;
 
     @media all and (min-width: 1200px) {
         height: 34px;

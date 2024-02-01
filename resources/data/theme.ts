@@ -3,7 +3,8 @@ import { GlobalThemeOverrides } from 'naive-ui'
 //各个主题的颜色变量在这里！
 const lightThemeOverrides: GlobalThemeOverrides = {
     common: {
-        cardColor: "rgba(249, 249, 249, 1)"
+        // cardColor: "rgba(249, 249, 249, 1)",
+        "bodyColor": "rgba(249, 249, 249, 1)"
     },
 }
 const darkThemeOverrides: GlobalThemeOverrides = {

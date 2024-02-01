@@ -61,7 +61,7 @@ const { loading: threadsDataLoading, data: threadsListData } = useRequest(
 
 <style scoped>
 .carousel-box {
-    height: v-bind('commonStore.bannerHeight')
+    height: v-bind('commonStore.bannerHeight');
 }
 
 .carousel-skeleton {
@@ -71,6 +71,7 @@ const { loading: threadsDataLoading, data: threadsListData } = useRequest(
 
 .carousel-img {
     width: 100%;
+    border-radius: 8px;
     object-fit: cover;
 }
 </style>
