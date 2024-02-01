@@ -70,7 +70,7 @@ const threadCardsContentStyle = computed(() => {
 
 
 
-<style scoped>
+<style lang="scss" scoped>
 .thread-cards {
     &:hover {
         background-color: v-bind('themeVars.hoverColor');

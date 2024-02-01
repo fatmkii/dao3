@@ -178,7 +178,7 @@ function handleTest() {
 
 </script>
 
-<style>
+<style lang="scss">
 .top-bar {
     color: v-bind('themeVars.textColor1');
     background-color: v-bind('themeVars.cardColor');

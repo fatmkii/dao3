@@ -109,7 +109,7 @@ function forumClick(forumId: number, event: PointerEvent) {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .forum-cards {
     cursor: pointer;
 

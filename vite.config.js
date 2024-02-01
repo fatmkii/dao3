@@ -10,7 +10,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
     else { var vue_alias = 'vue/dist/vue.esm-browser.prod.js' }
 
     return {
-        css: ['resources/css/app.scss'],
         plugins: [
             laravel({
                 input: ['resources/js/app.js'],

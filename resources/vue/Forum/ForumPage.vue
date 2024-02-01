@@ -59,7 +59,7 @@ const { loading: threadsDataLoading, data: threadsListData } = useRequest(
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .carousel-box {
     height: v-bind('commonStore.bannerHeight');
 }
