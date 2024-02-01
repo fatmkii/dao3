@@ -1,28 +1,26 @@
 <template>
-    <div class="carousel-box">
-        <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
-            <n-skeleton class="carousel-skeleton" sharp />
+    <n-flex vertical>
+        <div class="carousel-box">
+            <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
+                <n-skeleton class="carousel-skeleton" sharp />
+            </div>
+            <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
+                <img :src="banner" v-for="banner in forumsStore.forumData(forum_id)?.banners" class="carousel-img">
+            </n-carousel>
         </div>
-        <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
-            <img :src="banner" v-for="banner in forumsStore.forumBanners(forum_id)" class="carousel-img">
-        </n-carousel>
-    </div>
-    <n-flex vertical v-if="!threadsDataLoading">
 
         <n-flex justify="end" style="margin-top:8px ;">
-            <Pagination v-model:page="pageSelected" :last-page="threadsListData.threads_data.lastPage" />
+            <Pagination v-model:page="pageSelected"
+                :last-page="threadsDataLoading ? 1 : threadsListData.threads_data.lastPage" />
         </n-flex>
 
-        <ThreadList :threads-list-data="threadsListData.threads_data.data"></ThreadList>
+        <ThreadList :threads-list-data="threadsListData.threads_data.data" v-if="!threadsDataLoading"></ThreadList>
+
         <Teleport to="#topbar-nav"><router-link to="/">
-                >{{ threadsListData.forum_data.name }}
-                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ threadsListData.forum_data.id
-                }}</n-tag>
+                >{{ forumsStore.forumData(forum_id)?.name }}
+                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forum_id }}</n-tag>
             </router-link>
         </Teleport>
-    </n-flex>
-    <n-flex vertical v-if="threadsDataLoading">
-
     </n-flex>
 </template>
 
@@ -31,7 +29,6 @@ import { watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWatcher } from 'alova'
 import { NFlex, NTag, NCarousel, NSkeleton } from 'naive-ui'
-import { getThreadsDataParams } from '@/api/methods/threads'
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'

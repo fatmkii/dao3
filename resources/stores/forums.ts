@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useRequest } from 'alova';
 import { forumsDataGetter } from '@/api/methods/forums';
+import type { forumData } from '@/api/methods/forums';
 
 export const useForumsStore = defineStore('forumsStore', () => {
 
@@ -9,11 +10,11 @@ export const useForumsStore = defineStore('forumsStore', () => {
         { initialData: [] }
     );
 
-    function forumBanners(forumId: number): string[] {
-        return forumsData.value.find((forumData) => forumData.id === forumId)?.banners || []
+    function forumData(forumId: number) {
+        return forumsData.value.find((forumData) => forumData.id === forumId)
     }
 
-    return { forumsDataLoading, forumsData, forumBanners }
+    return { forumsDataLoading, forumsData, forumData }
 
 })
 
