@@ -19,5 +19,9 @@ a {
 .top-bar {
     position: sticky;
     top: 0;
+}
 
+.n-button {
+    //所有按钮改为圆角
+    border-radius: 18px;
 }
