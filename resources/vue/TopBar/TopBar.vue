@@ -4,13 +4,14 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-        <div id="topbar-icon" style="margin-left: auto;"></div>
-        <n-button @click="handleTest" :size="commonStore.buttonSize" style="margin-left: auto;">测试</n-button>
-        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange" style="margin-left: auto;">
+        <div style="margin-left: auto;"></div>
+        <div id="topbar-icon"></div>
+        <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
+        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
             <n-button :size="commonStore.buttonSize">皮肤</n-button>
         </n-dropdown>
-        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions" style="margin-left: auto;">
-            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
+        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
+            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
         </n-dropdown>
 
         <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus"
