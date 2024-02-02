@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useRequest } from 'alova';
 import { forumsDataGetter } from '@/api/methods/forums';
-import type { forumData } from '@/api/methods/forums';
 
 export const useForumsStore = defineStore('forumsStore', () => {
 

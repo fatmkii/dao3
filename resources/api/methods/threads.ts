@@ -27,8 +27,8 @@ interface threadData {
     is_your_thread?: boolean,
 }
 
-interface threadsListData {
-    forum_data: forumData,
+interface threadsListData<arrayType> {
+    forum_data: forumData<arrayType>,
     threads_data: {
         currentPage: number,
         lastPage: number,
@@ -58,14 +58,14 @@ const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
             searchTitle: params.searchTitle
         },
         localCache: null,
-        transformData(data: threadsListData, headers) {
+        transformData(data: threadsListData<string>, headers) {
             const result = {
                 ...data,
                 forum_data: {
                     ...data.forum_data,
                     banners: JSON.parse(data.forum_data.banners) as string[]
                     // 通过...展开操作的result是data的另一份拷贝，并且banners会正确地推断出类型
-                    //（正确应为string[],如果只是单词赋值会认为仍然是string），总之我服了！
+                    //（正确应为string[],如果只是给对象的属性赋值会认为仍然是string），总之我服了！
                 }
             }
             return result;

@@ -1,6 +1,6 @@
 import { commonAlova, } from '@/api/index';
 
-interface forumData {
+interface forumData<arrayType> {
     "id": number,
     "sub_id": number,
     "name": string,
@@ -9,7 +9,7 @@ interface forumData {
     "is_anonymous": number,
     "accessible_coin": number,
     "is_nissin": number,
-    "banners": string,
+    "banners": arrayType,
     "default_heads": number,
     "deleted_at": string | null
 }
@@ -20,7 +20,7 @@ const forumsDataGetter = commonAlova.Get(
         name: 'forumsDataGetter',
         params: {},
         localCache: 60 * 60 * 1000,
-        transformData(data: forumData[], headers) {
+        transformData(data: forumData<string>[], headers) {
             return data.map(item => ({
                 ...item,
                 banners: JSON.parse(item.banners) as string[]
