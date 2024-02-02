@@ -9,7 +9,7 @@
         <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange" style="margin-left: auto;">
             <n-button :size="commonStore.buttonSize">皮肤</n-button>
         </n-dropdown>
-        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions"  style="margin-left: auto;">
+        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions" style="margin-left: auto;">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" alt="我的饼干" @mouseenter="refreshUserData">
         </n-dropdown>
 
@@ -29,6 +29,7 @@ import { userLogout } from '@/js/func/logout';
 import { useCommonStore } from '@/stores/common';
 import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
+import { renderIcon } from '@/js/func/renderIcon'
 import LoginModal from '@/vue/TopBar/LoginModal.vue';
 import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { Cog as CogIcon } from '@vicons/fa';
@@ -55,13 +56,6 @@ const themeOptions = [
 
 
 //个人中心按钮相关
-const renderIcon = (icon: Component) => {
-    return () => {
-        return h(NIcon, { size: '1.25rem' }, {
-            default: () => h(icon)
-        })
-    }
-}
 function renderCustomHeader() {
     return h(
         NFlex,
@@ -120,12 +114,12 @@ const userOptions = [
     {
         label: '个人中心',
         key: 'profile',
-        icon: renderIcon(CogIcon)
+        icon: renderIcon(CogIcon, { size: '1.25rem' })
     },
     {
         label: '退出饼干',
         key: 'logout',
-        icon: renderIcon(LogoutIcon),
+        icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
         props: {
             onClick: logoutHandle
         }
@@ -169,11 +163,8 @@ onMounted(() => {
 
 
 function handleTest() {
-    const centerX = Math.floor(window.innerHeight / 2);
-    const centerY = Math.floor(window.innerWidth / 2);
-    const el = document.elementFromPoint(centerX, centerY)
-    console.log(el)
-    console.log(el?.getAttribute('id'))
+    const a = 'test'
+    console.log(typeof a === 'string')
 }
 
 </script>
