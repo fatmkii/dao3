@@ -1,6 +1,7 @@
 <template>
     <n-flex vertical>
-        <div class="carousel-box">
+        <!-- 轮播图 -->
+        <div class="carousel-box" v-if="!hideBanner">
             <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
                 <n-skeleton class="carousel-skeleton" sharp />
             </div>
@@ -9,15 +10,42 @@
             </n-carousel>
         </div>
 
-        <n-flex justify="end" style="margin-top:8px ;">
-            <Pagination v-model:page="pageSelected"
-                :last-page="threadsDataLoading ? 1 : threadsListData.threads_data.lastPage" />
+        <!-- 各种按钮 -->
+        <n-flex style="margin-top:8px ;" size="small">
+            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                <n-button :size="commonStore.buttonSize">功能</n-button>
+            </n-dropdown>
+            <n-dropdown trigger="hover" :options="filterOptions" placement="bottom-start">
+                <n-button :size="commonStore.buttonSize">筛选</n-button>
+            </n-dropdown>
+            <n-icon :size="commonStore.isMobile ? 28 : 34">
+                <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
+            </n-icon>
+            <!-- <n-button :size="commonStore.buttonSize" @click="showSearchInput = !showSearchInput">搜索</n-button> -->
+            <div style="margin-left: auto;"></div>
+            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">大喇叭</n-button>
+            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">新主题</n-button>
+        </n-flex>
+        <!-- 搜索输入（弹出） -->
+        <n-flex v-if="showSearchInput" :wrap="false">
+            <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
+                :size="commonStore.inputSize" />
+            <n-button v-bind="themeStore.buttonThemeAttr" type="primary" :size="commonStore.buttonSize">搜索</n-button>
+            <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize">清空</n-button>
         </n-flex>
 
+        <!-- 主题列表 -->
         <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsListData.threads_data.data"
-            :show-this="!threadsDataLoading" />
+            :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading" />
+        <!-- 分页导航 -->
+        <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsListData.threads_data.lastPage"
+            style="margin-left: auto;" />
+        <!-- 页面底部留空白 -->
+        <div style="height: 50px;"></div>
 
-        <Teleport to="#topbar-nav"><router-link to="/">
+        <!-- 发送到TopBar的版面标题 -->
+        <Teleport to="#topbar-nav">
+            <router-link to="/">
                 >{{ forumsStore.forumData(forum_id)?.name }}
                 <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forum_id }}</n-tag>
             </router-link>
@@ -26,22 +54,29 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useWatcher } from 'alova'
-import { NFlex, NTag, NCarousel, NSkeleton } from 'naive-ui'
-import { useUserStore } from '@/stores/user'
+import { threadsDataGetter } from '@/api/methods/threads'
+import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
+import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
-import { useTopbarNavControl } from '@/js/func/topbarNav'
-import { threadsDataGetter } from '@/api/methods/threads';
-import ThreadList from '@/vue/Forum/ThreadList.vue'
+import { usethemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Forum/Pagination.vue'
+import ThreadList from '@/vue/Forum/ThreadList.vue'
+import { FilterOutline as FilterIcon, OptionsOutline as FuncIcon, SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { useWatcher } from 'alova'
+import type { DropdownOption } from 'naive-ui'
+import { NButton, NCarousel, NCheckbox, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag } from 'naive-ui'
+import { emit } from 'process'
+import type { VNodeChild } from 'vue'
+import { h, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
+const themeStore = usethemeStore()
 const router = useRouter()
 
 //用teleport组件替代掉topbar的“小火锅”
@@ -56,6 +91,88 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 
 })
+
+
+//隐藏版头
+const hideBanner = useLocalStorageToRef<boolean>('banner_hiden', false)
+//新窗口打开(
+const newWindowToPost = useLocalStorageToRef<boolean>('new_window_to_post', false)
+
+//功能选项下拉框
+function renderFuncOptions() {
+    return h(
+        NFlex,
+        {
+            style: 'padding:6px 8px',
+            vertical: true,
+        },
+        () => [
+            h(NCheckbox, {
+                checked: hideBanner.value,
+                'onUpdate:checked': (value: boolean) => hideBanner.value = value,
+                size: commonStore.checkBoxSize,
+                label: "隐藏版头"
+            }),
+            h(NCheckbox, {
+                checked: newWindowToPost.value,
+                'onUpdate:checked': (value: boolean) => newWindowToPost.value = value,
+                size: commonStore.checkBoxSize,
+                label: "新窗口打开"
+            }),
+        ]
+    )
+}
+const funcOptions = [
+    {
+        type: 'group',
+        key: 'header',
+        label: '功能',
+    },
+    {
+        key: 'header-divider',
+        type: 'divider'
+    },
+    {
+        key: 'funcOption',
+        type: 'render',
+        render: renderFuncOptions,
+    },
+]
+
+//筛选选项下拉框
+function renderFilterOptions() {
+    return h(
+        NFlex,
+        {
+            style: 'padding:6px 8px',
+            vertical: true,
+        },
+        () => [//TODO 需要多选框
+
+        ]
+    )
+}
+const filterOptions = [
+    {
+        type: 'group',
+        key: 'header',
+        label: '筛选',
+    },
+    {
+        key: 'header-divider',
+        type: 'divider'
+    },
+    {
+        key: 'filterOptions',
+        type: 'render',
+        render: renderFilterOptions,
+    },
+]
+
+//搜索功能
+const searchTitleInput = ref<string>('')
+const showSearchInput = ref<boolean>(false)
+
 
 
 //侦听分页器跳转路由
@@ -74,9 +191,9 @@ const { loading: threadsDataLoading, data: threadsListData } = useWatcher(
         page: props.page,
         threadsPerPage: 50,
         subtitlesExcluded: [],
-        searchTitle: ''
+        searchTitle: searchTitleInput.value //TODO 这里请求有问题，不能默认加上searchTitle
     }),
-    [pageSelected],
+    [pageSelected, searchTitleInput],
     { initialData: [], immediate: true }
 );
 

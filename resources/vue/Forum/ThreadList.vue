@@ -7,18 +7,18 @@
                     class="thread-title">
                     {{ threadData.sub_title }}
                     <router-link :to="{ name: 'thread', params: { thread_id: threadData.id } }"
-                        :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1 }">
+                        :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1 }"
+                        :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
                     <router-link
                         :to="{ name: 'thread', params: { thread_id: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
-                        v-if="threadData.posts_num > 200">
+                        v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
                 </div>
                 <n-flex size="small" class="thread-title-secondary">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
-
                     <span><n-text depth="3">发帖人:</n-text> {{ threadData.nickname }} </span>
                     <span style="margin-left: auto;"></span>
                     {{ threadData.posts_num > 1200 ? '🔥' : '' }}
@@ -52,8 +52,10 @@ const themeVars = useThemeVars()
 interface Props {
     threadsListData: threadData[] | [],
     showThis: boolean
+    newWindowToPost?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
+    newWindowToPost: false
 })
 
 
