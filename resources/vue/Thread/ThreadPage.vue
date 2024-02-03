@@ -14,7 +14,7 @@ import { NFlex, NTag, useThemeVars, NCard, NText } from 'naive-ui'
 
 //组件props
 interface Props {
-    thread_id: number //来自路由
+    threadId: number //来自路由
     page: number //来自路由
 }
 const props = withDefaults(defineProps<Props>(), {

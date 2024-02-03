@@ -43,7 +43,7 @@ interface getThreadsDataParams {
     page: number | null,
     threadsPerPage: number | null,
     subtitlesExcluded: string[],
-    searchTitle: string
+    searchTitle?: string
 }
 
 const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(

@@ -6,7 +6,7 @@
                 <n-skeleton class="carousel-skeleton" sharp />
             </div>
             <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
-                <img :src="banner" v-for="banner in forumsStore.forumData(forum_id)?.banners" class="carousel-img">
+                <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
             </n-carousel>
         </div>
 
@@ -29,9 +29,11 @@
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
             <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
-                :size="commonStore.inputSize" />
-            <n-button v-bind="themeStore.buttonThemeAttr" type="primary" :size="commonStore.buttonSize">搜索</n-button>
-            <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize">清空</n-button>
+                :size="commonStore.inputSize" placeholder="搜索标题" />
+            <n-button v-bind="themeStore.buttonThemeAttr" type="primary" :size="commonStore.buttonSize"
+                @click="handleSearch">搜索</n-button>
+            <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize"
+                @click="handleSearchClear">清空</n-button>
         </n-flex>
 
         <!-- 主题列表 -->
@@ -46,8 +48,8 @@
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav">
             <router-link to="/">
-                >{{ forumsStore.forumData(forum_id)?.name }}
-                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forum_id }}</n-tag>
+                >{{ forumsStore.forumData(forumId)?.name }}
+                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forumId }}</n-tag>
             </router-link>
         </Teleport>
     </n-flex>
@@ -65,10 +67,7 @@ import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
 import { FilterOutline as FilterIcon, OptionsOutline as FuncIcon, SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useWatcher } from 'alova'
-import type { DropdownOption } from 'naive-ui'
 import { NButton, NCarousel, NCheckbox, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag } from 'naive-ui'
-import { emit } from 'process'
-import type { VNodeChild } from 'vue'
 import { h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -85,8 +84,9 @@ useTopbarNavControl()
 
 //组件props
 interface Props {
-    forum_id: number //来自路由
+    forumId: number //来自路由
     page: number //来自路由
+    search?: string,//来自路由
 }
 const props = withDefaults(defineProps<Props>(), {
 
@@ -95,6 +95,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 //隐藏版头
 const hideBanner = useLocalStorageToRef<boolean>('banner_hiden', false)
+
 //新窗口打开(
 const newWindowToPost = useLocalStorageToRef<boolean>('new_window_to_post', false)
 
@@ -170,30 +171,41 @@ const filterOptions = [
 ]
 
 //搜索功能
-const searchTitleInput = ref<string>('')
-const showSearchInput = ref<boolean>(false)
-
-
+const searchTitleInput = ref<string | undefined>(props.search)
+const showSearchInput = ref<boolean>(props.search ? true : false)
+function handleSearch() {
+    router.push({
+        name: "forum", params: { forumId: props.forumId, page: props.page },
+        query: { search: searchTitleInput.value || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+    })
+}
+function handleSearchClear() {
+    searchTitleInput.value = undefined
+    showSearchInput.value = false
+    router.push({
+        name: "forum", params: { forumId: props.forumId, page: props.page },
+    })
+}
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
 watch(pageSelected,
     (toPage) => {
-        router.push({ name: "forum", params: { forum_id: props.forum_id, page: toPage } })
+        router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search } })
     }
 )
 
-//获取主题列表数据
+//获取主题列表数据（监听props变更）
 const { loading: threadsDataLoading, data: threadsListData } = useWatcher(
     () => threadsDataGetter({
-        forumId: props.forum_id,
+        forumId: props.forumId,
         binggan: userStore.binggan!,
         page: props.page,
         threadsPerPage: 50,
         subtitlesExcluded: [],
-        searchTitle: searchTitleInput.value //TODO 这里请求有问题，不能默认加上searchTitle
+        searchTitle: props.search
     }),
-    [pageSelected, searchTitleInput],
+    [props],
     { initialData: [], immediate: true }
 );
 

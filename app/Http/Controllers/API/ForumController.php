@@ -53,7 +53,7 @@ class ForumController extends Controller
             'page' => 'integer|nullable',
             'threads_per_page' => 'integer|nullable|max:100|min:1',
             'subtitles_excluded' => 'json|nullable', //要排除的副标题
-            'search_title' => 'string|nullable|max:100', //搜索标题
+            'search_title' => 'string|max:100', //搜索标题
         ]);
 
         //用redis记录，全局每10秒搜索20次限制
