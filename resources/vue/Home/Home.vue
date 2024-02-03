@@ -82,14 +82,14 @@ const forumsDataSorted = computed(() => {
     const result = favorite.concat(unfavorite)
     return result
 })
-function favoriteAdd(forum_id: number) {
-    if (!forumFavorites.value.includes(forum_id)) {
-        forumFavorites.value.push(forum_id);
+function favoriteAdd(forumId: number) {
+    if (!forumFavorites.value.includes(forumId)) {
+        forumFavorites.value.push(forumId);
         localStorage.forums_favorites = JSON.stringify(forumFavorites.value);
     }
 }
-function favoriteCancel(forum_id: number) {
-    const index = forumFavorites.value.indexOf(forum_id);
+function favoriteCancel(forumId: number) {
+    const index = forumFavorites.value.indexOf(forumId);
     if (index != -1) {
         forumFavorites.value.splice(index, 1);
         localStorage.forums_favorites = JSON.stringify(forumFavorites.value);
@@ -102,7 +102,7 @@ function forumClick(forumId: number, event: PointerEvent) {
     if (["path", "svg"].includes(eventTarget.nodeName)) {
         return; //选中收藏星星就取消进入板块的动作
     } else {
-        router.push({ name: "forum", params: { forum_id: forumId } })
+        router.push({ name: "forum", params: { forumId: forumId } })
     }
 }
 

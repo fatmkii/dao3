@@ -4,19 +4,20 @@ const routes = [
     { path: '/', name: 'Homepage', component: () => import('@/vue/Home/Home.vue') },
     { path: '/:pathMatch(.*)*', name: 'Page404', component: () => import('@/vue/errors/404.vue') },
     {
-        path: '/forum/:forum_id/:page?',
+        path: '/forum/:forumId/:page?',
         name: 'forum',
         props: (route) => ({
-            forum_id: parseInt(route.params.forum_id),
+            forumId: parseInt(route.params.forumId),
             page: route.params.page ? parseInt(route.params.page) : 1,
+            search: route.query.search,
         }),
         component: () => import('@/vue/Forum/ForumPage.vue')
     },
     {
-        path: '/thread/:thread_id/:page?',
+        path: '/thread/:threadId/:page?',
         name: 'thread',
         props: (route) => ({
-            thread_id: parseInt(route.params.thread_id),
+            threadId: parseInt(route.params.threadId),
             page: route.params.page ? parseInt(route.params.page) : 1,
         }),
         component: () => import('@/vue/Thread/ThreadPage.vue')

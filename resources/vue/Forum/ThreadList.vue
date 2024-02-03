@@ -6,13 +6,13 @@
                 <div :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1 }"
                     class="thread-title">
                     {{ threadData.sub_title }}
-                    <router-link :to="{ name: 'thread', params: { thread_id: threadData.id } }"
+                    <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
                         :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1 }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
                     <router-link
-                        :to="{ name: 'thread', params: { thread_id: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
+                        :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>

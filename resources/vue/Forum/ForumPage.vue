@@ -6,7 +6,7 @@
                 <n-skeleton class="carousel-skeleton" sharp />
             </div>
             <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
-                <img :src="banner" v-for="banner in forumsStore.forumData(forum_id)?.banners" class="carousel-img">
+                <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
             </n-carousel>
         </div>
 
@@ -29,7 +29,7 @@
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
             <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
-                :size="commonStore.inputSize" />
+                :size="commonStore.inputSize" placeholder="搜索标题" />
             <n-button v-bind="themeStore.buttonThemeAttr" type="primary" :size="commonStore.buttonSize">搜索</n-button>
             <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize">清空</n-button>
         </n-flex>
@@ -46,8 +46,8 @@
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav">
             <router-link to="/">
-                >{{ forumsStore.forumData(forum_id)?.name }}
-                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forum_id }}</n-tag>
+                >{{ forumsStore.forumData(forumId)?.name }}
+                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forumId }}</n-tag>
             </router-link>
         </Teleport>
     </n-flex>
@@ -85,7 +85,7 @@ useTopbarNavControl()
 
 //组件props
 interface Props {
-    forum_id: number //来自路由
+    forumId: number //来自路由
     page: number //来自路由
 }
 const props = withDefaults(defineProps<Props>(), {
@@ -172,21 +172,23 @@ const filterOptions = [
 //搜索功能
 const searchTitleInput = ref<string>('')
 const showSearchInput = ref<boolean>(false)
-
+function handleSearch(searchTitle?: string) {
+    router.push
+}
 
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
 watch(pageSelected,
     (toPage) => {
-        router.push({ name: "forum", params: { forum_id: props.forum_id, page: toPage } })
+        router.push({ name: "forum", params: { forumId: props.forumId, page: toPage } })
     }
 )
 
 //获取主题列表数据
 const { loading: threadsDataLoading, data: threadsListData } = useWatcher(
     () => threadsDataGetter({
-        forumId: props.forum_id,
+        forumId: props.forumId,
         binggan: userStore.binggan!,
         page: props.page,
         threadsPerPage: 50,
