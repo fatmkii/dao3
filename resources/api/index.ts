@@ -30,7 +30,7 @@ export const commonAlova = createAlova({
 
                 const json = await response.json();
                 if (json.message) {
-                    window.$message.error(json.message, { closable: true, duration: 5000 })
+                    window.$message.error(JSON.stringify(json.message), { closable: true, duration: 5000 }) //json.message有时候是数组，所以需要转为字符串（例如输入验证错误时）
                     throw new Error(json.message);
                 } else {
                     window.$message.error(response.statusText, { closable: true, duration: 5000 })
@@ -49,7 +49,7 @@ export const commonAlova = createAlova({
                     throw new Error(json.message);
                 }
 
-                window.$message.error(json.message, { closable: true, duration: 5000 })
+                window.$message.error(JSON.stringify(json.message), { closable: true, duration: 5000 })//json.message有时候是数组，所以需要转为字符串（例如输入验证错误时）
                 throw new Error(json.message);
             }
 
