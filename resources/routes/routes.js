@@ -27,6 +27,15 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes, // `routes: routes` 的缩写
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition
+        } else if (to.hash) {
+            return { el: to.hash }
+        } else {
+            return { top: 0 }
+        }
+    },
 })
 
 
