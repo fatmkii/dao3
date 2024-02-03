@@ -137,13 +137,14 @@ class ForumController extends Controller
 
 
         //加入公告以及排序
-        $threads
-            ->orWhere(function ($query) {  //加入全岛公告（sub_id=99）
-                $query->where('is_deleted', 0)
-                    ->where('sub_id', 99);
-            })
-            ->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc'); //sub_id是用来把公告等提前的
-
+        if (!$request->has('search_title')) { //搜索时不需要公告
+            $threads
+                ->orWhere(function ($query) {  //加入全岛公告（sub_id=99）
+                    $query->where('is_deleted', 0)
+                        ->where('sub_id', 99);
+                })
+                ->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc'); //sub_id是用来把公告等提前的
+        }
 
 
         //记录搜索行为

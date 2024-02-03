@@ -183,9 +183,7 @@ watch(searchTitleInput, (searchTitle) => {
     pushRoute()
 })
 function handleSearchClear() {
-    router.push({
-        name: "forum", params: { forumId: props.forumId, page: 1 },
-    })
+    searchTitleInput.value = undefined
     showSearchInput.value = false
 
 }
