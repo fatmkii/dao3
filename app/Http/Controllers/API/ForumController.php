@@ -56,11 +56,11 @@ class ForumController extends Controller
             'search_title' => 'string|max:100', //搜索标题
         ]);
 
-        //用redis记录，全局每10秒搜索20次限制
+        //用redis记录，全局每10秒搜索50次限制
         if ($request->has('search_title')) {
             if (Redis::exists('search_record_global')) {
                 Redis::incr('search_record_global');
-                if (Redis::GET('search_record_global') > 20) {
+                if (Redis::GET('search_record_global') > 50) {
                     return response()->json([
                         'code' => ResponseCode::SEARCH_TOO_MANY,
                         'message' => ResponseCode::$codeMap[ResponseCode::SEARCH_TOO_MANY],

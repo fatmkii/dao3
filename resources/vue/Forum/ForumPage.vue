@@ -30,8 +30,6 @@
         <n-flex v-if="showSearchInput" :wrap="false">
             <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
                 :size="commonStore.inputSize" placeholder="搜索标题" />
-            <n-button v-bind="themeStore.buttonThemeAttr" type="primary" :size="commonStore.buttonSize"
-                @click="handleSearch">搜索</n-button>
             <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize"
                 @click="handleSearchClear">清空</n-button>
         </n-flex>
@@ -63,6 +61,7 @@ import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import { useDebounce } from '@/js/func/debounce'
 import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
 import { FilterOutline as FilterIcon, OptionsOutline as FuncIcon, SearchOutline as SearchIcon } from '@vicons/ionicons5'
@@ -173,18 +172,22 @@ const filterOptions = [
 //搜索功能
 const searchTitleInput = ref<string | undefined>(props.search)
 const showSearchInput = ref<boolean>(props.search ? true : false)
-function handleSearch() {
-    router.push({
-        name: "forum", params: { forumId: props.forumId, page: props.page },
-        query: { search: searchTitleInput.value || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
-    })
-}
+watch(searchTitleInput, (searchTitle) => {
+    //设置防抖，searchTitleInput变更超过500ms后才改变路由
+    const pushRoute = useDebounce(
+        () => router.push({
+            name: "forum", params: { forumId: props.forumId, page: props.page },
+            query: { search: searchTitle || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+        })
+    )
+    pushRoute()
+})
 function handleSearchClear() {
-    searchTitleInput.value = undefined
-    showSearchInput.value = false
     router.push({
-        name: "forum", params: { forumId: props.forumId, page: props.page },
+        name: "forum", params: { forumId: props.forumId, page: 1 },
     })
+    showSearchInput.value = false
+
 }
 
 //侦听分页器跳转路由
@@ -205,7 +208,7 @@ const { loading: threadsDataLoading, data: threadsListData } = useWatcher(
         subtitlesExcluded: [],
         searchTitle: props.search
     }),
-    [props],
+    [() => props.forumId, () => props.page, () => props.search,],
     { initialData: [], immediate: true }
 );
 
