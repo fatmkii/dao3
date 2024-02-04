@@ -5,9 +5,8 @@
 
 <script setup lang="ts">
 import { NIcon } from 'naive-ui'
-import { h, computed } from 'vue';
+import { h } from 'vue';
 import { Heart, HeartOutline } from '@vicons/ionicons5'
-import type { Component } from 'vue';
 
 
 //组件props

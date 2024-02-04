@@ -1,7 +1,7 @@
 
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="恭喜加入小火锅！" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: maxWidth }" title="欢迎加入小火锅！" closable @close="showThis = false" size="small">
             <n-flex vertical size="medium" style="word-wrap: break-word;">
                 <div>你的饼干是：<n-text strong type="info" style="font-size: 1.5rem;">{{ userStore.binggan }}</n-text><br>（之后在个人中心也可以查看）</div>
                 <n-text depth="2">① 饼干就是你的小火锅账号。请保存好，不要泄露喔！</n-text>

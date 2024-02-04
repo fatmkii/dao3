@@ -36,9 +36,8 @@ import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { Cog as CogIcon } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
-import { NButton, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui';
-import type { Component } from 'vue';
-import { computed, h, onMounted, ref } from 'vue';
+import { NButton, NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
+import { h, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 

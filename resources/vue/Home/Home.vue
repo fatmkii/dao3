@@ -1,12 +1,14 @@
 
 <template>
     <n-flex justify="center" vertical>
+        <!-- 版头图片 -->
         <div class="carousel-box">
             <n-skeleton class="carousel-skeleton" sharp v-if="homeBannersLoading" />
             <n-carousel show-arrow trigger="hover" autoplay v-if="!homeBannersLoading" :interval="10000">
                 <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
             </n-carousel>
         </div>
+        <!-- 公告栏 -->
         <n-card title="小火锅公告" size="small">
             <div>这里个人论坛“小火锅”，欢迎来玩~</div>
             <div>QQ小火锅避难群：<n-text type="info">156840110</n-text></div>
@@ -15,6 +17,7 @@
             <div><n-text>请务必遵守<router-link :to="'/thread/13351'"
                         style="text-decoration: underline;">小火锅版规</router-link>喔！</n-text></div>
         </n-card>
+        <!-- 板块列表 -->
         <n-flex justify="center" vertical :size="1">
             <n-card v-for="forumData in forumsDataSorted" size="small" :bordered="true" :key="forumData.id"
                 class="forum-cards" :header-style="forumCardsHeaderStyle" :content-style="forumCardsContentStyle" hoverable
@@ -40,7 +43,6 @@ import { useForumsStore } from '@/stores/forums'
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 import ForumsStar from '@/vue/Home/ForumsStar.vue'
-import type { forumData } from '@/api/methods/forums'
 import { useCommonStore } from '@/stores/common';
 
 
