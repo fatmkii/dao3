@@ -10,8 +10,10 @@ function useLocalStorageToRef<T = string>(key: string, defaultValue?: T) {
     valueRaw = localStorage.getItem(key)
     if (valueRaw) {
         value.value = JSON.parse(valueRaw)
-    } else {
+    } else if (defaultValue !== undefined) {
         value.value = defaultValue
+    } else {
+        value.value = undefined
     }
 
     watch(value, (newValue) => {
