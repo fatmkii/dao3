@@ -16,6 +16,9 @@
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
+                    <n-button size="tiny" secondary type="warning" v-if="threadData.is_your_thread"
+                        :disabled="withdrawDelayThreadLoading"
+                        @click="handleWithdrawDelayThread(threadData.id)">撤回</n-button>
                 </div>
                 <n-flex size="small" class="thread-title-secondary">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
@@ -40,7 +43,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCommonStore } from '@/stores/common'
-import { NFlex, useThemeVars, NCard, NText, NSkeleton } from 'naive-ui'
+import { NFlex, useThemeVars, NCard, NText, NSkeleton, NButton } from 'naive-ui'
+import { useRequest } from 'alova'
+import { delayThreadDeleter } from '@/api/methods/threads'
 import type { threadData } from '@/api/methods/threads'
 
 
@@ -58,6 +63,8 @@ const props = withDefaults(defineProps<Props>(), {
     newWindowToPost: false
 })
 
+//自定义触发事件
+const emit = defineEmits(['withdrawDelayThreadSuccess'])
 
 //外观调整
 const threadCardsContentStyle = computed(() => {
@@ -65,6 +72,28 @@ const threadCardsContentStyle = computed(() => {
         paddingBottom: commonStore.isMobile ? '6px' : '',
     }
 })
+
+//撤回延时主题功能
+const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSuccess: withdrawDelayThreadSuccess } = useRequest(
+    (threadId: number) => delayThreadDeleter(threadId), { immediate: false }
+)
+withdrawDelayThreadSuccess(() => {
+    //触发事件，让父组件更新主题列表
+    window.$message.success('已撤回延时主题')
+    emit('withdrawDelayThreadSuccess')
+})
+function handleWithdrawDelayThread(threadId: number) {
+    window.$dialog.warning({
+        title: '要撤回延时主题吗？',
+        closable: false,
+        positiveText: '确定',
+        negativeText: '取消',
+        onPositiveClick: () => {
+            sendWithdrawDelayThread(threadId)
+        },
+    })
+}
+
 
 </script>
 

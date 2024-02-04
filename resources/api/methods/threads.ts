@@ -47,6 +47,7 @@ interface getThreadsDataParams {
     delay?: boolean
 }
 
+//获取版面中的主题列表
 const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
     '/api/forums/' + params.forumId,
     {
@@ -75,6 +76,15 @@ const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
     }
 )
 
+//撤回延时主题
+const delayThreadDeleter = (threadId: number) => commonAlova.Delete(
+    '/api/threads/delay/' + threadId,
+    {
+        name: 'delayThreadDeleter',
+        localCache: null,
+    }
+)
 
 
-export { threadsDataGetter, threadsListData, getThreadsDataParams, threadData }
+
+export { threadsDataGetter, threadsListData, getThreadsDataParams, threadData, delayThreadDeleter }

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\ForumController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\ThreadController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,8 +37,15 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 //Forum系列
 Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ForumController::class, 'index'])->withoutMiddleware('auth:sanctum'); //查看板块列表
-    Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表
-    // Route::get('/delay/{forum_id}', [ForumController::class, 'show_delay'])->middleware('CheckBinggan:show'); //查看板块内延时发送主题列表
+    Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表（包括延时主题）
+});
+
+//thread系列
+Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
+    // Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show'); //查看主题
+    // Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create'); //发新主题
+    Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
+    // Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色
 });
 
 //各种杂项

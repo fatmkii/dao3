@@ -35,7 +35,8 @@
 
         <!-- 主题列表 -->
         <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
-            :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading" />
+            :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
+            @withdraw-delay-thread-success="handleFetchThreadsData" />
 
         <!-- 底部分页导航及延时主题按钮 -->
         <n-flex>
@@ -245,11 +246,13 @@ const { loading: threadsDataLoading, data: threadsData } = useWatcher(
 );
 
 //刷新主题列表数据
+const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
 const { fetching: threadsDataFetching, onSuccess: fetchThreadsDataOnSucess, fetch: fetchThreadsData } = useFetcher();
-function handleFetchThreadsData() {
+function handleFetchThreadsData(remind: boolean = false) {
+    remindFetch.value = remind
     fetchThreadsData(threadsDataGetter(threadsDataRequestParams.value))
 }
-fetchThreadsDataOnSucess(() => { window.$message.success('已刷新数据') })
+fetchThreadsDataOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 
 </script>
 
