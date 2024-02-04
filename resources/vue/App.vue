@@ -1,6 +1,6 @@
 
 <template>
-    <n-config-provider :theme="themeStore.themeClass" :theme-overrides="themeStore.themeOverrideClass">
+    <n-config-provider :theme="themeStore.themeClass" :theme-overrides="themeStore.themeOverrideClass" :locale="zhCN">
         <n-global-style />
         <n-message-provider>
             <MessageApi />
@@ -22,7 +22,7 @@ import TopBar from '@/vue/TopBar/TopBar.vue';
 import UnauthModal from './modals/UnauthModal.vue';
 import MessageApi from '@/vue/components/MessageApi.vue';
 import DialogApi from '@/vue/components/DialogApi.vue'
-import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider } from 'naive-ui'
+import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider, zhCN } from 'naive-ui'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user';
 
