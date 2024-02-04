@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     { path: '/', name: 'Homepage', component: () => import('@/vue/Home/Home.vue') },
-    { path: '/:pathMatch(.*)*', name: 'Page404', component: () => import('@/vue/errors/404.vue') },
+    { path: '/:pathMatch(.*)*', name: 'Page404', component: () => import('@/vue/Errors/404.vue') },
     {
         path: '/forum/:forumId/:page?',
         name: 'forum',
@@ -22,6 +22,14 @@ const routes = [
             page: route.params.page ? parseInt(route.params.page) : 1,
         }),
         component: () => import('@/vue/Thread/ThreadPage.vue')
+    },
+    {
+        path: '/new-thread/:forumId',
+        name: 'new-thread',
+        props: (route) => ({
+            forumId: parseInt(route.params.forumId),
+        }),
+        component: () => import('@/vue/NewThread/NewThread.vue')
     },
 ]
 

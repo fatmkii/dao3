@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 import TopBar from '@/vue/TopBar/TopBar.vue';
-import UnauthModal from './modals/UnauthModal.vue';
-import MessageApi from '@/vue/components/MessageApi.vue';
-import DialogApi from '@/vue/components/DialogApi.vue'
+import UnauthModal from './Modals/UnauthModal.vue';
+import MessageApi from '@/vue/Components/MessageApi.vue';
+import DialogApi from '@/vue/Components/DialogApi.vue'
 import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider, zhCN } from 'naive-ui'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user';
