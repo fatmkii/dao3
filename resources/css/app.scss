@@ -21,12 +21,23 @@ a {
     top: 0;
 }
 
+//所有按钮改为圆角
 .n-button {
-    //所有按钮改为圆角
     border-radius: 18px;
 }
 
-.n-card{
+//各种卡片/下拉框改成圆的
+.n-card,
+.n-dropdown-menu {
     border-radius: 10px;
+}
 
+//分页导航改成圆的
+.n-pagination .n-pagination-item {
+    border-radius: 14px;
+}
+.n-pagination-quick-jumper {
+    .n-input {
+        border-radius: 14px;
+    }
 }
