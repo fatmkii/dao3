@@ -137,7 +137,7 @@ class ForumController extends Controller
 
 
         //加入公告以及排序
-        if (!$request->has('search_title')) { //搜索时不需要公告
+        if (!$request->has('search_title') && !in_array("[公告]", $subtitles_excluded)) { //搜索时或者被筛选时不需要公告
             $threads
                 ->orWhere(function ($query) {  //加入全岛公告（sub_id=99）
                     $query->where('is_deleted', 0)

@@ -21,7 +21,8 @@
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
-            <!-- <n-button :size="commonStore.buttonSize" @click="showSearchInput = !showSearchInput">搜索</n-button> -->
+            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary"
+                @click="handleFetchThreadsData">测试</n-button>
             <div style="margin-left: auto;"></div>
             <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">大喇叭</n-button>
             <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">新主题</n-button>
@@ -35,10 +36,10 @@
         </n-flex>
 
         <!-- 主题列表 -->
-        <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsListData.threads_data.data"
+        <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
             :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading" />
         <!-- 分页导航 -->
-        <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsListData.threads_data.lastPage"
+        <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
             style="margin-left: auto;" />
         <!-- 页面底部留空白 -->
         <div style="height: 50px;"></div>
@@ -65,9 +66,9 @@ import { useDebounce } from '@/js/func/debounce'
 import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
 import { FilterOutline as FilterIcon, OptionsOutline as FuncIcon, SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useWatcher } from 'alova'
-import { NButton, NCarousel, NCheckbox, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag } from 'naive-ui'
-import { h, ref, watch } from 'vue'
+import { useWatcher, useFetcher } from 'alova'
+import { NButton, NCarousel, NCheckbox, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag, NCheckboxGroup } from 'naive-ui'
+import { h, ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 //基础数据
@@ -139,16 +140,31 @@ const funcOptions = [
     },
 ]
 
+//筛选功能
+const subtitles = ["[公告]", "[闲聊]", "[专楼]", "[刷刷]", "[私密]"]
+const subtitlesIncluded = useLocalStorageToRef<(string | number)[]>('subtitles_included', subtitles)
+const subtitlesExcluded = computed(() => subtitles.filter(item => !subtitlesIncluded.value!.includes(item)))
+
 //筛选选项下拉框
 function renderFilterOptions() {
     return h(
-        NFlex,
+        NCheckboxGroup,
         {
-            style: 'padding:6px 8px',
-            vertical: true,
+            value: subtitlesIncluded.value,
+            'onUpdate:value': (value: (string | number)[]) => subtitlesIncluded.value = value,
         },
-        () => [//TODO 需要多选框
-
+        () => [
+            h(NFlex,
+                {
+                    style: 'padding:6px 8px',
+                    vertical: true,
+                },
+                () => [
+                    Array.from(subtitles).map((subtitleItem) => {
+                        return h(NCheckbox, { value: subtitleItem, label: subtitleItem })
+                    }),
+                ]
+            )
         ]
     )
 }
@@ -196,19 +212,31 @@ watch(pageSelected,
     }
 )
 
-//获取主题列表数据（监听props变更）
-const { loading: threadsDataLoading, data: threadsListData } = useWatcher(
-    () => threadsDataGetter({
+//useWathcer和useFetcher共用的主题列表数据请求参数
+const threadsDataRequestParams = computed(() => {
+    return {
         forumId: props.forumId,
         binggan: userStore.binggan!,
         page: props.page,
         threadsPerPage: 50,
-        subtitlesExcluded: [],
+        subtitlesExcluded: subtitlesExcluded.value,
         searchTitle: props.search
-    }),
-    [() => props.forumId, () => props.page, () => props.search,],
-    { initialData: [], immediate: true }
+    }
+})
+
+//获取主题列表数据（监听props变更）
+const { loading: threadsDataLoading, data: threadsData } = useWatcher(
+    () => threadsDataGetter(threadsDataRequestParams.value),
+    [() => props.forumId, () => props.page, () => props.search, subtitlesExcluded],
+    { initialData: [], immediate: true, }
 );
+
+//刷新主题列表数据
+const { fetching: threadsDataFetching, onSuccess: fetchThreadsDataOnSucess, fetch: fetchThreadsData } = useFetcher();
+function handleFetchThreadsData() {
+    fetchThreadsData(threadsDataGetter(threadsDataRequestParams.value))
+}
+fetchThreadsDataOnSucess(() => { window.$message.success('已刷新数据') })
 
 </script>
 

@@ -54,7 +54,7 @@ const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
             binggan: params.binggan,
             page: params.page,
             threads_per_page: params.threadsPerPage,
-            subtitles_excluded: params.subtitlesExcluded,
+            subtitles_excluded: JSON.stringify(params.subtitlesExcluded),
             search_title: params.searchTitle
         },
         localCache: null,
