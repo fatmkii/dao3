@@ -21,8 +21,6 @@
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
-            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary"
-                @click="handleFetchThreadsData">测试</n-button>
             <div style="margin-left: auto;"></div>
             <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">大喇叭</n-button>
             <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">新主题</n-button>
@@ -38,9 +36,17 @@
         <!-- 主题列表 -->
         <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
             :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading" />
-        <!-- 分页导航 -->
-        <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
-            style="margin-left: auto;" />
+
+        <!-- 底部分页导航及延时主题按钮 -->
+        <n-flex>
+            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr"
+                :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
+                {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
+            </n-button>
+            <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
+                style="margin-left: auto;" />
+        </n-flex>
+
         <!-- 页面底部留空白 -->
         <div style="height: 50px;"></div>
 
@@ -87,6 +93,7 @@ interface Props {
     forumId: number //来自路由
     page: number //来自路由
     search?: string,//来自路由
+    delay: boolean,//来自路由
 }
 const props = withDefaults(defineProps<Props>(), {
 
@@ -204,6 +211,11 @@ function handleSearchClear() {
 
 }
 
+//查看延时主题
+function toggleDelayThreads() {
+    router.push({ name: "forum", params: { forumId: props.forumId, page: 1 }, query: { delay: props.delay ? undefined : 'true' } })
+}
+
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
 watch(pageSelected,
@@ -220,14 +232,15 @@ const threadsDataRequestParams = computed(() => {
         page: props.page,
         threadsPerPage: 50,
         subtitlesExcluded: subtitlesExcluded.value,
-        searchTitle: props.search
+        searchTitle: props.search,
+        delay: props.delay
     }
 })
 
 //获取主题列表数据（监听props变更）
 const { loading: threadsDataLoading, data: threadsData } = useWatcher(
     () => threadsDataGetter(threadsDataRequestParams.value),
-    [() => props.forumId, () => props.page, () => props.search, subtitlesExcluded],
+    [() => props.forumId, () => props.page, () => props.search, () => props.delay, subtitlesExcluded],
     { initialData: [], immediate: true, }
 );
 

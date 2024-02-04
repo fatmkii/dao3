@@ -10,6 +10,7 @@ const routes = [
             forumId: parseInt(route.params.forumId),
             page: route.params.page ? parseInt(route.params.page) : 1,
             search: route.query.search,
+            delay: route.query.delay === 'true' ? true : false
         }),
         component: () => import('@/vue/Forum/ForumPage.vue')
     },

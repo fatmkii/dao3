@@ -54,6 +54,7 @@ class ForumController extends Controller
             'threads_per_page' => 'integer|nullable|max:100|min:1',
             'subtitles_excluded' => 'json|nullable', //要排除的副标题
             'search_title' => 'string|max:100', //搜索标题
+            'delay' => 'boolean|nullable|', //是否显示延时发送主题
         ]);
 
         //用redis记录，全局每10秒搜索50次限制
@@ -112,7 +113,7 @@ class ForumController extends Controller
             }
         }
 
-        $threads = $CurrentForum->threads()->where('is_deleted', 0)->where('is_delay', 0);
+        $threads = $CurrentForum->threads()->where('is_deleted', 0)->where('is_delay', $request->delay ? 1 : 0);
 
         //搜索标题
         if ($request->has('search_title')) {
@@ -137,15 +138,17 @@ class ForumController extends Controller
 
 
         //加入公告以及排序
-        if (!$request->has('search_title') && !in_array("[公告]", $subtitles_excluded)) { //搜索时或者被筛选时不需要公告
+        if (!($request->has('search_title') || in_array("[公告]", $subtitles_excluded) || $request->delay)) { //搜索时或者筛选时或查看延时主题时不需要公告
             $threads
                 ->orWhere(function ($query) {  //加入全岛公告（sub_id=99）
                     $query->where('is_deleted', 0)
-                        ->where('sub_id', 99);
-                })
-                ->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc'); //sub_id是用来把公告等提前的
+                        ->where('sub_id', 99)
+                        ->where('is_delay', 0);
+                });
         }
 
+        //sub_id是用来把公告等提前的
+        $threads->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc');
 
         //记录搜索行为
         if ($request->has('search_title')) {
@@ -168,60 +171,6 @@ class ForumController extends Controller
                 'threads_data' => $threads->paginate($threads_per_page),
                 'subtitles_exclude' => $subtitles_excluded,
             ]
-        ]);
-    }
-
-    public function show_delay(Request $request, $forum_id)
-    {
-        $request->validate([
-            'binggan' => 'string|nullable',
-            'page' => 'integer|nullable',
-        ]);
-
-
-
-        $CurrentForum = Forum::find($forum_id);
-        $user = $request->user;
-
-        //判断是否可无饼干访问的板块
-        if (!$CurrentForum->is_anonymous && !$user) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => '本小岛需要饼干才能查看喔',
-            ]);
-        }
-
-        //判断是否达到可以访问板块的最少奥利奥
-        if ($CurrentForum->accessible_coin > 0) {
-            if (!$user) {
-                return response()->json([
-                    'code' => ResponseCode::USER_NOT_FOUND,
-                    'message' => '本小岛需要饼干才能查看喔',
-                ]);
-            }
-            if ($user->getCoin() < $CurrentForum->accessible_coin && !(in_array($user->admin, [99, 20, 10]))) {
-                return response()->json([
-                    'code' => ResponseCode::THREAD_UNAUTHORIZED,
-                    'message' => sprintf("本小岛需要拥有大于%u奥利奥才能查看喔", $CurrentForum->accessible_coin),
-                ]);
-            }
-        }
-
-        $threads = $CurrentForum->threads()->where('is_deleted', 0)->where('is_delay', 1)->paginate(30);
-
-        //如果有提供binggan，为每个thread输入binggan，用来判断is_your_thread（为前端提供是否是用户自己帖子的判据）
-        if ($request->query('binggan')) {
-            foreach ($threads as $thread) {
-                $thread->setBinggan($request->query('binggan'));
-                $thread->makeVisible('is_your_thread');
-            }
-        }
-
-        return response()->json([
-            'code' => ResponseCode::SUCCESS,
-            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
-            'forum_data' => $CurrentForum->makeVisible('banners'),
-            'threads_data' => $threads,
         ]);
     }
 }
