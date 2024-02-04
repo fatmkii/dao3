@@ -16,9 +16,16 @@ a {
     }
 }
 
+//顶部导航栏
 .top-bar {
     position: sticky;
     top: 0;
+}
+
+//需要把一些东西上下靠中对齐的时候
+.flex-item-center {
+    display: flex;
+    align-items: center;
 }
 
 //所有按钮改为圆角
