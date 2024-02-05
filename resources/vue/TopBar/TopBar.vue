@@ -4,11 +4,8 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-        <div style="margin-left: auto;"></div>
-        <div id="topbar-icon"></div>
-        <f-button @click="handleTest">测试</f-button>
-        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-            <f-button>皮肤</f-button>
+        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange" >
+            <f-button style="margin-left: auto;">皮肤</f-button>
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
@@ -159,13 +156,6 @@ onMounted(() => {
         loginModal.value?.show()
     }
 })
-
-
-
-function handleTest() {
-    const a = 'test'
-    console.log(typeof a === 'string')
-}
 
 </script>
 

@@ -53,8 +53,10 @@
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav">
             <router-link to="/" class="flex-item-center">
-                >{{ forumsStore.forumData(forumId)?.name }}
-                <n-tag round class="forum-tag">{{ forumId }}</n-tag>
+                <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">>
+                    {{ forumsStore.forumData(forumId)?.name }}
+                </n-ellipsis>
+                <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumId }}</n-tag>
             </router-link>
         </Teleport>
     </n-flex>
@@ -73,7 +75,7 @@ import ThreadList from '@/vue/Forum/ThreadList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useWatcher } from 'alova'
-import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag } from 'naive-ui'
+import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag, NEllipsis } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
