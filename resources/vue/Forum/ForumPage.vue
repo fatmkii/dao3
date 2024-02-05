@@ -13,24 +13,24 @@
         <!-- 各种按钮 -->
         <n-flex style="margin-top:8px ;" size="small">
             <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                <n-button :size="commonStore.buttonSize">功能</n-button>
+                <f-button>功能</f-button>
             </n-dropdown>
             <n-dropdown trigger="hover" :options="filterOptions" placement="bottom-start">
-                <n-button :size="commonStore.buttonSize">筛选</n-button>
+                <f-button>筛选</f-button>
             </n-dropdown>
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
             <div style="margin-left: auto;"></div>
-            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">大喇叭</n-button>
-            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr" type="primary">新主题</n-button>
+            <f-button type="primary">大喇叭</f-button>
+            <f-button type="primary"
+                @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
             <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" round
                 :size="commonStore.inputSize" placeholder="搜索标题" />
-            <n-button v-bind="themeStore.buttonThemeAttr" type="default" :size="commonStore.buttonSize"
-                @click="handleSearchClear">清空</n-button>
+            <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
 
         <!-- 主题列表 -->
@@ -39,11 +39,10 @@
             @withdraw-delay-thread-success="handleFetchThreadsData" />
 
         <!-- 底部分页导航及延时主题按钮 -->
-        <n-flex>
-            <n-button :size="commonStore.buttonSize" v-bind="themeStore.buttonThemeAttr"
-                :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
+        <n-flex :align="'center'">
+            <f-button :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
                 {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
-            </n-button>
+            </f-button>
             <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
                 style="margin-left: auto;" />
         </n-flex>
@@ -53,9 +52,9 @@
 
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav">
-            <router-link to="/">
+            <router-link to="/" class="flex-item-center">
                 >{{ forumsStore.forumData(forumId)?.name }}
-                <n-tag round :size="commonStore.buttonSize" class="forum-tag">{{ forumId }}</n-tag>
+                <n-tag round class="forum-tag">{{ forumId }}</n-tag>
             </router-link>
         </Teleport>
     </n-flex>
@@ -63,19 +62,20 @@
 
 <script setup lang="ts">
 import { threadsDataGetter } from '@/api/methods/threads'
+import { useDebounce } from '@/js/func/debounce'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import { useDebounce } from '@/js/func/debounce'
 import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
-import { FilterOutline as FilterIcon, OptionsOutline as FuncIcon, SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useWatcher, useFetcher } from 'alova'
-import { NButton, NCarousel, NCheckbox, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag, NCheckboxGroup } from 'naive-ui'
-import { h, ref, watch, computed } from 'vue'
+import FButton from '@/vue/Custom/FButton.vue'
+import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { useFetcher, useWatcher } from 'alova'
+import { NCarousel, NCheckbox, NCheckboxGroup, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag } from 'naive-ui'
+import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 //基础数据

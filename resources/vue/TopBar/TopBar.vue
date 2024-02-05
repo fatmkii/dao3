@@ -6,17 +6,17 @@
         <div id="topbar-nav"></div>
         <div style="margin-left: auto;"></div>
         <div id="topbar-icon"></div>
-        <n-button @click="handleTest" :size="commonStore.buttonSize">测试</n-button>
+        <f-button @click="handleTest">测试</f-button>
         <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-            <n-button :size="commonStore.buttonSize">皮肤</n-button>
+            <f-button>皮肤</f-button>
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
         </n-dropdown>
 
-        <n-button v-bind="themeStore.buttonThemeAttr" type="primary" v-if="!userStore.userLoginStatus"
-            :size="commonStore.buttonSize" @click="loginModal?.show"> 导入饼干
-        </n-button>
+        <f-button type="primary" v-if="!userStore.userLoginStatus" @click="loginModal?.show">
+            导入饼干
+        </f-button>
 
         <LoginModal ref="loginModal" @submit-register="callRegisterHintModal" />
         <RegisterHintModal ref="registerHintModal" />
@@ -36,10 +36,10 @@ import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { Cog as CogIcon } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
-import { NButton, NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
+import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
 import { h, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-
+import FButton from '../Custom/FButton.vue';
 
 //基础数据
 const userStore = useUserStore()

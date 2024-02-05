@@ -16,9 +16,9 @@
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
-                    <n-button size="tiny" secondary type="warning" v-if="threadData.is_your_thread"
+                    <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
-                        @click="handleWithdrawDelayThread(threadData.id)">撤回</n-button>
+                        @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
                 </div>
                 <n-flex size="small" class="thread-title-secondary">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
@@ -41,12 +41,13 @@
 
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useCommonStore } from '@/stores/common'
-import { NFlex, useThemeVars, NCard, NText, NSkeleton, NButton } from 'naive-ui'
-import { useRequest } from 'alova'
-import { delayThreadDeleter } from '@/api/methods/threads'
 import type { threadData } from '@/api/methods/threads'
+import { delayThreadDeleter } from '@/api/methods/threads'
+import { useCommonStore } from '@/stores/common'
+import FButton from '@/vue/Custom/FButton.vue'
+import { useRequest } from 'alova'
+import { NCard, NFlex, NSkeleton, NText, useThemeVars } from 'naive-ui'
+import { computed } from 'vue'
 
 
 //基础数据

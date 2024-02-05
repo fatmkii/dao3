@@ -1,0 +1,37 @@
+<template>
+    <!-- 很多按钮都是共同式样（圆形/自动大小等）所以统一修改按钮式样 -->
+    <n-button round :size="commonStore.buttonSize" v-bind="attrsCombined">
+        <!-- 自动继承模板 -->
+        <template v-for="(item, key, index) in $slots" :key="index" #[key]>
+            <slot :name="key"></slot>
+        </template>
+    </n-button>
+</template>
+
+<script setup lang="ts">
+import { NButton } from 'naive-ui'
+import type { ButtonProps } from 'naive-ui'
+import { useCommonStore } from '@/stores/common'
+import { usethemeStore } from '@/stores/theme'
+import { useAttrs } from 'vue'
+
+//基础数据
+const commonStore = useCommonStore()
+const themeStore = usethemeStore()
+const attrs = useAttrs()
+
+//声明props
+interface Props extends  /* @vue-ignore */ButtonProps {//好像编译器不支持ButtonProps，所以这里加了ignore
+
+}
+const props = withDefaults(defineProps<Props>(), {
+
+})
+
+//组合透传的attrs和设定默认主题式样的attrs
+const attrsCombined = {
+    ...attrs,
+    ...themeStore.buttonThemeAttr
+}
+
+</script>

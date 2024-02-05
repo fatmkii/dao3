@@ -8,8 +8,8 @@
             </n-flex>
             <template #action>
                 <n-flex justify="end">
-                    <n-button @click="userLogout" v-bind="themeStore.buttonThemeAttr" type="primary">导入饼干</n-button>
-                    <n-button @click="commonStore.unauthModalShow = false">关闭</n-button>
+                    <f-button @click="userLogout" type="primary">导入饼干</f-button>
+                    <f-button @click="commonStore.unauthModalShow = false">关闭</f-button>
                 </n-flex>
             </template>
         </n-card>
@@ -18,13 +18,11 @@
  
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { NCard, NModal, NButton, NFlex } from 'naive-ui'
-import { useCommonStore } from '@/stores/common'
-import { userLogout } from '@/js/func/logout'
-import { usethemeStore } from '@/stores/theme';
-
-const themeStore = usethemeStore()
+import { userLogout } from '@/js/func/logout';
+import { useCommonStore } from '@/stores/common';
+import FButton from '@/vue/Custom/FButton.vue'
+import { NCard, NFlex, NModal } from 'naive-ui';
+import { computed } from 'vue';
 
 //计算modal最大宽度（手机版时候两侧各留16px的空位）
 const maxWidth = computed<string>(() => {

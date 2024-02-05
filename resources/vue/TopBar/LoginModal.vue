@@ -17,19 +17,19 @@
                 <n-flex>
                     <n-popover placement="bottom" trigger="hover" :disabled="newBingganEnable">
                         <template #trigger>
-                            <n-button round type="warning" :disabled="userRegisterLoading || !newBingganEnable"
+                            <f-button type="warning" :disabled="userRegisterLoading || !newBingganEnable"
                                 @click="registerHandle"> 我想领取新饼干！
-                            </n-button>
+                            </f-button>
                         </template>
                         <n-text>嗷！很抱歉，领取新饼干目前暂停中…… </n-text>
                     </n-popover>
-                    <n-button style="margin-left: auto;" v-bind="themeStore.buttonThemeAttr" type="primary"
-                        @click="loginHandle" :disabled="userLoginLoading">导入饼干</n-button>
+                    <f-button style="margin-left: auto;" type="primary" @click="loginHandle"
+                        :disabled="userLoginLoading">导入饼干</f-button>
                 </n-flex>
             </n-flex>
             <template #action>
                 <n-flex justify="end">
-                    <n-button @click="showThis = false">关闭</n-button>
+                    <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
         </n-card>
@@ -42,13 +42,11 @@ import { userLoginPoster } from '@/api/methods/auth';
 import { newBingganEnableGetter } from '@/api/methods/globalSetting';
 import { userRegisterPoster } from '@/api/methods/user';
 import { getUUID } from '@/js/func/getUUID';
-import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
+import FButton from '@/vue/Custom/FButton.vue'
 import { useRequest } from 'alova';
-import { NButton, NCard, NFlex, NInput, NInputGroup, NInputGroupLabel, NModal, NText, NPopover } from 'naive-ui';
+import { NCard, NFlex, NInput, NInputGroup, NInputGroupLabel, NModal, NPopover, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
-
-const themeStore = usethemeStore()
 
 //计算modal最大宽度（手机版时候两侧各留16px的空位）
 const maxWidth = computed<string>(() => {
