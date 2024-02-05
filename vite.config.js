@@ -37,6 +37,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             alias: {
                 '@': '/resources',
                 'vue': vue_alias,
+                '@custom': '/resources/vue/Custom',
             },
         },
     }

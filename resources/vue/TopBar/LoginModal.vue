@@ -43,9 +43,7 @@ import { newBingganEnableGetter } from '@/api/methods/globalSetting';
 import { userRegisterPoster } from '@/api/methods/user';
 import { getUUID } from '@/js/func/getUUID';
 import { useUserStore } from '@/stores/user';
-import FButton from '@/vue/Custom/FButton.vue'
-import FInput from '@/vue/Custom/FInput.vue'
-import FInputGroupLabel from '@/vue/Custom/FInputGroupLabel.vue';
+import { FButton, FInput, FInputGroupLabel } from '@custom'
 import { useRequest } from 'alova';
 import { NCard, NFlex, NInputGroup, NModal, NPopover, NText } from 'naive-ui';
 import { computed, ref } from 'vue';

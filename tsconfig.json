@@ -48,6 +48,12 @@
         "paths": {
             "@/*": [
                 "resources/*"
+            ],
+            "@custom": [
+                "resources/vue/Custom/index.ts"
+            ],
+            "@custom/*": [
+                "resources/vue/Custom/*"
             ]
         },
         "types": [

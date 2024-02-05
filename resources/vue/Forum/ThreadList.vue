@@ -44,7 +44,7 @@
 import type { threadData } from '@/api/methods/threads'
 import { delayThreadDeleter } from '@/api/methods/threads'
 import { useCommonStore } from '@/stores/common'
-import FButton from '@/vue/Custom/FButton.vue'
+import { FButton } from '@custom'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NSkeleton, NText, useThemeVars } from 'naive-ui'
 import { computed } from 'vue'

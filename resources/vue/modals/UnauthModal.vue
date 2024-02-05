@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { userLogout } from '@/js/func/logout';
 import { useCommonStore } from '@/stores/common';
-import FButton from '@/vue/Custom/FButton.vue'
+import { FButton } from '@custom'
 import { NCard, NFlex, NModal } from 'naive-ui';
 import { computed } from 'vue';
 

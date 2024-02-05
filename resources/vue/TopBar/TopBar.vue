@@ -39,7 +39,7 @@ import { useRequest } from 'alova';
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
 import { h, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import FButton from '../Custom/FButton.vue';
+import { FButton } from '@custom';
 
 //基础数据
 const userStore = useUserStore()

@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user';
-import FButton from '@/vue/Custom/FButton.vue'
+import { FButton } from '@custom'
 import { NCard, NFlex, NText, NModal } from 'naive-ui';
 import { computed, ref } from 'vue';
 
