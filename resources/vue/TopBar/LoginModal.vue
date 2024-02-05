@@ -5,13 +5,13 @@
             <n-flex vertical>
                 <div>这里是私人论坛，欢迎来玩！<br>QQ小火锅避难群：156840110 <br>使用前需要在下面申请或者导入饼干喔</div>
                 <n-input-group>
-                    <n-input-group-label style="width: 3.5rem;">饼干</n-input-group-label>
-                    <n-input v-model:value="inputBinggan" placeholder="请输入饼干" maxlength="9" show-count
+                    <f-input-group-label style="width: 3.2rem;">饼干</f-input-group-label>
+                    <f-input v-model:value="inputBinggan" placeholder="请输入饼干" maxlength="9" show-count
                         @keyup.enter="loginHandle" />
                 </n-input-group>
                 <n-input-group>
-                    <n-input-group-label style="width: 3.5rem;">密码</n-input-group-label>
-                    <n-input type="password" placeholder="（可留空）请输入密码" show-password-on="mousedown"
+                    <f-input-group-label style="width: 3.2rem;" class="round">密码</f-input-group-label>
+                    <f-input type="password" placeholder="（可留空）请输入密码" show-password-on="mousedown"
                         v-model:value="inputPassword" @keyup.enter="loginHandle" />
                 </n-input-group>
                 <n-flex>
@@ -44,8 +44,10 @@ import { userRegisterPoster } from '@/api/methods/user';
 import { getUUID } from '@/js/func/getUUID';
 import { useUserStore } from '@/stores/user';
 import FButton from '@/vue/Custom/FButton.vue'
+import FInput from '@/vue/Custom/FInput.vue'
+import FInputGroupLabel from '@/vue/Custom/FInputGroupLabel.vue';
 import { useRequest } from 'alova';
-import { NCard, NFlex, NInput, NInputGroup, NInputGroupLabel, NModal, NPopover, NText } from 'naive-ui';
+import { NCard, NFlex, NInputGroup, NModal, NPopover, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
 
 //计算modal最大宽度（手机版时候两侧各留16px的空位）

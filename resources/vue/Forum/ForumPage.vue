@@ -28,7 +28,7 @@
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
-            <n-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" round
+            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
                 :size="commonStore.inputSize" placeholder="搜索标题" />
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
@@ -67,14 +67,15 @@ import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
-import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
 import FButton from '@/vue/Custom/FButton.vue'
+import FCheckbox from '../Custom/FCheckbox.vue'
+import FInput from '../Custom/FInput.vue'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useWatcher } from 'alova'
-import { NCarousel, NCheckbox, NCheckboxGroup, NDropdown, NFlex, NIcon, NInput, NSkeleton, NTag } from 'naive-ui'
+import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -82,7 +83,6 @@ import { useRouter } from 'vue-router'
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
-const themeStore = usethemeStore()
 const router = useRouter()
 
 //用teleport组件替代掉topbar的“小火锅”
@@ -116,13 +116,13 @@ function renderFuncOptions() {
             vertical: true,
         },
         () => [
-            h(NCheckbox, {
+            h(FCheckbox, {
                 checked: hideBanner.value,
                 'onUpdate:checked': (value: boolean) => hideBanner.value = value,
                 size: commonStore.checkBoxSize,
                 label: "隐藏版头"
             }),
-            h(NCheckbox, {
+            h(FCheckbox, {
                 checked: newWindowToPost.value,
                 'onUpdate:checked': (value: boolean) => newWindowToPost.value = value,
                 size: commonStore.checkBoxSize,
@@ -169,7 +169,7 @@ function renderFilterOptions() {
                 },
                 () => [
                     Array.from(subtitles).map((subtitleItem) => {
-                        return h(NCheckbox, { value: subtitleItem, label: subtitleItem })
+                        return h(FCheckbox, { value: subtitleItem, label: subtitleItem })
                     }),
                 ]
             )
