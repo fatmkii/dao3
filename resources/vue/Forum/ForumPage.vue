@@ -28,8 +28,7 @@
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
-            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;"
-                :size="commonStore.inputSize" placeholder="搜索标题" />
+            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题" />
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
 
@@ -119,13 +118,11 @@ function renderFuncOptions() {
             h(FCheckbox, {
                 checked: hideBanner.value,
                 'onUpdate:checked': (value: boolean) => hideBanner.value = value,
-                size: commonStore.checkBoxSize,
                 label: "隐藏版头"
             }),
             h(FCheckbox, {
                 checked: newWindowToPost.value,
                 'onUpdate:checked': (value: boolean) => newWindowToPost.value = value,
-                size: commonStore.checkBoxSize,
                 label: "新窗口打开"
             }),
         ]

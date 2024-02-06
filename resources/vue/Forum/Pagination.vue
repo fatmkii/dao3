@@ -1,5 +1,5 @@
 <template>
-    <n-pagination v-model:page="page" :page-count="lastPage" :size="commonStore.paginateSize" show-quick-jumper
+    <n-pagination v-model:page="page" :page-count="lastPage" :size="commonStore.isMobile ? 'small' : 'medium'" show-quick-jumper
         :page-slot="6" :simple="commonStore.isMobile ? true : false"
         :display-order="['quick-jumper', 'pages', 'size-picker']">
         <template #goto>跳

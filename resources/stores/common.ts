@@ -11,16 +11,6 @@ export const useCommonStore = defineStore('commonStore', () => {
     const checkMobile = () => isMobile.value = document.body.clientWidth < 1200
     window.addEventListener('resize', checkMobile)
 
-    //按钮尺寸
-    const buttonSize = computed<'tiny' | 'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
-    //分页导航尺寸
-    const paginateSize = computed<'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
-    //多选框尺寸
-    const checkBoxSize = computed<'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
-    //文本输入框尺寸
-    const inputSize = computed<'small' | 'medium' | 'large'>(() => isMobile.value ? 'small' : 'medium')
-
-
     //是否显示topbar的“小火锅”
     const showTopbarNav = ref<boolean>(true)
 
@@ -34,7 +24,7 @@ export const useCommonStore = defineStore('commonStore', () => {
     window.addEventListener('resize', () => bannerHeight.value = getBannerHeight())
 
 
-    return { unauthModalShow, requestErrorCode, isMobile, buttonSize, showTopbarNav, bannerHeight, paginateSize, checkBoxSize, inputSize }
+    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight }
 
 })
 
