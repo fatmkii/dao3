@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Exceptions\CoinException;
 use App\Jobs\ProcessIncomeStatement;
+use App\Models\MyEmoji;
 
 use Carbon\Carbon;
 
@@ -145,5 +146,10 @@ class User extends Authenticatable
         //     //检查olo清零的
         //     UserMedalRecord::check_olo_0($this);
         // }
+    }
+
+    public function MyEmoji()
+    {
+        return $this->hasOne(MyEmoji::class);
     }
 }

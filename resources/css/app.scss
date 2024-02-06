@@ -28,7 +28,6 @@ a {
     align-items: center;
 }
 
-
 //各种卡片/下拉框改成圆的
 .n-card,
 .n-dialog,
@@ -44,4 +43,29 @@ a {
     .n-input {
         border-radius: 14px;
     }
+}
+
+//emoji相关
+.emoji-box {
+    width: 48px;
+    height: 48px;
+}
+.emoji-in-box {
+    max-width: 48px;
+    max-height: 48px;
+}
+.emoji-img,
+.emoji_img,
+.custom-emoji-img,
+.custom_emoji_img {
+    //旧2.0数据是下划线
+    max-width: 60px;
+    max-height: 60px;
+}
+.emoji-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+.n-tabs-tab {
+    padding: 8px !important;
 }
