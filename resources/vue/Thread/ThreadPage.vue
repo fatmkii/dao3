@@ -2,7 +2,7 @@
     <n-flex vertical>
         这是ThreadPage
         <!-- <Teleport to="#topbar-nav"><router-link to="/" v-if="!threadsStore.threadsDataLoading">
-                >{{ threadsStore.threadsListData.forum_data.name }}
+                {{ threadsStore.threadsListData.forum_data.name }}
                 <n-tag round :size="commonStore.buttonSize">{{ threadsStore.threadsListData.forum_data.id }}</n-tag>
             </router-link>
         </Teleport> -->
