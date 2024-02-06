@@ -1,6 +1,6 @@
 <template>
     <!-- 很多按钮都是共同式样（圆形/自动大小等）所以统一修改按钮式样 -->
-    <n-input-group-label :size="commonStore.inputSize" v-bind="attrsCombined">
+    <n-input-group-label :size="size" v-bind="attrsCombined">
         <!-- 自动继承模板 -->
         <template v-for="(item, key, index) in $slots" :key="index" #[key]>
             <slot :name="key"></slot>
@@ -13,6 +13,7 @@ import { NInputGroupLabel } from 'naive-ui'
 import type { InputGroupLabelProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
 import { useAttrs } from 'vue'
+import { computed } from 'vue'
 
 //基础数据
 const commonStore = useCommonStore()
@@ -38,5 +39,8 @@ const attrsCombined = {
     ...attrs,
     style: roundStyle
 }
+
+//尺寸
+const size = computed<'small' | 'medium' | 'large'>(() => commonStore.isMobile ? 'small' : 'medium')
 
 </script>

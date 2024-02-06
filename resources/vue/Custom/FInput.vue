@@ -1,6 +1,6 @@
 <template>
     <!-- 很多按钮都是共同式样（圆形/自动大小等）所以统一修改按钮式样 -->
-    <n-input round :size="commonStore.inputSize" v-bind="$attrs">
+    <n-input round :size="size" v-bind="$attrs">
         <!-- 自动继承模板 -->
         <template v-for="(item, key, index) in $slots" :key="index" #[key]>
             <slot :name="key"></slot>
@@ -12,6 +12,7 @@
 import { NInput } from 'naive-ui'
 import type { InputProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
+import { computed } from 'vue'
 
 //基础数据
 const commonStore = useCommonStore()
@@ -23,5 +24,8 @@ interface Props extends  /* @vue-ignore */InputProps {//好像编译器不支持
 const props = withDefaults(defineProps<Props>(), {
 
 })
+
+//尺寸
+const size = computed<'small' | 'medium' | 'large'>(() => commonStore.isMobile ? 'small' : 'medium')
 
 </script>
