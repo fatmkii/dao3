@@ -45,6 +45,7 @@ import type { threadData } from '@/api/methods/threads'
 import { delayThreadDeleter } from '@/api/methods/threads'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
+import showDialog from '@/js/func/showDialog'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NSkeleton, NText, useThemeVars } from 'naive-ui'
 import { computed } from 'vue'
@@ -84,15 +85,7 @@ withdrawDelayThreadSuccess(() => {
     emit('withdrawDelayThreadSuccess')
 })
 function handleWithdrawDelayThread(threadId: number) {
-    window.$dialog.warning({
-        title: '要撤回延时主题吗？',
-        closable: false,
-        positiveText: '确定',
-        negativeText: '取消',
-        onPositiveClick: () => {
-            sendWithdrawDelayThread(threadId)
-        },
-    })
+    showDialog('要撤回延时主题吗？', () => { sendWithdrawDelayThread(threadId) })
 }
 
 
