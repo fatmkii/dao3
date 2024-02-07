@@ -22,9 +22,11 @@ const attrs = useAttrs()
 //声明props
 interface Props extends  /* @vue-ignore */InputGroupLabelProps {//好像编译器不支持ButtonProps，所以这里加了ignore
     round?: boolean
+    autoSize?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
-    round: true
+    round: true,
+    autoSize: false
 })
 
 const roundStyle = props.round ?
@@ -41,6 +43,12 @@ const attrsCombined = {
 }
 
 //尺寸
-const size = computed<'small' | 'medium' | 'large'>(() => commonStore.isMobile ? 'small' : 'medium')
+const size = computed<'small' | 'medium' | 'large'>(() => {
+    if (props.autoSize) {
+        return commonStore.isMobile ? 'small' : 'medium'
+    } else {
+        return 'medium'
+    }
+})
 
 </script>

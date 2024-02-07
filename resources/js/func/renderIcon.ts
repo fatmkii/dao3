@@ -3,7 +3,8 @@ import { NIcon } from 'naive-ui';
 import type { Component } from 'vue';
 
 interface params {
-    size?: string | number
+    size?: string | number,
+    color?: string
 }
 
 const paramsDefault: params = {
@@ -19,7 +20,7 @@ const renderIcon = (icon: Component, params: params = paramsDefault) => {
     }
 
     return () => {
-        return h(NIcon, { size: iconSize }, {
+        return h(NIcon, { size: iconSize, color: params.color }, {
             default: () => h(icon)
         })
     }

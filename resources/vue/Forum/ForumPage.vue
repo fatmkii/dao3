@@ -28,7 +28,8 @@
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
-            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题" />
+            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题"
+                auto-size />
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
 

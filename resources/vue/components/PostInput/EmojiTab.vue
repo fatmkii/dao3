@@ -72,10 +72,15 @@ function emojiClick(emojiSrc: string, emojiDataName: string) {
 </script>
 
 <style>
-/* 上面通过把tabValue设定为-1使tab收起来，
-但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
-所以放了一个隐藏的name=-1的tab */
-.n-tabs-tab[data-name="-1"] {
-    display: none !important;
+.n-tabs-tab {
+    /* 覆盖原本的圆角(3px) */
+    --n-tab-border-radius: 10px;
+
+    /* 上面通过把tabValue设定为-1使tab收起来，
+    但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
+    所以放了一个隐藏的name=-1的tab */
+    &[data-name="-1"] {
+        display: none !important;
+    }
 }
 </style>

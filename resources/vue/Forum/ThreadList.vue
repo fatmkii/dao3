@@ -119,4 +119,8 @@ function handleWithdrawDelayThread(threadId: number) {
     height: 65px;
     width: 100%;
 }
+
+a {
+    color: v-bind('themeVars.textColor1');
+}
 </style>

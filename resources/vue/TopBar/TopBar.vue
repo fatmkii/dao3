@@ -4,8 +4,8 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange" >
-            <f-button style="margin-left: auto;">皮肤</f-button>
+        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
+            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="margin-left: auto;">
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
             <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
@@ -30,7 +30,7 @@ import { useUserStore } from '@/stores/user';
 import { renderIcon } from '@/js/func/renderIcon'
 import LoginModal from '@/vue/TopBar/LoginModal.vue';
 import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
-import { Cog as CogIcon } from '@vicons/fa';
+import { Cog as CogIcon, Circle } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
@@ -46,9 +46,9 @@ const commonStore = useCommonStore()
 const themeStore = usethemeStore()
 const themeVars = useThemeVars()
 const themeOptions = [
-    { label: '浅色', key: 'light' },
-    { label: '深色', key: 'dark' },
-    { label: 'Hdao', key: 'green' },
+    { label: '浅色', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
+    { label: '深色', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
+    { label: 'Hdao', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
 ]
 
 
