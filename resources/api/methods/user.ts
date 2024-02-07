@@ -3,7 +3,7 @@ import { commonAlova } from '@/api/index';
 interface userData {
     binggan: {
         admin?: number | null,
-        admin_forums?: string | null,
+        admin_forums?: string,
         nickname: string | null,
         coin: number,
         coin_in_bank: number,
@@ -38,6 +38,10 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
         transformData(data: userData, headers) {
             return {
                 ...data,
+                binggan: {
+                    ...data.binggan,
+                    admin_forums: data.binggan.admin_forums === undefined ? undefined : JSON.parse(data.binggan.admin_forums) as number[],
+                },
                 pingbici: data.pingbici === null ? null : {
                     content_pingbici: data.pingbici.content_pingbici === null ? null : JSON.parse(data.pingbici.content_pingbici) as string[],
                     fjf_pingbici: data.pingbici.fjf_pingbici === null ? null : JSON.parse(data.pingbici.fjf_pingbici) as string[],
