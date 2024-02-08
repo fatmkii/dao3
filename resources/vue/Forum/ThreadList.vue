@@ -85,7 +85,7 @@ withdrawDelayThreadSuccess(() => {
     emit('withdrawDelayThreadSuccess')
 })
 function handleWithdrawDelayThread(threadId: number) {
-    showDialog('要撤回延时主题吗？', () => { sendWithdrawDelayThread(threadId) })
+    showDialog({ title: '要撤回延时主题吗？', onPositiveClick: () => { sendWithdrawDelayThread(threadId) } })
 }
 
 
