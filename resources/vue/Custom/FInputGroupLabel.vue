@@ -37,10 +37,12 @@ const roundStyle = props.round ?
     : undefined
 
 //组合透传的attrs和设定默认主题式样的attrs
-const attrsCombined = {
-    ...attrs,
-    style: roundStyle
-}
+const attrsCombined = computed(() => {
+    return {
+        ...attrs,
+        style: roundStyle
+    }
+})
 
 //尺寸
 const size = computed<'small' | 'medium' | 'large'>(() => {

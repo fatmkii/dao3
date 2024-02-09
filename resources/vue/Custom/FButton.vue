@@ -29,10 +29,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 //组合透传的attrs和设定默认主题式样的attrs
-const attrsCombined = {
-    ...attrs,
-    ...themeStore.buttonThemeAttr
-}
+const attrsCombined = computed(() => {
+    return {
+        ...attrs,
+        ...themeStore.buttonThemeAttr
+    }
+})
 
 //尺寸
 const size = computed<'tiny' | 'small' | 'medium' | 'large'>(() => commonStore.isMobile ? 'small' : 'medium')
