@@ -1,6 +1,6 @@
 <template>
-    <n-tabs type="line" :justify-content="commonStore.isMobile ? undefined : 'space-between'" :bar-width="0" animated
-        @before-leave="tabOnBeforeLeave" size="small" :default-value="-1" v-model:value="tabValue">
+    <n-tabs type="line" :bar-width="0" animated @before-leave="tabOnBeforeLeave"
+        :size="commonStore.isMobile ? 'small' : 'medium'" :default-value="-1" v-model:value="tabValue">
         <n-tab-pane v-for="( emojiGroup, key, index ) in  emojiData " :name="emojiGroup.id"
             :tab="tabRender(emojiGroup.name, emojiGroup.id)">
             <n-flex size="small" class="emoji-container">
@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 
 //当前tab的标签序号
-const tabValue = ref<string | number | undefined>()
+const tabValue = ref<number>()
 
 //处理表情包数据
 const emojiData = computed(() => {
@@ -101,32 +101,3 @@ function tabOnBeforeLeave(name: string | number, oldName: string | number | null
 }
 
 </script>
-
-<style lang="scss">
-.n-tabs-tab-pad {
-    // 覆盖原本的tab之间间距(32px)
-    --n-tab-gap: 0px;
-}
-
-.n-tabs-scroll-padding {
-    // 删掉最前面的留空
-    display: none;
-}
-
-.n-tabs .n-tabs-wrapper {
-    // 手动使tabs可以跨行
-    flex-wrap: wrap;
-    gap: 0px 12px;
-    padding-left: 12px;
-    padding-right: 12px;
-}
-
-.n-tabs-tab {
-    // 上面通过把tabValue设定为-1使tab收起来，
-    // 但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
-    // 所以放了一个隐藏的name=-1的tab
-    &[data-name="-1"] {
-        display: none !important;
-    }
-}
-</style>

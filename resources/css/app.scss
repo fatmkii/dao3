@@ -66,3 +66,36 @@ a {
     max-height: 250px;
     overflow-y: auto;
 }
+
+//tabs相关共同
+.n-tabs-tab-pad {
+    // 覆盖原本的tab之间间距(32px)
+    @media all and (min-width: 1200px) {
+        --n-tab-gap: 16px;
+    }
+    @media not all and (min-width: 1200px) {
+        --n-tab-gap: 0px;
+    }
+}
+
+.n-tabs-scroll-padding {
+    // 删掉最前面的留空
+    display: none;
+}
+
+.n-tabs .n-tabs-wrapper {
+    // 手动使tabs可以跨行
+    flex-wrap: wrap;
+    gap: 0px 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.n-tabs-tab {
+    // 上面通过把tabValue设定为-1使tab收起来，
+    // 但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
+    // 所以放了一个隐藏的name=-1的tab
+    &[data-name="-1"] {
+        display: none !important;
+    }
+}
