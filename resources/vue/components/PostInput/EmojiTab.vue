@@ -116,11 +116,12 @@ function tabOnBeforeLeave(name: string | number, oldName: string | number | null
 .n-tabs .n-tabs-wrapper {
     // 手动使tabs可以跨行
     flex-wrap: wrap;
-    gap: 0px 12px
+    gap: 0px 12px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .n-tabs-tab {
-
     // 上面通过把tabValue设定为-1使tab收起来，
     // 但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
     // 所以放了一个隐藏的name=-1的tab
