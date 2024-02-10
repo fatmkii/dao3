@@ -130,7 +130,7 @@ function renderFuncOptions() {
         }),
     ]
 
-    if (userStore.userData.binggan.admin !== 0 && userStore.userData.binggan.admin_forums?.includes(props.forumId)) {
+    if (userStore.userData.binggan.admin !== 0 && userStore.checkAdminForums(props.forumId)) {
         options.push(
             h(FCheckbox, {
                 checked: postWithAdmin.value,

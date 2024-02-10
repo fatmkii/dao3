@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { defineStore } from 'pinia'
 import { useRequest, useFetcher } from 'alova';
 import { userDataGetter } from '@/api/methods/user';
@@ -47,7 +47,16 @@ export const useUserStore = defineStore('userStore', () => {
         fetch(userDataGetter(binggan!))
     }
 
-    return { userDataLoading, userData, userLoginStatus, binggan, refreshUserData }
+    //检查是否具有某个版面的管理员权限
+    function checkAdminForums(forumId: number) {
+        if (userDataLoading.value || userData.value.binggan.admin_forums === undefined) {
+            return false
+        } else {
+            return userData.value.binggan.admin_forums.includes(forumId)
+        }
+    }
+
+    return { userDataLoading, userData, userLoginStatus, binggan, refreshUserData, checkAdminForums }
 
 })
 
