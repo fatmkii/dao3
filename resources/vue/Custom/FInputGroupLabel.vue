@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NInputGroupLabel } from 'naive-ui'
-import type { InputGroupLabelProps } from 'naive-ui'
+import { NInputGroupLabel,type InputGroupLabelProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
 import { useAttrs } from 'vue'
 import { computed } from 'vue'

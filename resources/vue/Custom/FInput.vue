@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NInput } from 'naive-ui'
-import type { InputProps } from 'naive-ui'
+import { NInput, type InputProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
 import { computed } from 'vue'
 

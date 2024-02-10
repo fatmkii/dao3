@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { darkTheme, GlobalThemeOverrides } from 'naive-ui'
+import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { ref, computed } from 'vue'
-import type { GlobalTheme } from 'naive-ui'
 import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides } from '@/data/theme'
 
 export const usethemeStore = defineStore('themeStore', () => {

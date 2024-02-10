@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NButton } from 'naive-ui'
-import type { ButtonProps } from 'naive-ui'
+import { NButton, type ButtonProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
 import { usethemeStore } from '@/stores/theme'
 import { useAttrs, computed } from 'vue'

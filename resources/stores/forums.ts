@@ -9,6 +9,7 @@ export const useForumsStore = defineStore('forumsStore', () => {
         { initialData: [] }
     );
 
+    //根据forumId获得某个版的数据
     function forumData(forumId: number) {
         return forumsData.value.find((forumData) => forumData.id === forumId)
     }

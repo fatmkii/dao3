@@ -1,8 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia'
 import { useRequest, useFetcher } from 'alova';
-import { userDataGetter } from '@/api/methods/user';
-import type { userData } from '@/api/methods/user';
+import { userDataGetter, type userData } from '@/api/methods/user';
 
 export const useUserStore = defineStore('userStore', () => {
 

@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NCheckbox } from 'naive-ui'
-import type { CheckboxProps } from 'naive-ui'
+import { NCheckbox, type CheckboxProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
 import { computed } from 'vue'
 

@@ -41,8 +41,7 @@
 
 
 <script setup lang="ts">
-import type { threadData } from '@/api/methods/threads'
-import { delayThreadDeleter } from '@/api/methods/threads'
+import { delayThreadDeleter, type threadData } from '@/api/methods/threads'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
 import showDialog from '@/js/func/showDialog'
