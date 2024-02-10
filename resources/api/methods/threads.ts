@@ -93,8 +93,9 @@ interface newThreadParams {
     canBattle: boolean,
     randomHeadsGroup: number,
     nissinTime: number, //这是天数的数字
-    titleColor: string,
-    lockByCoin: number,
+    titleColor: string | null,
+    lockedByCoin: number | null,
+    subId: number,
 
     hongbaoParams?: {
         type: number,
@@ -142,7 +143,7 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
         nickname: params.nickname,
         subtitle: params.subtitle,
         thread_type: params.threadType,
-        post_with_adimin: params.postWithAdmin,
+        post_with_admin: params.postWithAdmin,
         anti_jingfen: params.antiJingfen,
         is_delay: params.isDelay,
         is_private: params.isPrivate,
@@ -150,7 +151,8 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
         random_heads_group: params.randomHeadsGroup,
         nissin_time: params.nissinTime, //这是天数的数字
         title_color: params.titleColor,
-        lock_by_coin: params.lockByCoin,
+        locked_by_coin: params.lockedByCoin,
+        sub_id: params.subId,
 
         ...(params.hongbaoParams === undefined ? {} :
             {

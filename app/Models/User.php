@@ -309,6 +309,13 @@ class User extends Authenticatable
         return 'ok';
     }
 
+    //获取总olo(现金+银行)
+    public function getCoin()
+    {
+        return $this->coin + $this->coin_in_bank;
+    }
+
+
     //发帖、回帖频率写入Redis
     public function waterRecord(string $action, string $ip)
     {

@@ -29,6 +29,7 @@
                     {{ threadData.gamble_question_id ? '🎲' : '' }}
                     {{ threadData.crowd_id ? '💰' : '' }}
                     {{ threadData.hongbao_id ? '🧧' : '' }}
+                    <span v-if="threadData.locked_by_coin > 0">🔒{{ threadData.locked_by_coin }}</span>
                     <span><n-text depth="3">Re:</n-text> {{ threadData.posts_num }}</span>
                 </n-flex>
             </n-flex>

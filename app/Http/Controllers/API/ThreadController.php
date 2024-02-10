@@ -93,17 +93,19 @@ class ThreadController extends Controller
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'title' => 'required|string|max:100',
+            'nickname' => 'required|string|max:30',
             'content' => 'required|string|max:100000',
             'anti_jingfen' => 'required|boolean',
-            'nissin_time' => 'integer',
-            'random_heads_group' => 'integer',
-            'post_with_admin' => 'boolean',
-            'locked_by_coin' => 'integer|max:25000|min:1',
+            'nissin_time' => 'required|integer',
+            'title_color' => 'string|nullable',
+            'random_heads_group' => 'required|integer',
+            'post_with_admin' => 'required|boolean',
+            'locked_by_coin' => 'nullable|integer|max:25000|min:0',
             'thread_type' => 'required|string',
             'is_delay' => 'boolean|required',
             'is_private' => 'boolean|required',
             'can_battle' => 'boolean|required',
-            'nickname' => 'max:30',
+            'sub_id' => 'nullable|integer',
         ]);
 
 
@@ -125,7 +127,7 @@ class ThreadController extends Controller
             );
         }
 
-        //只有管理员可以发众筹
+        //只有管理员可以发众筹 
         if (
             $request->thread_type == "crowd"  &&
             !(in_array($user->admin, [99, 20, 10]) && in_array($request->forum_id, json_decode($user->AdminPermissions->forums)))
@@ -143,7 +145,7 @@ class ThreadController extends Controller
             DB::beginTransaction();
             //发主题帖（Thread）
             $thread = new Thread;
-            if ($request->title_color != "" && $request->title_color != "#212529") {
+            if ($request->title_color && $request->title_color != "#212529") {
                 // $user->coin -= 500; //设置标题颜色减500奥利奥 
                 // #212529是默认颜色，不收费
                 $user->coinChange(
@@ -179,7 +181,7 @@ class ThreadController extends Controller
             $thread->created_binggan = $request->binggan;
             $thread->forum_id = $request->forum_id;
             if ($request->subtitle == '[公告]') {
-                $thread->sub_id = $request->admin_subtitle ?   10 : 99; //$request->admin_subtitle == 0是全岛公告。把sub_id=99
+                $thread->sub_id = $request->sub_id; //sub_id 10是版内公告，99是全岛公告
             }
             $thread->nickname = $request->nickname;
             $thread->created_ip = $request->ip();

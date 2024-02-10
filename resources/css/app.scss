@@ -45,6 +45,16 @@ a {
     }
 }
 
+//所有选择器都设定成圆的
+.n-base-selection {
+    border-radius: 17px;
+}
+
+//数字输入框改成圆的
+.n-input-number .n-input {
+    border-radius: 17px;
+}
+
 //emoji相关
 .emoji-box {
     width: 48px;
@@ -98,4 +108,9 @@ a {
     &[data-name="-1"] {
         display: none !important;
     }
+}
+
+//输入表单相关
+.n-form-item .n-form-item-feedback-wrapper {
+    --n-feedback-height: 12px;
 }
