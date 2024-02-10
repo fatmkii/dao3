@@ -1,5 +1,7 @@
 import { commonAlova } from '@/api/index';
 import { forumData } from '@/api/methods/forums'
+import type { subtitlesType } from '@/data/subtitles';
+import type { threadType } from '@/vue/NewThread';
 
 interface threadData {
     id: number,
@@ -82,8 +84,8 @@ interface newThreadParams {
     title: string,
     content: string,
     nickname: string,
-    subtitle: "[公告]" | "[闲聊]" | "[专楼]" | "[刷刷]" | "[私密]",
-    threadType: "normal" | "vote" | "gamble" | "crowd" | "hongbao",
+    subtitle: subtitlesType,
+    threadType: threadType,
     postWithAdmin: boolean,
     antiJingfen: boolean,
     isDelay: boolean,

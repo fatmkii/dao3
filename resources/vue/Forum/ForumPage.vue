@@ -73,6 +73,7 @@ import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Forum/Pagination.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
+import { subtitles } from '@/data/subtitles'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useWatcher } from 'alova'
 import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag, NEllipsis } from 'naive-ui'
@@ -147,7 +148,6 @@ const funcOptions = [
 ]
 
 //筛选功能
-const subtitles = ["[公告]", "[闲聊]", "[专楼]", "[刷刷]", "[私密]"]
 const subtitlesIncluded = useLocalStorageToRef<(string | number)[]>('subtitles_included', subtitles)
 const subtitlesExcluded = computed(() => subtitles.filter(item => !subtitlesIncluded.value!.includes(item)))
 
