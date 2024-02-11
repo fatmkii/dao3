@@ -527,14 +527,16 @@ class ThreadController extends Controller
         }
         return response()->json([
             'code' => ResponseCode::SUCCESS,
-            'forum_data' => $CurrentForum,
-            'thread_data' => $CurrentThread,
-            'posts_data' => array(
-                "currentPage" => intval($currentPage),
-                "data" => $posts,
-                "lastPage" => $lastPage,
-            ),
-            // 'posts_data' => $posts,
+            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
+            'data' => [
+                'forum_data' => $CurrentForum,
+                'thread_data' => $CurrentThread,
+                'posts_data' => array(
+                    "currentPage" => intval($currentPage),
+                    "data" => $posts,
+                    "lastPage" => $lastPage,
+                ),
+            ],
         ]);
     }
     /**

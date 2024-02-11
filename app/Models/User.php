@@ -66,6 +66,10 @@ class User extends Authenticatable
     protected $casts = [
         'binggan_verified_at' => 'datetime',
         'last_login' => 'datetime',
+        'is_custom' => 'boolean',
+        'is_banned' => 'boolean',
+        'use_pingbici' => 'boolean',
+        'new_msg' => 'boolean',
     ];
 
     protected $appends = [

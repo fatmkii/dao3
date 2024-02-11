@@ -33,7 +33,9 @@ class Forum extends Model
      *
      * @var array
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_anonymous' => 'boolean',
+    ];
 
     // public function Threads()
     // {

@@ -39,7 +39,13 @@ class Thread extends ModelWithSuffix
         'is_your_thread',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'anti_jingfen' => 'boolean',
+        'has_nissined' => 'boolean',
+        'can_battle' => 'boolean',
+        'is_delay' => 'boolean',
+        'is_private' => 'boolean',
+    ];
 
 
     public function Forum()
@@ -87,7 +93,7 @@ class Thread extends ModelWithSuffix
     {
         $this->binggan = $binggan;
     }
-    
+
     public function isYourThread(): Attribute
     {
         if ($this->binggan) {
