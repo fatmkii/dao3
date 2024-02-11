@@ -4,17 +4,18 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-        <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="margin-left: auto;">
-        </n-dropdown>
-        <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
-            <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
-        </n-dropdown>
 
-        <f-button type="primary" v-if="!userStore.userLoginStatus" @click="loginModal?.show">
-            导入饼干
-        </f-button>
-
+        <template v-if="!userStore.userDataLoading">
+            <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
+                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="margin-left: auto;">
+            </n-dropdown>
+            <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
+                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
+            </n-dropdown>
+            <f-button type="primary" v-if="!userStore.userLoginStatus" @click="loginModal?.show">
+                导入饼干
+            </f-button>
+        </template>
         <LoginModal ref="loginModal" @submit-register="callRegisterHintModal" />
         <RegisterHintModal ref="registerHintModal" />
     </n-flex>
