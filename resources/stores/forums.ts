@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { useRequest } from 'alova';
-import { forumsDataGetter } from '@/api/methods/forums';
+import { forumsDataGetter, threadsListGetter } from '@/api/methods/forums';
 
 export const useForumsStore = defineStore('forumsStore', () => {
 
+    //请求所有板块信息
     const { loading: forumsDataLoading, data: forumsData } = useRequest(
         forumsDataGetter,
         { initialData: [] }
@@ -14,7 +15,13 @@ export const useForumsStore = defineStore('forumsStore', () => {
         return forumsData.value.find((forumData) => forumData.id === forumId)
     }
 
-    return { forumsDataLoading, forumsData, forumData }
+    //请求该板块的主题列表（好像没必要存在store）
+    // const { loading: threadsListLoading, data: threadsListData, send: getThreadsData } = useRequest(
+    //     threadsListGetter,
+    //     { initialData: [], immediate: false }
+    // );
+
+    return { forumsDataLoading, forumsData, forumData}
 
 })
 

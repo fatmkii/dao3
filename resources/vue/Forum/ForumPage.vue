@@ -36,7 +36,7 @@
         <!-- 主题列表 -->
         <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
             :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
-            @withdraw-delay-thread-success="handleFetchThreadsData" />
+            @withdraw-delay-thread-success="handleFetchThreadsList" />
 
         <!-- 底部分页导航及延时主题按钮 -->
         <n-flex :align="'center'">
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { threadsDataGetter } from '@/api/methods/threads'
+import { threadsListGetter, type getThreadsListParams } from '@/api/methods/forums'
 import { useDebounce } from '@/js/func/debounce'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
@@ -224,7 +224,7 @@ watch(pageSelected,
 )
 
 //useWathcer和useFetcher共用的主题列表数据请求参数
-const threadsDataRequestParams = computed(() => {
+const threadsDataRequestParams = computed<getThreadsListParams>(() => {
     return {
         forumId: props.forumId,
         binggan: userStore.binggan!,
@@ -238,19 +238,19 @@ const threadsDataRequestParams = computed(() => {
 
 //获取主题列表数据（监听props变更）
 const { loading: threadsDataLoading, data: threadsData } = useWatcher(
-    () => threadsDataGetter(threadsDataRequestParams.value),
+    () => threadsListGetter(threadsDataRequestParams.value),
     [() => props.forumId, () => props.page, () => props.search, () => props.delay, subtitlesExcluded],
     { initialData: [], immediate: true, }
 );
 
 //刷新主题列表数据
 const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
-const { fetching: threadsDataFetching, onSuccess: fetchThreadsDataOnSucess, fetch: fetchThreadsData } = useFetcher();
-function handleFetchThreadsData(remind: boolean = false) {
+const { fetching: threadsDataFetching, onSuccess: fetchThreadsListOnSucess, fetch: fetchThreadsList } = useFetcher();
+function handleFetchThreadsList(remind: boolean = false) {
     remindFetch.value = remind
-    fetchThreadsData(threadsDataGetter(threadsDataRequestParams.value))
+    fetchThreadsList(threadsListGetter(threadsDataRequestParams.value))
 }
-fetchThreadsDataOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+fetchThreadsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 
 </script>
 

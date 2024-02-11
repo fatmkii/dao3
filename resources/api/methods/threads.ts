@@ -29,54 +29,7 @@ interface threadData {
     is_your_thread?: boolean,
 }
 
-interface threadsListData<arrayType> {
-    forum_data: forumData<arrayType>,
-    threads_data: {
-        currentPage: number,
-        lastPage: number,
-        data: threadData[],
-    },
-    subtitles_exclude: string | null,
-}
 
-interface getThreadsDataParams {
-    forumId: number,
-    binggan: string | null,
-    page: number | null,
-    threadsPerPage: number | null,
-    subtitlesExcluded: string[],
-    searchTitle?: string
-    delay?: boolean
-}
-
-//获取版面中的主题列表
-const threadsDataGetter = (params: getThreadsDataParams) => commonAlova.Get(
-    '/api/forums/' + params.forumId,
-    {
-        name: 'threadsDataGetter',
-        params: {
-            binggan: params.binggan,
-            page: params.page,
-            threads_per_page: params.threadsPerPage,
-            subtitles_excluded: JSON.stringify(params.subtitlesExcluded),
-            search_title: params.searchTitle,
-            delay: params.delay ? 1 : 0
-        },
-        localCache: null,
-        transformData(data: threadsListData<string>, headers) {
-            const result = {
-                ...data,
-                forum_data: {
-                    ...data.forum_data,
-                    banners: JSON.parse(data.forum_data.banners) as string[]
-                    // 通过...展开操作的result是data的另一份拷贝，并且banners会正确地推断出类型
-                    //（正确应为string[],如果只是给对象的属性赋值会认为仍然是string），总之我服了！
-                }
-            }
-            return result;
-        }
-    }
-)
 
 interface newThreadParams {
     binggan: string,
@@ -130,7 +83,6 @@ interface newThreadData {
     thread_id: number,
     forum_id: number
 }
-
 //发表新主题
 const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadData>(
     '/api/threads/create',
@@ -213,4 +165,4 @@ const delayThreadDeleter = (threadId: number) => commonAlova.Delete(
 
 
 
-export { threadsDataGetter, threadsListData, getThreadsDataParams, threadData, delayThreadDeleter, newThreadPoster, newThreadParams }
+export { threadData, delayThreadDeleter, newThreadPoster, newThreadParams }
