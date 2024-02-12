@@ -120,7 +120,6 @@ const funcOptions = computed(() => {
 //打赏功能
 function rewardHandle() {
     const postFooter = document.getElementById('post-footer') as HTMLDivElement | null
-    console.log(postFooter?.innerText)
     emit('showRewardModal', {
         floor: postData.value.floor,
         forumId: props.forumId,

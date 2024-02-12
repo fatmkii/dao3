@@ -35,7 +35,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
         name: 'userDataGetter',
         params: {},
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-        hitSource: [],
+        hitSource: [/^user(?!DataGetter).*$/,],
         transformData(data: userData, headers) {
             return {
                 ...data,

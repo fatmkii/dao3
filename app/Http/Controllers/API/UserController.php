@@ -307,7 +307,7 @@ class UserController extends Controller
             // $post->created_binggan = $request->binggan;
             // $post->forum_id = $request->forum_id;
             // $post->thread_id = $request->thread_id;
-            // $post->content = "<span class='quote_content'>" .
+            // $post->content = "<span class='quote-content'>" .
             //     $request->post_floor_message .
             //     '</span><br>我为你打赏了' . $request->coin .
             //     '块奥利奥<br>——' . $request->content;
@@ -322,7 +322,7 @@ class UserController extends Controller
             // $thread->save();
             // $post->save();
 
-            $post_content = "<span class='quote_content'>" .
+            $post_content = "<span class='quote-content'>" .
                 $request->post_floor_message .
                 '</span><br>我为你打赏了' . $request->coin .
                 '块奥利奥<br>——' . $request->content;
