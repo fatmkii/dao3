@@ -102,11 +102,6 @@ class User extends Authenticatable
         return $result;
     }
 
-    public function AdminPermissions()
-    {
-        return $this->hasOne(Admin::class);
-    }
-
     public function adminForums(): Attribute
     {
         return Attribute::make(get: fn () => $this->AdminPermissions->forums);
@@ -368,5 +363,61 @@ class User extends Authenticatable
     public function Pingbici()
     {
         return $this->hasOne(Pingbici::class);
+    }
+
+    public function UserLV()
+    {
+        // return $this->hasOne(UserLV::class);
+    }
+
+    public function AdminPermissions()
+    {
+        return $this->hasOne(Admin::class);
+    }
+
+    public function VoteUser()
+    {
+        // return $this->hasMany(VoteUser::class);
+    }
+
+    public function IncomeStatement()
+    {
+        return $this->hasMany(IncomeStatement::class);
+    }
+
+    public function UserMedal()
+    {
+        return $this->hasMany(UserMedal::class);
+    }
+
+
+    public function UserMedalRecord()
+    {
+        return $this->hasOne(UserMedalRecord::class);
+    }
+
+    public function MyBattleChara()
+    {
+        // return $this->hasMany(MyBattleChara::class);
+    }
+
+    public function EmojiContestUser()
+    {
+        // return $this->hasMany(EmojiContestUser::class);
+    }
+
+    public function UserBank()
+    {
+        // return $this->hasMany(UserBank::class);
+    }
+
+    public function getMyBattleCharaAttribute()
+    {
+        // return MyBattleChara::where('user_id', $this->id)->pluck('name');
+    }
+
+    protected function serializeDate($date)
+    {
+        return $date->format('Y-m-d H:i');
     }
 }

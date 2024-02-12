@@ -82,7 +82,7 @@ import { useUserStore } from '@/stores/user'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { GameControllerOutline as Game, ArrowUndoOutline as Undo,DiceOutline as Dice } from '@vicons/ionicons5'
+import { GameControllerOutline as Game, ArrowUndoOutline as Undo, DiceOutline as Dice } from '@vicons/ionicons5'
 import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NButton } from 'naive-ui'
 import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
@@ -230,6 +230,13 @@ function handleCommit(event: MouseEvent | KeyboardEvent) {
         isDelay: isDelayInput.value,
         ist: event.isTrusted,
     })
+}
+
+//提交成功后，复位输入内容
+function resetContent() {
+    titleInput.value = ""
+    contentInput.value = ""
+    isDelayInput.value = false
 }
 
 </script>

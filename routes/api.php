@@ -5,6 +5,7 @@ use App\Http\Controllers\API\CommonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\ForumController;
+use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ThreadController;
 
@@ -66,6 +67,15 @@ Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
     Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create'); //发新主题
     Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
     // Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色
+});
+
+//Post系列
+Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
+    // Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show'); //获得单个帖子数据
+    Route::post('/create', [PostController::class, 'create'])->middleware('CheckBinggan:create'); //新帖子
+    // Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
+    // Route::post('/create_roll', [PostController::class, 'create_roll'])->middleware('CheckBinggan:create'); //新roll点
+    // Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
 });
 
 //各种杂项

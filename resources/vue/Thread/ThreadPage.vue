@@ -66,7 +66,7 @@
             </n-flex>
             <!-- 输入框 -->
             <PostInput mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id" :disabled="false"
-                :handling="false" @content-commit="console.log('//TODO发帖')" />
+                :handling="newPostHandling" @content-commit="newPostHandle" />
 
 
             <!-- 底部提示 -->
@@ -98,22 +98,25 @@
 </template>
 
 <script setup lang="ts">
-import { NFlex, NTag, NEllipsis, NDropdown, NIcon, NSkeleton, NCard, useThemeVars, NSwitch } from 'naive-ui'
+import { newPostPoster, type newPostParams } from '@/api/methods/posts'
+import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useDebounce } from '@/js/func/debounce'
-import { FButton, FCheckbox, FInput } from '@custom'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import Pagination from '@/vue/Components/Pagination.vue'
-import PostList from '@/vue/Thread/PostList/PostList.vue'
+import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
-import { useWatcher, useFetcher } from 'alova'
-import { useRouter } from 'vue-router'
-import { ref, computed, watch, h } from 'vue'
+import PostList from '@/vue/Thread/PostList/PostList.vue'
+import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { useFetcher, useWatcher, useRequest } from 'alova'
+import * as CryptoJS from 'crypto-js'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, useThemeVars } from 'naive-ui'
+import { computed, h, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 //基础数据
 const userStore = useUserStore()
@@ -258,6 +261,31 @@ fetchPostsListOnSucess(() => { if (remindFetch.value) { window.$message.success(
 //从postsListData抽离出threadData和forumData方便使用
 const threadData = computed(() => postsListData.value.thread_data)
 const forumData = computed(() => postsListData.value.forum_data)
+
+//发送新回复
+function newPostHandle(content: contentCommit) {
+    const timestamp = new Date().getTime();
+    const params: newPostParams = {
+        binggan: userStore.binggan!,
+        forum_id: forumData.value.id,
+        thread_id: threadData.value.id,
+        content: content.contentInput,
+        nickname: content.nicknameInput,
+        post_with_admin: content.postWithAdmin,
+        new_post_key: CryptoJS.MD5(
+            threadData.value.id + userStore.binggan! + timestamp + content.ist
+        ).toString(),
+        timestamp: timestamp,
+    }
+    sendNewPostHandle(params)
+}
+const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess } = useRequest(
+    (params: newPostParams) => newPostPoster(params), { immediate: false }
+)
+newPostOnSuccess(() => {
+    handleFetchPostsList(false)
+})
+
 
 </script>
 

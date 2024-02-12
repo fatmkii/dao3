@@ -22,7 +22,35 @@ interface postData {
     created_binggan_hash?: string,
 }
 
+//发新帖
+interface newPostParams {
+    binggan: string,
+    forum_id: number,
+    thread_id: number,
+    content: string,
+    nickname: string,
+    post_with_admin: boolean,
+    new_post_key: string,
+    timestamp: number,
+}
+const newPostPoster = (params: newPostParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/posts/create',
+        params,
+        {
+            //第三个参数是config
+            name: 'newPostPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
 
 
-export { postData, }
+export { postData, newPostPoster, newPostParams, }
