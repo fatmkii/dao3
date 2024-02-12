@@ -1,16 +1,17 @@
 <template>
     <!-- 回复card -->
     <n-card size="small" :bordered="true" class="post-card">
-        <n-collapse :default-expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
+        <n-collapse :expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
                 <span v-html="postData.content" class="post-span"></span>
                 <!-- 正文下面的footer，楼号等 -->
                 <n-flex class="post-footer"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
-                    size="small" @click="console.log('//TODO回复引用')">
-                    <n-text :depth="3" class="post-footer-text">№{{ postData.floor }}</n-text>
-                    <n-text class="post-nick-name">
+                    size="small">
+                    <n-text :depth="3" class="post-footer-text" @click="console.log('//TODO回复引用')"
+                        style="cursor: pointer;">№{{ postData.floor }}</n-text>
+                    <n-text class="post-nick-name" @click="console.log('//TODO回复引用')" style="cursor: pointer;">
                         {{ postData.nickname }}
                     </n-text>
                     <n-text class="post-created-at">{{ postData.created_at }}</n-text>
@@ -25,11 +26,14 @@
                 </template>
                 <!-- header，用来放头像和折叠提示 -->
                 <template #header>
-                    <div class="random-head-container" v-if="!noHeadMode">
-                        <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
-                            :class="'head_' + postData.random_head" />
-                    </div>
-                    <span>{{ postFoldedMessage }}</span>
+                    <n-flex class="post-header" size="small" :align="'center'" style="cursor: pointer;"
+                        @click="postFolded = !postFolded">
+                        <div class="random-head-container" v-if="!noHeadMode">
+                            <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
+                                :class="'head_' + postData.random_head" />
+                        </div>
+                        <span>{{ postFoldedMessage }}</span>
+                    </n-flex>
                 </template>
                 <!-- header-extra 放下拉菜单和删除按钮 -->
                 <template #header-extra>
@@ -147,7 +151,7 @@ const postData = computed(() => {
             const reg = new RegExp(pingbici, 'g')
             if (reg.test(postData.content)) {
                 postFolded.value = true
-                postFoldedMessage.value = '屏蔽词折叠（可点击展开）'
+                postFoldedMessage.value = '屏蔽词折叠（点击展开）'
             }
         })
 
@@ -159,7 +163,7 @@ const postData = computed(() => {
             const reg = new RegExp(pingbici, 'g')
             if (reg.test(postData.created_binggan_hash!.slice(0, 5)!)) {
                 postFolded.value = true
-                postFoldedMessage.value = '小尾巴黑名单（可点击展开）'
+                postFoldedMessage.value = '小尾巴黑名单（点击展开）'
             }
         })
     }
@@ -169,7 +173,7 @@ const postData = computed(() => {
         const reg = new RegExp(/<video|<audio|<embed|<iframe/, "g");
         if (reg.test(postData.content)) {
             postFolded.value = true
-            postFoldedMessage.value = '音视频折叠（可点击展开）'
+            postFoldedMessage.value = '音视频折叠（点击展开）'
         }
 
     }

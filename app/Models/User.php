@@ -364,4 +364,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(MyEmoji::class);
     }
+
+    public function Pingbici()
+    {
+        return $this->hasOne(Pingbici::class);
+    }
 }
