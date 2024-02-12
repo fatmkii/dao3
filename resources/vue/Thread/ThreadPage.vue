@@ -3,9 +3,6 @@
         <template v-if="showThis">
             <!-- 顶部功能按钮就及分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;">
-                <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                    <f-button>屏蔽</f-button>
-                </n-dropdown>
                 <n-icon :size="commonStore.isMobile ? 28 : 34">
                     <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
                 </n-icon>
@@ -21,7 +18,7 @@
             </n-flex>
 
             <!-- 标题 -->
-            <n-card v-if="!(postsListLoading || postsListFetching)" class="thread-title-contain" size="small" :key="2">
+            <n-card v-if="!(postsListLoading || postsListFetching)" class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
                     {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
                 </span>
@@ -42,7 +39,8 @@
                 :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
                 :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
                 :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
-                :no-video-mode="noVideoMode" />
+                :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
+                :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" />
 
             <!-- 自动涮锅 -->
 
@@ -61,6 +59,12 @@
                 </n-ellipsis>
                 <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id }}</n-tag>
             </router-link>
+        </Teleport>
+        <Teleport to="#topbar-func" v-if="!postsListLoading">
+            <!-- 屏蔽按钮 -->
+            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                <f-button>屏蔽</f-button>
+            </n-dropdown>
         </Teleport>
     </n-flex>
 </template>

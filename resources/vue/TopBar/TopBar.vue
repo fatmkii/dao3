@@ -4,7 +4,7 @@
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
-
+        <div id="topbar-func"></div>
         <template v-if="!userStore.userDataLoading">
             <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
                 <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="margin-left: auto;">

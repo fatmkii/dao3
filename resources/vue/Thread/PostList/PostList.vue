@@ -1,8 +1,9 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
 
-        <n-card v-for="postData in postsData" :key="postData.id" size="small" :bordered="true">
-            <n-collapse :default-expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
+        <n-card v-for="(postData, postDataIndex) in postsData" :key="postData.id" size="small" :bordered="true">
+            <n-collapse :default-expanded-names="postFolded[postDataIndex] ? [] : ['default']"
+                :trigger-areas="postFolded[postDataIndex] ? ['main'] : []">
                 <n-collapse-item name="default">
                     <!-- 正文内容 -->
                     <span v-html="postData.content" class="post-span"></span>
@@ -28,7 +29,7 @@
                             <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
                                 :class="'head_' + postData.random_head" />
                         </div>
-                        <span>{{ postFoldedMessage }}</span>
+                        <span>{{ postFoldedMessage[postDataIndex] }}</span>
                     </template>
                     <!-- header-extra 放下拉菜单 -->
                     <template #header-extra>
@@ -80,6 +81,10 @@ interface Props {
     noCustomEmojiMode?: boolean,
     noHeadMode?: boolean,
     noVideoMode?: boolean,
+    noBattleMode?: boolean,
+    noRollMode?: boolean,
+    noRewardMode?: boolean,
+    noHongbaoMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
     postsListData: () => [],
@@ -90,6 +95,10 @@ const props = withDefaults(defineProps<Props>(), {
     noCustomEmojiMode: false,
     noHeadMode: false,
     noVideoMode: false,
+    noBattleMode: false,
+    noRollMode: false,
+    noRewardMode: false,
+    noHongbaoMode: false,
 })
 
 //打赏回复及管理员选项的下拉框
@@ -98,16 +107,103 @@ const themeOptions = [
     { label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) },
 ]
 
+//回复数据处理（各种屏蔽等）
+const postFolded = ref<boolean[]>([])//是否被折叠的状态
+const postFoldedMessage = ref<string[]>([])//折叠回复后的提示词
 
-//回复折叠相关
-const postFolded = ref<boolean>()//是否被折叠的状态
-const postFoldedMessage = ref<string>()//折叠回复后的提示词
+function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片的回调函数
+    if (match.search(/class='emoji_img'/g) != -1) {
+        //判断是否表情包
+        return props.noEmojiMode ? "" : match
 
-//回复数据处理（各种屏蔽词等）
+    } else if (match.search(/class='custom_emoji_img'/g) != -1) {
+        //判断是否自定义表情包
+        return props.noCustomEmojiMode ? "" : match
+    } else {
+        if (props.noImageMode) {
+            //no_image_mode:无图模式
+            return match
+                .replace(/src/, "data-src")
+                .replace("<img ", '<img src="/img_svg.svg" class="img_svg"');
+        } else {
+            return match;
+        }
+    }
+}
 const postsData = computed(() => {
+    let postsData: postData[]
 
-    return props.postsDataRaw
+    //第一种屏蔽类型：直接过滤掉整个postData元素的（大乱斗/roll点等）
+    postsData = props.postsDataRaw.filter((post) => {
+        if (props.noBattleMode === true && post.battle_id !== null) { return false }
+        if (props.noRollMode === true && post.created_by_admin === 2 && post.nickname === 'Roll点系统') { return false }
+        if (props.noRewardMode === true && post.created_by_admin === 2 && post.nickname === '奥利奥打赏系统' && !post.is_your_post) { return false }
+        if (props.noHongbaoMode === true) {
+            //红包结果屏蔽条件
+            const condition1 =
+                post.created_by_admin == 2 &&
+                post.nickname == "红包结果" &&
+                !post.is_your_post;
+            //抢红包的口令屏蔽条件
+            const condition2 = /^--红包口令: /.test(post.content) && !post.is_your_post;
+            if (condition1 || condition2) {
+                return false;
+            }
+        }
+        return true
+    })
+    //第二种屏蔽类型：文本元素的替换（图片和表情包等）
+    postsData = postsData.map(postData => {
+        return {
+            ...postData,
+            content: postData.content.replace(/<img[^>]*>/g, imgReplacer)
+                .replace(/<script/g, "<**禁止使用script**")
+                .replace(/\n/g, "<br>")
+        }
+    })
+    //第三种屏蔽类型：不变更postData，仅进行折叠
+    if (userStore.userData?.binggan.use_pingbici) {
+        //处理内容屏蔽词
+        const pingbiciContent = userStore.userData.pingbici?.content_pingbici
+        postsData.forEach((postData, postDataIndex) => {
+            pingbiciContent?.forEach(pingbici => {
+                const reg = new RegExp(pingbici, 'g')
+                if (reg.test(postData.content)) {
+                    postFolded.value[postDataIndex] = true
+                    postFoldedMessage.value[postDataIndex] = '屏蔽词折叠（可点击展开）'
+                }
+            })
+        });
+    }
+    if (props.antiJingfen === true && userStore.userData.pingbici?.fjf_pingbici !== null) {
+        //处理fjf屏蔽词
+        const pingbiciFjf = userStore.userData.pingbici?.fjf_pingbici
+        postsData.forEach((postData, postDataIndex) => {
+            pingbiciFjf?.forEach(pingbici => {
+                const reg = new RegExp(pingbici, 'g')
+                if (reg.test(postData.created_binggan_hash!.slice(0, 5)!)) {
+                    postFolded.value[postDataIndex] = true
+                    postFoldedMessage.value[postDataIndex] = '小尾巴黑名单（可点击展开）'
+                }
+            })
+        });
+    }
+
+    //处理折叠音视频模式
+    if (props.noVideoMode) {
+        const reg = new RegExp(/<video|<audio|<embed|<iframe/, "g");
+        postsData.forEach((postData, postDataIndex) => {
+            if (reg.test(postData.content)) {
+                postFolded.value[postDataIndex] = true
+                postFoldedMessage.value[postDataIndex] = '音视频折叠（可点击展开）'
+            }
+        });
+    }
+
+    return postsData
 })
+
+
 
 
 </script>
