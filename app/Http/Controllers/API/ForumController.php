@@ -148,7 +148,15 @@ class ForumController extends Controller
         }
 
         //sub_id是用来把公告等提前的
-        $threads->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc');
+        $threads = $threads->orderBy('sub_id', 'desc')->orderBy('updated_at', 'desc')->paginate($threads_per_page);
+
+        //如果有提供binggan，为每个thread输入binggan，用来判断is_your_thread（为前端提供是否是用户自己帖子的判据）
+        if ($request->query('binggan') && $request->delay) {
+            foreach ($threads as $thread) {
+                $thread->setBinggan($request->query('binggan'));
+                $thread->makeVisible('is_your_thread');
+            }
+        }
 
         //记录搜索行为
         if ($request->has('search_title')) {
@@ -168,7 +176,7 @@ class ForumController extends Controller
             'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
             'data' => [
                 'forum_data' => $CurrentForum->makeVisible('banners'),
-                'threads_data' => $threads->paginate($threads_per_page),
+                'threads_data' => $threads,
                 'subtitles_exclude' => $subtitles_excluded,
             ]
         ]);

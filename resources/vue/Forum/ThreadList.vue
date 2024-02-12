@@ -16,7 +16,7 @@
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
-                    <f-button size="tiny" type="warning" v-if="!threadData.is_your_thread"
+                    <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
                 </div>
