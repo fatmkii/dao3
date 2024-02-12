@@ -156,13 +156,19 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
 )
 
 //撤回延时主题
-const delayThreadDeleter = (threadId: number) => commonAlova.Delete(
-    '/api/threads/delay/' + threadId,
-    {
-        name: 'delayThreadDeleter',
-        localCache: null,
+const delayThreadDeleter = (threadId: number) => {
+    const methodInstance = commonAlova.Delete(
+        '/api/threads/delay/' + threadId,
+        {
+            name: 'delayThreadDeleter',
+            localCache: null,
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
     }
-)
+    return methodInstance
+}
 
 //获取主题内的回复清单
 interface postsListData<arrayType> {

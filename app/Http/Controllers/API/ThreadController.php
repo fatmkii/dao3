@@ -658,6 +658,7 @@ class ThreadController extends Controller
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'thread_id' => $Thread_id,
+            'message' => '已撤回延时主题'
         ]);
     }
 

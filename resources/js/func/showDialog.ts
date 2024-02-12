@@ -6,7 +6,6 @@ interface args {
 }
 
 function showDialog(args: args) {
-
     const dialogArgs = {
         title: args.title,
         closable: false,
@@ -16,11 +15,16 @@ function showDialog(args: args) {
         onNegativeClick: args.onNegativeClick,
     }
 
-    if (args.mode === 'warning') {
-        window.$dialog.warning(dialogArgs)
-    }
-    if (args.mode === 'success') {
-        window.$dialog.success(dialogArgs)
+    switch (args.mode) {
+        case 'warning':
+            window.$dialog.warning(dialogArgs)
+            break;
+        case 'success':
+            window.$dialog.success(dialogArgs)
+            break;
+        default:
+            window.$dialog.warning(dialogArgs)
+            break;
     }
 }
 

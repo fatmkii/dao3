@@ -16,7 +16,7 @@
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
-                    <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
+                    <f-button size="tiny" type="warning" v-if="!threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
                 </div>
@@ -81,13 +81,11 @@ const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSu
 )
 withdrawDelayThreadSuccess(() => {
     //触发事件，让父组件更新主题列表
-    window.$message.success('已撤回延时主题')
     emit('withdrawDelayThreadSuccess')
 })
 function handleWithdrawDelayThread(threadId: number) {
     showDialog({ title: '要撤回延时主题吗？', onPositiveClick: () => { sendWithdrawDelayThread(threadId) } })
 }
-
 
 </script>
 
