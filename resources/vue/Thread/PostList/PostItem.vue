@@ -38,13 +38,13 @@
                 <!-- header-extra 放下拉菜单和删除按钮 -->
                 <template #header-extra>
                     <n-flex size="small">
-                        <n-icon :size="24" v-if="postData.is_your_post" style="cursor: pointer;"
+                        <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post" style="cursor: pointer;"
                             @click="console.log('//TODO删除自己回复')">
                             <Delete />
                         </n-icon>
                         <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
                             :size="commonStore.isMobile ? 'medium' : 'large'">
-                            <n-icon :size="24" style="cursor: pointer;">
+                            <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
                                 <Dropdown />
                             </n-icon>
                         </n-dropdown>
@@ -220,6 +220,14 @@ const postData = computed(() => {
 </script>
 
 <style scoped lang="scss">
+.post-span {
+    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
+
+    span {
+        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"')
+    }
+}
+
 .post-footer {
     margin-top: 0.2rem;
     font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
