@@ -219,17 +219,20 @@ export interface contentCommit {
     ist: boolean,
 }
 const emit = defineEmits<{
-    contentCommit: [content: contentCommit]
+    contentCommit: [content: contentCommit, resolve: (value: any) => void]
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
-    emit('contentCommit', {
-        contentInput: contentInput.value,
-        nicknameInput: nicknameInput.value,
-        postWithAdmin: postWithAdmin.value,
-        titleInput: titleInput.value,
-        isDelay: isDelayInput.value,
-        ist: event.isTrusted,
-    })
+    const promise = new Promise(function (resolve, reject) {
+        emit('contentCommit', {
+            contentInput: contentInput.value,
+            nicknameInput: nicknameInput.value,
+            postWithAdmin: postWithAdmin.value,
+            titleInput: titleInput.value,
+            isDelay: isDelayInput.value,
+            ist: event.isTrusted,
+        }, resolve)
+    });
+    promise.then(resetContent)
 }
 
 //提交成功后，复位输入内容

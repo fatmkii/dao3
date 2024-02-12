@@ -263,7 +263,7 @@ const threadData = computed(() => postsListData.value.thread_data)
 const forumData = computed(() => postsListData.value.forum_data)
 
 //发送新回复
-function newPostHandle(content: contentCommit) {
+function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
     const timestamp = new Date().getTime();
     const params: newPostParams = {
         binggan: userStore.binggan!,
@@ -278,13 +278,15 @@ function newPostHandle(content: contentCommit) {
         timestamp: timestamp,
     }
     sendNewPostHandle(params)
+    newPostOnSuccess(() => {
+        resolve('success') //来自PostInput的Promise回调，让PostInput复位
+        handleFetchPostsList(false)
+    })
 }
 const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess } = useRequest(
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
-newPostOnSuccess(() => {
-    handleFetchPostsList(false)
-})
+
 
 
 </script>

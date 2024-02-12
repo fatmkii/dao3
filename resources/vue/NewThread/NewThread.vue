@@ -75,19 +75,12 @@ const TabCommonComponent = ref<InstanceType<typeof TabCommon> | null>(null)
 const tabNormalInput = computed(() => TabCommonComponent.value?.tabNormalInput)
 
 //发送新主题
-const { loading: newThreadHandling, data: newThreadData, onSuccess: newThreadOnSuccess, onError, send: newThreadPost } = useRequest
+const { loading: newThreadHandling, data: newThreadData, onSuccess: newThreadOnSuccess, send: newThreadPost } = useRequest
     (
         newThreadPoster, { immediate: false, }
     );
-newThreadOnSuccess(() => {
-    showDialog(
-        {
-            title: '已发送主题，是否跳转？',
-            mode: 'success',
-            onPositiveClick: () => router.push({ name: 'thread', params: { threadId: newThreadData.value.thread_id } })
-        })
-})
-function newThreadHandle(content: contentCommit) {
+
+function newThreadHandle(content: contentCommit, resolve: (value: any) => void) {
     let params: newThreadParams
     params = {
         binggan: userStore.binggan!,
@@ -109,6 +102,15 @@ function newThreadHandle(content: contentCommit) {
         subId: tabNormalInput.value!.subId,
     }
     newThreadPost(params)
+    newThreadOnSuccess(() => {
+        resolve('success')
+        showDialog(
+            {
+                title: '已发送主题，是否跳转？',
+                mode: 'success',
+                onPositiveClick: () => router.push({ name: 'thread', params: { threadId: newThreadData.value.thread_id } })
+            })
+    })
 }
 
 
