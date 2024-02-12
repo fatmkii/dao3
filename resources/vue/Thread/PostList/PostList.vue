@@ -6,7 +6,8 @@
                 <n-collapse-item name="default">
                     <!-- 正文内容 -->
                     <span v-html="postData.content" class="post-span"></span>
-                    <n-flex class="post-footer" size="small" @click="console.log('//TODO')">
+                    <!-- 正文下面的footer，楼号等 -->
+                    <n-flex class="post-footer" size="small" @click="console.log('//TODO回复引用')">
                         <n-text :depth="3" class="post-footer-text">№{{ postData.floor }}</n-text>
                         <n-text class="post-nick-name">
                             {{ postData.nickname }}
@@ -21,7 +22,7 @@
                     <template #arrow>
                         <div></div>
                     </template>
-                    <!-- header，用来放头像和下拉菜单 -->
+                    <!-- header，用来放头像和折叠提示 -->
                     <template #header>
                         <div class="random-head-container" v-if="!noHeadMode">
                             <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
@@ -29,8 +30,9 @@
                         </div>
                         <span>{{ postFoldedMessage }}</span>
                     </template>
+                    <!-- header-extra 放下拉菜单 -->
                     <template #header-extra>
-                        <n-dropdown trigger="hover" :options="themeOptions"
+                        <n-dropdown trigger="click" :options="themeOptions"
                             :size="commonStore.isMobile ? 'medium' : 'large'">
                             <n-icon :size="24" style="cursor: pointer;">
                                 <Dropdown />
@@ -115,5 +117,13 @@ const postsData = computed(() => {
     border-radius: 10px;
     height: 100px;
     width: 100%;
+}
+
+.post-footer {
+    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
+
+    span {
+        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
+    }
 }
 </style>

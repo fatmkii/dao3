@@ -100,10 +100,10 @@ function handleWithdrawDelayThread(threadId: number) {
 }
 
 .thread-title-secondary {
-    font-size: v-bind('commonStore.isMobile ? "0.6rem" : "0.8rem"');
+    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
 
     span {
-        font-size: v-bind('commonStore.isMobile ? "0.6rem" : "0.8rem"')
+        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
     }
 }
 

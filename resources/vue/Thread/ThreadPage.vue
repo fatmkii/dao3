@@ -16,7 +16,7 @@
             <n-flex v-if="showSearchInput" :wrap="false">
                 <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索回复内容"
                     auto-size />
-                <f-button type="primary" @click="console.log('//TODO')">搜索</f-button>
+                <f-button type="primary" @click="console.log('//TODO搜索')">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
 
@@ -76,7 +76,7 @@ import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import Pagination from '@/vue/Components/Pagination.vue'
-import PostList from '../Components/PostList/PostList.vue'
+import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { useWatcher, useFetcher } from 'alova'
 import { useRouter } from 'vue-router'
 import { ref, computed, watch, h } from 'vue'
