@@ -8,7 +8,7 @@
                     :style="{ color: postWithAdmin ? 'FF6060' : undefined }" />
             </n-input-group>
             <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                <f-button size="medium" style="flex-shrink:0">功能</f-button>
+                <f-button size="medium" style="flex-shrink:0" :secondary="false">功能</f-button>
             </n-dropdown>
         </n-flex>
         <!-- 标题输入 -->
@@ -27,6 +27,10 @@
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 大乱斗 -->
                 <Game style="cursor: pointer;" />
+            </n-icon>
+            <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
+                <!-- roll点 -->
+                <Dice style="cursor: pointer;" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 涂鸦板 -->
@@ -78,7 +82,7 @@ import { useUserStore } from '@/stores/user'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
+import { GameControllerOutline as Game, ArrowUndoOutline as Undo,DiceOutline as Dice } from '@vicons/ionicons5'
 import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NButton } from 'naive-ui'
 import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
@@ -92,7 +96,7 @@ const themeStore = usethemeStore()
 //组件props
 interface Props {
     mode: 'post' | 'thread',
-    disabled: boolean,//可否输入（正在处理提交时设false）
+    disabled: boolean,//可否输入（有时候需要禁止输入？）
     handling: boolean,//是否正在提交的状态
     forumId?: number,
     threadId?: number,

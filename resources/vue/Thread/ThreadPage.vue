@@ -44,9 +44,30 @@
                 :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode"
                 @refresh-posts-list="handleFetchPostsList(false)" />
 
-            <!-- 自动涮锅 -->
+            <!-- 自动涮锅和分页导航 -->
+            <n-flex :align="'center'" style="margin-top: 8px;">
+                <f-button type="primary" :disabled="postListening" :loading="postListening"
+                    @click="handleFetchPostsList(true)">刷新</f-button>
+                <n-switch v-model:value="postListening">
+                    <template #checked>
+                        涮锅中…
+                    </template>
+                    <template #unchecked>
+                        自动涮锅
+                    </template>
+                </n-switch>
+            </n-flex>
 
+            <!-- 分页导航 -->
+            <n-flex :align="'center'" style="margin-top: 8px;">
+                <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
+                <Pagination v-model:page="pageSelected"
+                    :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
+            </n-flex>
             <!-- 输入框 -->
+            <PostInput mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id" :disabled="false"
+                :handling="false" @content-commit="console.log('//TODO发帖')" />
+
 
             <!-- 底部提示 -->
 
@@ -77,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { NFlex, NTag, NEllipsis, NDropdown, NIcon, NSkeleton, NCard, useThemeVars } from 'naive-ui'
+import { NFlex, NTag, NEllipsis, NDropdown, NIcon, NSkeleton, NCard, useThemeVars, NSwitch } from 'naive-ui'
 import { useDebounce } from '@/js/func/debounce'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
@@ -88,6 +109,7 @@ import { useUserStore } from '@/stores/user'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import Pagination from '@/vue/Components/Pagination.vue'
 import PostList from '@/vue/Thread/PostList/PostList.vue'
+import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import { useWatcher, useFetcher } from 'alova'
 import { useRouter } from 'vue-router'
 import { ref, computed, watch, h } from 'vue'
@@ -201,6 +223,10 @@ watch(pageSelected,
         router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
     }
 )
+
+//自动涮锅功能//TODO
+const postListening = ref<boolean>(false)
+
 
 
 //useWathcer和useFetcher共用的回复列表数据请求参数
