@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Carbon\Carbon;
-use app\Common\Medals;
+use App\Common\Medals;
 
 class UserMedalRecord extends Model
 {

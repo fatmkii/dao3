@@ -6,7 +6,7 @@
                 <!-- 正文内容 -->
                 <span v-html="postData.content" class="post-span"></span>
                 <!-- 正文下面的footer，楼号等 -->
-                <n-flex class="post-footer"
+                <n-flex class="post-footer" id="post-footer"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
                     size="small">
                     <n-text :depth="3" class="post-footer-text" @click="console.log('//TODO回复引用')"
@@ -42,7 +42,7 @@
                             @click="console.log('//TODO删除自己回复')">
                             <Delete />
                         </n-icon>
-                        <n-dropdown trigger="click" :options="funcOptions" @select="(name) => console.log(name)"
+                        <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
                             :size="commonStore.isMobile ? 'medium' : 'large'">
                             <n-icon :size="24" style="cursor: pointer;">
                                 <Dropdown />
@@ -70,7 +70,7 @@ import { useRouter } from 'vue-router'
 import { ref, computed, watch, h } from 'vue'
 import { Delete as Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote } from '@vicons/ionicons5'
-
+import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -81,6 +81,7 @@ const themeVars = useThemeVars()
 
 //组件props
 interface Props {
+    forumId: number,
     postDataRaw: postData,
     randomHeadGroupIndex: number,
     antiJingfen?: boolean,
@@ -100,15 +101,47 @@ const props = withDefaults(defineProps<Props>(), {
     noVideoMode: false,
 })
 
-//打赏回复及管理员选项的下拉框
+//注册事件
+const emit = defineEmits<{
+    showRewardModal: [payload: rewardModalPayload],
+}>()
+
+//打赏回复及管理员选项的下拉菜单
 const funcOptions = computed(() => {
     const options = [{ label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) }]
     if (!props.postDataRaw.is_your_post) {
         //不是自己回复的时候才追加打赏按钮
         options.unshift({ label: '打赏', key: 'gift', icon: renderIcon(Gift, { size: '1.5rem' }) })
     }
-    return options
+    if (userStore.checkAdminForums(1)) //TODO
+        return options
 })
+
+//打赏功能
+function rewardHandle() {
+    const postFooter = document.getElementById('post-footer') as HTMLDivElement | null
+    console.log(postFooter?.innerText)
+    emit('showRewardModal', {
+        floor: postData.value.floor,
+        forumId: props.forumId,
+        threadId: postData.value.thread_id,
+        postId: postData.value.id,
+        postFloorMessage: postFooter!.innerText,
+    })
+}
+
+//下拉菜单的统一入口
+type dropdownNames = 'quote' | 'gift'
+function dropdownSelect(name: dropdownNames) {
+    switch (name) {
+        case 'gift'://打赏
+            rewardHandle()
+            break;
+
+        default:
+            break;
+    }
+}
 
 //回复数据处理（各种屏蔽等）
 const postFolded = ref<boolean>(false)//是否被折叠的状态
@@ -180,6 +213,7 @@ const postData = computed(() => {
 
     return postData
 })
+
 
 
 

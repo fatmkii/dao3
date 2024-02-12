@@ -35,13 +35,14 @@
             <n-skeleton v-else class="thread-title-skeleton" sharp />
 
             <!-- 循环渲染各个回复 -->
-            <PostList :show-this="!postsListLoading"
+            <PostList :show-this="!postsListLoading" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
                 :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
                 :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
                 :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
                 :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
                 :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
-                :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" />
+                :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode"
+                @refresh-posts-list="handleFetchPostsList(false)" />
 
             <!-- 自动涮锅 -->
 

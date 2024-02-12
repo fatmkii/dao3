@@ -53,6 +53,11 @@ export const commonAlova = createAlova({
                 throw new Error(json.message);
             }
 
+            if (method.meta?.shouldRemind) {
+                //在method中写入meta.shoudRemind，使请求成功后弹出提示
+                window.$message.success(json.message)
+            }
+
             return json.data;
         },
 

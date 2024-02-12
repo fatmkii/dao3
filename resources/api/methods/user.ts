@@ -1,5 +1,7 @@
 import { commonAlova } from '@/api/index';
 
+
+//获取用户数据
 interface userData {
     binggan: {
         admin?: number | null,
@@ -23,7 +25,6 @@ interface userData {
     } | null,
     my_emoji: string | null
 }
-
 const userDataGetter = (binggan: string) => commonAlova.Post(
     '/api/user/show',
     {
@@ -53,12 +54,11 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
     }
 )
 
+//用户注册
 interface userRegisterData {
     "binggan": string,
     "token": string,
 }
-
-
 const userRegisterPoster = (registerKey: string) => commonAlova.Post<userRegisterData>(
     'api/user/register',
     {
@@ -73,5 +73,34 @@ const userRegisterPoster = (registerKey: string) => commonAlova.Post<userRegiste
     }
 )
 
-export { userDataGetter, userRegisterPoster }
-export type { userData }
+//打赏用户功能
+interface userRewardParams {
+    binggan: string,
+    post_floor_message: string,
+    forum_id: number,
+    thread_id: number,
+    post_id: number,
+    coin: number,
+    content?: string,
+}
+const userRewardPoster = (params: userRewardParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/reward',
+        params,
+        {
+            //第三个参数是config
+            name: 'userRewardPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+
+export { userDataGetter, userRegisterPoster, userRewardPoster }
+export type { userData, userRewardParams }

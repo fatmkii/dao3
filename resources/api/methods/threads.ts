@@ -174,7 +174,6 @@ interface postsListData<arrayType> {
         data: postData[],
     }
 }
-
 interface getPostsListParams {
     threadId: number,
     binggan: string,
@@ -182,7 +181,6 @@ interface getPostsListParams {
     searchContent?: string,
 }
 
-//获取版面中的主题列表
 const postsListGetter = (params: getPostsListParams) => commonAlova.Get(
     '/api/threads/' + params.threadId,
     {

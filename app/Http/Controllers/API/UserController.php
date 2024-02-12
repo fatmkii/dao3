@@ -9,6 +9,7 @@ use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
 use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
+use App\Models\Post;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -253,6 +254,158 @@ class UserController extends Controller
                 ],
             ],
             200
+        );
+    }
+
+    public function reward(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'post_floor_message' => 'required|string',
+            'coin' => 'required|integer|min:1|max:1000000',
+            'forum_id' => 'required|integer',
+            'thread_id' => 'required|integer',
+            'post_id' => 'required|integer',
+            'content' => 'nullable|string'
+        ]);
+
+        $user = $request->user();
+        $post_target = Post::suffix(intval($request->thread_id / 10000))->find($request->post_id);
+        $user_target = User::where('binggan', $post_target->created_binggan)->first();
+
+        //判断对象用户饼干是否存在
+        if (!$user_target) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => '打赏对象不存在',
+            ]);
+        }
+        //判断用户饼干和对象饼干是否一致
+        if ($user_target->binggan == $request->binggan) {
+            return response()->json([
+                'code' => ResponseCode::DEFAULT,
+                'message' => '给自己打赏是想给税收做贡献吗？',
+            ]);
+        }
+
+        //判断是否重复打赏
+        $redis_key = sprintf('reward_%s_to_%d', $user->binggan, $request->post_id);
+        if (Redis::exists($redis_key)) {
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => '避免误触发，2秒内不能重复打赏',
+            ]);;
+        } else {
+            Redis::setex($redis_key, 2, 1);
+        }
+
+
+        try {
+            DB::beginTransaction();
+            // $post = new Post;
+            // $post->setSuffix(intval($request->thread_id / 10000));
+            // $post->created_binggan = $request->binggan;
+            // $post->forum_id = $request->forum_id;
+            // $post->thread_id = $request->thread_id;
+            // $post->content = "<span class='quote_content'>" .
+            //     $request->post_floor_message .
+            //     '</span><br>我为你打赏了' . $request->coin .
+            //     '块奥利奥<br>——' . $request->content;
+            // $post->nickname = '奥利奥打赏系统';
+            // $post->created_by_admin = 2; //0=一般用户 1=管理员发布，2=系统发布
+            // $post->created_ip = $request->ip();
+            // $post->random_head = random_int(0, 39);
+
+            // $thread = $post->thread;
+            // $thread->posts_num = POST::Suffix(intval($thread->id / 10000))->where('thread_id', $thread->id)->count();
+            // $post->floor = $thread->posts_num;
+            // $thread->save();
+            // $post->save();
+
+            $post_content = "<span class='quote_content'>" .
+                $request->post_floor_message .
+                '</span><br>我为你打赏了' . $request->coin .
+                '块奥利奥<br>——' . $request->content;
+
+            $post = Post::create([
+                'created_binggan' => $request->binggan,
+                'forum_id' => $request->forum_id,
+                'thread_id' => $request->thread_id,
+                'content' => $post_content,
+                'nickname' => '奥利奥打赏系统',
+                'created_by_admin' => 2,
+                'created_IP' => $request->ip(),
+            ]);
+
+            $thread = $post->thread;
+
+            $tax_rate = GlobalSetting::get_tax('normal');
+            $coin_pay = ceil($request->coin * $tax_rate);
+            // $user->coinConsume($coin_pay);
+            $user->coinChange(
+                'normal', //记录类型
+                [
+                    'olo' => -$coin_pay,
+                    'content' => '打赏olo   ——留言：' . $request->content,
+                    'user_id_target' => $user_target->id,
+                    'binggan_target' => $user_target->binggan,
+                    'thread_id' => $thread->id,
+                    'thread_title' => $thread->title,
+                    'post_id' => $post->id,
+                    'floor' => $post->floor,
+                ]
+            ); //通过统一接口、记录操作  
+
+            // $user_target->coin += $request->coin;
+            // $user_target->save();
+            $user_target->coinChange(
+                'normal', //记录类型
+                [
+                    'olo' => $request->coin,
+                    'user_id_target' => $user->id,
+                    'binggan_target' => $user->binggan,
+                    'content' => '被打赏olo   ——留言：' . $request->content,
+                    'thread_id' => $thread->id,
+                    'thread_title' => $thread->title,
+                    'post_id' => $post->id,
+                    'floor' => $post->floor,
+                ]
+            ); //通过统一接口、记录操作  
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        // $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+        // $user_target_medal_record = $user_target->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+        // $user_medal_record->push_reward_out($coin_pay); //检查成就
+        // $user_target_medal_record->push_reward_in($request->coin); //检查成就
+
+        //广播发帖动作
+        // broadcast(new NewPostBroadcast($request->thread_id, $post->id, $post->floor))->toOthers();
+        // $post->broadcast();
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户打赏了',
+                'binggan_target' => $user_target->binggan,
+                'content' => $request->coin . '个饼干 ip:' . $request->ip(),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '打赏成功！对方获得' . $request->coin . '个奥利奥，你减少了' . $coin_pay . '个奥利奥',
+                'data' => [
+                    'binggan' => $request->binggan,
+                    'coin' => $request->coin
+                ]
+            ],
         );
     }
 }

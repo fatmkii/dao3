@@ -2,12 +2,16 @@
     <n-flex vertical :size="2" v-if="showThis">
         <!-- 回复card -->
         <PostItem v-for="postData in postsData" :post-data-raw="postData" :key="postData.id" :anti-jingfen="antiJingfen"
-            :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
-            :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :random-head-group-index="randomHeadGroupIndex" />
+            :forum-id="forumId" :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode"
+            :no-head-mode="noHeadMode" :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
+            :random-head-group-index="randomHeadGroupIndex" @show-reward-modal="RewardModalCom?.show" />
     </n-flex>
     <n-flex vertical :size="2" v-else>
         <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />
     </n-flex>
+
+    <!-- 各种弹出modal -->
+    <RewardModal ref="RewardModalCom" @refresh-posts-list="emit('refreshPostsList')" />
 </template>
 
 <script setup lang="ts">
@@ -17,6 +21,7 @@ import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import type { postData } from '@/api/methods/posts'
+import RewardModal from './RewardModal.vue'
 import PostItem from './PostItem.vue'
 import { useRouter } from 'vue-router'
 import { ref, computed, watch, h } from 'vue'
@@ -31,6 +36,7 @@ const router = useRouter()
 interface Props {
     showThis: boolean,
     postsDataRaw: postData[] | [],
+    forumId: number,
     randomHeadGroupIndex: number,
     antiJingfen?: boolean,
     noImageMode?: boolean,
@@ -57,6 +63,14 @@ const props = withDefaults(defineProps<Props>(), {
     noRewardMode: false,
     noHongbaoMode: false,
 })
+
+//各种emit
+const emit = defineEmits<{
+    refreshPostsList: [],
+}>()
+
+//各种Modal
+const RewardModalCom = ref<InstanceType<typeof RewardModal> | null>(null)
 
 //回复数据处理（第一种屏蔽等）
 const postsData = computed(() => {

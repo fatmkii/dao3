@@ -23,8 +23,15 @@ export const useCommonStore = defineStore('commonStore', () => {
     const bannerHeight = ref(getBannerHeight())
     window.addEventListener('resize', () => bannerHeight.value = getBannerHeight())
 
+    //是否双十一的flag
+    const isDouble11 = computed<boolean>(() => {
+        const double11 = new Date("2023-11-11");
+        const now = new Date(Date.now());
+        return now.toLocaleDateString() === double11.toLocaleDateString();
+    })
 
-    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight }
+
+    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11 }
 
 })
 
