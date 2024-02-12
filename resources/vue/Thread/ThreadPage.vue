@@ -18,7 +18,8 @@
             </n-flex>
 
             <!-- 标题 -->
-            <n-card v-if="!(postsListLoading || postsListFetching)" class="thread-title-contain" size="small" key="title-card">
+            <n-card v-if="!(postsListLoading || postsListFetching)" class="thread-title-contain" size="small"
+                key="title-card">
                 <span class="thread-title">
                     {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
                 </span>
@@ -50,6 +51,11 @@
 
         </template>
         <!-- 各种弹出提示框或者模态框 -->
+
+
+
+        <!-- 页面底部留空白 -->
+        <div style="height: 50px;"></div>
 
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav" v-if="!postsListLoading">

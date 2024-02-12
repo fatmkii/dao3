@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { ref, computed } from 'vue'
-import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides } from '@/data/theme'
+import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, darkThemeColors, greenThemeColors } from '@/data/theme'
 
 export const usethemeStore = defineStore('themeStore', () => {
     const themeClass = ref<GlobalTheme | null>(null)
@@ -51,6 +51,15 @@ export const usethemeStore = defineStore('themeStore', () => {
     })
 
 
-    return { themeClass, themeOverrideClass, themeChange, buttonThemeAttr }
+    const themeColor = computed(() => {
+        //一些自定义的颜色
+        if (themeName.value === 'light') { return lightThemeColors }
+        if (themeName.value === 'dark') { return darkThemeColors }
+        if (themeName.value === 'green') { return greenThemeColors }
+        return lightThemeColors
+    })
+
+
+    return { themeClass, themeOverrideClass, themeChange, buttonThemeAttr, themeColor }
 })
 
