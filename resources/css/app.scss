@@ -114,3 +114,30 @@ a {
 .n-form-item .n-form-item-feedback-wrapper {
     --n-feedback-height: 12px;
 }
+
+//限制头像尺寸
+.random-head-container {
+    @media all and (min-width: 1200px) {
+        width: 32px;
+        height: 32px;
+    }
+    @media not all and (min-width: 1200px) {
+        width: 24px;
+        height: 24px;
+    }
+}
+img[class^="head_"] {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+//postItem相关
+.n-collapse .n-collapse-item .n-collapse-item__content-wrapper .n-collapse-item__content-inner {
+    padding-top: 6px;
+}
+.post-span {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow: hidden;
+    position: relative;
+}

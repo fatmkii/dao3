@@ -47,8 +47,11 @@ export const useUserStore = defineStore('userStore', () => {
     }
 
     //检查是否具有某个版面的管理员权限
-    function checkAdminForums(forumId: number) {
-        if (userDataLoading.value || userData.value.binggan.admin_forums === undefined) {
+    function checkAdminForums(forumId: number | undefined) {
+        if (forumId === undefined ||
+            userDataLoading.value ||
+            userData.value.binggan.admin_forums === undefined
+        ) {
             return false
         } else {
             return userData.value.binggan.admin_forums.includes(forumId)

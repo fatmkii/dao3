@@ -1,7 +1,8 @@
 import { commonAlova } from '@/api/index';
-import { forumData } from '@/api/methods/forums'
 import type { subtitlesType } from '@/data/subtitles';
 import type { threadType } from '@/vue/NewThread';
+import type { postData } from '@/api/methods/posts';
+import type { forumData } from '@/api/methods/forums';
 
 interface threadData {
     id: number,
@@ -163,6 +164,49 @@ const delayThreadDeleter = (threadId: number) => commonAlova.Delete(
     }
 )
 
+//获取主题内的回复清单
+interface postsListData<arrayType> {
+    forum_data: forumData<arrayType>,
+    thread_data: threadData,
+    posts_data: {
+        currentPage: number,
+        lastPage: number,
+        data: postData[],
+    }
+}
+
+interface getPostsListParams {
+    threadId: number,
+    binggan: string,
+    page: number,
+    searchContent?: string,
+}
+
+//获取版面中的主题列表
+const postsListGetter = (params: getPostsListParams) => commonAlova.Get(
+    '/api/threads/' + params.threadId,
+    {
+        name: 'postsListGetter',
+        params: {
+            binggan: params.binggan,
+            page: params.page,
+            search_content: params.searchContent,
+        },
+        localCache: null,
+        transformData(data: postsListData<string>, headers) {
+            const result = {
+                ...data,
+                forum_data: {
+                    ...data.forum_data,
+                    banners: JSON.parse(data.forum_data.banners) as string[]
+                    // 通过...展开操作的result是data的另一份拷贝，并且banners会正确地推断出类型
+                    //（正确应为string[],如果只是给对象的属性赋值会认为仍然是string），总之我服了！
+                }
+            }
+            return result;
+        }
+    }
+)
 
 
-export { threadData, delayThreadDeleter, newThreadPoster, newThreadParams }
+export { threadData, delayThreadDeleter, newThreadPoster, newThreadParams, postsListGetter, postsListData, getPostsListParams }

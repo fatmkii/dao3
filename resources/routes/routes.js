@@ -10,7 +10,7 @@ const routes = [
             forumId: parseInt(route.params.forumId),
             page: route.params.page ? parseInt(route.params.page) : 1,
             search: route.query.search,
-            delay: route.query.delay === 'true' ? true : false
+            delay: route.query.delay === 'true' ? true : false //注意所有路由参数原始都是string，需要在这里类型转换
         }),
         component: () => import('@/vue/Forum/ForumPage.vue')
     },
@@ -20,6 +20,7 @@ const routes = [
         props: (route) => ({
             threadId: parseInt(route.params.threadId),
             page: route.params.page ? parseInt(route.params.page) : 1,
+            search: route.query.search,
         }),
         component: () => import('@/vue/Thread/ThreadPage.vue')
     },
