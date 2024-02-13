@@ -13,13 +13,12 @@
             <n-flex v-if="showSearchInput" :wrap="false">
                 <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索回复内容"
                     auto-size />
-                <f-button type="primary" @click="console.log('//TODO搜索')">搜索</f-button>
+                <f-button type="primary" @click="handleFetchPostsList(true)">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
 
             <!-- 标题 -->
-            <n-card v-if="!(postsListLoading || postsListFetching)" class="thread-title-contain" size="small"
-                key="title-card">
+            <n-card v-if="!postsListLoading" class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
                     {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
                 </span>
@@ -35,7 +34,8 @@
             <n-skeleton v-else class="thread-title-skeleton" sharp />
 
             <!-- 循环渲染各个回复 -->
-            <PostList :show-this="!postsListLoading" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
+            <PostList :show-this="!postsListLoading"
+                :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
                 :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
                 :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
                 :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
