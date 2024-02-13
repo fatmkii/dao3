@@ -1,10 +1,10 @@
 <template>
     <!-- 回复card -->
-    <n-card size="small" :bordered="true" class="post-card">
+    <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor">
         <n-collapse :expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
-                <span v-html="postData.content" class="post-content" ref="postContentDom"></span>
+                <span v-html="postContent" class="post-content" ref="postContentDom"></span>
                 <!-- 正文下面的footer，楼号等 -->
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
@@ -93,7 +93,7 @@ const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
 //组件props
 interface Props {
     forumId: number,
-    postDataRaw: postData,
+    postData: postData,
     yourPostsList: number[] | [],
     randomHeadGroupIndex: number,
     antiJingfen?: boolean,
@@ -123,7 +123,7 @@ const emit = defineEmits<{
 //打赏回复及管理员选项的下拉菜单
 const funcOptions = computed(() => {
     const options = [{ label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) }]
-    if (!props.postDataRaw.is_your_post) {
+    if (!props.postData.is_your_post) {
         //不是自己回复的时候才追加打赏按钮
         options.unshift({ label: '打赏', key: 'gift', icon: renderIcon(Gift, { size: '1.5rem' }) })
     }
@@ -134,10 +134,10 @@ const funcOptions = computed(() => {
 //打赏功能
 function rewardHandle() {
     emit('showRewardModal', {
-        floor: postData.value.floor,
+        floor: props.postData.floor,
         forumId: props.forumId,
-        threadId: postData.value.thread_id,
-        postId: postData.value.id,
+        threadId: props.postData.thread_id,
+        postId: props.postData.id,
         postFloorMessage: postFooterDom.value!.innerText,
     })
 }
@@ -147,8 +147,8 @@ function deletePostHandle() {
     function handle() {
         const params: deletePostParams = {
             binggan: userStore.binggan!,
-            thread_id: postData.value.thread_id,
-            post_id: postData.value.id,
+            thread_id: props.postData.thread_id,
+            post_id: props.postData.id,
         }
         deletePostDeleter(params).then(() => emit('refreshPostsList'))
     }
@@ -156,7 +156,7 @@ function deletePostHandle() {
         title: "要删除这个回复吗？",
         content: "会消费300olo喔",
         onPositiveClick: () => {
-            if (postData.value.hongbao_id !== null) {
+            if (props.postData.hongbao_id !== null) {
                 showDialog({
                     title: "注意",
                     content: "这个回帖有红包。删除后红包将消失，并且olo不退回。是否确认？",
@@ -176,8 +176,8 @@ function recoverPostHandle() {
     function handle() {
         const params: recoverPostParams = {
             binggan: userStore.binggan!,
-            thread_id: postData.value.thread_id,
-            post_id: postData.value.id,
+            thread_id: props.postData.thread_id,
+            post_id: props.postData.id,
         }
         recoverPostPutter(params).then(() => emit('refreshPostsList'))
     }
@@ -227,15 +227,13 @@ function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片�
         }
     }
 }
-const postData = computed(() => {//数据处理
-    let postData: postData
+const postContent = computed(() => {//数据处理
+    let postContent: string
     //第二种屏蔽类型：文本元素的替换（图片和表情包等）
-    postData = {
-        ...props.postDataRaw,
-        content: props.postDataRaw.content.replace(/<img[^>]*>/g, imgReplacer)
-            .replace(/<script/g, "<**禁止使用script**")
-            .replace(/\n/g, "<br>")
-    }
+    postContent = props.postData.content.replace(/<img[^>]*>/g, imgReplacer)
+        .replace(/<script/g, "<**禁止使用script**")
+        .replace(/\n/g, "<br>")
+
 
     //第三种屏蔽类型：不变更postData，仅进行折叠
     if (userStore.userData?.binggan.use_pingbici) {
@@ -244,7 +242,7 @@ const postData = computed(() => {//数据处理
 
         pingbiciContent?.forEach(pingbici => {
             const reg = new RegExp(pingbici, 'g')
-            if (reg.test(postData.content)) {
+            if (reg.test(postContent)) {
                 postFolded.value = true
                 postFoldedMessage.value = '屏蔽词折叠（点击展开）'
             }
@@ -256,7 +254,7 @@ const postData = computed(() => {//数据处理
         const pingbiciFjf = userStore.userData.pingbici?.fjf_pingbici
         pingbiciFjf?.forEach(pingbici => {
             const reg = new RegExp(pingbici, 'g')
-            if (reg.test(postData.created_binggan_hash!.slice(0, 5)!)) {
+            if (reg.test(props.postData.created_binggan_hash!.slice(0, 5)!)) {
                 postFolded.value = true
                 postFoldedMessage.value = '小尾巴黑名单（点击展开）'
             }
@@ -266,7 +264,7 @@ const postData = computed(() => {//数据处理
     //处理折叠音视频模式
     if (props.noVideoMode) {
         const reg = new RegExp(/<video|<audio|<embed|<iframe/, "g");
-        if (reg.test(postData.content)) {
+        if (reg.test(postContent)) {
             postFolded.value = true
             postFoldedMessage.value = '音视频折叠（点击展开）'
         }
@@ -278,14 +276,13 @@ const postData = computed(() => {//数据处理
         props.yourPostsList.forEach((floorNum) => {
             const str = `@№${floorNum}(?![0-9])`
             const reg = new RegExp(str, "g");
-            postData.content = postData.content.replace(reg, (match) => {
+            postContent = postContent.replace(reg, (match) => {
                 return `<span class="highlight">${match}</span>`
             })
         })
     }
 
-
-    return postData
+    return postContent
 })
 
 
