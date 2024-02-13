@@ -41,9 +41,9 @@
                 <n-form-item label="私密主题" path="isPrivate">
                     <n-switch v-model:value="tabNormalInput.isPrivate" />
                 </n-form-item>
-                <n-form-item label="标题颜色" path="titelColor">
+                <n-form-item label="标题颜色" path="titleColor">
                     <n-switch v-model:value="useTitleColor" />
-                    <n-color-picker v-model:value="tabNormalInput.titelColor" :modes="['hex']" :show-alpha="false"
+                    <n-color-picker v-model:value="tabNormalInput.titleColor" :modes="['hex']" :show-alpha="false"
                         :swatches="colorswatches" style="margin-left: 12px;" v-show="useTitleColor" />
                 </n-form-item>
                 <n-form-item label="合计花费" v-show="paidTotal > 0">
@@ -87,7 +87,7 @@ interface tabNormalInputType {
     antiJingfen: boolean,
     randomHeadsGroup: number,
     canBattle: boolean
-    titelColor: string,
+    titleColor: string,
     lockedByCoin: number | null,
     isPrivate: boolean,
     subId: number,
@@ -98,7 +98,7 @@ const tabNormalInput = ref<tabNormalInputType>({
     antiJingfen: false,
     randomHeadsGroup: 1,
     canBattle: false,
-    titelColor: '#212529',
+    titleColor: '#212529',
     lockedByCoin: null,
     isPrivate: false,
     subId: 10,
@@ -188,7 +188,7 @@ const paidTotal = computed<number>(() => {
 const tabNormalInputToParent = computed(() => {
     return {
         ...tabNormalInput.value,
-        titelColor: useTitleColor.value ? tabNormalInput.value.titelColor : null,
+        titleColor: useTitleColor.value ? tabNormalInput.value.titleColor : null,
         subId: tabNormalInput.value.subtitle === '[公告]' ? tabNormalInput.value.subId : 0
     }
 })

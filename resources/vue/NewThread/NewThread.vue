@@ -97,7 +97,7 @@ function newThreadHandle(content: contentCommit, resolve: (value: any) => void) 
         canBattle: tabNormalInput.value!.canBattle,
         randomHeadsGroup: tabNormalInput.value!.randomHeadsGroup,
         nissinTime: tabNormalInput.value!.nissinTime, //这是天数的数字
-        titleColor: tabNormalInput.value!.titelColor,
+        titleColor: tabNormalInput.value!.titleColor,
         lockedByCoin: tabNormalInput.value!.lockedByCoin,
         subId: tabNormalInput.value!.subId,
     }
