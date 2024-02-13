@@ -23,7 +23,7 @@
                     {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
                 </span>
                 <f-button size="small" type="primary" v-if="threadData.is_your_thread"
-                    style="float: right; margin-left: 0.5rem;">
+                    style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
                     变色
                 </f-button>
                 <f-button size="small" type="warning" v-if="userStore.checkAdminForums(forumData?.id)"
@@ -94,6 +94,9 @@
                 <f-button>屏蔽</f-button>
             </n-dropdown>
         </Teleport>
+
+        <!-- 各种弹出modal -->
+        <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
     </n-flex>
 </template>
 
@@ -117,6 +120,8 @@ import * as CryptoJS from 'crypto-js'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, useThemeVars } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import showDialog from '@/js/func/showDialog'
+import ChangeColorModal from './ChangeColorModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -139,6 +144,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 
 })
+
+//各种Modal
+const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -287,7 +295,6 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
 const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess } = useRequest(
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
-
 
 
 </script>

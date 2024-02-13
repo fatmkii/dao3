@@ -213,5 +213,32 @@ const postsListGetter = (params: getPostsListParams) => commonAlova.Get(
     }
 )
 
+//标题改色
+interface threadChangeColorParams {
+    binggan: string,
+    thread_id: number,
+    color: string,
+}
+const threadChangeColorPoster = (params: threadChangeColorParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/threads/change_color',
+        params,
+        {
+            //第三个参数是config
+            name: 'threadChangeColorPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
-export { threadData, delayThreadDeleter, newThreadPoster, newThreadParams, postsListGetter, postsListData, getPostsListParams }
+
+export {
+    threadData, delayThreadDeleter, newThreadPoster, newThreadParams, postsListGetter, postsListData, getPostsListParams,
+    threadChangeColorParams, threadChangeColorPoster,
+}
