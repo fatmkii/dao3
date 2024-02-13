@@ -1,6 +1,6 @@
 <template>
     <n-flex vertical>
-        <template v-if="showThis">
+        <template v-if="showThis && !postsListLoading && postsListData.posts_data !== undefined">
             <!-- 顶部功能按钮就及分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;">
                 <n-icon :size="commonStore.isMobile ? 28 : 34">
@@ -73,30 +73,27 @@
 
             <!-- 底部提示 -->
 
+            <!-- 页面底部留空白 -->
+            <div style="height: 50px;"></div>
+
+            <!-- 发送到TopBar的版面标题 -->
+            <Teleport to="#topbar-nav" v-if="!postsListLoading">
+                <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
+                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
+                        {{ forumData?.name }}
+                    </n-ellipsis>
+                    <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
+                    }}</n-tag>
+                </router-link>
+            </Teleport>
+            <Teleport to="#topbar-func" v-if="!postsListLoading">
+                <!-- 屏蔽按钮 -->
+                <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                    <f-button>屏蔽</f-button>
+                </n-dropdown>
+            </Teleport>
+
         </template>
-        <!-- 各种弹出提示框或者模态框 -->
-
-
-
-        <!-- 页面底部留空白 -->
-        <div style="height: 50px;"></div>
-
-        <!-- 发送到TopBar的版面标题 -->
-        <Teleport to="#topbar-nav" v-if="!postsListLoading">
-            <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
-                <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
-                    {{ forumData?.name }}
-                </n-ellipsis>
-                <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id }}</n-tag>
-            </router-link>
-        </Teleport>
-        <Teleport to="#topbar-func" v-if="!postsListLoading">
-            <!-- 屏蔽按钮 -->
-            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                <f-button>屏蔽</f-button>
-            </n-dropdown>
-        </Teleport>
-
         <!-- 各种弹出modal -->
         <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
     </n-flex>

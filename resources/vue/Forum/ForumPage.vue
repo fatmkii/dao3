@@ -1,65 +1,66 @@
 <template>
     <n-flex vertical>
-        <!-- 轮播图 -->
-        <div class="carousel-box" v-if="!hideBanner">
-            <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
-                <n-skeleton class="carousel-skeleton" sharp />
+        <template v-if="!threadsDataLoading && threadsData.threads_data !== undefined">
+            <!-- 轮播图 -->
+            <div class="carousel-box" v-if="!hideBanner">
+                <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
+                    <n-skeleton class="carousel-skeleton" sharp />
+                </div>
+                <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
+                    <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
+                </n-carousel>
             </div>
-            <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
-                <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
-            </n-carousel>
-        </div>
+            <!-- 各种按钮 -->
+            <n-flex style="margin-top:8px ;" size="small">
+                <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                    <f-button>功能</f-button>
+                </n-dropdown>
+                <n-dropdown trigger="hover" :options="filterOptions" placement="bottom-start">
+                    <f-button>筛选</f-button>
+                </n-dropdown>
+                <n-icon :size="commonStore.isMobile ? 28 : 34">
+                    <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
+                </n-icon>
+                <div style="margin-left: auto;"></div>
+                <f-button type="primary">大喇叭</f-button>
+                <f-button type="primary"
+                    @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
+            </n-flex>
+            <!-- 搜索输入（弹出） -->
+            <n-flex v-if="showSearchInput" :wrap="false">
+                <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题"
+                    auto-size />
+                <f-button type="primary" @click="handleFetchThreadsList(true)">搜索</f-button>
+                <f-button type="default" @click="handleSearchClear">清空</f-button>
+            </n-flex>
 
-        <!-- 各种按钮 -->
-        <n-flex style="margin-top:8px ;" size="small">
-            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                <f-button>功能</f-button>
-            </n-dropdown>
-            <n-dropdown trigger="hover" :options="filterOptions" placement="bottom-start">
-                <f-button>筛选</f-button>
-            </n-dropdown>
-            <n-icon :size="commonStore.isMobile ? 28 : 34">
-                <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
-            </n-icon>
-            <div style="margin-left: auto;"></div>
-            <f-button type="primary">大喇叭</f-button>
-            <f-button type="primary"
-                @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
-        </n-flex>
-        <!-- 搜索输入（弹出） -->
-        <n-flex v-if="showSearchInput" :wrap="false">
-            <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题"
-                auto-size />
-            <f-button type="primary" @click="handleFetchThreadsList(true)">搜索</f-button>
-            <f-button type="default" @click="handleSearchClear">清空</f-button>
-        </n-flex>
+            <!-- 主题列表 -->
+            <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
+                :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
+                @withdraw-delay-thread-success="handleFetchThreadsList" />
 
-        <!-- 主题列表 -->
-        <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
-            :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
-            @withdraw-delay-thread-success="handleFetchThreadsList" />
+            <!-- 底部分页导航及延时主题按钮 -->
+            <n-flex :align="'center'">
+                <f-button :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
+                    {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
+                </f-button>
+                <Pagination v-model:page="pageSelected"
+                    :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage" style="margin-left: auto;" />
+            </n-flex>
 
-        <!-- 底部分页导航及延时主题按钮 -->
-        <n-flex :align="'center'">
-            <f-button :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
-                {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
-            </f-button>
-            <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
-                style="margin-left: auto;" />
-        </n-flex>
+            <!-- 页面底部留空白 -->
+            <div style="height: 50px;"></div>
 
-        <!-- 页面底部留空白 -->
-        <div style="height: 50px;"></div>
-
-        <!-- 发送到TopBar的版面标题 -->
-        <Teleport to="#topbar-nav">
-            <router-link to="/" class="flex-item-center">
-                <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
-                    {{ forumsStore.forumData(forumId)?.name }}
-                </n-ellipsis>
-                <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumId }}</n-tag>
-            </router-link>
-        </Teleport>
+            <!-- 发送到TopBar的版面标题 -->
+            <Teleport to="#topbar-nav">
+                <router-link to="/" class="flex-item-center">
+                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
+                        {{ forumsStore.forumData(forumId)?.name }}
+                    </n-ellipsis>
+                    <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumId }}</n-tag>
+                </router-link>
+            </Teleport>
+        </template>
     </n-flex>
 </template>
 
