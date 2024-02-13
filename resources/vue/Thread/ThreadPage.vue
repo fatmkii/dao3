@@ -16,7 +16,9 @@
                 <f-button type="primary" @click="handleFetchPostsList(true)">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
-
+            <!-- 浏览进度弹出提示 -->
+            <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
+                :disable-scroll="Boolean(search)" />
             <!-- 标题 -->
             <n-card v-if="!postsListLoading" class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
@@ -118,15 +120,16 @@ import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useWatcher, useRequest } from 'alova'
 import * as CryptoJS from 'crypto-js'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, useThemeVars } from 'naive-ui'
-import { computed, h, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import showDialog from '@/js/func/showDialog'
+import { computed, h, nextTick, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import ChangeColorModal from './ChangeColorModal.vue'
+import BrowseLogger from './BrowseLogger.vue'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
+const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
@@ -209,6 +212,58 @@ const funcOptions = [
     },
 ]
 
+//侦听分页器跳转路由
+const pageSelected = ref<number>(props.page)
+watch(pageSelected,
+    (toPage) => {
+        router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
+    }
+)
+watch(() => props.page,
+    //其他代码router.push的时候，也需要同时变更pageSelected
+    (page) => pageSelected.value = page
+)
+
+//useWathcer和useFetcher共用的回复列表数据请求参数
+const postsListParams = computed<getPostsListParams>(() => {
+    return {
+        threadId: props.threadId,
+        binggan: userStore.binggan!,
+        page: props.page,
+        searchContent: props.search,
+    }
+})
+
+//获取回复列表数据（监听props变更）
+const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSuccess } = useWatcher(
+    () => postsListGetter(postsListParams.value),
+    [() => props.threadId, () => props.page, () => props.search],
+    { initialData: {}, immediate: true, }
+);
+postsListOnSuccess(() => {
+    nextTick(() => {
+        //如果地址有#hash，则滚动到对应hash
+        if (route.hash) {
+            const floorTarget = document.querySelector(route.hash)
+            floorTarget?.scrollIntoView({ block: "center", behavior: "auto" });
+        }
+    })
+})
+
+//刷新回复列表数据
+const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
+const { fetching: postsListFetching, onSuccess: fetchPostsListOnSucess, fetch: fetchPostsList } = useFetcher();
+function handleFetchPostsList(remind: boolean = false) {
+    remindFetch.value = remind
+    fetchPostsList(postsListGetter(postsListParams.value))
+}
+fetchPostsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+
+//从postsListData抽离出threadData和forumData方便使用
+const threadData = computed(() => postsListData.value.thread_data)
+const forumData = computed(() => postsListData.value.forum_data)
+
+
 //搜索功能
 const searchContentInput = ref<string | undefined>(props.search)
 const showSearchInput = ref<boolean>(props.search ? true : false)
@@ -228,48 +283,10 @@ function handleSearchClear() {
 
 }
 
-//侦听分页器跳转路由
-const pageSelected = ref<number>(props.page)
-watch(pageSelected,
-    (toPage) => {
-        router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
-    }
-)
 
 //自动涮锅功能//TODO
 const postListening = ref<boolean>(false)
 
-
-
-//useWathcer和useFetcher共用的回复列表数据请求参数
-const postsListParams = computed<getPostsListParams>(() => {
-    return {
-        threadId: props.threadId,
-        binggan: userStore.binggan!,
-        page: props.page,
-        searchContent: props.search,
-    }
-})
-
-//获取回复列表数据（监听props变更）
-const { loading: postsListLoading, data: postsListData } = useWatcher(
-    () => postsListGetter(postsListParams.value),
-    [() => props.threadId, () => props.page, () => props.search],
-    { initialData: {}, immediate: true, }
-);
-
-//刷新回复列表数据
-const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
-const { fetching: postsListFetching, onSuccess: fetchPostsListOnSucess, fetch: fetchPostsList } = useFetcher();
-function handleFetchPostsList(remind: boolean = false) {
-    remindFetch.value = remind
-    fetchPostsList(postsListGetter(postsListParams.value))
-}
-fetchPostsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
-
-//从postsListData抽离出threadData和forumData方便使用
-const threadData = computed(() => postsListData.value.thread_data)
-const forumData = computed(() => postsListData.value.forum_data)
 
 //发送新回复
 function newPostHandle(content: contentCommit, resolve: (value: any) => void) {

@@ -1,6 +1,6 @@
 <template>
     <!-- 回复card -->
-    <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor">
+    <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor" :floor="postData.floor">
         <n-collapse :expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->

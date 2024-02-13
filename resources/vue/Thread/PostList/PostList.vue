@@ -106,20 +106,6 @@ function quoteClick(content: string) {
     emit('quoteClick', content)
 }
 
-//生成一个“is_your_post”的floor号清单，给PostItem标注自己的被引用
-const yourPostList = computed(() => {
-    const result = Array.from(postsData.value).map((postData) => {
-        if (postData.is_your_post) {
-            return postData.floor
-        } else {
-            return undefined
-        }
-    })
-    console.log(result)
-    return result
-})
-
-
 </script>
 
 <style scoped>

@@ -16,6 +16,10 @@
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
+                    <f-button size="tiny" type="primary" v-if="browseLoggerData[threadData.id]"
+                        @click="$router.push({ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((browseLoggerData[threadData.id]!.floor + 1) / 200) }, hash: '#f_' + browseLoggerData[threadData.id]!.floor })">
+                        [{{ browseLoggerData[threadData.id]?.floor }}楼]
+                    </f-button>
                     <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
@@ -43,9 +47,10 @@
 
 <script setup lang="ts">
 import { delayThreadDeleter, type threadData } from '@/api/methods/threads'
+import { useBrowseLogger } from '@/js/func/browseLogger'
+import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
-import showDialog from '@/js/func/showDialog'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NSkeleton, NText, useThemeVars } from 'naive-ui'
 import { computed } from 'vue'
@@ -74,6 +79,11 @@ const threadCardsContentStyle = computed(() => {
         paddingBottom: commonStore.isMobile ? '6px' : '',
     }
 })
+
+//记录浏览进度和显示
+const browseLogger = useBrowseLogger({}) //用于记录浏览进度的类
+const browseLoggerData = browseLogger.data
+
 
 //撤回延时主题功能
 const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSuccess: withdrawDelayThreadSuccess } = useRequest(
