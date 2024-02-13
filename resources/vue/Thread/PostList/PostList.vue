@@ -4,7 +4,8 @@
         <PostItem v-for="postData in postsData" :post-data-raw="postData" :key="postData.id" :anti-jingfen="antiJingfen"
             :forum-id="forumId" :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode"
             :no-head-mode="noHeadMode" :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
-            :random-head-group-index="randomHeadGroupIndex" @show-reward-modal="RewardModalCom?.show" />
+            :random-head-group-index="randomHeadGroupIndex" @show-reward-modal="RewardModalCom?.show"
+            @quote-click="(content) => emit('quoteClick', content)" />
     </n-flex>
     <n-flex vertical :size="2" v-else>
         <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />
@@ -67,6 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
 //各种emit
 const emit = defineEmits<{
     refreshPostsList: [],
+    quoteClick: [content: string],
 }>()
 
 //各种Modal

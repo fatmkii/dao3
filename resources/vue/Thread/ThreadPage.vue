@@ -34,14 +34,13 @@
             <n-skeleton v-else class="thread-title-skeleton" sharp />
 
             <!-- 循环渲染各个回复 -->
-            <PostList :show-this="!postsListLoading"
-                :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
+            <PostList :show-this="!postsListLoading" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
                 :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
                 :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
                 :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
                 :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
                 :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
-                :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode"
+                :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" @quote-click="postInputCom?.quoteHandle"
                 @refresh-posts-list="handleFetchPostsList(false)" />
 
             <!-- 自动涮锅和分页导航 -->
@@ -65,8 +64,8 @@
                     :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
             </n-flex>
             <!-- 输入框 -->
-            <PostInput mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id" :disabled="false"
-                :handling="newPostHandling" @content-commit="newPostHandle" />
+            <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
+                :disabled="false" :handling="newPostHandling" @content-commit="newPostHandle" />
 
 
             <!-- 底部提示 -->
@@ -124,6 +123,7 @@ const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const router = useRouter()
 const themeVars = useThemeVars()
+const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()

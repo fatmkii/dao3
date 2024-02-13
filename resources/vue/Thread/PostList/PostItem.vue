@@ -4,14 +4,14 @@
         <n-collapse :expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
-                <span v-html="postData.content" class="post-span"></span>
+                <span v-html="postData.content" class="post-content" ref="postContentDom"></span>
                 <!-- 正文下面的footer，楼号等 -->
-                <n-flex class="post-footer" id="post-footer"
+                <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
                     size="small">
-                    <n-text :depth="3" class="post-footer-text" @click="console.log('//TODO回复引用')"
-                        style="cursor: pointer;">№{{ postData.floor }}</n-text>
-                    <n-text class="post-nick-name" @click="console.log('//TODO回复引用')" style="cursor: pointer;">
+                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">№{{
+                        postData.floor }}</n-text>
+                    <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
                         {{ postData.nickname }}
                     </n-text>
                     <n-text class="post-created-at">{{ postData.created_at }}</n-text>
@@ -19,7 +19,7 @@
                     <n-text v-if="antiJingfen" class="post-anti-jingfen">
                         →{{ postData.created_binggan_hash?.slice(0, 5) }}
                     </n-text>
-                </n-flex>
+                </div>
                 <!-- 默认的箭头，把它设为空的div -->
                 <template #arrow>
                     <div></div>
@@ -78,6 +78,8 @@ const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const router = useRouter()
 const themeVars = useThemeVars()
+const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
+const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
 
 //组件props
 interface Props {
@@ -104,6 +106,7 @@ const props = withDefaults(defineProps<Props>(), {
 //注册事件
 const emit = defineEmits<{
     showRewardModal: [payload: rewardModalPayload],
+    quoteClick: [content: string],
 }>()
 
 //打赏回复及管理员选项的下拉菜单
@@ -113,19 +116,18 @@ const funcOptions = computed(() => {
         //不是自己回复的时候才追加打赏按钮
         options.unshift({ label: '打赏', key: 'gift', icon: renderIcon(Gift, { size: '1.5rem' }) })
     }
-    if (userStore.checkAdminForums(1)) //TODO
-        return options
+    // if (userStore.checkAdminForums(1)) //TODO管理员功能
+    return options
 })
 
 //打赏功能
 function rewardHandle() {
-    const postFooter = document.getElementById('post-footer') as HTMLDivElement | null
     emit('showRewardModal', {
         floor: postData.value.floor,
         forumId: props.forumId,
         threadId: postData.value.thread_id,
         postId: postData.value.id,
-        postFloorMessage: postFooter!.innerText,
+        postFloorMessage: postFooterDom.value!.innerText,
     })
 }
 
@@ -136,7 +138,9 @@ function dropdownSelect(name: dropdownNames) {
         case 'gift'://打赏
             rewardHandle()
             break;
-
+        case 'quote'://引用
+            quoteClick()
+            break;
         default:
             break;
     }
@@ -164,7 +168,7 @@ function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片�
         }
     }
 }
-const postData = computed(() => {
+const postData = computed(() => {//数据处理
     let postData: postData
     //第二种屏蔽类型：文本元素的替换（图片和表情包等）
     postData = {
@@ -214,13 +218,49 @@ const postData = computed(() => {
 })
 
 
+//点击引用的处理
+function quoteClick() {
+    const maxQuote = 3; //最大可引用的层数
 
+    // 折叠details标签的内容避免被引用;
+    let elements_details = postContentDom.value!.getElementsByTagName("details");
+    for (let dom of elements_details) {
+        dom.open = false;
+    }
+
+    let postLines = postContentDom.value!.innerText.split("\n");
+    let indexArray: number[] = [];
+
+    //搜索引用的层数
+    postLines.forEach((postLine, index) => {
+        if (postLine.indexOf("@№") > -1) {
+            indexArray.push(index);
+        }
+    });
+
+    //如果层数过多，只截取部分回复引用
+    if (indexArray.length >= maxQuote) {
+        postLines = postLines.slice(
+            indexArray[indexArray.length - maxQuote] + 1,
+            postLines.length
+        );
+    }
+    const quoteContent =
+        "<span class='quote_content'>" +
+        postLines.join("\n") +
+        "\n" +
+        '@' + postFooterDom.value!.innerText.replace(/\n/g, ' ') +
+        "</span>" +
+        "\n";
+
+    emit("quoteClick", quoteContent);
+}
 
 
 </script>
 
 <style scoped lang="scss">
-.post-span {
+.post-content {
     font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
 
     span {

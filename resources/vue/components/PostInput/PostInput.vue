@@ -55,8 +55,8 @@
         </n-flex>
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" placeholder="正文内容" :autosize="{ minRows: 5, maxRows: 10 }"
-            style="border-radius: 10px; " :input-props="{ id: 'content-input' }" @change="contentInputChange"
-            @keyup.ctrl.enter="handleCommit($event)" />
+            ref="contentInputDom" style="border-radius: 10px; " :input-props="{ id: 'content-input' }"
+            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
             <f-button style="margin-right: auto;">上传图片</f-button>
@@ -92,6 +92,7 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const themeStore = usethemeStore()
+const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件引用
 
 //组件props
 interface Props {
@@ -207,6 +208,14 @@ function emojiAppend(emojiSrc: string, isMyEmoji: boolean) {
     contentInputChange()//记录一次输入历史
     contentInputTextarea.focus()//返回焦点
 }
+
+//响应来自父组件的“回复引用”事件
+function quoteHandle(content: string) {
+    contentInput.value = content
+    contentInputChange()
+    contentInputDom.value?.focus()
+}
+defineExpose({ quoteHandle })
 
 
 //向父组件发出contentCommit事件
