@@ -73,9 +73,9 @@ Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
 Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
     // Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show'); //获得单个帖子数据
     Route::post('/create', [PostController::class, 'create'])->middleware('CheckBinggan:create'); //新帖子
-    // Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
+    Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
     // Route::post('/create_roll', [PostController::class, 'create_roll'])->middleware('CheckBinggan:create'); //新roll点
-    // Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
+    Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
 });
 
 //各种杂项

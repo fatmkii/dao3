@@ -5,7 +5,8 @@
             :your-posts-list="yourPostsList" :anti-jingfen="antiJingfen" :forum-id="forumId"
             :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
             :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :random-head-group-index="randomHeadGroupIndex"
-            @show-reward-modal="RewardModalCom?.show" @quote-click="quoteClick" />
+            @show-reward-modal="RewardModalCom?.show" @quote-click="quoteClick"
+            @refresh-posts-list="emit('refreshPostsList')" />
     </n-flex>
     <n-flex vertical :size="2" v-else>
         <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />

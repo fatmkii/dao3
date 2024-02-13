@@ -2,6 +2,7 @@ import { commonAlova } from '@/api/index';
 import { forumData } from '@/api/methods/forums'
 import type { subtitlesType } from '@/data/subtitles';
 import type { threadType } from '@/vue/NewThread';
+import { threadId } from 'worker_threads';
 
 interface postData {
     id: number,
@@ -51,6 +52,59 @@ const newPostPoster = (params: newPostParams) => {
     return methodInstance
 }
 
+//用户删除回复
+interface deletePostParams {
+    binggan: string,
+    thread_id: number,
+    post_id: number,
+}
+const deletePostDeleter = (params: deletePostParams) => {
+    const methodInstance = commonAlova.Delete(
+        'api/posts/' + params.post_id,
+        {
+            binggan: params.binggan,
+            thread_id: params.thread_id,
+        },
+        {
+            //第三个参数是config
+            name: 'deletePostDeleter',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+//用户恢复已删除的回复
+interface recoverPostParams {
+    binggan: string,
+    thread_id: number,
+    post_id: number,
+}
+const recoverPostPutter = (params: recoverPostParams) => {
+    const methodInstance = commonAlova.Put(
+        'api/posts/recover/' + params.post_id,
+        {
+            binggan: params.binggan,
+            thread_id: params.thread_id,
+        },
+        {
+            //第三个参数是config
+            name: 'recoverPostPutter',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
 
-export { postData, newPostPoster, newPostParams, }
+export { postData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams }

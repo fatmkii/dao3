@@ -38,9 +38,15 @@
                 <!-- header-extra 放下拉菜单和删除按钮 -->
                 <template #header-extra>
                     <n-flex size="small">
-                        <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post" style="cursor: pointer;"
-                            @click="console.log('//TODO删除自己回复')">
+                        <n-icon :size="commonStore.isMobile ? 20 : 24"
+                            v-if="postData.is_your_post && postData.is_deleted === 0" style="cursor: pointer;"
+                            @click="deletePostHandle">
                             <Delete />
+                        </n-icon>
+                        <n-icon :size="commonStore.isMobile ? 20 : 24"
+                            v-if="postData.is_your_post && postData.is_deleted === 1" style="cursor: pointer;"
+                            @click="recoverPostHandle">
+                            <Recover />
                         </n-icon>
                         <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
                             :size="commonStore.isMobile ? 'medium' : 'large'">
@@ -59,18 +65,21 @@
 <script setup lang="ts">
 import { NFlex, NCard, NCollapse, NCollapseItem, NIcon, NDropdown, NText, useThemeVars } from 'naive-ui'
 import { FButton, FCheckbox, FInput } from '@custom'
+import { useRequest } from 'alova'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { usethemeStore } from '@/stores/theme'
-import type { postData } from '@/api/methods/posts'
+import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
+import type { postData, deletePostParams, recoverPostParams } from '@/api/methods/posts'
 import { renderIcon } from '@/js/func/renderIcon'
 import randomHeadsData from '@/data/randomHeads'
 import { useRouter } from 'vue-router'
 import { ref, computed, watch, h } from 'vue'
 import { Delete as Delete } from '@vicons/carbon'
-import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote } from '@vicons/ionicons5'
+import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
+import showDialog from '@/js/func/showDialog'
 
 //基础数据
 const userStore = useUserStore()
@@ -108,6 +117,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
     showRewardModal: [payload: rewardModalPayload],
     quoteClick: [content: string],
+    refreshPostsList: [],
 }>()
 
 //打赏回复及管理员选项的下拉菜单
@@ -129,6 +139,54 @@ function rewardHandle() {
         threadId: postData.value.thread_id,
         postId: postData.value.id,
         postFloorMessage: postFooterDom.value!.innerText,
+    })
+}
+
+//用户删除回复的功能
+function deletePostHandle() {
+    function handle() {
+        const params: deletePostParams = {
+            binggan: userStore.binggan!,
+            thread_id: postData.value.thread_id,
+            post_id: postData.value.id,
+        }
+        deletePostDeleter(params).then(() => emit('refreshPostsList'))
+    }
+    showDialog({
+        title: "要删除这个回复吗？",
+        content: "会消费300olo喔",
+        onPositiveClick: () => {
+            if (postData.value.hongbao_id !== null) {
+                showDialog({
+                    title: "注意",
+                    content: "这个回帖有红包。删除后红包将消失，并且olo不退回。是否确认？",
+                    onPositiveClick: () => {
+                        handle()
+                    }
+                })
+            } else {
+                handle()
+            }
+        }
+    })
+}
+
+//用户恢复已删除的功能
+function recoverPostHandle() {
+    function handle() {
+        const params: recoverPostParams = {
+            binggan: userStore.binggan!,
+            thread_id: postData.value.thread_id,
+            post_id: postData.value.id,
+        }
+        recoverPostPutter(params).then(() => emit('refreshPostsList'))
+    }
+    showDialog({
+        title: "要恢复这个已删除的回复吗？",
+        content: "会消费300olo喔",
+        onPositiveClick: () => {
+            handle()
+        }
     })
 }
 

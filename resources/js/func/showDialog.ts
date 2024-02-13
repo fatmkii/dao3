@@ -1,5 +1,6 @@
 interface args {
     title: string,
+    content?: string,
     mode?: 'warning' | 'success'
     onPositiveClick?: (event: MouseEvent) => void,
     onNegativeClick?: (event: MouseEvent) => void,
@@ -9,6 +10,7 @@ function showDialog(args: args) {
     const dialogArgs = {
         title: args.title,
         closable: false,
+        content: args.content,
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: args.onPositiveClick,
