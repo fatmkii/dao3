@@ -5,12 +5,14 @@ import { GlobalThemeOverrides } from 'naive-ui'
 //naive ui的override
 const lightThemeOverrides: GlobalThemeOverrides = {
     common: {
-        // cardColor: "rgba(249, 249, 249, 1)",
-        "bodyColor": "rgba(249, 249, 249, 1)"
+        bodyColor: "rgba(249, 249, 249, 1)"
     },
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
-    //暂时为空
+    common: {
+        textColor1: "rgba(255, 255, 255, 0.73)",
+        textColor2: "rgba(255, 255, 255, 0.66)",
+    },
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
     //暂时为空
