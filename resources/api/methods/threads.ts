@@ -178,7 +178,8 @@ interface postsListData<arrayType> {
         currentPage: number,
         lastPage: number,
         data: postData[],
-    }
+    },
+    your_post_floors: number[],
 }
 interface getPostsListParams {
     threadId: number,

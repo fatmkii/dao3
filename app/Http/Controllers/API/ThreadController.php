@@ -496,6 +496,11 @@ class ThreadController extends Controller
             $CurrentThread->makeVisible('is_your_thread');
         }
 
+        //如果有提供binggan，生成一个该用户发言的floor楼号清单，使前端标记用户被回复的清空
+        if ($request->query('binggan')) {
+            $your_post_floors = $CurrentThread->posts()->where('created_binggan', $user->binggan)->pluck('floor');
+        }
+
         //为反精分帖子加上created_binggan_hash
         if ($CurrentThread->anti_jingfen) {
             $posts->append('created_binggan_hash');
@@ -536,6 +541,7 @@ class ThreadController extends Controller
                     "data" => $posts,
                     "lastPage" => $lastPage,
                 ),
+                'your_post_floors' => $your_post_floors,
             ],
         ]);
     }

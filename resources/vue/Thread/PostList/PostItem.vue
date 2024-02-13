@@ -85,6 +85,7 @@ const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
 interface Props {
     forumId: number,
     postDataRaw: postData,
+    yourPostsList: number[] | [],
     randomHeadGroupIndex: number,
     antiJingfen?: boolean,
     noImageMode?: boolean,
@@ -214,6 +215,18 @@ const postData = computed(() => {//数据处理
 
     }
 
+    //根据yourPostsList标注自己被引用的回复
+    if (props.yourPostsList) {
+        props.yourPostsList.forEach((floorNum) => {
+            const str = `@№${floorNum}(?![0-9])`
+            const reg = new RegExp(str, "g");
+            postData.content = postData.content.replace(reg, (match) => {
+                return `<span class="highlight">${match}</span>`
+            })
+        })
+    }
+
+
     return postData
 })
 
@@ -246,7 +259,7 @@ function quoteClick() {
         );
     }
     const quoteContent =
-        "<span class='quote_content'>" +
+        "<span class='quote-content'>" +
         postLines.join("\n") +
         "\n" +
         '@' + postFooterDom.value!.innerText.replace(/\n/g, ' ') +

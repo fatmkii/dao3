@@ -37,6 +37,7 @@
             <PostList :show-this="!postsListLoading" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
                 :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
                 :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
+                :your-posts-list="postsListLoading ? [] : postsListData.your_post_floors"
                 :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
                 :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
                 :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"

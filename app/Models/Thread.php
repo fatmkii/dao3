@@ -53,16 +53,16 @@ class Thread extends ModelWithSuffix
         return $this->belongsTo(Forum::class);
     }
 
-    // public function Posts()
-    // {
-    //     // Posts数据库表分表。根据Tread->id万位以上数字作为Post表后缀
-    //     // 例如thread->id是2xxxx的post在表post_2表里。
-    //     // suffix方法写在ModelWithSuffix类里
-    //     // $posts = Post::suffix(intval($this->id / 10000));
-    //     $posts = new Post;
-    //     $posts->setSuffix(intval($this->id / 10000));
-    //     return new HasMany($posts->newQuery(), $this, 'thread_id', 'id');
-    // }
+    public function Posts()
+    {
+        // Posts数据库表分表。根据Tread->id万位以上数字作为Post表后缀
+        // 例如thread->id是2xxxx的post在表post_2表里。
+        // suffix方法写在ModelWithSuffix类里
+        // $posts = Post::suffix(intval($this->id / 10000));
+        $posts = new Post;
+        $posts->setSuffix(intval($this->id / 10000));
+        return new HasMany($posts->newQuery(), $this, 'thread_id', 'id');
+    }
 
     // public function VoteQuestion()
     // {

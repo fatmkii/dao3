@@ -1,11 +1,11 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
         <!-- 回复card -->
-        <PostItem v-for="postData in postsData" :post-data-raw="postData" :key="postData.id" :anti-jingfen="antiJingfen"
-            :forum-id="forumId" :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode"
-            :no-head-mode="noHeadMode" :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
-            :random-head-group-index="randomHeadGroupIndex" @show-reward-modal="RewardModalCom?.show"
-            @quote-click="(content) => emit('quoteClick', content)" />
+        <PostItem v-for="postData in postsData" :key="postData.id" :post-data-raw="postData"
+            :your-posts-list="yourPostsList" :anti-jingfen="antiJingfen" :forum-id="forumId"
+            :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
+            :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :random-head-group-index="randomHeadGroupIndex"
+            @show-reward-modal="RewardModalCom?.show" @quote-click="quoteClick" />
     </n-flex>
     <n-flex vertical :size="2" v-else>
         <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />
@@ -37,6 +37,7 @@ const router = useRouter()
 interface Props {
     showThis: boolean,
     postsDataRaw: postData[] | [],
+    yourPostsList: number[] | [],
     forumId: number,
     randomHeadGroupIndex: number,
     antiJingfen?: boolean,
@@ -99,7 +100,23 @@ const postsData = computed(() => {
     return postsData
 })
 
+//处理来自子组件的回复引用事件
+function quoteClick(content: string) {
+    emit('quoteClick', content)
+}
 
+//生成一个“is_your_post”的floor号清单，给PostItem标注自己的被引用
+const yourPostList = computed(() => {
+    const result = Array.from(postsData.value).map((postData) => {
+        if (postData.is_your_post) {
+            return postData.floor
+        } else {
+            return undefined
+        }
+    })
+    console.log(result)
+    return result
+})
 
 
 </script>

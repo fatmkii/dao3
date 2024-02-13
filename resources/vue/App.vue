@@ -39,5 +39,14 @@ const userStore = useUserStore()
 .quote_content,
 .quote-content {
     color: v-bind('themeVars.textColor3');
+
+
+}
+
+.quote_content,
+.post-content {
+    .highlight {
+        color: v-bind('themeVars.warningColor');
+    }
 }
 </style>
