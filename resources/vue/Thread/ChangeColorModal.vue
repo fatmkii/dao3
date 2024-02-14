@@ -7,7 +7,7 @@
                     要更换标题颜色吗？每次收费500个olo喔
                 </n-text>
                 <n-color-picker v-model:value="titleColorInput" :modes="['hex']" :show-alpha="false"
-                    :swatches="colorswatches" />
+                    style="max-width: 8.2rem;" :swatches="colorswatches" />
             </n-flex>
             <template #action>
                 <n-flex justify="end">
