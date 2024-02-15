@@ -57,7 +57,8 @@
             ]
         },
         "types": [
-            "node"
+            "node",
+            "vite/client"
         ]
     },
 }
