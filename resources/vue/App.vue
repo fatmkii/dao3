@@ -25,6 +25,7 @@ import DialogApi from '@/vue/Components/DialogApi.vue'
 import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider, zhCN, useThemeVars, NThemeEditor } from 'naive-ui'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user';
+import { useEcho } from '@/js/echo.js'
 
 //加载主题相关的store
 const themeStore = usethemeStore()
@@ -32,6 +33,12 @@ const themeVars = useThemeVars()
 //加载用户信息的store
 //如果localstorage没有token或者binggan，实际上不会发起请求，store中是一些默认空白数值
 const userStore = useUserStore()
+
+//测试websocket
+const echo = useEcho()
+echo.channel("thread_88361").listen("NewPost", (response: any) => console.log(response))
+
+
 
 </script>
 

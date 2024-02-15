@@ -14,5 +14,3 @@ app.component('app', root_component)
 app.use(router)
 app.use(pinia)
 app.mount('#app')
-
-
