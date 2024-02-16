@@ -52,6 +52,33 @@ const newPostPoster = (params: newPostParams) => {
     return methodInstance
 }
 
+//获取单个回复数据
+interface postParams {
+    binggan: string,
+    thread_id: number,
+    post_id: number,
+}
+const postGetter = (params: postParams) => {
+    const methodInstance = commonAlova.Get<postData>(
+        'api/posts/' + params.post_id,
+        {
+            //第三个参数是config
+            name: 'postGetter',
+            params: {
+                binggan: params.binggan,
+                thread_id: params.thread_id,
+            },
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+
 //用户删除回复
 interface deletePostParams {
     binggan: string,
@@ -107,4 +134,4 @@ const recoverPostPutter = (params: recoverPostParams) => {
 }
 
 
-export { postData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams }
+export { postData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }
