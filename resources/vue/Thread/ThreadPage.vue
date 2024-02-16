@@ -313,6 +313,15 @@ function getPostDataAndPush(threadId: number, postId: number) {//获取单个回
     }
     postGetter(params).then((postData: postData) => {
         postsListData.value.posts_data.data.push(postData)
+        const scrollTopNow =
+            document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
+        nextTick(() => {
+            if (postInputCom.value?.isTyping) {
+                //如果正在输入，则使窗口位置保持不变
+                document.documentElement.scrollTop =
+                    document.body.clientHeight - scrollTopNow;
+            }
+        });
     })
 }
 watch(postListening, (value) => {//开关广播监听

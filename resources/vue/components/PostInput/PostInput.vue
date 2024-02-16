@@ -56,7 +56,8 @@
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" placeholder="正文内容" :autosize="{ minRows: 5, maxRows: 10 }"
             ref="contentInputDom" style="border-radius: 10px; " :input-props="{ id: 'content-input' }"
-            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" />
+            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false"
+            @focus="isTyping = true" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
             <f-button style="margin-right: auto;">上传图片</f-button>
@@ -215,7 +216,6 @@ function quoteHandle(content: string) {
     contentInputChange()
     contentInputDom.value?.focus()
 }
-defineExpose({ quoteHandle })
 
 
 //向父组件发出contentCommit事件
@@ -250,5 +250,11 @@ function resetContent() {
     contentInput.value = ""
     isDelayInput.value = false
 }
+
+//确认输入框是否在输入中，并且向父组件返回
+const isTyping = ref<boolean>(false)
+
+
+defineExpose({ quoteHandle, isTyping })
 
 </script>
