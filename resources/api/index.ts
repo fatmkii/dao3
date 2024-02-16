@@ -25,16 +25,16 @@ export const commonAlova = createAlova({
 
                 if (response.status == 401) {
                     commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
-                    throw new Error(response.statusText);
+                    throw new Error(response.statusText, { cause: { code: response.status } });
                 }
 
                 const json = await response.json();
                 if (json.message) {
                     window.$message.error(JSON.stringify(json.message), { closable: true, duration: 5000 }) //json.message有时候是数组，所以需要转为字符串（例如输入验证错误时）
-                    throw new Error(json.message);
+                    throw new Error(json.message, { cause: { code: json.code } });
                 } else {
                     window.$message.error(response.statusText, { closable: true, duration: 5000 })
-                    throw new Error(response.statusText);
+                    throw new Error(response.statusText, { cause: { code: json.code } });
                 }
             }
 
@@ -46,11 +46,11 @@ export const commonAlova = createAlova({
 
                 if (json.code == 21499) {
                     commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
-                    throw new Error(json.message);
+                    throw new Error(json.message, { cause: { code: json.code } });
                 }
 
                 window.$message.error(JSON.stringify(json.message), { closable: true, duration: 5000 })//json.message有时候是数组，所以需要转为字符串（例如输入验证错误时）
-                throw new Error(json.message);
+                throw new Error(json.message, { cause: { code: json.code } });
             }
 
             if (method.meta?.shouldRemind) {

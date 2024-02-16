@@ -41,7 +41,7 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     // Route::post('/pingbici_add', [UserController::class, 'pingbici_add'])->middleware('CheckBinggan:create');     //追加屏蔽词
     // Route::post('/my_emoji_set', [UserController::class, 'my_emoji_set'])->middleware('CheckBinggan:create');     //设定表情包
     // Route::post('/my_emoji_add', [UserController::class, 'my_emoji_add'])->middleware('CheckBinggan:create');     //追加表情包
-    // Route::post('/water_unlock', [UserController::class, 'water_unlock'])->middleware('CheckBinggan:create');     //解除灌水锁定
+    Route::post('/water_unlock', [UserController::class, 'water_unlock'])->middleware('CheckBinggan:create');     //解除灌水锁定
     // Route::post('/user_lv_up', [UserController::class, 'user_lv_up'])->middleware('CheckBinggan:create');
     // Route::get('/user_lv_show', [UserController::class, 'user_lv_show'])->middleware('CheckBinggan:show');
     // Route::post('/show_messages_index', [UserController::class, 'show_messages_index'])->middleware('CheckBinggan:show'); //获得站内消息列表
@@ -81,3 +81,11 @@ Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
 //各种杂项
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']);
 Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
+// Route::get('/emoji', [CommonController::class, 'emoji_index']);
+// Route::get('/subtitles', [CommonController::class, 'subtitles_index']);
+// Route::get('/random_heads', [CommonController::class, 'random_heads_index']);
+Route::get('/captcha', [CommonController::class, 'get_captcha']);
+// Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);
+// Route::post('/img_upload', [CommonController::class, 'img_upload'])->middleware('CheckBinggan:create'); //上传图片
+// Route::post('/store_pool', [CommonController::class, 'store_hongbao_pool'])->middleware('CheckBinggan:create'); //投入祝福池
+// Route::get('/get_pool', [CommonController::class, 'get_hongbao_pool'])->middleware('CheckBinggan:show'); //获取祝福池信息

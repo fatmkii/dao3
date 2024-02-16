@@ -98,6 +98,7 @@
 
         <!-- 各种弹出modal -->
         <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
+        <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
     </n-flex>
 </template>
 
@@ -124,6 +125,7 @@ import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
+import CaptchaModal from './CaptchaModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -150,6 +152,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 //各种Modal
 const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(null)
+const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -365,6 +368,8 @@ watch([() => props.threadId, () => props.page, () => props.search],//路由变�
 
 
 //发送新回复
+let contentCommitTemp: contentCommit
+let resolveTemp: (value: any) => void
 function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
     const timestamp = new Date().getTime();
     const params: newPostParams = {
@@ -384,8 +389,19 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
         resolve('success') //来自PostInput的Promise回调，让PostInput复位
         handleFetchPostsList(false)
     })
+    newPostOnError((event) => {
+        if (event.error.cause.code === 244291) {
+            contentCommitTemp = content
+            resolveTemp = resolve
+            CaptchaModalCom.value?.show()
+        }
+    })
 }
-const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess } = useRequest(
+function newPostHandleAgain() {
+    newPostHandle(contentCommitTemp, resolveTemp)
+}
+
+const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess, onError: newPostOnError } = useRequest(
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
 

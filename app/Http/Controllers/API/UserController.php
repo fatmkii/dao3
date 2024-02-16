@@ -408,4 +408,45 @@ class UserController extends Controller
             ],
         );
     }
+
+    //输入验证码后解除灌水锁定
+    public function water_unlock(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'captcha_key' => 'required|string',
+            'captcha_code' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if (Redis::exists("captcha_key_" . $request->captcha_key)) {
+            $captcha_code = Redis::get("captcha_key_" . $request->captcha_key);
+            if ($captcha_code == strtolower($request->captcha_code)) {
+                Redis::del('new_post_record_IP_' . $request->ip());
+                return response()->json([
+                    'code' => ResponseCode::SUCCESS,
+                    'message' => '已解除限制。',
+                ]);
+            } else {
+                ProcessUserActive::dispatch(
+                    [
+                        'binggan' => $user->binggan,
+                        'user_id' => $user->id,
+                        'active' => '用户输入验证码错误',
+                        'content' => 'code:' . $captcha_code . ' input:' . $request->captcha_code,
+                    ]
+                );
+                return response()->json([
+                    'code' => ResponseCode::CAPTCHA_WRONG,
+                    'message' => ResponseCode::$codeMap[ResponseCode::CAPTCHA_WRONG],
+                ]);
+            }
+        } else {
+            return response()->json([
+                'code' => ResponseCode::CAPTCHA_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::CAPTCHA_NOT_FOUND],
+            ]);
+        }
+    }
 }

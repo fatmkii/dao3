@@ -101,6 +101,29 @@ const userRewardPoster = (params: userRewardParams) => {
     return methodInstance
 }
 
+//输入验证码解除灌水锁定
+interface waterUnlockParams {
+    binggan: string,
+    captcha_key: string,
+    captcha_code: string,
+}
+const waterUnlockPoster = (params: waterUnlockParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/water_unlock',
+        params,
+        {
+            //第三个参数是config
+            name: 'waterUnlockPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
 
-export { userDataGetter, userRegisterPoster, userRewardPoster }
-export type { userData, userRewardParams }
+
+export { userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster, waterUnlockPoster, waterUnlockParams }
