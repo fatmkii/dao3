@@ -334,15 +334,20 @@ watch(postListening, (value) => {//开关广播监听
         try {
             handleFetchPostsList(false)
             echo.connect()
-            echo.channel("thread_" + props.threadId).listen("NewPost", (response: broadcastNewPost) => listenNewPost(response))
+            echo.channel("thread_" + props.threadId)
+                .listen("NewPost", (response: broadcastNewPost) => listenNewPost(response))
+            echo.pusher?.connection.bind("state_change", (states: { previous: string, current: string }) => {
+                if (states.current === 'unavailable') {
+                    window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
+                    postListening.value = false
+                }
+            })
         } catch (error) {
-            console.log(error)
-            postListening.value = false
             window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
+            postListening.value = false
         }
     } else {
         if (echo.isConnected) {
-            // echo.leaveAllChannels()
             echo.disconnect()
         }
     }

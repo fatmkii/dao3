@@ -68,6 +68,14 @@ class echoInstance {
             return false
         }
     }
+
+    get pusher() {
+        if (this._echoConnector instanceof Echo) {
+            return this._echoConnector.connector.pusher as Pusher
+        } else {
+            return null
+        }
+    }
 }
 
 
