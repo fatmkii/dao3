@@ -8,10 +8,12 @@ use App\Models\Thread;
 use App\Common\ResponseCode;
 use App\Events\NewPostBroadcast;
 use App\Models\Battle;
+use Illuminate\Database\Eloquent\BroadcastsEvents;
+use Illuminate\Broadcasting\Channel;
 
 class Post extends ModelWithSuffix
 {
-    use HasFactory;
+    use HasFactory, BroadcastsEvents;
 
     protected $binggan = '';
     protected $user_id = 0;
@@ -257,9 +259,48 @@ class Post extends ModelWithSuffix
     //     }
     // }
 
-    // public function broadcast()
+    public function broadcast()
+    {
+        broadcast(new NewPostBroadcast($this->thread_id, $this->id, $this->floor))->toOthers();
+        return $this;
+    }
+
+    /**
+     * 获取模型事件应该广播到的频道
+     *
+     * @return array<string, array<int, \Illuminate\Broadcasting\Channel|\Illuminate\Database\Eloquent\Model>>
+     */
+    // public function broadcastOn(string $event): array
     // {
-    //     broadcast(new NewPostBroadcast($this->thread_id, $this->id, $this->floor))->toOthers();
-    //     return $this;
+    //     return [new Channel('thread_' . $this->thread_id)];
+    //     return match ($event) {
+    //         // 'deleted' => [],
+    //         'created' => [new Channel('thread_' . $this->thread_id)],
+    //         default => [$this, $this->user],
+    //     };
+    // }
+
+    /**
+     * 模型事件的广播名称。
+     */
+    // public function broadcastAs(string $event): string|null
+    // {
+    //     return match ($event) {
+    //         'created' => 'NewPost',
+    //         default => null,
+    //     };
+    // }
+
+    /**
+     * 获取要广播到模型的数据。
+     *
+     * @return array<string, mixed>
+     */
+    // public function broadcastWith(string $event): array
+    // {
+    //     return match ($event) {
+    //         'created' => ['post' => $this],
+    //         default => ['model' => $this],
+    //     };
     // }
 }

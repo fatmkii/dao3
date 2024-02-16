@@ -14,8 +14,10 @@
         "@vicons/ionicons5": "^0.12.0",
         "@vitejs/plugin-vue": "^4.2.3",
         "axios": "^1.1.2",
+        "laravel-echo": "^1.15.3",
         "laravel-vite-plugin": "^0.7.5",
         "naive-ui": "^2.37.3",
+        "pusher-js": "^8.4.0-rc2",
         "sass": "^1.69.7",
         "vite": "^4.0.0"
     },

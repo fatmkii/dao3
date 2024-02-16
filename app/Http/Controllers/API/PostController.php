@@ -166,8 +166,7 @@ class PostController extends Controller
         $user_medal_record->push_posts_num();
 
         //广播发帖动作
-        // broadcast(new NewPostBroadcast($request->thread_id, $post->id, $post->floor))->toOthers();
-        // $post->broadcast();
+        $post->broadcast();
 
         return response()->json(
             [
@@ -364,7 +363,8 @@ class PostController extends Controller
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
-            'post_data' => $post,
+            'data' => $post,
+            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
         ]);
     }
 

@@ -47,9 +47,9 @@
 
         <!-- 自动涮锅和分页导航 -->
         <n-flex :align="'center'" style="margin-top: 8px;">
-            <f-button type="primary" :disabled="postListening" :loading="postListening"
-                @click="handleFetchPostsList(true)">刷新</f-button>
-            <n-switch v-model:value="postListening">
+            <f-button type="primary" :disabled="postListening || postsListFetching"
+                :loading="postListening || postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
+            <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
                 <template #checked>
                     涮锅中…
                 </template>
@@ -57,6 +57,10 @@
                     自动涮锅
                 </template>
             </n-switch>
+            <router-link :to="{ name: 'thread', params: { threadId: threadId, page: page + 1 } }"
+                v-if="postListenShowNextPage">回帖已经翻页、点击前往
+            </router-link>
+            <n-text v-if="!isLastPage">在最后一页才能自动涮锅</n-text>
         </n-flex>
 
         <!-- 分页导航 -->
@@ -98,8 +102,9 @@
 </template>
 
 <script setup lang="ts">
-import { newPostPoster, type newPostParams } from '@/api/methods/posts'
+import { newPostPoster, postGetter, type newPostParams, type postParams, type postData } from '@/api/methods/posts'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
+import { useEcho } from '@/js/echo.js'
 import { useDebounce } from '@/js/func/debounce'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
@@ -112,13 +117,13 @@ import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useFetcher, useWatcher, useRequest } from 'alova'
+import { useFetcher, useRequest, useWatcher } from 'alova'
 import * as CryptoJS from 'crypto-js'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import ChangeColorModal from './ChangeColorModal.vue'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
+import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
+import ChangeColorModal from './ChangeColorModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -279,8 +284,84 @@ function handleSearchClear() {
 }
 
 
-//自动涮锅功能//TODO
+//自动涮锅功能（广播系统）
 const postListening = ref<boolean>(false)
+const postListenShowNextPage = ref<boolean>(false)
+const isLastPage = computed(() => props.page === (postsListLoading ? props.page : postsListData.value.posts_data.lastPage))
+const echo = useEcho()
+interface broadcastNewPost {
+    post_id: number,
+    thread_id: number,
+    post_floor: number,
+}
+function listenNewPost(response: broadcastNewPost) {//执行监听的回调
+    if (response.post_floor >= props.page * 200) {
+        //如果新回复通知中，楼层号大于本页的，则关闭监听并显示翻页选项
+        postListening.value = false;
+        postListenShowNextPage.value = true;
+    } else {
+        //否则，请求新回复数据
+        const postExist = postsListData.value.posts_data.data.find((post) => post.id === response.post_id)
+        if (!postExist) {
+            //如果post_id不存在，才去获取新数据
+            getPostDataAndPush(response.thread_id, response.post_id);
+        }
+    }
+}
+function getPostDataAndPush(threadId: number, postId: number) {//获取单个回复数据并插入到数据中
+    const params: postParams = {
+        binggan: userStore.binggan!,
+        post_id: postId,
+        thread_id: threadId,
+    }
+    postGetter(params).then((postData: postData) => {
+        postsListData.value.posts_data.data.push(postData)
+        const scrollTopNow =
+            document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
+        nextTick(() => {
+            if (postInputCom.value?.isTyping) {
+                //如果正在输入，则使窗口位置保持不变
+                document.documentElement.scrollTop =
+                    document.body.clientHeight - scrollTopNow;
+            }
+        });
+    })
+}
+watch(postListening, (value) => {//开关广播监听
+    if (value === true) {
+        try {
+            handleFetchPostsList(false)
+            echo.connect()
+            echo.channel("thread_" + props.threadId)
+                .listen("NewPost", (response: broadcastNewPost) => listenNewPost(response))
+            echo.pusher?.connection.bind("state_change", (states: { previous: string, current: string }) => {
+                if (states.current === 'unavailable') {
+                    window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
+                    postListening.value = false
+                }
+            })
+        } catch (error) {
+            window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
+            postListening.value = false
+        }
+    } else {
+        if (echo.isConnected) {
+            echo.disconnect()
+        }
+    }
+})
+onBeforeUnmount(() => {
+    if (echo.isConnected) {
+        echo.disconnect()
+    }
+})
+watch([() => props.threadId, () => props.page, () => props.search],//路由变化时停止自动涮锅
+    () => {
+        postListening.value = false
+        postListenShowNextPage.value = false
+    }
+)
+
 
 
 //发送新回复
