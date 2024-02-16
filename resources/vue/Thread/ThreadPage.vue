@@ -60,7 +60,7 @@
             <router-link :to="{ name: 'thread', params: { threadId: threadId, page: page + 1 } }"
                 v-if="postListenShowNextPage">回帖已经翻页、点击前往
             </router-link>
-            <n-text v-if="!isLastPage">在最后一页才能自动涮锅</n-text>
+            <n-text v-if="!isLastPage">在最新一页才能自动涮锅</n-text>
         </n-flex>
 
         <!-- 分页导航 -->
@@ -287,7 +287,7 @@ function handleSearchClear() {
 //自动涮锅功能（广播系统）
 const postListening = ref<boolean>(false)
 const postListenShowNextPage = ref<boolean>(false)
-const isLastPage = computed(() => props.page === (postsListLoading ? props.page : postsListData.value.posts_data.lastPage))
+const isLastPage = computed(() => props.page === (postsListLoading.value ? props.page : postsListData.value.posts_data.lastPage))
 const echo = useEcho()
 interface broadcastNewPost {
     post_id: number,
