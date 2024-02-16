@@ -50,7 +50,7 @@
             <n-flex :align="'center'" style="margin-top: 8px;">
                 <f-button type="primary" :disabled="postListening || postsListFetching"
                     :loading="postListening || postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
-                <n-switch v-model:value="postListening">
+                <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
                     <template #checked>
                         涮锅中…
                     </template>
@@ -58,6 +58,10 @@
                         自动涮锅
                     </template>
                 </n-switch>
+                <router-link :to="{ name: 'thread', params: { threadId: threadId, page: page + 1 } }"
+                    v-if="postListenShowNextPage">回帖已经翻页、点击前往
+                </router-link>
+                <n-text v-if="!isLastPage">在最后一页才能自动涮锅</n-text>
             </n-flex>
 
             <!-- 分页导航 -->
@@ -117,7 +121,7 @@ import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import * as CryptoJS from 'crypto-js'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, useThemeVars } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
@@ -285,6 +289,7 @@ function handleSearchClear() {
 //自动涮锅功能（广播系统）
 const postListening = ref<boolean>(false)
 const postListenShowNextPage = ref<boolean>(false)
+const isLastPage = computed(() => props.page === (postsListLoading ? props.page : postsListData.value.posts_data.lastPage))
 const echo = useEcho()
 interface broadcastNewPost {
     post_id: number,
@@ -347,9 +352,11 @@ onBeforeUnmount(() => {
         echo.disconnect()
     }
 })
-watch([() => props.threadId, () => props.page, () => props.search],
-    //路由变化时停止自动涮锅
-    () => postListening.value = false
+watch([() => props.threadId, () => props.page, () => props.search],//路由变化时停止自动涮锅
+    () => {
+        postListening.value = false
+        postListenShowNextPage.value = false
+    }
 )
 
 
