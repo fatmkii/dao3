@@ -32,6 +32,11 @@ const routes = [
         }),
         component: () => import('@/vue/NewThread/NewThread.vue')
     },
+    {
+        path: '/user-center',
+        component: () => import('@/vue/UserCenter/UserCenter.vue'),
+        name: 'user-center',
+    },
 ]
 
 const router = createRouter({

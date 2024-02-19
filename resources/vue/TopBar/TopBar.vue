@@ -36,12 +36,14 @@ import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
 import { h, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { FButton } from '@custom';
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const router = useRouter()
+const route = useRoute()
 
 //主题相关
 const themeStore = usethemeStore()
@@ -112,7 +114,10 @@ const userOptions = [
     {
         label: '个人中心',
         key: 'profile',
-        icon: renderIcon(CogIcon, { size: '1.25rem' })
+        icon: renderIcon(CogIcon, { size: '1.25rem' }),
+        props: {
+            onClick: () => router.push('/user-center')
+        }
     },
     {
         label: '退出饼干',
@@ -151,7 +156,6 @@ function callRegisterHintModal() {
 
 
 onMounted(() => {
-    const route = useRoute();
     if (!(localStorage.getItem('Binggan') && localStorage.getItem('Token')) && route.path == '/') {
         //当没有localstorage没有登录信息，且路由在首页时，自动弹出登录modal
         loginModal.value?.show()

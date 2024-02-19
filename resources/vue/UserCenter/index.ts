@@ -1,0 +1,11 @@
+export { default as TabCommon } from './TabCommon.vue';
+export { default as TabBank } from './TabBank.vue';
+export { default as TabChara } from './TabChara.vue';
+export { default as TabCustom } from './TabCustom.vue';
+export { default as TabEmojis } from './TabEmojis.vue';
+export { default as TabIncome } from './TabIncome.vue';
+export { default as TabLevelup } from './TabLevelup.vue';
+export { default as TabMedal } from './TabMedal.vue';
+export { default as TabPassword } from './TabPassword.vue';
+export { default as TabPingbici } from './TabPingbici.vue';
+export { default as UserCard } from './UserCard.vue';
