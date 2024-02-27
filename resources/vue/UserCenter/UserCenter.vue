@@ -2,8 +2,8 @@
     <n-flex vertical style="margin-top: 8px;">
         <UserCard />
         <n-divider style="margin-top: 0px;margin-bottom: 0px;"></n-divider>
-        <n-tabs type="line" :bar-width="0" animated :size="commonStore.isMobile ? 'small' : 'medium'"
-            v-model:value="tabValue">
+        <n-tabs type="line" :bar-width="commonStore.isMobile ? 0 : undefined" animated
+            :size="commonStore.isMobile ? 'small' : 'large'" v-model:value="tabValue">
             <n-tab-pane v-for="tab in tabsList" :name="tab.name" :tab="tab.tab" :key="tab.name">
                 <component :is="tab.component"></component>
             </n-tab-pane>

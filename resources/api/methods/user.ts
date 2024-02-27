@@ -125,5 +125,30 @@ const waterUnlockPoster = (params: waterUnlockParams) => {
     return methodInstance
 }
 
+//设定自定义表情包
+interface myEmojisSetParams {
+    binggan: string,
+    my_emoji: string[],
+}
+const myEmojisSetPoster = (params: myEmojisSetParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/my_emoji_set',
+        {
+            ...params,
+            my_emoji: JSON.stringify(params.my_emoji)
+        },
+        {
+            //第三个参数是config
+            name: 'myEmojisSetPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
-export { userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster, waterUnlockPoster, waterUnlockParams }
+export { userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster, waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams }

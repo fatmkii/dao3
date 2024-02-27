@@ -12,7 +12,8 @@ use App\Exceptions\CoinException;
 use App\Jobs\ProcessIncomeStatement;
 use App\Jobs\ProcessUserActive;
 use App\Models\MyEmoji;
-
+use App\Models\UserBank;
+use App\Models\UserMedalRecord;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -367,7 +368,7 @@ class User extends Authenticatable
 
     public function UserLV()
     {
-        // return $this->hasOne(UserLV::class);
+        return $this->hasOne(UserLV::class);
     }
 
     public function AdminPermissions()
@@ -408,7 +409,7 @@ class User extends Authenticatable
 
     public function UserBank()
     {
-        // return $this->hasMany(UserBank::class);
+        return $this->hasMany(UserBank::class);
     }
 
     public function getMyBattleCharaAttribute()

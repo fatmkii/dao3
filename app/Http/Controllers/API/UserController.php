@@ -11,12 +11,41 @@ use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Pingbici;
+use App\Models\MyEmoji;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
 {
+
+    //UserLV相关
+    const MYEMOJI_MIN = 5000;  //我的表情包初始长度
+    const MYEMOJI_MAX = 30000;  //我的表情包最大长度
+    const MYEMOJI_INTERVAL = 1000;  //我的表情包每次升级增加长度
+    const MYEMOJI_OLO = -20000;  //我的表情包每次升级消费olo
+
+    const TITLE_PINGBICI_MIN = 1000;  //标题屏蔽词初始长度
+    const TITLE_PINGBICI_MAX = 4000;  //标题屏蔽词最大长度
+    const TITLE_PINGBICI_INTERVAL = 200;  //标题屏蔽词每次升级增加长度
+    const TITLE_PINGBICI_OLO = -4000;  //我的表情包每次升级消费olo
+
+    const CONTENT_PINGBICI_MIN = 1000;  //内容屏蔽词每次初始长度
+    const CONTENT_PINGBICI_MAX = 4000;  //内容屏蔽词每次最大长度
+    const CONTENT_PINGBICI_INTERVAL = 200; //内容屏蔽词每次升级增加长度
+    const CONTENT_PINGBICI_OLO = -4000;  //我的表情包每次升级消费olo
+
+    const FJF_PINGBICI_MIN = 1000;  //反精分屏蔽词初始长度
+    const FJF_PINGBICI_MAX = 4000;  //反精分屏蔽词最大长度
+    const FJF_PINGBICI_INTERVAL = 200;  //反精分屏蔽词每次升级增加长度
+    const FJF_PINGBICI_OLO = -4000;  //我的表情包每次升级消费olo
+
+    const MYBATTLECHARA_MIN = 0;  //自定义大乱斗角色初始数量
+    const MYBATTLECHARA_MAX = 3;  //自定义大乱斗角色最大数量
+    const MYBATTLECHARA = -50000;  //自定义大乱斗角色每次升级消费olo
+
+
     /**
      * 生成随机字符串、排除容易混淆的
      */
@@ -448,5 +477,322 @@ class UserController extends Controller
                 'message' => ResponseCode::$codeMap[ResponseCode::CAPTCHA_NOT_FOUND],
             ]);
         }
+    }
+
+    //设定自定义屏蔽词
+    public function pingbici_set(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'use_pingbici' => 'required|boolean',
+            'title_pingbici' => 'json',
+            'content_pingbici' => 'json',
+            'fjf_pingbici' => 'json',
+        ]);
+
+        $user = $request->user;
+        // $user = User::where('binggan', $request->binggan)->first();
+        // if (!$user) {
+        //     return response()->json(
+        //         [
+        //             'code' => ResponseCode::USER_NOT_FOUND,
+        //             'message' => ResponseCode::$codeMap[ResponseCode::USER_NOT_FOUND],
+        //         ],
+        //     );
+        // }
+
+        //检查屏蔽词长度是否符合饼干等级
+        $user_lv = $user->UserLV;
+        if (!$user_lv) {
+            //如果不存在，则输入默认值
+            $user_lv = array(
+                'title_pingbici' => self::TITLE_PINGBICI_MIN,
+                'content_pingbici' => self::CONTENT_PINGBICI_MIN,
+                'fjf_pingbici' => self::FJF_PINGBICI_MIN,
+                'my_emoji' => self::MYEMOJI_MIN,
+            );
+        }
+        $user_lv_array = array(
+            'title_pingbici' => '标题屏蔽词',
+            'content_pingbici' => '内容屏蔽词',
+            'fjf_pingbici' => '反精分屏蔽词',
+        );
+        foreach ($user_lv_array as $name => $error_msg) {
+            if (mb_strlen($request[$name]) > $user_lv[$name]) {
+                return response()->json([
+                    'code' => ResponseCode::USER_ERROR,
+                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                ]);
+            }
+        }
+
+        if ($user->pingbici) {
+            $pingbici = $user->pingbici;
+        } else {
+            $pingbici = new Pingbici();
+        }
+        try {
+            DB::beginTransaction();
+            $user->use_pingbici = $request->use_pingbici;
+            $pingbici->user_id = $user->id;
+            $pingbici->title_pingbici = $request->title_pingbici;
+            $pingbici->content_pingbici = $request->content_pingbici;
+            $pingbici->fjf_pingbici = $request->fjf_pingbici;
+            $user->save();
+            $pingbici->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户更新了屏蔽词(新设定)',
+                'content' => 'title长度:' . mb_strlen($request->title_pingbici)
+                    . 'content长度:' . mb_strlen($request->content_pingbici)
+                    . 'fjf长度:' . mb_strlen($request->fjf_pingbici),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已设定屏蔽词',
+                'data' => [
+                    'pingbici' => $pingbici,
+                ]
+            ],
+        );
+    }
+
+    //追加自定义屏蔽词
+    public function pingbici_add(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'content_pingbici' => 'required|string',
+        ]);
+
+        $user = $request->user;
+
+        $pingbici = $user->Pingbici;
+        if ($pingbici) {
+            $pingbici_array = json_decode($user->Pingbici->content_pingbici);
+            if (in_array($request->content_pingbici, $pingbici_array)) {
+                return response()->json([
+                    'code' => ResponseCode::USER_ERROR,
+                    'message' => '该内容屏蔽词已存在：' . $request->content_pingbici,
+                ]);
+            }
+            array_push($pingbici_array, $request->content_pingbici);
+        } else {
+            $pingbici = new Pingbici();
+            $pingbici_array = [$request->content_pingbici]; //得是个数组
+        }
+
+        //检查屏蔽词长度是否符合饼干等级
+        $user_lv = $user->UserLV;
+        if (!$user_lv) {
+            //如果不存在，则输入默认值
+            $user_lv = array(
+                'title_pingbici' => self::TITLE_PINGBICI_MIN,
+                'content_pingbici' => self::CONTENT_PINGBICI_MIN,
+                'fjf_pingbici' => self::FJF_PINGBICI_MIN,
+                'my_emoji' => self::MYEMOJI_MIN,
+            );
+        }
+        $user_lv_array = array(
+            // 'title_pingbici' => '标题屏蔽词',
+            'content_pingbici' => '内容屏蔽词',
+            // 'fjf_pingbici' => '反精分屏蔽词',
+        );
+        foreach ($user_lv_array as $name => $error_msg) {
+            if (mb_strlen($request[$name]) + mb_strlen($pingbici->$name) > $user_lv[$name]) {
+                return response()->json([
+                    'code' => ResponseCode::USER_ERROR,
+                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                ]);
+            }
+        }
+
+
+        try {
+            DB::beginTransaction();
+            $user->use_pingbici = true;
+            $pingbici->user_id = $user->id;
+            // $pingbici->title_pingbici = $request->title_pingbici;
+            $pingbici->content_pingbici = json_encode($pingbici_array);
+            // $pingbici->fjf_pingbici = $request->fjf_pingbici;
+            $user->save();
+            $pingbici->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户更新了屏蔽词(追加)',
+                'content' => '长度:' . mb_strlen($request->content_pingbici),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已追加屏蔽词',
+                'content_pingbici' => json_encode($pingbici_array),
+            ],
+        );
+    }
+
+    //追加我的表情包
+    public function my_emoji_add(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'my_emoji' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->MyEmoji) {
+            $my_emoji = $user->MyEmoji;
+            $my_emoji_array = json_decode($my_emoji->emojis);
+            array_push($my_emoji_array, $request->my_emoji);
+        } else {
+            $my_emoji = new MyEmoji();
+            $my_emoji_array = [$request->my_emoji]; //得是个数组
+        }
+
+        //检查我的表情包长度是否符合饼干等级
+        $user_lv = $user->UserLV;
+        if (!$user_lv) {
+            //如果不存在，则输入默认值
+            $user_lv = array(
+                'title_pingbici' => self::TITLE_PINGBICI_MIN,
+                'content_pingbici' => self::CONTENT_PINGBICI_MIN,
+                'fjf_pingbici' => self::FJF_PINGBICI_MIN,
+                'my_emoji' => self::MYEMOJI_MIN,
+            );
+        }
+        $user_lv_array = array(
+            'my_emoji' => '我的表情包',
+        );
+        foreach ($user_lv_array as $name => $error_msg) {
+            if (mb_strlen($request[$name]) + mb_strlen($my_emoji->emojis) > $user_lv[$name]) {
+                return response()->json([
+                    'code' => ResponseCode::USER_ERROR,
+                    'message' => $error_msg . '长度为' . (mb_strlen($request[$name]) + mb_strlen($my_emoji->emojis)) . '。已超出了最大限制，可在个人中心升级限制。',
+                ]);
+            }
+        }
+
+        try {
+            DB::beginTransaction();
+            $my_emoji->user_id = $user->id;
+            $my_emoji->emojis = json_encode($my_emoji_array);
+            $my_emoji->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户更新了表情包(追加)',
+                'content' => '长度:' . mb_strlen($request->my_emoji),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已设定我的表情包',
+                'data' => [
+                    'my_emoji' => json_encode($my_emoji_array),
+                    'len' => mb_strlen($request['my_emoji']),
+                ]
+            ],
+        );
+    }
+
+    //设定我的表情包
+    public function my_emoji_set(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'my_emoji' => 'json',
+        ]);
+
+        $user = $request->user();
+
+        //检查我的表情包长度是否符合饼干等级
+        $user_lv = $user->UserLV;
+        if (!$user_lv) {
+            //如果不存在，则输入默认值
+            $user_lv = array(
+                'title_pingbici' => self::TITLE_PINGBICI_MIN,
+                'content_pingbici' => self::CONTENT_PINGBICI_MIN,
+                'fjf_pingbici' => self::FJF_PINGBICI_MIN,
+                'my_emoji' => self::MYEMOJI_MIN,
+            );
+        }
+        $user_lv_array = array(
+            'my_emoji' => '我的表情包',
+        );
+        foreach ($user_lv_array as $name => $error_msg) {
+            if (mb_strlen($request[$name]) > $user_lv[$name]) {
+                return response()->json([
+                    'code' => ResponseCode::USER_ERROR,
+                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                ]);
+            }
+        }
+
+        if ($user->MyEmoji) {
+            $my_emoji = $user->MyEmoji;
+        } else {
+            $my_emoji = new MyEmoji();
+        }
+        try {
+            DB::beginTransaction();
+            $my_emoji->user_id = $user->id;
+            $my_emoji->emojis = $request->my_emoji;
+            $my_emoji->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户更新了表情包(更新)',
+                'content' => '长度:' . mb_strlen($request->my_emoji),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已设定我的表情包',
+                'data' => [
+                    'my_emoji' => $my_emoji->emojis,
+                    'len' => mb_strlen($request['my_emoji']),
+                ]
+            ],
+        );
     }
 }
