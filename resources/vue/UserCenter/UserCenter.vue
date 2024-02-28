@@ -1,29 +1,29 @@
 <template>
     <n-flex vertical style="margin-top: 8px;">
-        <UserCard />
-        <n-divider style="margin-top: 0px;margin-bottom: 0px;"></n-divider>
-        <n-tabs type="line" :bar-width="commonStore.isMobile ? 0 : undefined" animated
-            :size="commonStore.isMobile ? 'small' : 'large'" v-model:value="tabValue">
-            <n-tab-pane v-for="tab in tabsList" :name="tab.name" :tab="tab.tab" :key="tab.name">
-                <component :is="tab.component"></component>
-            </n-tab-pane>
-        </n-tabs>
+        <DndProvider :backend="commonStore.isMobile ? TouchBackend : HTML5Backend">
+            <UserCard />
+            <n-divider style="margin-top: 0px;margin-bottom: 0px;"></n-divider>
+            <n-tabs type="line" :bar-width="commonStore.isMobile ? 0 : undefined" animated
+                :size="commonStore.isMobile ? 'small' : 'large'" v-model:value="tabValue">
+                <n-tab-pane v-for="tab in tabsList" :name="tab.name" :tab="tab.tab" :key="tab.name">
+                    <component :is="tab.component"></component>
+                </n-tab-pane>
+            </n-tabs>
+        </DndProvider>
     </n-flex>
 </template>
 
 <script setup lang="ts">
 
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
-import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { FButton, FCheckbox, FInput } from '@custom'
-import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NTabs, NTabPane, NDivider, NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { NDivider, NFlex, NTabPane, NTabs, useThemeVars } from 'naive-ui'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { TouchBackend } from 'react-dnd-touch-backend'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { DndProvider } from 'vue3-dnd'
 import { TabBank, TabChara, TabCommon, TabCustom, TabEmojis, TabIncome, TabLevelup, TabMedal, TabPassword, TabPingbici, UserCard } from './index'
 
 //基础数据

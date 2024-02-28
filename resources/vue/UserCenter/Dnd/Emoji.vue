@@ -15,7 +15,11 @@ import { toRefs } from '@vueuse/core'
 const props = defineProps<{
   emojiSrc: string
   index: number
-  moveCard: (dragIndex: number, hoverIndex: number) => void
+}>()
+
+const emit = defineEmits<{
+  deleteEmoji: [index: number],
+  moveCard: [dragIndex: number, hoverIndex: number]
 }>()
 
 interface DragItem {
@@ -75,7 +79,7 @@ const [dropCollect, drop] = useDrop<
     // }
 
     // Time to actually perform the action
-    props.moveCard(dragIndex, hoverIndex)
+    emit('moveCard', dragIndex, hoverIndex)
 
     // Note: we're mutating the monitor item here!
     // Generally it's better to avoid mutations,
@@ -93,6 +97,12 @@ const [collect, drag] = useDrag({
   collect: (monitor: any) => ({
     isDragging: monitor.isDragging(),
   }),
+  end: (item, monitor) => {
+    const dropResult = monitor.getDropResult<{ dropEffect: string, name: string }>()
+    if (item && dropResult?.name === 'Dustbin') {
+      emit('deleteEmoji', item.index)
+    }
+  },
 })
 
 const { handlerId } = toRefs(dropCollect)
