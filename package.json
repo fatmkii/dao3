@@ -23,10 +23,14 @@
     },
     "dependencies": {
         "@types/crypto-js": "^4.2.1",
+        "@vueuse/core": "^10.9.0",
         "alova": "^2.16.2",
         "crypto-js": "^4.2.0",
         "pinia": "^2.1.4",
+        "react-dnd-html5-backend": "^16.0.1",
+        "react-dnd-touch-backend": "^16.0.1",
         "vue": "^3.3.4",
-        "vue-router": "^4.2.2"
+        "vue-router": "^4.2.2",
+        "vue3-dnd": "^2.0.4"
     }
 }

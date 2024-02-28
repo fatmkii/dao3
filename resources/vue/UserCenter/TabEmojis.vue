@@ -1,20 +1,24 @@
 <template>
     <n-flex vertical>
         <!-- 现有表情包的编辑 -->
-        <n-card title="我的表情包" size="small">
-            <template #header-extra>
-                <n-flex size="small" :align="'center'">
-                    <n-text :depth="3" style="font-size: 0.875rem;">可拖拽(new!)</n-text>
-                    <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
-                    <f-button @click="removeDuplicate">一键去重</f-button>
+        <DndProvider :backend="commonStore.isMobile ? TouchBackend : HTML5Backend">
+            <n-card title="我的表情包" size="small">
+                <template #header-extra>
+                    <n-flex size="small" :align="'center'">
+                        <n-text :depth="3" style="font-size: 0.875rem;">可拖拽(new!)</n-text>
+                        <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
+                        <f-button @click="removeDuplicate">一键去重</f-button>
+                    </n-flex>
+                </template>
+                <n-flex size="small">
+                    <!-- <div class="emoji-box" v-for="( emojiItem, key, index ) in  emojiListInput">
+                        <img :src="emojiItem.emojiSrc" class="emoji-in-box">
+                    </div> -->
+                    <Emoji v-for="(emojiItem, index) in emojiListInput" :key="emojiItem.id" :emojiSrc="emojiItem.emojiSrc"
+                        :index="index" :move-card="moveCard" />
                 </n-flex>
-            </template>
-            <n-flex size="small">
-                <div class="emoji-box" v-for="( emojiItem, key, index ) in  emojiListInput">
-                    <img :src="emojiItem.emojiSrc" class="emoji-in-box">
-                </div>
-            </n-flex>
-        </n-card>
+            </n-card>
+        </DndProvider>
         <!-- 追加表情包功能 -->
         <n-card title="待追加的表情包" size="small" class="dash-line" v-if="showAppendEmoji">
             <template #header-extra>
@@ -52,6 +56,10 @@ import { FButton } from '@custom'
 import { NCard, NFlex, NText, NInput, useThemeVars } from 'naive-ui'
 import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { DndProvider } from 'vue3-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { TouchBackend } from 'react-dnd-touch-backend'
+import Emoji from '@/vue/UserCenter/Dnd/Emoji.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -83,6 +91,13 @@ watch(() => userStore.userDataLoading, (value) => {
     //监听userDataLoading，当用户数据重新读取时，把新数据更新到emojiListInput
     if (value === true) setEmojiListInput(userStore.userData.my_emoji)
 })
+
+//拖拽功能
+const moveCard = (dragIndex: number, hoverIndex: number) => {
+    const item = emojiListInput.value[dragIndex]
+    emojiListInput.value.splice(dragIndex, 1)
+    emojiListInput.value.splice(hoverIndex, 0, item)
+}
 
 
 //新表情包的追加
