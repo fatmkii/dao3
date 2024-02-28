@@ -10,6 +10,8 @@
                 </n-tab-pane>
             </n-tabs>
         </DndProvider>
+        <!-- 页面底部留空白 -->
+        <div style="height: 50px;"></div>
     </n-flex>
 </template>
 

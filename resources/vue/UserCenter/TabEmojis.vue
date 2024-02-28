@@ -3,10 +3,10 @@
         <!-- 现有表情包的编辑 -->
         <n-card title="我的表情包" size="small">
             <template #header-extra>
-                <n-flex size="small" :align="'center'">
+                <n-flex size="small" :align="'center'" :wrap="true">
                     <n-text :depth="3" style="font-size: 0.875rem;">可拖拽(new!)</n-text>
                     <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
-                    <f-button @click="removeDuplicate">一键去重</f-button>
+                    <f-button @click="removeDuplicate">去重</f-button>
                 </n-flex>
             </template>
             <!-- 表情包 -->
@@ -42,9 +42,9 @@
         <!-- 选择表情包功能 -->
 
         <!-- 提交按钮和其他显示 -->
-        <n-flex :align="'center'">
-            <f-button @click="emojiSetHandle" type="primary">提交</f-button>
+        <n-flex :align="'center'" :justify="'end'">
             <n-text :depth="3" style="font-size: 0.875rem;">上面所有变更都要提交后才生效喔</n-text>
+            <f-button @click="emojiSetHandle" type="primary">提交</f-button>
         </n-flex>
     </n-flex>
 </template>
@@ -136,7 +136,9 @@ function appendEmojiHandle() {
 
 //去除重复的表情包
 function removeDuplicate() {
-    emojiListInput.value = emojiListInput.value.filter((item, index) => emojiListInput.value.indexOf(item) === index);
+    let arr = emojiListInput.value.map(item => item.emojiSrc)//先合并回string[]
+    arr = arr.filter((item, index) => arr.indexOf(item) === index);//去重
+    emojiListInput.value = arr.map((item, index) => ({ emojiSrc: item, id: index }));//恢复为{emojiSrc:string,id:number}
 }
 
 
