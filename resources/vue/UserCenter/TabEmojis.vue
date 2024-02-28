@@ -10,8 +10,8 @@
                 </n-flex>
             </template>
             <n-flex size="small">
-                <div class="emoji-box" v-for="( emojiSrc, key, index ) in  emojiListInput">
-                    <img :src="emojiSrc" class="emoji-in-box">
+                <div class="emoji-box" v-for="( emojiItem, key, index ) in  emojiListInput">
+                    <img :src="emojiItem.emojiSrc" class="emoji-in-box">
                 </div>
             </n-flex>
         </n-card>
@@ -63,16 +63,25 @@ const themeVars = useThemeVars()
 
 
 //表情包列表（仅本组件编辑用的副本）
-const emojiListInput = ref<string[]>([])
+interface emojiItem {
+    emojiSrc: string,
+    id: number
+}
+const emojiListInput = ref<emojiItem[]>([])
+function setEmojiListInput(value: string[] | null) {
+    if (Array.isArray(value)) {
+        emojiListInput.value = value.map((src, index) => ({ emojiSrc: src, id: index }))
+    } else {
+        emojiListInput.value = []
+    }
+}
 if (userStore.userLoginStatus === true) {
     //初始化数据
-    emojiListInput.value = userStore.userData.my_emoji ?? []
+    setEmojiListInput(userStore.userData.my_emoji)
 }
 watch(() => userStore.userDataLoading, (value) => {
     //监听userDataLoading，当用户数据重新读取时，把新数据更新到emojiListInput
-    if (value === true) {
-        emojiListInput.value = userStore.userData.my_emoji ?? []
-    }
+    if (value === true) setEmojiListInput(userStore.userData.my_emoji)
 })
 
 
@@ -85,7 +94,11 @@ const appendEmojiInputArray = computed(() => {
 })
 function appendEmojiHandle() {
     showAppendEmoji.value = false
-    emojiListInput.value = emojiListInput.value.concat(appendEmojiInputArray.value)
+    //将新输入表情包转换成emojiItem类型后，再追加到emojiListInput（并且id递增）
+    const appendArray = appendEmojiInputArray.value.map((item, index) => ({ emojiSrc: item, id: index + emojiListInput.value.length }))
+    emojiListInput.value = emojiListInput.value.concat(appendArray)
+    appendEmojiInput.value = ''
+
 }
 
 //去除重复的表情包
@@ -96,9 +109,13 @@ function removeDuplicate() {
 
 //提交表情包
 function emojiSetHandle() {
+    if (showAppendEmoji.value === true) {
+        //如果用户忘记追加表情包，先追加再提交。
+        appendEmojiHandle()
+    }
     const params: myEmojisSetParams = {
         binggan: userStore.binggan!,
-        my_emoji: emojiListInput.value
+        my_emoji: emojiListInput.value.map(item => item.emojiSrc)
     }
     myEmojisSetPoster(params).then()
 }
