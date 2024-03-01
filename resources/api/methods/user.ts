@@ -23,7 +23,8 @@ interface userData {
         fjf_pingbici: string
         title_pingbici: string
     } | null,
-    my_emoji: string | null
+    my_emoji: string | null,
+    emoji_excluded: string | null
 }
 const userDataGetter = (binggan: string) => commonAlova.Post(
     '/api/user/show',
@@ -44,11 +45,12 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
                     admin_forums: data.binggan.admin_forums === undefined ? undefined : JSON.parse(data.binggan.admin_forums) as number[],
                 },
                 pingbici: data.pingbici === null ? null : {
-                    content_pingbici: data.pingbici.content_pingbici === null ? null : JSON.parse(data.pingbici.content_pingbici) as string[],
-                    fjf_pingbici: data.pingbici.fjf_pingbici === null ? null : JSON.parse(data.pingbici.fjf_pingbici) as string[],
-                    title_pingbici: data.pingbici.title_pingbici === null ? null : JSON.parse(data.pingbici.title_pingbici) as string[],
+                    content_pingbici: data.pingbici.content_pingbici === null ? [] : JSON.parse(data.pingbici.content_pingbici) as string[],
+                    fjf_pingbici: data.pingbici.fjf_pingbici === null ? [] : JSON.parse(data.pingbici.fjf_pingbici) as string[],
+                    title_pingbici: data.pingbici.title_pingbici === null ? [] : JSON.parse(data.pingbici.title_pingbici) as string[],
                 },
-                my_emoji: data.my_emoji === null ? null : JSON.parse(data.my_emoji) as string[],
+                my_emoji: data.my_emoji === null ? [] : JSON.parse(data.my_emoji) as string[],
+                emoji_excluded: data.emoji_excluded === null ? [] : JSON.parse(data.emoji_excluded) as number[],
             }
         }
     }
@@ -129,13 +131,15 @@ const waterUnlockPoster = (params: waterUnlockParams) => {
 interface myEmojisSetParams {
     binggan: string,
     my_emoji: string[],
+    emoji_excluded: number[],
 }
 const myEmojisSetPoster = (params: myEmojisSetParams) => {
     const methodInstance = commonAlova.Post(
         'api/user/my_emoji_set',
         {
             ...params,
-            my_emoji: JSON.stringify(params.my_emoji)
+            my_emoji: JSON.stringify(params.my_emoji),
+            emoji_excluded: JSON.stringify(params.emoji_excluded)
         },
         {
             //第三个参数是config

@@ -18,6 +18,7 @@ class CreateMyEmojiTable extends Migration
             $table->integer('user_id')->unique();
             $table->string('name')->default('我的表情包');
             $table->json('emojis')->nullable();
+            $table->json('emoji_excluded')->nullable();
             $table->softDeletes();
         });
     }

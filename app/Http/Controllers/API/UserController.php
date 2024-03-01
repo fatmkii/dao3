@@ -130,8 +130,10 @@ class UserController extends Controller
         $my_emoji = $user->MyEmoji;
         if ($my_emoji) {
             $my_emoji_data = $my_emoji->emojis;
+            $emoji_excluded = $my_emoji->emoji_excluded;
         } else {
             $my_emoji_data = null;
+            $emoji_excluded = null;
         }
 
         //自定义大乱斗角色
@@ -149,6 +151,7 @@ class UserController extends Controller
                     'binggan' => $user,
                     'pingbici' => $user->pingbici,
                     'my_emoji' => $my_emoji_data,
+                    'emoji_excluded' => $emoji_excluded,
                     // 'my_battle_chara' => $my_battle_chara,
                 ],
             ],
@@ -732,6 +735,7 @@ class UserController extends Controller
         $request->validate([
             'binggan' => 'required|string',
             'my_emoji' => 'json',
+            'emoji_excluded' => 'json',
         ]);
 
         $user = $request->user();
@@ -768,6 +772,7 @@ class UserController extends Controller
             DB::beginTransaction();
             $my_emoji->user_id = $user->id;
             $my_emoji->emojis = $request->my_emoji;
+            $my_emoji->emoji_excluded = $request->emoji_excluded;
             $my_emoji->save();
             DB::commit();
         } catch (Exception $e) {

@@ -1,10 +1,21 @@
 <template>
     <n-flex vertical>
-        <!-- 现有表情包的编辑 -->
+        <!-- 官方表情包的选择 -->
+        <n-card title="官方表情包" size="small">
+            <template #header-extra>
+                <n-text :depth="3" style="font-size: 0.875rem;">可以关闭不想要的表情包</n-text>
+            </template>
+            <n-checkbox-group v-model:value="emojiSelected">
+                <n-flex size="small">
+                    <n-checkbox v-for="emojiItem in emojiData" :value="emojiItem.id" :label="emojiItem.name" />
+                </n-flex>
+            </n-checkbox-group>
+        </n-card>
+        <!-- 我的表情包的编辑 -->
         <n-card title="我的表情包" size="small">
             <template #header-extra>
                 <n-flex size="small" :align="'center'" :wrap="true">
-                    <n-text :depth="3" style="font-size: 0.875rem;">可拖拽(new!)</n-text>
+                    <n-text :depth="3" style="font-size: 0.875rem;">可拖拽排序</n-text>
                     <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
                     <f-button @click="removeDuplicate">去重</f-button>
                 </n-flex>
@@ -56,13 +67,14 @@ import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { myEmojisSetPoster, type myEmojisSetParams } from '@/api/methods/user'
 import { FButton } from '@custom'
-import { NCard, NFlex, NText, NInput, NIcon, useThemeVars } from 'naive-ui'
+import { NCard, NFlex, NText, NInput, NIcon, NCheckbox, NCheckboxGroup, useThemeVars } from 'naive-ui'
 import { ref, watch, computed, unref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Emoji from '@/vue/UserCenter/Dnd/Emoji.vue'
 import { TrashCan } from '@vicons/carbon'
 import { useDrop } from 'vue3-dnd'
 import { toRefs } from '@vueuse/core'
+import emojiData from '@/data/emojiData'
 
 //基础数据
 const userStore = useUserStore()
@@ -72,8 +84,12 @@ const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
 
+//官方表情包选择
+const emojiIdsArray = emojiData.map(item => item.id) //提取官方表情包的id，形如[1,2,3……]
+const emojiSelected = ref<number[]>(emojiIdsArray.filter((id) => !userStore.userData.emoji_excluded.includes(id)))
+const emojiExcluded = computed<number[]>(() => emojiIdsArray.filter((id) => !emojiSelected.value.includes(id)))
 
-//表情包列表（仅本组件编辑用的副本）
+//我的表情包列表（仅本组件编辑用的副本）
 interface emojiItem {
     emojiSrc: string,
     id: number
@@ -150,7 +166,8 @@ function emojiSetHandle() {
     }
     const params: myEmojisSetParams = {
         binggan: userStore.binggan!,
-        my_emoji: emojiListInput.value.map(item => item.emojiSrc)
+        my_emoji: emojiListInput.value.map(item => item.emojiSrc),
+        emoji_excluded: emojiExcluded.value,
     }
     myEmojisSetPoster(params).then()
 }

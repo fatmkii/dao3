@@ -30,12 +30,10 @@ const commonStore = useCommonStore()
 interface Props {
     headsId?: number,
     autoHide?: boolean,
-    showEmojiGroupIds?: number[],
 }
 const props = withDefaults(defineProps<Props>(), {
     headsId: 0,
     autoHide: true,
-    showEmojiGroupIds: () => emojiDataRaw.map(item => item.id),
 })
 
 
@@ -44,9 +42,9 @@ const tabValue = ref<number>()
 
 //处理表情包数据
 const emojiData = computed(() => {
-    //过滤条件：1）包含在showEmojiGroupIds中（未被个人中心过滤）2）headsId为0（默认显示）或者headsId符合主题headsId
+    //过滤条件：1）未包含在userData的emoji_exclude中（个人中心的设定）2）headsId为0（默认显示）或者headsId符合主题headsId
     const result = emojiDataRaw.filter((emojiGroup) =>
-        props.showEmojiGroupIds.includes(emojiGroup.id) &&
+        !userStore.userData.emoji_excluded.includes(emojiGroup.id) &&
         (emojiGroup.headsId === 0 || emojiGroup.headsId === props.headsId)
     )
     //追加自定义表情包
