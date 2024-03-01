@@ -16,8 +16,8 @@
             <template #header-extra>
                 <n-flex size="small" :align="'center'" :wrap="true">
                     <n-text :depth="3" style="font-size: 0.875rem;">可拖拽排序</n-text>
-                    <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
                     <f-button @click="removeDuplicate">去重</f-button>
+                    <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
                 </n-flex>
             </template>
             <!-- 表情包 -->
@@ -50,13 +50,14 @@
                 style="border-radius: 10px; margin-top: 6px; " :autosize="{ minRows: 3, maxRows: 5 }" />
         </n-card>
 
-        <!-- 选择表情包功能 -->
-
         <!-- 提交按钮和其他显示 -->
         <n-flex :align="'center'" :justify="'end'">
             <n-text :depth="3" style="font-size: 0.875rem;">上面所有变更都要提交后才生效喔</n-text>
+            <f-button @click="exportAllEmoji">导出</f-button>
             <f-button @click="emojiSetHandle" type="primary">提交</f-button>
         </n-flex>
+
+        <ExportEmojiModal ref="ExportEmojiModalCom" />
     </n-flex>
 </template>
 
@@ -75,6 +76,7 @@ import { TrashCan } from '@vicons/carbon'
 import { useDrop } from 'vue3-dnd'
 import { toRefs } from '@vueuse/core'
 import emojiData from '@/data/emojiData'
+import ExportEmojiModal from './Modal/ExportEmojiModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -83,6 +85,7 @@ const forumsStore = useForumsStore()
 const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
+const ExportEmojiModalCom = ref<InstanceType<typeof ExportEmojiModal> | null>(null)
 
 //官方表情包选择
 const emojiIdsArray = emojiData.map(item => item.id) //提取官方表情包的id，形如[1,2,3……]
@@ -174,7 +177,7 @@ function emojiSetHandle() {
 
 //导出表情包
 function exportAllEmoji() {
-
+    ExportEmojiModalCom.value?.show(emojiListInput.value.map(item => item.emojiSrc).join(',\n'))
 }
 
 </script>

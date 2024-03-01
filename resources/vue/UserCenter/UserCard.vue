@@ -70,6 +70,7 @@ import { useUserStore } from '@/stores/user'
 import { CopyOutline as Copy } from '@vicons/ionicons5'
 import { NCard, NFlex, NIcon, NNumberAnimation, NText } from 'naive-ui'
 import { ref } from 'vue'
+import copyToClipboard from '@/js/func/copyToClipboard'
 
 //基础数据
 const userStore = useUserStore()
@@ -79,19 +80,6 @@ const commonStore = useCommonStore()
 const hideBinggan = ref<boolean>(true)
 
 //复制饼干
-function copyToClipboard(text: string) { //复制到剪贴板
-    if (!navigator.clipboard) {
-        // 如果浏览器不支持 Clipboard API，则降级为使用 document.execCommand 方法
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return;
-    }
-    navigator.clipboard.writeText(text)
-}
 function copyBingganHandle() {
     copyToClipboard(userStore.binggan!)
     window.$message.success('已将饼干复制到粘贴板，请保存好喔！')
