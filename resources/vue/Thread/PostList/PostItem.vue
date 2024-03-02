@@ -1,10 +1,12 @@
 <template>
     <!-- 回复card -->
     <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor" :floor="postData.floor">
-        <n-collapse :expanded-names="postFolded ? [] : ['default']" :trigger-areas="postFolded ? ['main'] : []">
+        <n-collapse :expanded-names="postIsFolded ? [] : ['default']" :trigger-areas="postIsFolded ? ['main'] : []">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
-                <span v-html="postContent" class="post-content" ref="postContentDom"></span>
+                <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle">
+                    <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
+                </div>
                 <!-- 正文下面的footer，楼号等 -->
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
@@ -15,10 +17,11 @@
                         {{ postData.nickname }}
                     </n-text>
                     <n-text class="post-created-at">{{ postData.created_at }}</n-text>
-
                     <n-text v-if="antiJingfen" class="post-anti-jingfen">
                         →{{ postData.created_binggan_hash?.slice(0, 5) }}
                     </n-text>
+                    <!-- <n-text v-if="isHeightLimited" class="unfold-height" @click="unfoldContent"> *展开高度限制*</n-text> -->
+                    <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
                 </div>
                 <!-- 默认的箭头，把它设为空的div -->
                 <template #arrow>
@@ -27,7 +30,7 @@
                 <!-- header，用来放头像和折叠提示 -->
                 <template #header>
                     <n-flex class="post-header" size="small" :align="'center'" style="cursor: pointer;"
-                        @click="postFolded = !postFolded">
+                        @click="postIsFolded = !postIsFolded">
                         <div class="random-head-container" v-if="!noHeadMode">
                             <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
                                 :class="'head_' + postData.random_head" />
@@ -78,7 +81,7 @@ import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import { NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, NAlert, useThemeVars } from 'naive-ui'
 import type { MessageRenderMessage } from 'naive-ui'
-import { computed, onMounted, ref, h } from 'vue'
+import { computed, onMounted, ref, h, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 //基础数据
@@ -88,6 +91,7 @@ const forumsStore = useForumsStore()
 const router = useRouter()
 const themeVars = useThemeVars()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
+const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
 
 //组件props
@@ -112,6 +116,15 @@ const props = withDefaults(defineProps<Props>(), {
     noHeadMode: false,
     noVideoMode: false,
 })
+
+//回复内容的style，用来折叠高度等
+const postContentContainerStyle = computed(() => ({
+    maxHeight: postContentContainerMaxHeight.value === undefined ? undefined : postContentContainerMaxHeight.value + 'px',
+}))
+const postContentStyle = computed(() => ({
+    top: postContentTopOffset.value === undefined ? undefined : postContentTopOffset.value + 'px',
+}))
+
 
 //注册事件
 const emit = defineEmits<{
@@ -206,7 +219,7 @@ function dropdownSelect(name: dropdownNames) {
 }
 
 //回复数据处理（各种屏蔽等）
-const postFolded = ref<boolean>(false)//是否被折叠的状态
+const postIsFolded = ref<boolean>(false)//是否被折叠的状态
 const postFoldedMessage = ref<string>()//折叠回复后的提示词
 function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片的回调函数
     if (match.search(/class='emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
@@ -243,7 +256,7 @@ const postContent = computed(() => {//数据处理
         pingbiciContent?.forEach(pingbici => {
             const reg = new RegExp(pingbici, 'g')
             if (reg.test(postContent)) {
-                postFolded.value = true
+                postIsFolded.value = true
                 postFoldedMessage.value = '屏蔽词折叠（点击展开）'
             }
         })
@@ -255,7 +268,7 @@ const postContent = computed(() => {//数据处理
         pingbiciFjf?.forEach(pingbici => {
             const reg = new RegExp(pingbici, 'g')
             if (reg.test(props.postData.created_binggan_hash!.slice(0, 5)!)) {
-                postFolded.value = true
+                postIsFolded.value = true
                 postFoldedMessage.value = '小尾巴黑名单（点击展开）'
             }
         })
@@ -265,7 +278,7 @@ const postContent = computed(() => {//数据处理
     if (props.noVideoMode) {
         const reg = new RegExp(/<video|<audio|<embed|<iframe/, "g");
         if (reg.test(postContent)) {
-            postFolded.value = true
+            postIsFolded.value = true
             postFoldedMessage.value = '音视频折叠（点击展开）'
         }
 
@@ -407,6 +420,32 @@ onMounted(() => {
 })
 
 
+//确认post总行数，如果超过特定行数，则折叠（包括图片等高度）
+const isHeightLimited = ref<boolean>(false)
+const postContentContainerMaxHeight = ref<number>()
+const postContentTopOffset = ref<number>()
+function setMaxHeight() {
+    const styles = window.getComputedStyle(postContentContainerDom.value!);
+    const lineHeight = parseInt(styles.lineHeight);
+    const height = parseInt(styles.height);
+    const maxHeight = lineHeight * 16; //默认16行，后面增加自定义功能
+
+    if (height > maxHeight) {
+        isHeightLimited.value = true;
+        postContentTopOffset.value = maxHeight - height;
+        postContentContainerMaxHeight.value = maxHeight;
+    }
+}
+function unfoldContent() {
+    isHeightLimited.value = false;
+    postContentTopOffset.value = undefined;
+    postContentContainerMaxHeight.value = undefined;
+}
+onMounted(() => {
+    if (props.postData.floor !== 0) {//首楼不折叠
+        setMaxHeight()
+    }
+})
 
 </script>
 
@@ -417,6 +456,11 @@ onMounted(() => {
     span {
         font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"')
     }
+}
+
+.post-content-container {
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .post-footer {
@@ -436,5 +480,9 @@ onMounted(() => {
     &.admin-post .post-nick-name {
         color: v-bind('themeVars.errorColor')
     }
+}
+
+.unfold-height {
+    cursor: pointer;
 }
 </style>
