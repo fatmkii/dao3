@@ -12,17 +12,18 @@ export const useUserStore = defineStore('userStore', () => {
 
     //用户的默认空白数据
     const userDataInit: userData = {
-        "binggan": {
-            "nickname": "= =",
-            "coin": 0,
-            "coin_in_bank": 0,
-            "use_pingbici": false,
-            "new_msg": false,
-            "user_lv": 0,
-            "locked_ttl": 0,
+        binggan: {
+            nickname: "= =",
+            coin: 0,
+            coin_in_bank: 0,
+            use_pingbici: false,
+            new_msg: false,
+            user_lv: 0,
+            locked_ttl: 0,
         },
-        "pingbici": null,
-        "my_emoji": null
+        emoji_excluded: null,
+        pingbici: null,
+        my_emoji: null
     }
 
     const { loading: userDataLoading, data: userData, onSuccess: userDataOnSuccess, send: getUserData } = useRequest(

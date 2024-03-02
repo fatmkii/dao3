@@ -78,6 +78,13 @@ Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
     Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
 });
 
+//IncomeStatement系列
+Route::prefix('income')->middleware('auth:sanctum')->group(function () {
+    Route::get('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
+    Route::get('/show_sum', [UserController::class, 'income_show_sum'])->middleware('CheckBinggan:show'); //查看olo收益表（合计）
+});
+
+
 //各种杂项
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']);
 Route::get('/home_banners', [CommonController::class, 'get_home_banners']);

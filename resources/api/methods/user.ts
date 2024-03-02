@@ -58,8 +58,8 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
 
 //用户注册
 interface userRegisterData {
-    "binggan": string,
-    "token": string,
+    binggan: string,
+    token: string,
 }
 const userRegisterPoster = (registerKey: string) => commonAlova.Post<userRegisterData>(
     'api/user/register',
@@ -201,9 +201,57 @@ const checkRegisterRecordGetter = () => {
     return methodInstance
 }
 
+//查询olo收益表
+interface incomeData {
+    created_at: string,
+    olo: number,
+    content: string | null,
+    thread_id: number | null,
+    thread_title: string | null,
+    floor: number | null
+}
+interface incomeSumData {
+    sum_year: number,
+    sum_month: number,
+}
+interface incomeParams {
+    income_date: string, //required|date|after_or_equal:2022-01-01
+}
+const incomeDataGetter = (params: incomeParams) => {
+    const methodInstance = commonAlova.Get<incomeData[]>(
+        'api/income/show_day',
+        {
+            name: 'incomeDataGetter',
+            params: params,
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+const incomeSumDataGetter = (params: incomeParams) => {
+    const methodInstance = commonAlova.Get<incomeSumData>(
+        'api/income/show_sum',
+        {
+            name: 'incomeSumDataGetter',
+            params: params,
+            localCache: 60 * 1000,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
     waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
-    checkRegisterRecordGetter, checkRegisterRecordData
+    checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams
 }

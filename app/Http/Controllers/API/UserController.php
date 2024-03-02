@@ -9,6 +9,7 @@ use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
 use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
+use App\Models\IncomeStatement;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Pingbici;
@@ -493,7 +494,7 @@ class UserController extends Controller
             'fjf_pingbici' => 'json',
         ]);
 
-        $user = $request->user;
+        $user = $request->user();
         // $user = User::where('binggan', $request->binggan)->first();
         // if (!$user) {
         //     return response()->json(
@@ -579,7 +580,7 @@ class UserController extends Controller
             'content_pingbici' => 'required|string',
         ]);
 
-        $user = $request->user;
+        $user = $request->user();
 
         $pingbici = $user->Pingbici;
         if ($pingbici) {
@@ -812,6 +813,55 @@ class UserController extends Controller
                     'reg_record_TTL' => Redis::TTL('reg_record_' . $request->ip()),
                 ],
             ],
+        );
+    }
+
+    //查询收益表（当日）
+    public function income_show_day(Request $request)
+    {
+        $request->validate([
+            'income_date' => 'required|date|after_or_equal:2022-01-01',
+        ]);
+
+        $user = $request->user();
+
+        //获得查询当天的全部数据
+        $income_data = IncomeStatement::incomeData($user->id, $request->income_date); //更好的分页sql语句
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获得收支数据',
+                'data' => $income_data
+            ]
+        );
+    }
+
+    //查询收益表（合计）
+    public function income_show_sum(Request $request)
+    {
+        $request->validate([
+            'income_date' => 'required|date|after_or_equal:2022-01-01',
+        ]);
+
+        $user = $request->user();
+
+        //获得查询当年和当月的合计
+        $date = Carbon::parse($request->income_date);
+        $sum_year = IncomeStatement::suffix($date->year)->where('user_id', $user->id)->sum('olo');
+
+        $from_date = $date->copy()->firstOfMonth()->toDateString();
+        $to_date = $date->copy()->addMonthNoOverflow()->firstOfMonth()->toDateString();
+
+        $sum_month = IncomeStatement::suffix($date->year)->where('user_id', $user->id)->whereBetween('created_at', [$from_date, $to_date])->sum('olo');
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获得收支数据',
+                'data' => array(
+                    "sum_year" => $sum_year,
+                    "sum_month" => $sum_month,
+                )
+            ]
         );
     }
 }
