@@ -135,12 +135,16 @@ img[class^="head_"] {
 .n-collapse .n-collapse-item .n-collapse-item__content-wrapper .n-collapse-item__content-inner {
     padding-top: 6px;
 }
-.post-span {
+.post-content {
     word-wrap: break-word;
     white-space: pre-wrap;
     overflow: hidden;
     position: relative;
 }
-.post-span img {
+.post-content img {
     max-width: 100%;
+}
+.img-svg,
+.img_svg {
+    cursor: pointer;
 }

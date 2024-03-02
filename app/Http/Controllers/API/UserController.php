@@ -720,7 +720,7 @@ class UserController extends Controller
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,
-                'message' => '已设定我的表情包',
+                'message' => '已追加到我的表情包',
                 'data' => [
                     'my_emoji' => json_encode($my_emoji_array),
                     'len' => mb_strlen($request['my_emoji']),

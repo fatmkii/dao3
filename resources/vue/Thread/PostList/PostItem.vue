@@ -63,23 +63,23 @@
 </template>
 
 <script setup lang="ts">
-import { NFlex, NCard, NCollapse, NCollapseItem, NIcon, NDropdown, NText, useThemeVars } from 'naive-ui'
-import { FButton, FCheckbox, FInput } from '@custom'
-import { useRequest } from 'alova'
+import type { deletePostParams, postData, recoverPostParams } from '@/api/methods/posts'
+import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
+import { myEmojisAddPoster, type myEmojisAddParams } from '@/api/methods/user'
+import randomHeadsData from '@/data/randomHeads'
+import { renderIcon } from '@/js/func/renderIcon'
+import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { usethemeStore } from '@/stores/theme'
-import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
-import type { postData, deletePostParams, recoverPostParams } from '@/api/methods/posts'
-import { renderIcon } from '@/js/func/renderIcon'
-import randomHeadsData from '@/data/randomHeads'
-import { useRouter } from 'vue-router'
-import { ref, computed, watch, h } from 'vue'
-import { Delete as Delete } from '@vicons/carbon'
-import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
+import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
-import showDialog from '@/js/func/showDialog'
+import { Delete } from '@vicons/carbon'
+import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
+import { NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, NAlert, useThemeVars } from 'naive-ui'
+import type { MessageRenderMessage } from 'naive-ui'
+import { computed, onMounted, ref, h } from 'vue'
+import { useRouter } from 'vue-router'
 
 //基础数据
 const userStore = useUserStore()
@@ -209,19 +209,19 @@ function dropdownSelect(name: dropdownNames) {
 const postFolded = ref<boolean>(false)//是否被折叠的状态
 const postFoldedMessage = ref<string>()//折叠回复后的提示词
 function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片的回调函数
-    if (match.search(/class='emoji_img'/g) != -1) {
+    if (match.search(/class='emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
         //判断是否表情包
         return props.noEmojiMode ? "" : match
 
-    } else if (match.search(/class='custom_emoji_img'/g) != -1) {
+    } else if (match.search(/class='custom[-_]emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
         //判断是否自定义表情包
         return props.noCustomEmojiMode ? "" : match
     } else {
         if (props.noImageMode) {
             //no_image_mode:无图模式
             return match
-                .replace(/src/, "data-src")
-                .replace("<img ", '<img src="/img_svg.svg" class="img_svg"');
+                .replace(/src/, "origin-src")
+                .replace("<img ", '<img src="/img_svg.svg" class="img-svg"');
         } else {
             return match;
         }
@@ -323,6 +323,89 @@ function quoteClick() {
 
     emit("quoteClick", quoteContent);
 }
+
+
+//点击图片添加到表情包功能
+const emojiSelected = ref<HTMLImageElement>()
+function setImgOnClick() {
+    const imgDom = postContentDom.value!.querySelectorAll('img')
+    imgDom.forEach(element => {
+        if (element.getAttribute('class') !== "img-svg") {//不处理屏蔽占位图
+            element.addEventListener('click', (event) => {
+                emojiSelected.value = element
+                window.$message.success('要添加至自定义表情包吗？', {
+                    render: renderMessage,
+                    closable: true
+                })
+            })
+        }
+    });
+}
+const renderMessage: MessageRenderMessage = (props) => {
+    const { type } = props
+    return h(
+        NAlert,
+        {
+            closable: false,
+            type: type === 'loading' ? 'default' : type,
+            showIcon: false,
+            style: {
+                boxShadow: 'var(--n-box-shadow)',
+                maxWidth: 'calc(100vw - 64px)',
+                width: '250px'
+            }
+        },
+        () => [
+            h('span', { innerText: props.content }),
+            h(
+                FButton,
+                {
+                    size: 'tiny',
+                    type: 'success',
+                    onClick: emojiAddHandle
+                },
+                {
+                    default: () => '确定'
+                }
+
+            )
+        ]
+    )
+}
+function emojiAddHandle() {
+    const myEmojis = userStore.userData.my_emoji
+    const newEmojiSrc = emojiSelected.value?.getAttribute('src')
+    if (myEmojis.includes(newEmojiSrc!)) {
+        window.$message.error('已经添加过该表情包了')
+    } else {
+        const params: myEmojisAddParams = {
+            binggan: userStore.binggan!,
+            my_emoji: newEmojiSrc!,
+        }
+        myEmojisAddPoster(params).then(() => userStore.refreshUserData())
+    }
+
+}
+onMounted(() => {
+    setImgOnClick()
+})
+
+//被屏蔽的图片重新展开功能
+function setImgSvgOnClick() {
+    const imgDom = postContentDom.value!.querySelectorAll('.img-svg')
+    imgDom.forEach(element => {
+        element.addEventListener("click", (event) => {
+            const srcOld = element.getAttribute("src");
+            element.setAttribute("src", "");//点击给让svg图标消失作为反馈
+            element.setAttribute("src", element.getAttribute("origin-src")!);
+            element.setAttribute("origin-src", srcOld!);
+        });
+    });
+}
+onMounted(() => {
+    setImgSvgOnClick()
+})
+
 
 
 </script>
