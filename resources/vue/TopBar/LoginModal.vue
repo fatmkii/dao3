@@ -1,4 +1,3 @@
-
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
         <n-card :style="{ maxWidth: maxWidth }" title="欢迎来到小火锅！" closable @close="showThis = false" size="small">
@@ -17,8 +16,10 @@
                 <n-flex>
                     <n-popover placement="bottom" trigger="hover" :disabled="newBingganEnable">
                         <template #trigger>
-                            <f-button type="warning" :disabled="userRegisterLoading || !newBingganEnable"
-                                @click="registerHandle"> 我想领取新饼干！
+                            <f-button type="warning"
+                                :disabled="userRegisterLoading || !newBingganEnable || regitserRecordTTL.reg_record_TTL > 0"
+                                @click="registerHandle">
+                                我想领取新饼干！
                             </f-button>
                         </template>
                         <n-text>嗷！很抱歉，领取新饼干目前暂停中…… </n-text>
@@ -27,20 +28,25 @@
                         :disabled="userLoginLoading">导入饼干</f-button>
                 </n-flex>
             </n-flex>
+
             <template #action>
                 <n-flex justify="end">
+                    <n-text v-if="regitserRecordTTL.reg_record_TTL > 0" style="margin-right: auto;">
+                        {{ regitserRecordMessage }}
+                    </n-text>
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
 import { userLoginPoster } from '@/api/methods/auth';
 import { newBingganEnableGetter } from '@/api/methods/globalSetting';
 import { userRegisterPoster } from '@/api/methods/user';
+import { checkRegisterRecordGetter, type checkRegisterRecordData } from '@/api/methods/user';
 import { getUUID } from '@/js/func/getUUID';
 import { useUserStore } from '@/stores/user';
 import { FButton, FInput, FInputGroupLabel } from '@custom'
@@ -70,6 +76,15 @@ const inputPassword = ref<string>('')
 
 //向服务器确认是否可以申请饼干
 const { data: newBingganEnable } = useRequest(newBingganEnableGetter, { initialData: false })
+//向服务器确认目前IP是否可以注册
+const { data: regitserRecordTTL } = useRequest(checkRegisterRecordGetter(), { initialData: { reg_record_TTL: -2 } })
+const regitserRecordMessage = computed(() => {
+    if (regitserRecordTTL.value?.reg_record_TTL <= 0) {
+        return undefined
+    } else {
+        return `在${Math.floor(regitserRecordTTL.value?.reg_record_TTL / 3600)}小时后才能再次领取饼干。`
+    }
+})
 
 //导入饼干
 const loginHandle = () => {
@@ -115,4 +130,3 @@ const emit = defineEmits(['submitRegister'])
 
 
 </script>
-

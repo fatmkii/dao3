@@ -800,4 +800,18 @@ class UserController extends Controller
             ],
         );
     }
+
+    //确认当前IP的注册记录
+    public function check_reg_record(Request $request)
+    {
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '申请饼干记录TTL',
+                'data' => [
+                    'reg_record_TTL' => Redis::TTL('reg_record_' . $request->ip()),
+                ],
+            ],
+        );
+    }
 }

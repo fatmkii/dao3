@@ -31,12 +31,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
 //User系列
 Route::prefix('user')->middleware('auth:sanctum')->group(function () {
-    Route::post('/register', [UserController::class, 'create'])->withoutMiddleware('auth:sanctum');   //新建饼干
     Route::post('/show', [UserController::class, 'show']); //获得用户信息
+    Route::get('/check_reg_record', [UserController::class, 'check_reg_record'])->withoutMiddleware('auth:sanctum'); //返回注册记录TTL
+    Route::post('/register', [UserController::class, 'create'])->withoutMiddleware('auth:sanctum');   //新建饼干
 
     // Route::post('/create_custom', [UserController::class, 'create_custom'])->middleware('CheckBinggan:create');   //新建自定义饼干
     Route::post('/reward', [UserController::class, 'reward'])->middleware('CheckBinggan:create');     //打赏
-    // Route::get('/check_reg_record', [UserController::class, 'check_reg_record']); //返回注册记录TTL
     // Route::post('/pingbici_set', [UserController::class, 'pingbici_set'])->middleware('CheckBinggan:create');     //设定屏蔽词
     // Route::post('/pingbici_add', [UserController::class, 'pingbici_add'])->middleware('CheckBinggan:create');     //追加屏蔽词
     Route::post('/my_emoji_set', [UserController::class, 'my_emoji_set'])->middleware('CheckBinggan:create');     //设定表情包

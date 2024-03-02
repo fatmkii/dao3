@@ -181,7 +181,29 @@ const myEmojisAddPoster = (params: myEmojisAddParams) => {
     return methodInstance
 }
 
+//追加自定义表情包
+interface checkRegisterRecordData {
+    reg_record_TTL: number,
+}
+const checkRegisterRecordGetter = () => {
+    const methodInstance = commonAlova.Get<{ reg_record_TTL: number }>(
+        'api/user/check_reg_record',
+        {
+            name: 'checkRegisterRecordPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
-    waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams
+    waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
+    checkRegisterRecordGetter, checkRegisterRecordData
 }
