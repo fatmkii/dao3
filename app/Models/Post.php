@@ -7,13 +7,11 @@ use App\Models\ModelWithSuffix;
 use App\Models\Thread;
 use App\Common\ResponseCode;
 use App\Events\NewPostBroadcast;
-use App\Models\Battle;
-use Illuminate\Database\Eloquent\BroadcastsEvents;
-use Illuminate\Broadcasting\Channel;
+
 
 class Post extends ModelWithSuffix
 {
-    use HasFactory, BroadcastsEvents;
+    use HasFactory;
 
     protected $binggan = '';
     protected $user_id = 0;
@@ -47,14 +45,14 @@ class Post extends ModelWithSuffix
 
     protected $guarded = [];
 
-    // /**
-    //  * 模型属性的默认值
-    //  *
-    //  * @var array
-    //  */
-    // protected $attributes = [
-    //     'random_head' => random_int(0, 39)
-    // ];
+    protected static function booted(): void
+    {
+        //模型创建的时候，发出过广播
+        static::created(function (Post $post) {
+            broadcast(new NewPostBroadcast($post->thread_id, $post->id, $post->floor))->toOthers();
+        });
+    }
+
 
     public static function create(array $array)
     {
@@ -223,41 +221,31 @@ class Post extends ModelWithSuffix
     //     }
     // }
 
-    // public function getHongbaoDataAttribute()
-    // {
-    //     if ($this->hongbao_id) {
-    //         $hongbao = HongbaoPost::withTrashed()->find($this->hongbao_id);
-    //         if ($hongbao) {
-    //             //如果有提供user_id，为HongbaoPost输入user_id，用来判断hongbao结果
-    //             if ($this->user_id) {
-    //                 $hongbao->setUserID($this->user_id);
-    //             }
-    //             if ($hongbao->olo_hide) {
-    //                 //隐藏olo总额
-    //                 $hongbao->makeHidden('olo_total');
-    //             }
-    //             if (in_array($hongbao->key_word_type, [2, 3]) && is_null($hongbao->deleted_at) && $this->binggan != $this->created_binggan) {
-    //                 //如果是抢答红包或者暗号红包，则隐藏红包口令（被抢完后正常显示）
-    //                 $hongbao->makeHidden('key_word');
-    //             }
-    //             return $hongbao;
-    //         } else {
-    //             return null;
-    //         }
-    //     } else {
-    //         return null;
-    //         // $hongbao = HongbaoPost::withTrashed()->where('thread_id', $this->thread_id)->where('post_id', $this->id)->first();
-    //         // if ($hongbao) {
-    //         //     //如果有提供user_id，为HongbaoPost输入user_id，用来判断hongbao结果
-    //         //     if ($this->user_id) {
-    //         //         $hongbao->setUserID($this->user_id);
-    //         //     }
-    //         //     return $hongbao;
-    //         // } else {
-    //         //     return null;
-    //         // }
-    //     }
-    // }
+    public function getHongbaoDataAttribute()
+    {
+        if ($this->hongbao_id) {
+            $hongbao = HongbaoPost::withTrashed()->find($this->hongbao_id);
+            if ($hongbao) {
+                //如果有提供user_id，为HongbaoPost输入user_id，用来判断hongbao结果
+                if ($this->user_id) {
+                    $hongbao->setUserID($this->user_id);
+                }
+                if ($hongbao->olo_hide) {
+                    //隐藏olo总额
+                    $hongbao->makeHidden('olo_total');
+                }
+                if (in_array($hongbao->key_word_type, [2, 3]) && is_null($hongbao->deleted_at) && $this->binggan != $this->created_binggan) {
+                    //如果是抢答红包或者暗号红包，则隐藏红包口令（被抢完后正常显示）
+                    $hongbao->makeHidden('key_word');
+                }
+                return $hongbao;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
     public function broadcast()
     {
@@ -265,42 +253,4 @@ class Post extends ModelWithSuffix
         return $this;
     }
 
-    /**
-     * 获取模型事件应该广播到的频道
-     *
-     * @return array<string, array<int, \Illuminate\Broadcasting\Channel|\Illuminate\Database\Eloquent\Model>>
-     */
-    // public function broadcastOn(string $event): array
-    // {
-    //     return [new Channel('thread_' . $this->thread_id)];
-    //     return match ($event) {
-    //         // 'deleted' => [],
-    //         'created' => [new Channel('thread_' . $this->thread_id)],
-    //         default => [$this, $this->user],
-    //     };
-    // }
-
-    /**
-     * 模型事件的广播名称。
-     */
-    // public function broadcastAs(string $event): string|null
-    // {
-    //     return match ($event) {
-    //         'created' => 'NewPost',
-    //         default => null,
-    //     };
-    // }
-
-    /**
-     * 获取要广播到模型的数据。
-     *
-     * @return array<string, mixed>
-     */
-    // public function broadcastWith(string $event): array
-    // {
-    //     return match ($event) {
-    //         'created' => ['post' => $this],
-    //         default => ['model' => $this],
-    //     };
-    // }
 }
