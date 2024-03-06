@@ -38,7 +38,7 @@ class Post extends ModelWithSuffix
     protected $appends = [
         'is_your_post',
         // 'battle_data',
-        // 'hongbao_data'
+        'hongbao_data'
     ];
 
     protected $casts = [];

@@ -22,7 +22,7 @@
         <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'">
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 红包 -->
-                <Hongbao style="cursor: pointer;" />
+                <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 大乱斗 -->
@@ -70,6 +70,10 @@
             </n-popover>
         </n-flex>
 
+        <!-- 各种modal -->
+        <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
+            @refresh-posts-list="emit('refreshPostsList')" />
+
     </n-flex>
 </template>
 
@@ -87,6 +91,7 @@ import { GameControllerOutline as Game, ArrowUndoOutline as Undo, DiceOutline as
 import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NButton } from 'naive-ui'
 import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
+import HongbaoModal from './HongbaoModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -94,6 +99,10 @@ const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const themeStore = usethemeStore()
 const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件引用
+
+//各种Modal
+const HongbaoModalCom = ref<InstanceType<typeof HongbaoModal> | null>(null)
+
 
 //组件props
 interface Props {
@@ -228,7 +237,8 @@ export interface contentCommit {
     ist: boolean,
 }
 const emit = defineEmits<{
-    contentCommit: [content: contentCommit, resolve: (value: any) => void]
+    contentCommit: [content: contentCommit, resolve: (value: any) => void],
+    refreshPostsList: []
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
     const promise = new Promise(function (resolve, reject) {

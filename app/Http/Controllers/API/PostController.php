@@ -137,23 +137,19 @@ class PostController extends Controller
             //     HongbaoController::store($request, $thread, $post); //抢红包流程（是否符合条件的判断也在里面）
             // }
 
-            // if (HongbaoPost::where('thread_id', $thread->id)->exists()) {
-            //     HongbaoPostController::store($request, $thread, $post); //抢红包流程（是否符合条件的判断也在里面）
-            // }
-
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             throw $e;
         }
 
-        if (
-            //国庆活动
-            $request->thread_id == 100656
-            && strpos($request->content, '新春快乐') !== false
-        ) {
-            CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
-        }
+        // if (
+        //     //国庆活动
+        //     $request->thread_id == 100656
+        //     && strpos($request->content, '新春快乐') !== false
+        // ) {
+        //     CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
+        // }
 
         //用redis记录回频率。
         $user->waterRecord('new_post', $request->ip());
@@ -166,7 +162,7 @@ class PostController extends Controller
         $user_medal_record->push_posts_num();
 
         //广播发帖动作
-        $post->broadcast();
+        // $post->broadcast();
 
         return response()->json(
             [
@@ -627,7 +623,7 @@ class PostController extends Controller
 
         //广播发帖动作
         // broadcast(new NewPostBroadcast($request->thread_id, $post->id, $post->floor))->toOthers();
-        $post->broadcast();
+        // $post->broadcast();
 
         ProcessUserActive::dispatch(
             [

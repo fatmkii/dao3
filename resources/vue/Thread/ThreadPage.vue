@@ -70,8 +70,8 @@
                 style="margin-left: auto;" />
         </n-flex>
         <!-- 输入框 -->
-        <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
-            :disabled="false" :handling="newPostHandling" @content-commit="newPostHandle" />
+        <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id" :thread-id="threadId"
+            :disabled="false" :handling="newPostHandling" @content-commit="newPostHandle" @refresh-posts-list="handleFetchPostsList" />
 
 
         <!-- 底部提示 -->

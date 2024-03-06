@@ -8,6 +8,8 @@ use App\Http\Controllers\API\ForumController;
 use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ThreadController;
+use App\Http\Controllers\API\HongbaoController;
+use App\Http\Controllers\API\HongbaoPostController;
 
 
 /*
@@ -82,6 +84,18 @@ Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
 Route::prefix('income')->middleware('auth:sanctum')->group(function () {
     Route::get('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
     Route::get('/show_sum', [UserController::class, 'income_show_sum'])->middleware('CheckBinggan:show'); //查看olo收益表（合计）
+});
+
+
+//Hongbao系列
+Route::prefix('hongbao')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{hongbao_id}', [HongbaoController::class, 'show'])->middleware('CheckBinggan:show'); //显示红包数据
+});
+
+//HongbaoPost系列
+Route::prefix('hongbao_post')->middleware('auth:sanctum')->group(function () {
+    Route::post('create', [HongbaoPostController::class, 'create'])->middleware('CheckBinggan:create'); //发出新回帖红包
+    Route::post('store', [HongbaoPostController::class, 'store'])->middleware('CheckBinggan:create'); //抢回帖红包
 });
 
 
