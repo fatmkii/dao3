@@ -5,8 +5,8 @@
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
-            <Pagination v-model:page="pageSelected" :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage"
-                style="margin-left: auto;" />
+            <Pagination v-model:page="pageSelected"
+                :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
@@ -39,10 +39,10 @@
             :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
             :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
             :your-posts-list="postsListLoading ? [] : postsListData.your_post_floors"
-            :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode"
-            :no-head-mode="noHeadMode" :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
-            :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode" :no-reward-mode="noRewardMode"
-            :no-roll-mode="noRollMode" @quote-click="postInputCom?.quoteHandle"
+            :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
+            :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
+            :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
+            :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" @quote-click="postInputCom?.quoteHandle"
             @refresh-posts-list="handleFetchPostsList(false)" />
 
         <!-- 自动涮锅和分页导航 -->
@@ -53,6 +53,7 @@
                 <template #checked>
                     涮锅中…
                 </template>
+
                 <template #unchecked>
                     自动涮锅
                 </template>
@@ -66,12 +67,13 @@
         <!-- 分页导航 -->
         <n-flex :align="'center'" style="margin-top: 8px;">
             <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
-            <Pagination v-model:page="pageSelected" :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage"
-                style="margin-left: auto;" />
+            <Pagination v-model:page="pageSelected"
+                :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 输入框 -->
-        <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id" :thread-id="threadId"
-            :disabled="false" :handling="newPostHandling" @content-commit="newPostHandle" @refresh-posts-list="handleFetchPostsList" />
+        <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
+            :thread-id="threadId" :disabled="false" :handling="newPostHandling" @content-commit="newPostHandle"
+            @refresh-posts-list="handleFetchPostsList" />
 
 
         <!-- 底部提示 -->
@@ -86,7 +88,7 @@
                     {{ forumData?.name }}
                 </n-ellipsis>
                 <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
-                }}</n-tag>
+                    }}</n-tag>
             </router-link>
         </Teleport>
         <Teleport to="#topbar-func" v-if="!postsListLoading">
@@ -119,13 +121,13 @@ import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
-import * as CryptoJS from 'crypto-js'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
 import CaptchaModal from './CaptchaModal.vue'
+import getNewPostKey from '@/js/func/getNewPostKey'
 
 //基础数据
 const userStore = useUserStore()
@@ -371,7 +373,7 @@ watch([() => props.threadId, () => props.page, () => props.search],//路由变�
 let contentCommitTemp: contentCommit
 let resolveTemp: (value: any) => void
 function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
-    const timestamp = new Date().getTime();
+    const { timestamp, newPostKey } = getNewPostKey(content.ist, threadData.value.id, userStore.binggan!)
     const params: newPostParams = {
         binggan: userStore.binggan!,
         forum_id: forumData.value.id,
@@ -379,9 +381,7 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
         content: content.contentInput,
         nickname: content.nicknameInput,
         post_with_admin: content.postWithAdmin,
-        new_post_key: CryptoJS.MD5(
-            threadData.value.id + userStore.binggan! + timestamp + content.ist
-        ).toString(),
+        new_post_key: newPostKey,
         timestamp: timestamp,
     }
     sendNewPostHandle(params)
