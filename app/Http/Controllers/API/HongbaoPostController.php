@@ -159,7 +159,7 @@ class HongbaoPostController extends Controller
         }
 
         //广播发帖动作
-        $post->broadcast();
+        // $post->broadcast();
 
         return response()->json(
             [
@@ -300,7 +300,7 @@ class HongbaoPostController extends Controller
             DB::commit();
 
             //广播发帖动作
-            $post->broadcast();
+            // $post->broadcast();
         } catch (Exception $e) {
             DB::rollback();
             throw $e;
@@ -411,7 +411,7 @@ class HongbaoPostController extends Controller
             $user_medal_record->push_posts_num(); //回复数量
 
             //广播发帖动作（系统回复红包）
-            $post_reply->broadcast();
+            // $post_reply->broadcast();
 
             return response()->json(
                 [
