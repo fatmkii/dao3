@@ -47,7 +47,7 @@ interface hongbaoPostStoreParams {
     new_post_key: string,
     timestamp: number,
     hongbao_post_id: number,
-    hongbao_key_word: number
+    hongbao_key_word: string
 }
 const hongbaoPostStorePoster = (params: hongbaoPostStoreParams) => {
     const methodInstance = commonAlova.Post(
@@ -62,7 +62,7 @@ const hongbaoPostStorePoster = (params: hongbaoPostStoreParams) => {
         }
     )
     methodInstance.meta = {
-        shouldRemind: false
+        shouldRemind: true
     };
     return methodInstance
 }

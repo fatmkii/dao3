@@ -13,6 +13,9 @@ const darkThemeOverrides: GlobalThemeOverrides = {
         textColor1: "rgba(255, 255, 255, 0.73)",
         textColor2: "rgba(255, 255, 255, 0.66)",
     },
+    Card: {
+        "colorEmbedded": "rgba(44, 44, 50, 1)"
+    }
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
     //暂时为空

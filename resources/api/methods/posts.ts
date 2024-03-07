@@ -1,5 +1,22 @@
 import { commonAlova } from '@/api/index';
 
+interface hongbaoPostData {
+    id: number,
+    floor: number,
+    num_total: number,
+    olo_total?: number,//当olo_hide = true时，olo_total会被隐藏
+    num_remains: number,
+    type: 1 | 2, //1=随机红包, 2=定额红包
+    key_word_type: 1 | 2 | 3,//1=普通口令红包, 2=抢答红包(答案不显示、回复显示), 3=暗号红包(答案回复都不显示)
+    olo_hide: number,
+    key_word?: string, //当key_word_type是2|3时，key_word会被隐藏
+    question: string,
+    hongbao_user: {
+        olo: number,
+        floor: number
+    } | null
+}
+
 interface postData {
     id: number,
     created_at: string,
@@ -14,7 +31,7 @@ interface postData {
     nickname: string,
     is_your_post: boolean,
     battle_data: object | null,
-    hongbao_data: object | null
+    hongbao_data: hongbaoPostData | null
     created_binggan?: string,
     created_binggan_hash?: string,
 }
@@ -130,4 +147,4 @@ const recoverPostPutter = (params: recoverPostParams) => {
 }
 
 
-export { postData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }
+export { postData, hongbaoPostData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }

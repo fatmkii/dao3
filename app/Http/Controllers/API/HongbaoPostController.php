@@ -185,7 +185,7 @@ class HongbaoPostController extends Controller
 
             //抢红包的验证
             'hongbao_post_id' => 'required|integer',
-            'hongbao_key_word' => 'required|integer'
+            'hongbao_key_word' => 'required|string'
         ]);
 
 
@@ -296,8 +296,6 @@ class HongbaoPostController extends Controller
                     'content' => '回帖',
                 ]
             ); //回复+10奥利奥（通过统一接口、记录操作）
-            $user->nickname = $request->nickname; //记录昵称
-            $user->save();
 
             DB::commit();
 
@@ -308,8 +306,13 @@ class HongbaoPostController extends Controller
             throw $e;
         }
 
-        //用redis记录回频率。
+        //用redis记录回帖频率。
         $user->waterRecord('new_post', $request->ip());
+
+        //追加该IP的抢红包记录，限制同一IP抢同一个红包（无论红包关键词是否正确）
+        $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
+        $ttl = 10; //限制10秒
+        Redis::setex($key, $ttl, 1);
 
         //检查红包关键词是否正确 
         if ($hongbao->key_word == $request->hongbao_key_word) { //口令正确的流程：
@@ -400,11 +403,6 @@ class HongbaoPostController extends Controller
                 DB::rollback();
                 throw $e;
             }
-
-            //追加该IP的抢红包记录，限制同一IP抢同一个红包
-            $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
-            $ttl = 10; //限制30秒
-            Redis::setex($key, $ttl, 1);
 
             //检查成就
             UserMedalRecord::check_floor($post->floor, $user); //（抢到特定楼层）

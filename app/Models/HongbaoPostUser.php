@@ -14,7 +14,16 @@ class HongbaoPostUser extends Model
     public $timestamps = false;
 
     public $hidden = [
+        'hongbao_post_id',
         'user_id',
+        'created_at',
+    ];
+
+    public $fillable = [
+        'hongbao_post_id',
+        'user_id',
+        'olo',
+        'floor',
         'created_at',
     ];
 

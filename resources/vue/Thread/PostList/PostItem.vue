@@ -5,14 +5,20 @@
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
                 <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle">
-                    <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
+                    <span v-html="postContent" class="post-content" ref="postContentDom"
+                        :style="postContentStyle"></span>
                 </div>
+                <!-- 红包组件 -->
+                <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data"
+                    :forum-id="forumId" :thread-id="postData.thread_id"
+                    @refresh-posts-list="emit('refreshPostsList')" />
                 <!-- 正文下面的footer，楼号等 -->
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
                     size="small">
-                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">№{{
-                        postData.floor }}</n-text>
+                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">№
+                        {{ postData.floor }}
+                    </n-text>
                     <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
                         {{ postData.nickname }}
                     </n-text>
@@ -79,10 +85,11 @@ import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
-import { NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, NAlert, useThemeVars } from 'naive-ui'
 import type { MessageRenderMessage } from 'naive-ui'
-import { computed, onMounted, ref, h, nextTick } from 'vue'
+import { NAlert, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
+import { computed, h, onMounted, ref, } from 'vue'
 import { useRouter } from 'vue-router'
+import HongbaoPost from './HongbaoPost.vue'
 
 //基础数据
 const userStore = useUserStore()
