@@ -1,7 +1,7 @@
 <template>
     <!-- 回复card -->
     <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor" :floor="postData.floor">
-        <n-collapse :expanded-names="postIsFolded ? [] : ['default']" :trigger-areas="postIsFolded ? ['main'] : []">
+        <n-collapse :expanded-names="postIsFolded ? [] : ['default']" :trigger-areas="[]">
             <n-collapse-item name="default">
                 <!-- 正文内容 -->
                 <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle">
@@ -35,13 +35,12 @@
                 </template>
                 <!-- header，用来放头像和折叠提示 -->
                 <template #header>
-                    <n-flex class="post-header" size="small" :align="'center'" style="cursor: pointer;"
-                        @click="postIsFolded = !postIsFolded">
+                    <n-flex class="post-header" size="small" :align="'center'">
                         <div class="random-head-container" v-if="!noHeadMode">
                             <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
                                 :class="'head_' + postData.random_head" />
                         </div>
-                        <span>{{ postFoldedMessage }}</span>
+                        <n-button text @click="postIsFolded = !postIsFolded">{{ postFoldedMessage }}</n-button>
                     </n-flex>
                 </template>
                 <!-- header-extra 放下拉菜单和删除按钮 -->
@@ -86,7 +85,7 @@ import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
+import { NAlert, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, NButton, useThemeVars } from 'naive-ui'
 import { computed, h, onMounted, ref, } from 'vue'
 import { useRouter } from 'vue-router'
 import HongbaoPost from './HongbaoPost.vue'
