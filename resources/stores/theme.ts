@@ -2,52 +2,44 @@ import { defineStore } from 'pinia'
 import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { ref, computed } from 'vue'
 import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, darkThemeColors, greenThemeColors } from '@/data/theme'
+import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 
 export const usethemeStore = defineStore('themeStore', () => {
-    const themeClass = ref<GlobalTheme | null>(null)
-    const themeName = ref<string | null>(null) //用来标记当前状态的
+    const themeName = useLocalStorageToRef<string>('theme', 'light') //用来标记当前状态的
 
     function themeChange(name: string) {
         themeName.value = name
-        if (name === 'light') {
-            themeClass.value = null
-        } else if (name === 'dark') {
-            themeClass.value = darkTheme
-        } else if (name === 'green') {
-            //绿色主题基于浅色主题改
-            themeClass.value = null
-        } else {
-            themeClass.value = null
-        }
     }
 
+    const themeClass = computed(() => {
+        const themeNameMap: { [key: string]: any } = {
+            'light': null,
+            'dark': darkTheme,
+            'green': null //绿色主题基于浅色主题上修改
+        };
+        return themeNameMap[themeName.value] || null;
+    })
+
     const themeOverrideClass = computed<GlobalThemeOverrides>(() => {
-        //根据主题名称themeName返回相应的overrides class（在'@/data/theme')
-        if (themeName.value === 'light') {
-            return lightThemeOverrides
-        }
-        if (themeName.value === 'dark') {
-            return darkThemeOverrides
-        }
-        if (themeName.value === 'green') {
-            return greenThemeOverrides
-        }
-        return lightThemeOverrides
+        //根据主题名称themeName返回相应的overrides class（数据在'@/data/theme')
+        const themeClassMap: { [key: string]: any } = {
+            'light': lightThemeOverrides,
+            'dark': darkThemeOverrides,
+            'green': greenThemeOverrides //绿色主题基于浅色主题改
+        };
+
+        return themeClassMap[themeName.value] || lightThemeOverrides
     })
 
     const buttonThemeAttr = computed(() => {
         //根据主题名称themeName返回相应的按钮attribute 
         //也就是白色和黑色主题都使用低饱和度的secondary按钮
-        if (themeName.value === 'light') {
-            return { strong: true, secondary: true }
-        }
-        if (themeName.value === 'dark') {
-            return { strong: true, secondary: true }
-        }
-        if (themeName.value === 'green') {
-            return { strong: false, secondary: false }
-        }
-        return { strong: true, secondary: true }
+        const buttonThemeAttrMap: { [key: string]: any } = {
+            'light': { strong: true, secondary: true },
+            'dark': { strong: true, secondary: true },
+            'green': { strong: false, secondary: false } //绿色主题基于浅色主题改
+        };
+        return buttonThemeAttrMap[themeName.value] || { strong: true, secondary: true }
     })
 
 
