@@ -18,15 +18,46 @@ const darkThemeOverrides: GlobalThemeOverrides = {
     }
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
-    //暂时为空
+    "common": {
+        "bodyColor": "#f3fdf3FF",
+    },
+    "Card": {
+        "color": "#fafffaFF",
+        "borderColor": "rgba(233, 245, 234, 1)",
+    },
+    "Input": {
+        "color": "#fbfffbFF",
+        "colorFocus": "#fbfffbFF"
+    },
+    "Button": {
+        "colorPrimary": "#52b051FF",
+        "colorHoverPrimary": "#3ba251FF",
+        "color": "#ffffffFF",
+        "colorHover": "#ffffffFF",
+        "colorPressed": "#ffffffFF",
+        "colorFocus": "#ffffffFF",
+        "colorDisabled": "#ffffffFF",
+        "colorPressedPrimary": "#3a9958FF",
+        "borderPressedPrimary": "0px",
+        "borderFocusPrimary": "0px",
+        "borderDisabledPrimary": "0px",
+        "borderHoverPrimary": "0px",
+        "borderPrimary": "0px",
+        "colorSecondary": "rgba(46, 51, 56, .05)",
+        "colorTertiary": "rgba(46, 51, 56, .05)",
+        "textColorTertiary": "rgb(118, 124, 130)",
+    }
 }
 
 //自己用的各个颜色
 const lightThemeColors = {
+    topBarBackgroudColor: "#FFF",
 }
 const darkThemeColors = {
+    topBarBackgroudColor: "#18181CFF",
 }
 const greenThemeColors = {
+    topBarBackgroudColor: "#fafffaFF",
 }
 
 

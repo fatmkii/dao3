@@ -49,9 +49,9 @@ const route = useRoute()
 const themeStore = usethemeStore()
 const themeVars = useThemeVars()
 const themeOptions = [
-    { label: '浅色', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
-    { label: '深色', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
-    { label: 'Hdao', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
+    { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
+    { label: '芝麻锅', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
+    { label: '青菜锅', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
 ]
 
 
@@ -167,7 +167,7 @@ onMounted(() => {
 <style lang="scss">
 .top-bar {
     color: v-bind('themeVars.textColor1');
-    background-color: v-bind('themeVars.cardColor');
+    background-color: v-bind('themeStore.themeColor.topBarBackgroudColor');
     border-bottom-color: v-bind('themeVars.dividerColor');
     border-bottom-style: solid;
     border-bottom-width: 1px;

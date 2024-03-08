@@ -37,7 +37,7 @@ export const usethemeStore = defineStore('themeStore', () => {
         const buttonThemeAttrMap: { [key: string]: any } = {
             'light': { strong: true, secondary: true },
             'dark': { strong: true, secondary: true },
-            'green': { strong: false, secondary: false } //绿色主题基于浅色主题改
+            'green': { strong: false, secondary: false }
         };
         return buttonThemeAttrMap[themeName.value] || { strong: true, secondary: true }
     })
