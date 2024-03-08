@@ -9,7 +9,12 @@ function useLocalStorageToRef<T = string>(key: string, defaultValue: T) {
 
     valueRaw = localStorage.getItem(key)
     if (valueRaw) {
-        value.value = JSON.parse(valueRaw)
+        try {
+            value.value = JSON.parse(valueRaw)
+        } catch {
+            //有些旧的localStorage是非JSON格式值，例如theme = hdao（非"hdao"）
+            //此时直接不赋值，让value保持defaultValue即可s
+        }
     }
 
     watch(value, (newValue) => {
