@@ -4,16 +4,19 @@ import { GlobalThemeOverrides } from 'naive-ui'
 
 //naive ui的override
 const lightThemeOverrides: GlobalThemeOverrides = {
-    common: {
-        bodyColor: "rgba(249, 249, 249, 1)"
+    "common": {
+        "bodyColor": "rgba(249, 249, 249, 1)"
     },
+    "Button": {
+        "colorPrimary": "#32BA32FF"
+    }
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
-    common: {
-        textColor1: "rgba(255, 255, 255, 0.73)",
-        textColor2: "rgba(255, 255, 255, 0.66)",
+    "common": {
+        "textColor1": "rgba(255, 255, 255, 0.73)",
+        "textColor2": "rgba(255, 255, 255, 0.66)",
     },
-    Card: {
+    "Card": {
         "colorEmbedded": "rgba(44, 44, 50, 1)"
     }
 }
@@ -25,10 +28,10 @@ const greenThemeOverrides: GlobalThemeOverrides = {
         "color": "#fafffaFF",
         "borderColor": "rgba(233, 245, 234, 1)",
     },
-    "Input": {
-        "color": "#fbfffbFF",
-        "colorFocus": "#fbfffbFF"
-    },
+    // "Input": {
+    //     "color": "#fbfffbFF",
+    //     "colorFocus": "#fbfffbFF"
+    // },
     "Button": {
         "colorPrimary": "#52b051FF",
         "colorHoverPrimary": "#3ba251FF",
