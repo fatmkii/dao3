@@ -5,7 +5,7 @@ import { commonAlova } from '@/api/index';
 interface userData {
     binggan: {
         admin?: number | null,
-        admin_forums?: string,
+        admin_forums?: number[],
         nickname: string | null,
         coin: number,
         coin_in_bank: number,
@@ -16,14 +16,14 @@ interface userData {
     },
     my_battle_chara: { name: string, not_use: boolean }[]
     pingbici: {
-        content_pingbici: string
-        fjf_pingbici: string
-        title_pingbici: string
+        content_pingbici: string[]
+        fjf_pingbici: string[]
+        title_pingbici: string[]
     } | null,
-    my_emoji: string | null,
+    my_emoji: string[] | null,
     emoji_excluded: number[]
 }
-const userDataGetter = (binggan: string) => commonAlova.Post(
+const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
     '/api/user/show',
     {
         binggan: binggan
@@ -33,22 +33,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
         name: 'userDataGetter',
         params: {},
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster'],
-        transformData(data: userData, headers) {
-            return {
-                ...data,
-                binggan: {
-                    ...data.binggan,
-                    admin_forums: data.binggan.admin_forums === undefined ? undefined : JSON.parse(data.binggan.admin_forums) as number[],
-                },
-                pingbici: data.pingbici === null ? null : {
-                    content_pingbici: data.pingbici.content_pingbici === null ? [] : JSON.parse(data.pingbici.content_pingbici) as string[],
-                    fjf_pingbici: data.pingbici.fjf_pingbici === null ? [] : JSON.parse(data.pingbici.fjf_pingbici) as string[],
-                    title_pingbici: data.pingbici.title_pingbici === null ? [] : JSON.parse(data.pingbici.title_pingbici) as string[],
-                },
-                my_emoji: data.my_emoji === null ? [] : JSON.parse(data.my_emoji) as string[],
-            }
-        }
+        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster']
     }
 )
 

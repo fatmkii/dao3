@@ -1,7 +1,7 @@
 import { commonAlova, } from '@/api/index';
 import type { threadData } from '@/api/methods/threads';
 
-interface forumData<arrayType> {
+interface forumData {
     "id": number,
     "sub_id": number,
     "name": string,
@@ -10,30 +10,24 @@ interface forumData<arrayType> {
     "is_anonymous": number,
     "accessible_coin": number,
     "is_nissin": number,
-    "banners": arrayType,
+    "banners": string[],
     "default_heads": number,
     "deleted_at": string | null
 }
 
 //获取所有板块信息列表
-const forumsDataGetter = commonAlova.Get(
+const forumsDataGetter = commonAlova.Get<forumData>(
     '/api/forums/',
     {
         name: 'forumsDataGetter',
         params: {},
         localCache: 60 * 60 * 1000,
-        transformData(data: forumData<string>[], headers) {
-            return data.map(item => ({
-                ...item,
-                banners: JSON.parse(item.banners) as string[]
-            }));
-        }
     }
 
 )
 
-interface threadsListData<arrayType> {
-    forum_data: forumData<arrayType>,
+interface threadsListData {
+    forum_data: forumData,
     threads_data: {
         currentPage: number,
         lastPage: number,
@@ -53,7 +47,7 @@ interface getThreadsListParams {
 }
 
 //获取版面中的主题列表
-const threadsListGetter = (params: getThreadsListParams) => commonAlova.Get(
+const threadsListGetter = (params: getThreadsListParams) => commonAlova.Get<threadsListData>(
     '/api/forums/' + params.forumId,
     {
         name: 'threadsListGetter',
@@ -66,18 +60,6 @@ const threadsListGetter = (params: getThreadsListParams) => commonAlova.Get(
             delay: params.delay ? 1 : 0
         },
         localCache: null,
-        transformData(data: threadsListData<string>, headers) {
-            const result = {
-                ...data,
-                forum_data: {
-                    ...data.forum_data,
-                    banners: JSON.parse(data.forum_data.banners) as string[]
-                    // 通过...展开操作的result是data的另一份拷贝，并且banners会正确地推断出类型
-                    //（正确应为string[],如果只是给对象的属性赋值会认为仍然是string），总之我服了！
-                }
-            }
-            return result;
-        }
     }
 )
 

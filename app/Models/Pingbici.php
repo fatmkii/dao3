@@ -17,6 +17,12 @@ class Pingbici extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'title_pingbici' => 'array',
+        'content_pingbici' => 'array',
+        'fjf_pingbici' => 'array',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

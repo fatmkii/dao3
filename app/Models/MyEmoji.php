@@ -21,7 +21,8 @@ class MyEmoji extends Model
     ];
 
     protected $casts = [
-        'emoji_excluded' => 'json',
+        'emoji_excluded' => 'array',
+        'emojis' => 'array'
     ];
 
     public function user()
