@@ -10,6 +10,7 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ThreadController;
 use App\Http\Controllers\API\HongbaoController;
 use App\Http\Controllers\API\HongbaoPostController;
+use App\Http\Controllers\API\BattleController;
 
 
 /*
@@ -97,6 +98,13 @@ Route::prefix('hongbao_post')->middleware('auth:sanctum')->group(function () {
     Route::post('create', [HongbaoPostController::class, 'create'])->middleware('CheckBinggan:create'); //发出新回帖红包
     Route::post('store', [HongbaoPostController::class, 'store'])->middleware('CheckBinggan:create'); //抢回帖红包
 });
+
+//Battle系列
+Route::prefix('battles')->middleware('auth:sanctum')->group(function () {
+    Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create');  //用户发起大乱斗
+    Route::post('/c_roll', [BattleController::class, 'challenger_roll'])->middleware('CheckBinggan:create');  //挑战者投色子
+});
+
 
 
 //各种杂项

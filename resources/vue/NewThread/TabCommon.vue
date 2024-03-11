@@ -97,7 +97,7 @@ const tabNormalInput = ref<tabNormalInputType>({
     nissinTime: 1,
     antiJingfen: false,
     randomHeadsGroup: 1,
-    canBattle: false,
+    canBattle: true,
     titleColor: '#212529',
     lockedByCoin: null,
     isPrivate: false,

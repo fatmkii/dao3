@@ -14,17 +14,14 @@ interface userData {
         user_lv: number,
         locked_ttl: number,
     },
-    my_battle_chara?: {
-        name: string,
-        not_use: boolean
-    }[] | null
+    my_battle_chara: { name: string, not_use: boolean }[]
     pingbici: {
         content_pingbici: string
         fjf_pingbici: string
         title_pingbici: string
     } | null,
     my_emoji: string | null,
-    emoji_excluded: string | null
+    emoji_excluded: number[]
 }
 const userDataGetter = (binggan: string) => commonAlova.Post(
     '/api/user/show',
@@ -50,7 +47,6 @@ const userDataGetter = (binggan: string) => commonAlova.Post(
                     title_pingbici: data.pingbici.title_pingbici === null ? [] : JSON.parse(data.pingbici.title_pingbici) as string[],
                 },
                 my_emoji: data.my_emoji === null ? [] : JSON.parse(data.my_emoji) as string[],
-                emoji_excluded: data.emoji_excluded === null ? [] : JSON.parse(data.emoji_excluded) as number[],
             }
         }
     }

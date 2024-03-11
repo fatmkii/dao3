@@ -71,10 +71,10 @@
                 :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 输入框 -->
-        <PostInput ref="postInputCom" mode="post" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
+        <PostInput v-if="!postsListLoading" ref="postInputCom" mode="post" :forum-id="postsListData.forum_data.id"
             :thread-id="threadId" :disabled="false" :handling="newPostHandling"
-            :random-heads-group="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
-            @content-commit="newPostHandle" @refresh-posts-list="handleFetchPostsList" />
+            :random-heads-group="postsListData.thread_data.random_heads_group" @content-commit="newPostHandle"
+            @refresh-posts-list="handleFetchPostsList" />
 
 
         <!-- 底部提示 -->

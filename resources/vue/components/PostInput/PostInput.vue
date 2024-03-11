@@ -73,7 +73,7 @@
         <!-- 各种modal -->
         <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
-        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId"
+        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId" :random-heads-group="randomHeadsGroup"
             @refresh-posts-list="emit('refreshPostsList')" />
 
 

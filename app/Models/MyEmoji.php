@@ -20,6 +20,10 @@ class MyEmoji extends Model
         'name',
     ];
 
+    protected $casts = [
+        'emoji_excluded' => 'json',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -42,8 +42,6 @@ const tabValue = ref<number>()
 
 //处理表情包数据
 const emojiData = computed(() => {
-    // console.log('emojiGroup.headsId', emojiGroup.headsId)
-    console.log('props.randomHeadsGroup', props.randomHeadsGroup - 1)
     //过滤条件：1）未包含在userData的emoji_exclude中（个人中心的设定）2）headsId为0（默认显示）或者headsId符合主题headsId
     const result = emojiDataRaw.filter((emojiGroup) =>
         !userStore.userData.emoji_excluded.includes(emojiGroup.id) && //排除掉用户设定的不显示表情包

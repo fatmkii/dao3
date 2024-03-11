@@ -399,7 +399,7 @@ class User extends Authenticatable
 
     public function MyBattleChara()
     {
-        // return $this->hasMany(MyBattleChara::class);
+        return $this->hasMany(MyBattleChara::class);
     }
 
     public function EmojiContestUser()

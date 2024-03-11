@@ -176,15 +176,6 @@ hongbaoPostCreateOnsuccess(() => {
     showThis.value = false
 })
 
-const ob = {
-    str: '123',
-    set: {
-        arr: [1, 2, 3],
-        name: 'tim'
-    }
-}
-
-
 //来自父组件的唤醒emit
 const showThis = ref<boolean>(false)
 function show() {

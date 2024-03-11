@@ -17,6 +17,7 @@ use App\Models\MyEmoji;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Redis;
+use App\Models\MyBattleChara;
 
 class UserController extends Controller
 {
@@ -138,7 +139,7 @@ class UserController extends Controller
         }
 
         //自定义大乱斗角色
-        // $my_battle_chara = MyBattleChara::where('user_id', $user->id)->select('name', 'not_use')->get();
+        $my_battle_chara = MyBattleChara::where('user_id', $user->id)->select('name', 'not_use')->get();
 
         //检查成就（小火锅周年活动）
         // $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
@@ -153,7 +154,7 @@ class UserController extends Controller
                     'pingbici' => $user->pingbici,
                     'my_emoji' => $my_emoji_data,
                     'emoji_excluded' => $emoji_excluded,
-                    // 'my_battle_chara' => $my_battle_chara,
+                    'my_battle_chara' => $my_battle_chara,
                 ],
             ],
         );
