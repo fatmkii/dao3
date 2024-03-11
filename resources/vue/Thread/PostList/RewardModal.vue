@@ -1,8 +1,7 @@
-
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" :title="`打赏给№${rewardPayload?.floor}`" closable @close="showThis = false"
-            size="small">
+        <n-card :style="{ maxWidth: maxWidth }" :title="`打赏给№${rewardPayload?.floor}`" closable
+            @close="showThis = false" size="small">
             <n-flex vertical>
                 <div>
                     <n-text v-if="!commonStore.isDouble11">
@@ -16,13 +15,14 @@
                     <n-text>总共扣除：</n-text>
                     <n-text type="error">{{ Math.ceil(inputRewardCoin * (commonStore.isDouble11 ? 1.02 : 1.07)) }}
                     </n-text>
-                    <n-text>块奥利奥。</n-text>
+                    <n-text>ge奥利奥。</n-text>
                 </div>
 
                 <n-input-group>
                     <f-input-group-label style="width: 3.2rem;">打赏</f-input-group-label>
                     <n-input-number type="password" placeholder="olo数量" show-password-on="mousedown" clearable
-                        v-model:value="inputRewardCoin" @keyup.enter="rewardHandle" :max="1000000" :min="1" :step="1000" />
+                        v-model:value="inputRewardCoin" @keyup.enter="rewardHandle" :max="1000000" :min="1" :step="1000"
+                        :parse="inputNumberParse" :format="inputNumberFormat" />
                 </n-input-group>
                 <n-input-group>
                     <f-input-group-label style="width: 3.2rem;" class="round">留言</f-input-group-label>
@@ -38,16 +38,17 @@
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
+import { userRewardPoster, type userRewardParams } from '@/api/methods/user';
+import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat';
 import { useCommonStore } from '@/stores/common';
-import { FButton, FInput, FInputGroupLabel } from '@custom'
+import { useUserStore } from '@/stores/user';
+import { FButton, FInput, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
-import { userRewardPoster, type userRewardParams } from '@/api/methods/user'
-import { NCard, NFlex, NInputGroup, NModal, NInputNumber, NText } from 'naive-ui';
+import { NCard, NFlex, NInputGroup, NInputNumber, NModal, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
-import { useUserStore } from '@/stores/user'
 
 //基础数据
 const commonStore = useCommonStore()
@@ -111,4 +112,3 @@ rewardOnSuccess(() => {
 })
 
 </script>
-

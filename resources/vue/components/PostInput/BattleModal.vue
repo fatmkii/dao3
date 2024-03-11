@@ -13,8 +13,8 @@
                 </n-input-group>
                 <n-input-group>
                     <f-input-group-label style="width: 3.2rem;">下注</f-input-group-label>
-                    <n-input-number v-model:value="olo" :max="1000000" :min="100" :step="100"
-                        @keyup.enter="battleCreateHandle" />
+                    <n-input-number v-model:value="olo" :max="1000000" :min="100" :step="100" :parse="inputNumberParse"
+                        :format="inputNumberFormat" @keyup.enter="battleCreateHandle" />
                 </n-input-group>
             </n-flex>
             <template #action>
@@ -30,15 +30,15 @@
 
 <script setup lang="ts">
 import { battleCreatePoster, type battleCreateParams } from '@/api/methods/battle';
-import { charaIndex, charaGroupIndex } from '@/data/battleData';
+import { charaGroupIndex, charaIndex } from '@/data/battleData';
+import getNewPostKey from '@/js/func/getNewPostKey';
+import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
-import { FButton, FInput } from '@custom';
+import { FButton, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
-import { NCard, NInputGroup, NFlex, NModal, NSelect, NInputNumber, NCheckbox, NText, NButton, NIcon } from 'naive-ui';
-import { FInputGroupLabel } from '@custom';
+import { NCard, NFlex, NInputGroup, NInputNumber, NModal, NSelect, NText } from 'naive-ui';
 import { computed, ref, watch } from 'vue';
-import getNewPostKey from '@/js/func/getNewPostKey'
 
 //基础数据
 const commonStore = useCommonStore()
@@ -75,10 +75,8 @@ const charaGroupOptions = computed(() => {
 })
 const charaOptions = computed(() => {
     const options = charaIndex[charaGroupInput.value - 1] //根据上面选择的charaGroupInput显示相应的角色选项
-    console.log('charaGroupInput.value', charaGroupInput.value)
     if (charaGroupInput.value === 1) {
         //在共通头像组后面加入自定义角色
-        console.log('userStore.userData.my_battle_chara', userStore.userData.my_battle_chara)
         options.push(...userStore.userData.my_battle_chara
             .filter((item) => !item.not_use)
             .map((item, index) => ({ value: index + 240, label: item.name }))) //自定义表情包从240开始
@@ -90,6 +88,7 @@ const charaOptions = computed(() => {
 const charaInput = ref<number>(1)
 const charaGroupInput = ref<number>(props.randomHeadsGroup)
 const olo = ref<number>(100)
+
 
 //选择角色组时(charaGroupInput)，自动变化角色选择(charaInput)
 watch(charaGroupInput, (newValue) => {

@@ -36,7 +36,8 @@
                 </n-divider>
                 <n-form-item label="看帖权限" path="lockedByCoin">
                     <n-input-number v-model:value="tabNormalInput.lockedByCoin" placeholder="需要多少olo才能看" :max="25000"
-                        :min="0" :step="5000" clearable style="border-radius: 17px;" />
+                        :parse="inputNumberParse" :format="inputNumberFormat" :min="0" :step="5000" clearable
+                        style="border-radius: 17px;" />
                 </n-form-item>
                 <n-form-item label="私密主题" path="isPrivate">
                     <n-switch v-model:value="tabNormalInput.isPrivate" />
@@ -55,15 +56,16 @@
 </template>
 
 <script setup lang="ts">
+import randomHeadsData from '@/data/randomHeads'
+import { subtitles as subtitleRaw, type subtitlesType } from '@/data/subtitles'
+import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import randomHeadsData from '@/data/randomHeads'
-import { subtitles as subtitleRaw, type subtitlesType } from '@/data/subtitles'
-import { NForm, NFormItem, NSelect, NSwitch, NText, NColorPicker, NInputNumber, NDivider, NGrid, NGi } from 'naive-ui'
+import { NColorPicker, NDivider, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ref, computed, watch } from 'vue'
 
 //基础数据
 const userStore = useUserStore()

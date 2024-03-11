@@ -23,7 +23,8 @@
                 </n-input-group>
                 <n-input-group>
                     <f-input-group-label style="width: 5.2rem;">olo总额</f-input-group-label>
-                    <n-input-number v-model:value="olo" :max="1000000" :min="3000" :step="1000" />
+                    <n-input-number v-model:value="olo" :max="1000000" :min="3000" :step="1000"
+                        :parse="inputNumberParse" :format="inputNumberFormat" />
                 </n-input-group>
                 <n-input-group>
                     <f-input-group-label style="width: 5.2rem;">红包口令</f-input-group-label>
@@ -73,14 +74,14 @@
 
 <script setup lang="ts">
 import { hongbaoPostCreatePoster, type hongbaoPostCreateParams } from '@/api/methods/hongbao';
+import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
-import { FButton, FInput } from '@custom';
+import { FButton, FInput, FInputGroupLabel } from '@custom';
+import { Minus, Plus } from '@vicons/fa';
 import { useRequest } from 'alova';
-import { NCard, NInputGroup, NFlex, NModal, NSelect, NInputNumber, NCheckbox, NText, NButton, NIcon } from 'naive-ui';
-import { FInputGroupLabel } from '@custom';
-import { computed, ref, watch } from 'vue';
-import { Plus, Minus } from '@vicons/fa'
+import { NButton, NCard, NCheckbox, NFlex, NIcon, NInputGroup, NInputNumber, NModal, NSelect, NText } from 'naive-ui';
+import { computed, ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
