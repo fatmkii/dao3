@@ -16,8 +16,8 @@
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
                     size="small">
-                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">№
-                        {{ postData.floor }}
+                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
+                        {{ '№' + postData.floor }}
                     </n-text>
                     <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
                         {{ postData.nickname }}
