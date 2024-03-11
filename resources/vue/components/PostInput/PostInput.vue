@@ -17,7 +17,7 @@
             <f-input :maxlength="100" v-model:value="titleInput" show-count placeholder="标题内容" />
         </n-input-group>
         <!-- 表情包 -->
-        <EmojiTab :auto-hide="emojiAutoHide" :heads-id="0" @append-emoji="emojiAppend" />
+        <EmojiTab :auto-hide="emojiAutoHide" :random-heads-group="randomHeadsGroup" @append-emoji="emojiAppend" />
         <!-- 功能图标栏 -->
         <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'">
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
@@ -26,7 +26,7 @@
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 大乱斗 -->
-                <Game style="cursor: pointer;" />
+                <Game style="cursor: pointer;" @click="BattleModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- roll点 -->
@@ -73,6 +73,9 @@
         <!-- 各种modal -->
         <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
+        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId"
+            @refresh-posts-list="emit('refreshPostsList')" />
+
 
     </n-flex>
 </template>
@@ -92,6 +95,7 @@ import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NButton } from 
 import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
+import BattleModal from './BattleModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -102,6 +106,7 @@ const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件�
 
 //各种Modal
 const HongbaoModalCom = ref<InstanceType<typeof HongbaoModal> | null>(null)
+const BattleModalCom = ref<InstanceType<typeof BattleModal> | null>(null)
 
 
 //组件props

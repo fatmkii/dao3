@@ -28,11 +28,11 @@ const commonStore = useCommonStore()
 
 //组件props
 interface Props {
-    headsId?: number,
+    randomHeadsGroup?: number,
     autoHide?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
-    headsId: 0,
+    randomHeadsGroup: 0,
     autoHide: true,
 })
 
@@ -42,10 +42,12 @@ const tabValue = ref<number>()
 
 //处理表情包数据
 const emojiData = computed(() => {
+    // console.log('emojiGroup.headsId', emojiGroup.headsId)
+    console.log('props.randomHeadsGroup', props.randomHeadsGroup - 1)
     //过滤条件：1）未包含在userData的emoji_exclude中（个人中心的设定）2）headsId为0（默认显示）或者headsId符合主题headsId
     const result = emojiDataRaw.filter((emojiGroup) =>
-        !userStore.userData.emoji_excluded.includes(emojiGroup.id) &&
-        (emojiGroup.headsId === 0 || emojiGroup.headsId === props.headsId)
+        !userStore.userData.emoji_excluded.includes(emojiGroup.id) && //排除掉用户设定的不显示表情包
+        (emojiGroup.headsId === 0 || emojiGroup.headsId === props.randomHeadsGroup)
     )
     //追加自定义表情包
     if (userStore.userData.my_emoji) {
