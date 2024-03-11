@@ -117,7 +117,7 @@ class ThreadController extends Controller
         //确认是否冒认管理员发公告或者管理员帖
         if (
             ($request->subtitle == "[公告]" || $request->post_with_admin == true) &&
-            !in_array($request->forum_id, json_decode($user->AdminPermissions->forums))
+            !in_array($request->forum_id, $user->AdminPermissions->forums)
         ) {
             return response()->json(
                 [
@@ -130,7 +130,7 @@ class ThreadController extends Controller
         //只有管理员可以发众筹 
         if (
             $request->thread_type == "crowd"  &&
-            !(in_array($user->admin, [99, 20, 10]) && in_array($request->forum_id, json_decode($user->AdminPermissions->forums)))
+            !(in_array($user->admin, [99, 20, 10]) && in_array($request->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [

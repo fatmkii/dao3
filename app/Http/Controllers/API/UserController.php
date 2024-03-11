@@ -490,9 +490,9 @@ class UserController extends Controller
         $request->validate([
             'binggan' => 'required|string',
             'use_pingbici' => 'required|boolean',
-            'title_pingbici' => 'json',
-            'content_pingbici' => 'json',
-            'fjf_pingbici' => 'json',
+            'title_pingbici' => 'array',
+            'content_pingbici' => 'array',
+            'fjf_pingbici' => 'array',
         ]);
 
         $user = $request->user();
@@ -523,10 +523,10 @@ class UserController extends Controller
             'fjf_pingbici' => '反精分屏蔽词',
         );
         foreach ($user_lv_array as $name => $error_msg) {
-            if (mb_strlen($request[$name]) > $user_lv[$name]) {
+            if (mb_strlen(json_encode($request[$name])) > $user_lv[$name]) {
                 return response()->json([
                     'code' => ResponseCode::USER_ERROR,
-                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                    'message' => $error_msg . '长度为' . mb_strlen(json_encode($request[$name])) . '。已超出了最大限制，可在个人中心升级限制。',
                 ]);
             }
         }
@@ -556,9 +556,9 @@ class UserController extends Controller
                 'binggan' => $user->binggan,
                 'user_id' => $user->id,
                 'active' => '用户更新了屏蔽词(新设定)',
-                'content' => 'title长度:' . mb_strlen($request->title_pingbici)
-                    . 'content长度:' . mb_strlen($request->content_pingbici)
-                    . 'fjf长度:' . mb_strlen($request->fjf_pingbici),
+                'content' => 'title长度:' . mb_strlen(json_encode($request->title_pingbici))
+                    . 'content长度:' . mb_strlen(json_encode($request->content_pingbici))
+                    . 'fjf长度:' . mb_strlen(json_encode($request->fjf_pingbici)),
             ]
         );
 
@@ -585,7 +585,7 @@ class UserController extends Controller
 
         $pingbici = $user->Pingbici;
         if ($pingbici) {
-            $pingbici_array = json_decode($user->Pingbici->content_pingbici);
+            $pingbici_array = $user->Pingbici->content_pingbici;
             if (in_array($request->content_pingbici, $pingbici_array)) {
                 return response()->json([
                     'code' => ResponseCode::USER_ERROR,
@@ -615,10 +615,10 @@ class UserController extends Controller
             // 'fjf_pingbici' => '反精分屏蔽词',
         );
         foreach ($user_lv_array as $name => $error_msg) {
-            if (mb_strlen($request[$name]) + mb_strlen($pingbici->$name) > $user_lv[$name]) {
+            if (mb_strlen(json_encode($pingbici_array)) > $user_lv[$name]) {
                 return response()->json([
                     'code' => ResponseCode::USER_ERROR,
-                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                    'message' => $error_msg . '长度为' . mb_strlen(json_encode($pingbici_array)) . '。已超出了最大限制，可在个人中心升级限制。',
                 ]);
             }
         }
@@ -669,7 +669,7 @@ class UserController extends Controller
 
         if ($user->MyEmoji) {
             $my_emoji = $user->MyEmoji;
-            $my_emoji_array = json_decode($my_emoji->emojis);
+            $my_emoji_array = $my_emoji->emojis;
             array_push($my_emoji_array, $request->my_emoji);
         } else {
             $my_emoji = new MyEmoji();
@@ -691,10 +691,10 @@ class UserController extends Controller
             'my_emoji' => '我的表情包',
         );
         foreach ($user_lv_array as $name => $error_msg) {
-            if (mb_strlen($request[$name]) + mb_strlen($my_emoji->emojis) > $user_lv[$name]) {
+            if (mb_strlen(json_encode($my_emoji_array)) > $user_lv[$name]) {
                 return response()->json([
                     'code' => ResponseCode::USER_ERROR,
-                    'message' => $error_msg . '长度为' . (mb_strlen($request[$name]) + mb_strlen($my_emoji->emojis)) . '。已超出了最大限制，可在个人中心升级限制。',
+                    'message' => $error_msg . '长度为' . mb_strlen(json_encode($my_emoji_array)) . '。已超出了最大限制，可在个人中心升级限制。',
                 ]);
             }
         }
@@ -702,7 +702,7 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
             $my_emoji->user_id = $user->id;
-            $my_emoji->emojis = json_encode($my_emoji_array);
+            $my_emoji->emojis = $my_emoji_array;
             $my_emoji->save();
             DB::commit();
         } catch (Exception $e) {
@@ -723,10 +723,6 @@ class UserController extends Controller
             [
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已追加到我的表情包',
-                'data' => [
-                    'my_emoji' => json_encode($my_emoji_array),
-                    'len' => mb_strlen($request['my_emoji']),
-                ]
             ],
         );
     }
@@ -736,8 +732,8 @@ class UserController extends Controller
     {
         $request->validate([
             'binggan' => 'required|string',
-            'my_emoji' => 'json',
-            'emoji_excluded' => 'json',
+            'my_emoji' => 'array',
+            'emoji_excluded' => 'array',
         ]);
 
         $user = $request->user();
@@ -757,10 +753,10 @@ class UserController extends Controller
             'my_emoji' => '我的表情包',
         );
         foreach ($user_lv_array as $name => $error_msg) {
-            if (mb_strlen($request[$name]) > $user_lv[$name]) {
+            if (mb_strlen(json_encode($request[$name])) > $user_lv[$name]) {
                 return response()->json([
                     'code' => ResponseCode::USER_ERROR,
-                    'message' => $error_msg . '长度为' . mb_strlen($request[$name]) . '。已超出了最大限制，可在个人中心升级限制。',
+                    'message' => $error_msg . '长度为' . mb_strlen(json_encode($request[$name])) . '。已超出了最大限制，可在个人中心升级限制。',
                 ]);
             }
         }
@@ -787,7 +783,7 @@ class UserController extends Controller
                 'binggan' => $user->binggan,
                 'user_id' => $user->id,
                 'active' => '用户更新了表情包(更新)',
-                'content' => '长度:' . mb_strlen($request->my_emoji),
+                'content' => '长度:' . mb_strlen(json_encode($request->my_emoji)),
             ]
         );
 
@@ -795,10 +791,6 @@ class UserController extends Controller
             [
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已设定我的表情包',
-                'data' => [
-                    'my_emoji' => $my_emoji->emojis,
-                    'len' => mb_strlen($request['my_emoji']),
-                ]
             ],
         );
     }

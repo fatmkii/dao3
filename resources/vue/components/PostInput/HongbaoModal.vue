@@ -36,7 +36,8 @@
                 </n-input-group>
                 <n-input-group v-for="n in messageNum">
                     <f-input-group-label style="width: 5.2rem;">回复留言</f-input-group-label>
-                    <f-input v-model:value="hongbaoMessage[n - 1]" :placeholder="`#${n}（可选） 多个留言时随机抽取一个`" />
+                    <f-input v-model:value="hongbaoMessage[n - 1]" :placeholder="`#${n}（可选） 多个留言时随机抽取一个`"
+                        :maxlength="255" />
                 </n-input-group>
 
                 <n-flex size="small" :align="'center'">

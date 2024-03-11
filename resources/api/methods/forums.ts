@@ -16,7 +16,7 @@ interface forumData {
 }
 
 //获取所有板块信息列表
-const forumsDataGetter = commonAlova.Get<forumData>(
+const forumsDataGetter = commonAlova.Get<forumData[]>(
     '/api/forums/',
     {
         name: 'forumsDataGetter',

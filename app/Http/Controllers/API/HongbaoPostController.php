@@ -43,7 +43,7 @@ class HongbaoPostController extends Controller
             'hongbao_key_word' => 'required|string|max:255',
             'hongbao_question' => 'nullable|string|max:255',
             // 'hongbao_message' => 'nullable|string|max:255',//3.0代码直接使用下面的hongbao_message_json
-            'hongbao_message_json' => 'nullable|json|max:3000',
+            'hongbao_message_json' => 'nullable|array|max:5',
             'hongbao_olo_hide' => 'nullable|boolean',
         ]);
 
@@ -349,7 +349,7 @@ class HongbaoPostController extends Controller
 
                 if ($hongbao->message_json) {
                     //$hongbao->message_json当是多选一message时候不为null
-                    $message_array = json_decode($hongbao->message_json);
+                    $message_array = $hongbao->message_json;
                     if (count($message_array) >= 1) {
                         $rand_key = array_rand($message_array);
                         $message = $message_array[$rand_key]; //从多个回复中随机抽出一个

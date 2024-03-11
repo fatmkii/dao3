@@ -18,10 +18,7 @@ interface hongbaoPostCreateParams {
 const hongbaoPostCreatePoster = (params: hongbaoPostCreateParams) => {
     const methodInstance = commonAlova.Post(
         'api/hongbao_post/create',
-        {
-            ...params,
-            hongbao_message_json: JSON.stringify(params.hongbao_message_json)
-        },
+        params,
         {
             //第三个参数是config
             name: 'hongbaoPostCreatePoster',

@@ -53,6 +53,10 @@ class HongbaoPost extends Model
         'olo_hide',
     ];
 
+    protected $casts = [
+        'message_json' => 'array',
+    ];
+
     public function HongbaoPostUser()
     {
         return $this->hasMany(HongbaoPostUser::class);

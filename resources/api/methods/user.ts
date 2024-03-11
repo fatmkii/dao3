@@ -117,11 +117,7 @@ interface myEmojisSetParams {
 const myEmojisSetPoster = (params: myEmojisSetParams) => {
     const methodInstance = commonAlova.Post(
         'api/user/my_emoji_set',
-        {
-            ...params,
-            my_emoji: JSON.stringify(params.my_emoji),
-            emoji_excluded: JSON.stringify(params.emoji_excluded)
-        },
+        params,
         {
             //第三个参数是config
             name: 'myEmojisSetPoster',

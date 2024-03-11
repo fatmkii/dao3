@@ -124,7 +124,7 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
                 vote_params: {
                     vote_multiple: params.voteParams.voteMultiple,
                     vote_title: params.voteParams.voteTitle,
-                    vote_options: JSON.stringify(params.voteParams.voteOptions),
+                    vote_options: params.voteParams.voteOptions,
                     vote_end_time: params.voteParams.voteEndTime,
                     vote_max_choices: params.voteParams.voteMaxChoices
                 }
@@ -134,7 +134,7 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
             {
                 gamble_params: {
                     gamble_title: params.gambleParams.gambleTitle,
-                    gamble_options: JSON.stringify(params.gambleParams.gambleOptions),
+                    gamble_options: params.gambleParams.gambleOptions,
                     gamble_end_time: params.gambleParams.gambleEndTime,
                 }
             }),

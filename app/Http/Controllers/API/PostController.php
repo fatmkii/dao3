@@ -70,7 +70,7 @@ class PostController extends Controller
         //确认是否冒充管理员发帖
         if (
             $request->post_with_admin == true &&
-            !in_array($request->forum_id, json_decode($user->AdminPermissions->forums))
+            !in_array($request->forum_id, $user->AdminPermissions->forums)
         ) {
             return response()->json(
                 [
