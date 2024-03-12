@@ -25,6 +25,33 @@ use Exception;
 
 class BattleController extends Controller
 {
+
+    public function show(Request $request, $battle_id)
+    {
+        $battle = Battle::find($battle_id);
+        if (!$battle) {
+            return response()->json([
+                'code' => ResponseCode::BATTLE_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::BATTLE_NOT_FOUND],
+            ]);
+        }
+        $battle_messages  = $battle->BattleMessages;
+
+        //如果有提供binggan，为battle输入binggan，用来判断is_your_battle（为前端提供是否是用户自己帖子的判据）
+        if ($request->query('binggan')) {
+            $battle->setBinggan($request->query('binggan'));
+        }
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已获得大乱斗数据',
+            'data' => [
+                'battle' => $battle,
+                'battle_messages' => $battle_messages,
+            ]
+        ]);
+    }
+
     public function create(Request $request)
     {
         // if (Carbon::now()->between('2022/12/6 08:00:00', '2022/12/7 00:00:00')) {

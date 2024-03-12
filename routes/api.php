@@ -101,6 +101,7 @@ Route::prefix('hongbao_post')->middleware('auth:sanctum')->group(function () {
 
 //Battle系列
 Route::prefix('battles')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{battle_id}', [BattleController::class, 'show'])->middleware('CheckBinggan:show');  //获取大乱斗数据
     Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create');  //用户发起大乱斗
     Route::post('/c_roll', [BattleController::class, 'challenger_roll'])->middleware('CheckBinggan:create');  //挑战者投色子
 });

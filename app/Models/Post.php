@@ -37,7 +37,7 @@ class Post extends ModelWithSuffix
 
     protected $appends = [
         'is_your_post',
-        // 'battle_data',
+        // 'battle_data', //3.0改为battle数据单独api请求
         'hongbao_data'
     ];
 
@@ -252,5 +252,4 @@ class Post extends ModelWithSuffix
         broadcast(new NewPostBroadcast($this->thread_id, $this->id, $this->floor))->toOthers();
         return $this;
     }
-
 }

@@ -12,6 +12,8 @@
                 <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data"
                     :forum-id="forumId" :thread-id="postData.thread_id"
                     @refresh-posts-list="emit('refreshPostsList')" />
+                <!-- 大乱斗组件 -->
+                <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" />
                 <!-- 正文下面的footer，楼号等 -->
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
@@ -85,9 +87,10 @@ import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, NButton, useThemeVars } from 'naive-ui'
+import { NAlert, NButton, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
 import { computed, h, onMounted, ref, } from 'vue'
 import { useRouter } from 'vue-router'
+import Battle from './Battle.vue'
 import HongbaoPost from './HongbaoPost.vue'
 
 //基础数据
@@ -394,7 +397,7 @@ const renderMessage: MessageRenderMessage = (props) => {
 function emojiAddHandle() {
     const myEmojis = userStore.userData.my_emoji
     const newEmojiSrc = emojiSelected.value?.getAttribute('src')
-    if (myEmojis.includes(newEmojiSrc!)) {
+    if (myEmojis !== null && myEmojis.includes(newEmojiSrc!)) {
         window.$message.error('已经添加过该表情包了')
     } else {
         const params: myEmojisAddParams = {

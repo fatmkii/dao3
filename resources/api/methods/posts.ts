@@ -1,26 +1,5 @@
 import { commonAlova } from '@/api/index';
 
-//大乱斗数据（被包含在postData内）
-interface battleData {
-    battle: {
-        id: number,
-        chara_group: number,
-        progress: number,//0=等待挑战者；1=挑战者已参加；2=正常结束；3=超时关闭
-        initiator_is_custom_chara: boolean,
-        challenger_is_custom_chara: boolean,
-        result: number, //0=进行中；1=发起者胜利；2=挑战者胜利；3=平局
-        battle_olo: number,
-        is_your_battle: boolean,
-        you_are_challenger: boolean
-    },
-    battle_messages: {
-        battle_id: number,
-        chara_url: string,
-        message_type: number,
-        message: string
-    }[]
-}
-
 //红包数据（被包含在postData内）
 interface hongbaoPostData {
     id: number,
@@ -52,7 +31,7 @@ interface postData {
     content: string,
     nickname: string,
     is_your_post: boolean,
-    battle_data: battleData | null,
+    // battle_data: battleData | null,  //3.0开始battle数据改为单独api请求
     hongbao_data: hongbaoPostData | null
     created_binggan?: string,
     created_binggan_hash?: string,
@@ -169,4 +148,4 @@ const recoverPostPutter = (params: recoverPostParams) => {
 }
 
 
-export { postData, battleData, hongbaoPostData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }
+export { postData, hongbaoPostData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }
