@@ -13,7 +13,7 @@
                     :forum-id="forumId" :thread-id="postData.thread_id"
                     @refresh-posts-list="emit('refreshPostsList')" />
                 <!-- 大乱斗组件 -->
-                <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" />
+                <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
                 <!-- 正文下面的footer，楼号等 -->
                 <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
                     :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
@@ -102,6 +102,7 @@ const themeVars = useThemeVars()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
+const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
 
 //组件props
 interface Props {
@@ -455,6 +456,13 @@ onMounted(() => {
         setMaxHeight()
     }
 })
+
+//刷新大乱斗数据
+function refreshBattleData() {
+    BattleCom.value?.refreshBattleDataHandle()
+}
+defineExpose({ refreshBattleData })
+
 
 </script>
 

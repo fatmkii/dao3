@@ -35,7 +35,7 @@ class BattleController extends Controller
                 'message' => ResponseCode::$codeMap[ResponseCode::BATTLE_NOT_FOUND],
             ]);
         }
-        $battle_messages  = $battle->BattleMessages;
+        $battle_messages  = $battle->BattleMessages()->get(); //不要直接使用 $battle->BattleMessages，否则$battle变量也会包含BattleMessages
 
         //如果有提供binggan，为battle输入binggan，用来判断is_your_battle（为前端提供是否是用户自己帖子的判据）
         if ($request->query('binggan')) {
@@ -196,7 +196,7 @@ class BattleController extends Controller
             }
 
             $initiator_user = User::find($battle->initiator_user_id);
-            $challenger_user = $request->user;
+            $challenger_user = $request->user();
 
             //创建角色BattleChara类
             if (!$battle->initiator_is_custom_chara) {
@@ -495,7 +495,7 @@ class BattleController extends Controller
 
         switch ($battle_result) {
             case 1:
-                $response_message = '失败！你输掉了了' . $battle->battle_ol . '个olo';
+                $response_message = '失败！你输掉了' . $battle->battle_olo . '个olo';
                 break;
             case 2:
                 $response_message = '胜利！你获得了' . intval($battle->battle_olo * ($tax_rate - 1)) . '个olo';

@@ -77,11 +77,13 @@ const charaOptions = computed(() => {
     const options = charaIndex[charaGroupInput.value - 1] //根据上面选择的charaGroupInput显示相应的角色选项
     if (charaGroupInput.value === 1) {
         //在共通头像组后面加入自定义角色
-        options.push(...userStore.userData.my_battle_chara
+        const myBattleChara = userStore.userData.my_battle_chara
             .filter((item) => !item.not_use)
-            .map((item, index) => ({ value: index + 240, label: item.name }))) //自定义表情包从240开始
+            .map((item, index) => ({ value: index + 240, label: item.name })) //自定义表情包从240开始
+        return options.concat(myBattleChara)
+    } else {
+        return options
     }
-    return options
 })
 
 //输入数据
@@ -115,7 +117,7 @@ function battleCreateHandle(event: MouseEvent | KeyboardEvent) {
         battle_olo: olo.value,
         chara_id: charaInput.value >= 240 ? charaInput.value - 240 : charaInput.value,//前端中自定义角色从240开始，减去240让后端从0开始计数,
         is_custom_chara: charaInput.value >= 240,
-        chara_group: charaGroupInput.value,
+        chara_group: charaGroupInput.value - 1, //2.0的时候，数据库的储存是从0开始的，这里只能减一以兼容
         new_post_key: newPostKey,
         timestamp: timestamp,
     }

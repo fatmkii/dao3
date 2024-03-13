@@ -1,12 +1,12 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
         <!-- 回复card -->
-        <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData" :your-posts-list="yourPostsList"
-            :anti-jingfen="antiJingfen" :forum-id="forumId" :no-custom-emoji-mode="noCustomEmojiMode"
-            :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
-            :no-video-mode="noVideoMode" :random-head-group-index="randomHeadGroupIndex"
+        <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
+            :your-posts-list="yourPostsList" :anti-jingfen="antiJingfen" :forum-id="forumId"
+            :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
+            :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :random-head-group-index="randomHeadGroupIndex"
             @show-reward-modal="RewardModalCom?.show" @quote-click="quoteClick"
-            @refresh-posts-list="emit('refreshPostsList')" />
+            @refresh-posts-list="emit('refreshPostsList')" ref="PostItemComs" />
     </n-flex>
     <n-flex vertical :size="2" v-else>
         <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />
@@ -33,6 +33,7 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const router = useRouter()
+const PostItemComs = ref<InstanceType<typeof PostItem>[]>([])
 
 //组件props
 interface Props {
@@ -105,6 +106,16 @@ const postsData = computed(() => {
 function quoteClick(content: string) {
     emit('quoteClick', content)
 }
+
+//刷新大乱斗数据
+function refreshBattleData() {
+    PostItemComs.value.forEach((element) => {
+        element.refreshBattleData()
+    });
+}
+defineExpose({ refreshBattleData })
+
+
 
 </script>
 

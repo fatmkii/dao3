@@ -43,7 +43,7 @@
             :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
             :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
             :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" @quote-click="postInputCom?.quoteHandle"
-            @refresh-posts-list="handleFetchPostsList(false)" />
+            @refresh-posts-list="handleFetchPostsList(false)" ref="PostListCom" />
 
         <!-- 自动涮锅和分页导航 -->
         <n-flex :align="'center'" style="margin-top: 8px;">
@@ -156,6 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
 //各种Modal
 const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(null)
 const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
+const PostListCom = ref<InstanceType<typeof PostList> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -261,7 +262,8 @@ const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
 const { fetching: postsListFetching, onSuccess: fetchPostsListOnSucess, fetch: fetchPostsList } = useFetcher();
 function handleFetchPostsList(remind: boolean = false) {
     remindFetch.value = remind
-    fetchPostsList(postsListGetter(postsListParams.value))
+    fetchPostsList(postsListGetter(postsListParams.value))//刷新回复列表数据
+    PostListCom.value?.refreshBattleData()//刷新所有大乱斗数据
 }
 fetchPostsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 

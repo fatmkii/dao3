@@ -1,4 +1,6 @@
 import { commonAlova } from '@/api/index';
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore()
 
 //获取大乱斗数据
 interface battleData {
@@ -16,7 +18,7 @@ interface battleData {
     battle_messages: {
         battle_id: number,
         chara_url: string,
-        message_type: number,
+        message_type: number,//0=系统文字；1=发起者说；2=挑战者说；
         message: string
     }[]
 }
@@ -25,7 +27,9 @@ const battleDataGetter = (battle_id: number) => {
         'api/battles/' + battle_id,
         {
             name: 'battleDataGetter-' + battle_id,
-            params: {},
+            params: {
+                binggan: userStore.binggan
+            },
             localCache: {
                 //持久化的缓存，即使浏览器刷新也不会消失。
                 //在它的onSuccess里面要设置，获得大乱斗数据判断，如果大乱斗还没关闭就立刻失效它的缓存
@@ -36,7 +40,7 @@ const battleDataGetter = (battle_id: number) => {
         }
     )
     methodInstance.meta = {
-        shouldRemind: true
+        shouldRemind: false
     };
     return methodInstance
 }
@@ -76,7 +80,7 @@ interface battleChanllengerRollParams {
     binggan: string,
     battle_id: number,
     chara_id: number,
-    is_custom_chara: number,
+    is_custom_chara: boolean,
 }
 const battleChanllengerRollPoster = (params: battleChanllengerRollParams) => {
     const methodInstance = commonAlova.Post(

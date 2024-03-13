@@ -21,7 +21,8 @@ export const useUserStore = defineStore('userStore', () => {
             user_lv: 0,
             locked_ttl: 0,
         },
-        emoji_excluded: null,
+        my_battle_chara: [],
+        emoji_excluded: [],
         pingbici: null,
         my_emoji: null
     }
