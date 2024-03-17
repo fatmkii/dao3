@@ -134,8 +134,8 @@ class UserController extends Controller
             $my_emoji_data = $my_emoji->emojis;
             $emoji_excluded = $my_emoji->emoji_excluded;
         } else {
-            $my_emoji_data = null;
-            $emoji_excluded = null;
+            $my_emoji_data = [];
+            $emoji_excluded = [];
         }
 
         //自定义大乱斗角色
