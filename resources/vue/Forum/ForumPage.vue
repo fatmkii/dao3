@@ -43,8 +43,8 @@
             <f-button :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
                 {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
             </f-button>
-            <Pagination v-model:page="pageSelected" :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage"
-                style="margin-left: auto;" />
+            <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
+                :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage" style="margin-left: auto;" />
         </n-flex>
 
         <!-- 页面底部留空白 -->
@@ -217,10 +217,12 @@ function toggleDelayThreads() {
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
-watch(pageSelected,
-    (toPage) => {
-        router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search, delay: props.delay ? 'true' : undefined } })
-    }
+function pageUpdate(toPage: number) {
+    router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search, delay: props.delay ? 'true' : undefined } })
+}
+watch(() => props.page,
+    //其他代码router.push的时候，也需要同时变更pageSelected
+    (page) => pageSelected.value = page
 )
 
 //useWathcer和useFetcher共用的主题列表数据请求参数
