@@ -55,12 +55,15 @@ const greenThemeOverrides: GlobalThemeOverrides = {
 //自己用的各个颜色
 const lightThemeColors = {
     topBarBackgroudColor: "#FFF",
+    sidebarColor: "#90d590"
 }
 const darkThemeColors = {
     topBarBackgroudColor: "#18181CFF",
+    sidebarColor: "#316c58"
 }
 const greenThemeColors = {
     topBarBackgroudColor: "#fafffaFF",
+    sidebarColor: "#52b051"
 }
 
 

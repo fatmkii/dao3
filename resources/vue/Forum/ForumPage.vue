@@ -59,6 +59,10 @@
                 <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumId }}</n-tag>
             </router-link>
         </Teleport>
+
+        <!-- 侧边栏 -->
+        <Sidebar mode="forum" ref="SidebarCom" @refresh="handleFetchThreadsList(true)"
+            @new-thread="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })" />
     </n-flex>
 </template>
 
@@ -79,12 +83,14 @@ import { useFetcher, useWatcher } from 'alova'
 import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag, NEllipsis } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import Sidebar from '@/vue/Components/Sidebar.vue'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const router = useRouter()
+const SidebarCom = ref<InstanceType<typeof Sidebar> | null>(null)
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()

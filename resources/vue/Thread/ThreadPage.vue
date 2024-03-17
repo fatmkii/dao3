@@ -5,7 +5,7 @@
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
-            <Pagination v-model:page="pageSelected"
+            <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
                 :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 搜索输入（弹出） -->
@@ -67,7 +67,7 @@
         <!-- 分页导航 -->
         <n-flex :align="'center'" style="margin-top: 8px;">
             <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
-            <Pagination v-model:page="pageSelected"
+            <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
                 :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 输入框 -->
@@ -102,6 +102,11 @@
         <!-- 各种弹出modal -->
         <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
         <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
+        <JumpModal ref="JumpModalCom" :thread-id="threadId"
+            :posts-num="postsListLoading ? 0 : postsListData.thread_data.posts_num" />
+
+        <!-- 侧边栏 -->
+        <Sidebar :mode="'thread'" @refresh="handleFetchPostsList(true)" @show-jump-modal="JumpModalCom!.show()" />
     </n-flex>
 </template>
 
@@ -129,6 +134,8 @@ import BrowseLogger from './BrowseLogger.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import getNewPostKey from '@/js/func/getNewPostKey'
+import Sidebar from '@/vue/Components/Sidebar.vue'
+import JumpModal from '@/vue/Thread/JumpModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -138,6 +145,7 @@ const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
+const PostListCom = ref<InstanceType<typeof PostList> | null>(null)//回复列表组件
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
@@ -156,7 +164,7 @@ const props = withDefaults(defineProps<Props>(), {
 //各种Modal
 const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(null)
 const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
-const PostListCom = ref<InstanceType<typeof PostList> | null>(null)
+const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -221,11 +229,9 @@ const funcOptions = [
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
-watch(pageSelected,
-    (toPage) => {
-        router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
-    }
-)
+function pageUpdate(toPage: number) {
+    router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
+}
 watch(() => props.page,
     //其他代码router.push的时候，也需要同时变更pageSelected
     (page) => pageSelected.value = page
