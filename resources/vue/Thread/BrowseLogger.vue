@@ -62,9 +62,11 @@ function scrollToLastTime() {
             const pageLastTime = Math.ceil((threadBrowseLog.floor + 1) / 200)
             if (pageLastTime === props.page) {
                 //如果在上次浏览就在当前页，则滚动到对应的楼层
-                const elementTarget = document.getElementById('f_' + threadBrowseLog.floor)!
-                elementTarget.scrollIntoView({ behavior: "auto", block: "center" })
-                window.$message.success(`已自动滚到上次浏览进度${threadBrowseLog.floor}楼`)
+                const elementTarget = document.getElementById('f_' + threadBrowseLog.floor)
+                if (elementTarget !== null) {
+                    elementTarget.scrollIntoView({ behavior: "auto", block: "center" })
+                    window.$message.success(`已自动滚到上次浏览进度${threadBrowseLog.floor}楼`)
+                }
             }
             if (pageLastTime > props.page) {
                 showThis.value = true
