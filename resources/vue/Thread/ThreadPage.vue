@@ -419,12 +419,18 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
 
 <style scoped>
 .thread-title {
-    font-size: 1.125rem;
+    @media all and (min-width: 1200px) {
+        font-size: 1.125rem;
+    }
+
+    @media not all and (min-width: 1200px) {
+        font-size: 1rem;
+
+    }
 }
 
 .thread-title-contain {
     border-radius: 10px;
-    /* background-color: v-bind('themeVars.buttonColor2'); */
 }
 
 .thread-title-skeleton {
