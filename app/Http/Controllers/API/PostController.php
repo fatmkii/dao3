@@ -559,10 +559,10 @@ class PostController extends Controller
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',
-            'roll_name' => 'nullable|string',
-            'roll_event' => 'nullable|string',
-            'roll_num' => 'required|integer|max:1000|min:1',
-            'roll_range' => 'required|integer|max:100000000|min:1',
+            'roll_name' => 'nullable|string|max:255',
+            'roll_event' => 'nullable|string|max:255',
+            'roll_num' => 'required|integer|max:100|min:1',
+            'roll_range' => 'required|integer|max:10000|min:1',
         ]);
 
         $user = $request->user();
@@ -588,22 +588,6 @@ class PostController extends Controller
         //执行追加新roll点的流程
         try {
             DB::beginTransaction();
-            // $post = new Post;
-            // $post->setSuffix(intval($request->thread_id / 10000));
-            // $post->created_binggan = $request->binggan;
-            // $post->forum_id = $request->forum_id;
-            // $post->thread_id = $request->thread_id;
-            // $post->content = $roll_result_str;
-            // $post->created_by_admin = 2; //0=一般用户 1=管理员发布，2=系统发布
-            // $post->nickname = 'Roll点系统';
-            // $post->created_ip = $request->ip();
-            // $post->random_head = random_int(0, 39);
-
-            // $thread = $post->thread;
-            // $thread->posts_num = POST::Suffix(intval($thread->id / 10000))->where('thread_id', $thread->id)->count();
-            // $post->floor = $thread->posts_num;
-            // $thread->save();
-            // $post->save();
 
             $post = Post::create([
                 'created_binggan' => $request->binggan,
@@ -639,9 +623,9 @@ class PostController extends Controller
                 'code' => ResponseCode::SUCCESS,
                 'message' => 'roll点成功！',
                 'data' => [
-                    'forum_id' => $request->forum_id,
-                    'thread_id' => $request->thread_id,
-                    'post_id' => $post->id,
+                    // 'forum_id' => $request->forum_id,
+                    // 'thread_id' => $request->thread_id,
+                    // 'post_id' => $post->id,
                 ]
             ],
         );

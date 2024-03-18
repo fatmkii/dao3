@@ -147,5 +147,32 @@ const recoverPostPutter = (params: recoverPostParams) => {
     return methodInstance
 }
 
+//Roll点功能
+interface rollPostParams {
+    binggan: string,
+    thread_id: number,
+    forum_id: number,
+    roll_name?: string,
+    roll_event?: string,
+    roll_num: number,
+    roll_range: number
+}
+const rollPostPoster = (params: rollPostParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/posts/create_roll',
+        params,
+        {
+            //第三个参数是config
+            name: 'rollPostPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
-export { postData, hongbaoPostData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams }
+export { postData, hongbaoPostData, newPostPoster, newPostParams, deletePostDeleter, deletePostParams, recoverPostPutter, recoverPostParams, postGetter, postParams, rollPostPoster, rollPostParams }

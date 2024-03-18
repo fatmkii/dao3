@@ -30,7 +30,7 @@
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- roll点 -->
-                <Dice style="cursor: pointer;" />
+                <Dice style="cursor: pointer;" @click="RollModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 涂鸦板 -->
@@ -73,7 +73,9 @@
         <!-- 各种modal -->
         <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
-        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId" :random-heads-group="randomHeadsGroup"
+        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId"
+            :random-heads-group="randomHeadsGroup" @refresh-posts-list="emit('refreshPostsList')" />
+        <RollModal ref="RollModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
 
 
@@ -96,6 +98,7 @@ import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import BattleModal from './BattleModal.vue'
+import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -107,6 +110,7 @@ const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件�
 //各种Modal
 const HongbaoModalCom = ref<InstanceType<typeof HongbaoModal> | null>(null)
 const BattleModalCom = ref<InstanceType<typeof BattleModal> | null>(null)
+const RollModalCom = ref<InstanceType<typeof RollModal> | null>(null)
 
 
 //组件props
