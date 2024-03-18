@@ -443,7 +443,7 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .thread-title {
     @media all and (min-width: 1200px) {
         font-size: 1.125rem;
