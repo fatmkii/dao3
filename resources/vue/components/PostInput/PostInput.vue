@@ -55,17 +55,18 @@
             </n-icon>
         </n-flex>
         <!-- 输入框 -->
-        <n-input v-model:value="contentInput" type="textarea" placeholder="正文内容" :autosize="{ minRows: 5, maxRows: 10 }"
-            ref="contentInputDom" style="border-radius: 10px; " :input-props="{ id: 'content-input' }"
-            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false"
-            @focus="isTyping = true" />
+        <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder"
+            :autosize="{ minRows: 5, maxRows: 10 }" ref="contentInputDom" style="border-radius: 10px; "
+            :input-props="{ id: 'content-input' }" :disabled="userIsLocked" @change="contentInputChange"
+            @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
-            <f-button style="margin-right: auto;">上传图片</f-button>
+            <f-button style="margin-right: auto;" :disabled="userIsLocked">上传图片</f-button>
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
-                    <f-button type="primary" @click="handleCommit($event)" :loading="handling">提交</f-button>
+                    <f-button type="primary" @click="handleCommit($event)" :loading="handling"
+                        :disabled="userIsLocked">提交</f-button>
                 </template>
                 可以Ctrl+Enter
             </n-popover>
@@ -95,7 +96,7 @@ import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vi
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { GameControllerOutline as Game, ArrowUndoOutline as Undo, DiceOutline as Dice } from '@vicons/ionicons5'
 import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NDivider } from 'naive-ui'
-import { h, ref, watch } from 'vue'
+import { h, ref, watch, computed } from 'vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import BattleModal from './BattleModal.vue'
@@ -128,6 +129,16 @@ const props = withDefaults(defineProps<Props>(), {
     threadId: 0,
     randomHeadsGroup: 1,
 })
+
+//用户禁言显示
+const textareaPlaceHolder = computed(() => {
+    if (userStore.userData.binggan.locked_ttl > 0) {
+        return `你的饼干封禁中，将于${Math.floor(userStore.userData.binggan.locked_ttl / 3600) + 1}小时后解封`
+    } else {
+        return '正文内容'
+    }
+})
+const userIsLocked = computed(() => userStore.userData.binggan.locked_ttl > 0)
 
 
 //用户输入内容
@@ -273,7 +284,6 @@ function resetContent() {
 
 //确认输入框是否在输入中，并且向父组件返回
 const isTyping = ref<boolean>(false)
-
 
 defineExpose({ quoteHandle, isTyping })
 

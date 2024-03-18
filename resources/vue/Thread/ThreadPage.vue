@@ -78,6 +78,22 @@
 
 
         <!-- 底部提示 -->
+        <n-flex justify="end" v-if="!postsListLoading">
+            <n-text v-if="postsListData.forum_data.is_nissin === 2 && postsListData.thread_data.sub_id === 0">
+                本贴将于
+                <n-text type="error">
+                    {{ nissinTTL }}
+                </n-text>
+                日清，请及时更换帖子喔
+            </n-text>
+            <n-text v-if="postsListData.forum_data.is_nissin === 1 && postsListData.thread_data.sub_id === 0">
+                本小岛
+                <n-text type="error">
+                    每日早上8:00
+                </n-text>
+                日清，请及时更换帖子喔
+            </n-text>
+        </n-flex>
 
         <!-- 页面底部留空白 -->
         <div style="height: 50px;"></div>
@@ -111,10 +127,11 @@
 </template>
 
 <script setup lang="ts">
-import { newPostPoster, postGetter, type newPostParams, type postParams, type postData } from '@/api/methods/posts'
+import { newPostPoster, postGetter, type newPostParams, type postData, type postParams } from '@/api/methods/posts'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
 import { useDebounce } from '@/js/func/debounce'
+import getNewPostKey from '@/js/func/getNewPostKey'
 import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
@@ -123,19 +140,19 @@ import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
+import Sidebar from '@/vue/Components/Sidebar.vue'
+import JumpModal from '@/vue/Thread/JumpModal.vue'
 import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NText, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
-import ChangeColorModal from './ChangeColorModal.vue'
 import CaptchaModal from './CaptchaModal.vue'
-import getNewPostKey from '@/js/func/getNewPostKey'
-import Sidebar from '@/vue/Components/Sidebar.vue'
-import JumpModal from '@/vue/Thread/JumpModal.vue'
+import ChangeColorModal from './ChangeColorModal.vue'
+import dayjs from 'dayjs'
 
 //基础数据
 const userStore = useUserStore()
@@ -168,6 +185,15 @@ const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
+
+//显示TTL用的
+const nissinTTL = computed(() => {
+    const nissinDate = dayjs(postsListData.value.thread_data.nissin_date)
+    const now = dayjs()
+    const hoursDiff = nissinDate.diff(now, 'hour')
+    const minutesDiff = nissinDate.diff(now, 'minute') - 60 * hoursDiff
+    return `${hoursDiff}小时${minutesDiff}分钟后`
+})
 
 
 //屏蔽选项下拉框
