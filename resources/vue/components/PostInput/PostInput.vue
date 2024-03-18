@@ -44,6 +44,7 @@
                 <!-- 屏蔽词 -->
                 <Mute style="cursor: pointer;" />
             </n-icon>
+            <n-divider vertical />
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 撤销 -->
                 <Undo style="cursor: pointer;" @click="contentInputRevoke" />
@@ -93,7 +94,7 @@ import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { GameControllerOutline as Game, ArrowUndoOutline as Undo, DiceOutline as Dice } from '@vicons/ionicons5'
-import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NButton } from 'naive-ui'
+import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NDivider } from 'naive-ui'
 import { h, ref, watch } from 'vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
