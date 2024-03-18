@@ -88,10 +88,16 @@ import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
-import { computed, h, onMounted, ref, } from 'vue'
+import { computed, h, onMounted, ref, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import Battle from './Battle.vue'
-import HongbaoPost from './HongbaoPost.vue'
+
+//异步加载组件
+const Battle = defineAsyncComponent(() =>
+    import('./Battle.vue')
+)
+const HongbaoPost = defineAsyncComponent(() =>
+    import('./HongbaoPost.vue')
+)
 
 //基础数据
 const userStore = useUserStore()

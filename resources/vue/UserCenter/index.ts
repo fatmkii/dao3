@@ -1,11 +1,13 @@
-export { default as TabCommon } from './TabCommon.vue';
-export { default as TabBank } from './TabBank.vue';
-export { default as TabChara } from './TabChara.vue';
-export { default as TabCustom } from './TabCustom.vue';
-export { default as TabEmojis } from './TabEmojis.vue';
-export { default as TabIncome } from './TabIncome.vue';
-export { default as TabLevelup } from './TabLevelup.vue';
-export { default as TabMedal } from './TabMedal.vue';
-export { default as TabPassword } from './TabPassword.vue';
-export { default as TabPingbici } from './TabPingbici.vue';
-export { default as UserCard } from './UserCard.vue';
+import { defineAsyncComponent } from 'vue'
+
+export const TabCommon = defineAsyncComponent(() => import('./TabCommon.vue'))
+export const TabBank = defineAsyncComponent(() => import('./TabBank.vue'))
+export const TabChara = defineAsyncComponent(() => import('./TabChara.vue'))
+export const TabCustom = defineAsyncComponent(() => import('./TabCustom.vue'))
+export const TabEmojis = defineAsyncComponent(() => import('./TabEmojis.vue'))
+export const TabIncome = defineAsyncComponent(() => import('./TabIncome.vue'))
+export const TabLevelup = defineAsyncComponent(() => import('./TabLevelup.vue'))
+export const TabMedal = defineAsyncComponent(() => import('./TabMedal.vue'))
+export const TabPassword = defineAsyncComponent(() => import('./TabPassword.vue'))
+export const TabPingbici = defineAsyncComponent(() => import('./TabPingbici.vue'))
+export const UserCard = defineAsyncComponent(() => import('./UserCard.vue'))
