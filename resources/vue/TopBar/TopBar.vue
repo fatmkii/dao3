@@ -1,4 +1,3 @@
-
 <template>
     <n-flex class="top-bar" :align="'center'">
         <img src="/favicon2.png" alt="" @click="$router.push('/')">
@@ -12,15 +11,17 @@
             <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
                 <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
             </n-dropdown>
-            <f-button type="primary" v-if="!userStore.userLoginStatus" @click="loginModal?.show">
+            <f-button type="primary" v-if="!userStore.userLoginStatus" @click="LoginModalCom?.show">
                 导入饼干
             </f-button>
         </template>
-        <LoginModal ref="loginModal" @submit-register="callRegisterHintModal" />
-        <RegisterHintModal ref="registerHintModal" />
+        <template v-if="!userStore.userDataLoading && !userStore.userLoginStatus">
+            <LoginModal ref="LoginModalCom" @submit-register="callRegisterHintModal" />
+            <RegisterHintModal ref="registerHintModalCom" />
+        </template>
     </n-flex>
 </template>
- 
+
 
 <script setup lang="ts">
 import { userLogoutPoster } from '@/api/methods/auth';
@@ -29,8 +30,6 @@ import { useCommonStore } from '@/stores/common';
 import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
 import { renderIcon } from '@/js/func/renderIcon'
-import LoginModal from '@/vue/TopBar/LoginModal.vue';
-import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { Cog as CogIcon, Circle } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
@@ -38,6 +37,7 @@ import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
 import { h, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { FButton } from '@custom';
+import { defineAsyncComponent } from 'vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -53,6 +53,12 @@ const themeOptions = [
     { label: '芝麻锅', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
     { label: '青菜锅', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
 ]
+
+//登录modal
+const LoginModal = defineAsyncComponent(() =>
+    import('@/vue/TopBar/LoginModal.vue')
+)
+const LoginModalCom = ref<InstanceType<typeof LoginModal> | null>(null)
 
 
 //个人中心按钮相关
@@ -129,11 +135,6 @@ const userOptions = [
     }
 ]
 
-
-
-//登录modal
-const loginModal = ref<InstanceType<typeof LoginModal> | null>(null)
-
 //登出操作
 function logoutHandle() {
     const { onSuccess, data } = useRequest(userLogoutPoster(userStore.binggan!))
@@ -149,16 +150,19 @@ function refreshUserData() {
 }
 
 //呼出申请饼干成功的提示modal
-const registerHintModal = ref<InstanceType<typeof RegisterHintModal> | null>(null)
+const RegisterHintModal = defineAsyncComponent(() =>
+    import('@/vue/TopBar/RegisterHintModal.vue')
+)
+const registerHintModalCom = ref<InstanceType<typeof RegisterHintModal> | null>(null)
 function callRegisterHintModal() {
-    registerHintModal.value?.show()
+    registerHintModalCom.value?.show()
 }
 
 
 onMounted(() => {
     if (!(localStorage.getItem('Binggan') && localStorage.getItem('Token')) && route.path == '/') {
         //当没有localstorage没有登录信息，且路由在首页时，自动弹出登录modal
-        loginModal.value?.show()
+        LoginModalCom.value?.show()
     }
 })
 
