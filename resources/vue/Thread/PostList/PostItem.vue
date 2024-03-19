@@ -1,74 +1,65 @@
 <template>
     <!-- 回复card -->
     <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor" :floor="postData.floor">
-        <n-collapse :expanded-names="postIsFolded ? [] : ['default']" :trigger-areas="[]">
-            <n-collapse-item name="default">
-                <!-- 正文内容 -->
-                <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle">
-                    <span v-html="postContent" class="post-content" ref="postContentDom"
-                        :style="postContentStyle"></span>
-                </div>
-                <!-- 红包组件 -->
-                <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data"
-                    :forum-id="forumId" :thread-id="postData.thread_id"
-                    @refresh-posts-list="emit('refreshPostsList')" />
-                <!-- 大乱斗组件 -->
-                <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
-                <!-- 正文下面的footer，楼号等 -->
-                <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
-                    :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
-                    size="small">
-                    <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
-                        {{ '№' + postData.floor }}
-                    </n-text>
-                    <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
-                        {{ postData.nickname }}
-                    </n-text>
-                    <n-text class="post-created-at">{{ postData.created_at }}</n-text>
-                    <n-text v-if="antiJingfen" class="post-anti-jingfen">
-                        →{{ postData.created_binggan_hash?.slice(0, 5) }}
-                    </n-text>
-                    <!-- <n-text v-if="isHeightLimited" class="unfold-height" @click="unfoldContent"> *展开高度限制*</n-text> -->
-                    <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
-                </div>
-                <!-- 默认的箭头，把它设为空的div -->
-                <template #arrow>
-                    <div></div>
-                </template>
-                <!-- header，用来放头像和折叠提示 -->
-                <template #header>
-                    <n-flex class="post-header" size="small" :align="'center'">
-                        <div class="random-head-container" v-if="!noHeadMode">
-                            <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
-                                :class="'head_' + postData.random_head" />
-                        </div>
-                        <n-button text @click="postIsFolded = !postIsFolded">{{ postFoldedMessage }}</n-button>
-                    </n-flex>
-                </template>
-                <!-- header-extra 放下拉菜单和删除按钮 -->
-                <template #header-extra>
-                    <n-flex size="small">
-                        <n-icon :size="commonStore.isMobile ? 20 : 24"
-                            v-if="postData.is_your_post && postData.is_deleted === 0" style="cursor: pointer;"
-                            @click="deletePostHandle">
-                            <Delete />
-                        </n-icon>
-                        <n-icon :size="commonStore.isMobile ? 20 : 24"
-                            v-if="postData.is_your_post && postData.is_deleted === 1" style="cursor: pointer;"
-                            @click="recoverPostHandle">
-                            <Recover />
-                        </n-icon>
-                        <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
-                            :size="commonStore.isMobile ? 'medium' : 'large'">
-                            <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
-                                <Dropdown />
-                            </n-icon>
-                        </n-dropdown>
-                    </n-flex>
-                </template>
+        <!-- header -->
+        <n-flex size="small">
+            <!-- 左边是头像和折叠提示 -->
+            <div class="random-head-container" v-if="!noHeadMode">
+                <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
+                    :class="'head_' + postData.random_head" />
+            </div>
+            <n-button text v-if="postFoldedMessage !== undefined" @click="postIsFolded = !postIsFolded">
+                {{ postFoldedMessage }}
+            </n-button>
+            <!-- 右边是删除按钮和下拉菜单 -->
+            <div style="margin-left: auto;"></div>
+            <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 0"
+                style="cursor: pointer;" @click="deletePostHandle">
+                <Delete />
+            </n-icon>
+            <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 1"
+                style="cursor: pointer;" @click="recoverPostHandle">
+                <Recover />
+            </n-icon>
+            <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
+                :size="commonStore.isMobile ? 'medium' : 'large'">
+                <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
+                    <Dropdown />
+                </n-icon>
+            </n-dropdown>
+        </n-flex>
 
-            </n-collapse-item>
-        </n-collapse>
+        <!-- 隐藏时候需要被折叠的内容 -->
+        <template v-if="!postIsFolded">
+            <!-- 正文内容 -->
+            <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle"
+                style="margin-top: 6px;">
+                <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
+            </div>
+
+            <!-- 红包组件 -->
+            <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data" :forum-id="forumId"
+                :thread-id="postData.thread_id" @refresh-posts-list="emit('refreshPostsList')" />
+            <!-- 大乱斗组件 -->
+            <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
+
+            <!-- 正文下面的footer，楼号等 -->
+            <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
+                :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
+                size="small">
+                <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
+                    {{ '№' + postData.floor }}
+                </n-text>
+                <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
+                    {{ postData.nickname }}
+                </n-text>
+                <n-text class="post-created-at">{{ postData.created_at }}</n-text>
+                <n-text v-if="antiJingfen" class="post-anti-jingfen">
+                    →{{ postData.created_binggan_hash?.slice(0, 5) }}
+                </n-text>
+                <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
+            </div>
+        </template>
     </n-card>
 </template>
 
@@ -87,7 +78,7 @@ import type { rewardModalPayload } from '@/vue/Thread/PostList/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NCard, NCollapse, NCollapseItem, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
+import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
 import { computed, h, onMounted, ref, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 
