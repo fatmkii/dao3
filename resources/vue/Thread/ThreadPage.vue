@@ -1,12 +1,12 @@
 <template>
-    <n-flex vertical>
+    <n-flex vertical v-if="!postsListLoading && showThis">
         <!-- 顶部功能按钮就及分页导航 -->
         <n-flex :align="'center'" style="margin-top: 8px;">
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
             <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
-                :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
+                :last-page="postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
@@ -19,7 +19,7 @@
         <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
             :disable-scroll="Boolean(search)" />
         <!-- 标题 -->
-        <n-card v-if="!postsListLoading" class="thread-title-contain" size="small" key="title-card">
+        <n-card class="thread-title-contain" size="small" key="title-card">
             <span class="thread-title">
                 {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
             </span>
@@ -32,13 +32,11 @@
                 删主题
             </f-button>
         </n-card>
-        <n-skeleton v-else class="thread-title-skeleton" sharp />
 
         <!-- 循环渲染各个回复 -->
-        <PostList :show-this="!postsListLoading" :forum-id="postsListLoading ? 0 : postsListData.forum_data.id"
-            :random-head-group-index="postsListLoading ? 1 : postsListData.thread_data.random_heads_group"
-            :posts-data-raw="postsListLoading ? [] : postsListData.posts_data.data"
-            :your-posts-list="postsListLoading ? [] : postsListData.your_post_floors"
+        <PostList :forum-id="postsListData.forum_data.id"
+            :random-head-group-index="postsListData.thread_data.random_heads_group"
+            :posts-data-raw="postsListData.posts_data.data" :your-posts-list="postsListData.your_post_floors"
             :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
             :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
             :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
@@ -71,14 +69,14 @@
                 :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
         </n-flex>
         <!-- 输入框 -->
-        <PostInput v-if="!postsListLoading" ref="postInputCom" mode="post" :forum-id="postsListData.forum_data.id"
-            :thread-id="threadId" :disabled="false" :handling="newPostHandling"
+        <PostInput ref="postInputCom" mode="post" :forum-id="postsListData.forum_data.id" :thread-id="threadId"
+            :disabled="false" :handling="newPostHandling"
             :random-heads-group="postsListData.thread_data.random_heads_group" @content-commit="newPostHandle"
             @refresh-posts-list="handleFetchPostsList" />
 
 
         <!-- 底部提示 -->
-        <n-flex justify="end" v-if="!postsListLoading">
+        <n-flex justify="end">
             <n-text v-if="postsListData.forum_data.is_nissin === 2 && postsListData.thread_data.sub_id === 0">
                 本贴将于
                 <n-text type="error">
@@ -99,7 +97,7 @@
         <div style="height: 50px;"></div>
 
         <!-- 发送到TopBar的版面标题 -->
-        <Teleport to="#topbar-nav" v-if="!postsListLoading">
+        <Teleport to="#topbar-nav">
             <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
                 <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
                     {{ forumData?.name }}
@@ -108,7 +106,7 @@
                     }}</n-tag>
             </router-link>
         </Teleport>
-        <Teleport to="#topbar-func" v-if="!postsListLoading">
+        <Teleport to="#topbar-func">
             <!-- 屏蔽按钮 -->
             <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
                 <f-button>屏蔽</f-button>
@@ -124,6 +122,11 @@
         <!-- 侧边栏 -->
         <Sidebar :mode="'thread'" @refresh="handleFetchPostsList(true)" @show-jump-modal="JumpModalCom!.show()" />
     </n-flex>
+
+    <!-- 加载时候的转圈圈 -->
+    <n-spin v-show="postsListLoading" size="large" class="spin" />
+    <!-- 禁止访问的时候的弹出图片 -->
+    <ForbiddenModal ref="ForbiddenModalCom" />
 </template>
 
 <script setup lang="ts">
@@ -146,13 +149,13 @@ import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag, NText, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import dayjs from 'dayjs'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, useThemeVars } from 'naive-ui'
+import { computed, h, nextTick, onBeforeUnmount, ref, watch, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
-import dayjs from 'dayjs'
 
 //基础数据
 const userStore = useUserStore()
@@ -167,6 +170,10 @@ const PostListCom = ref<InstanceType<typeof PostList> | null>(null)//回复列�
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
 
+//异步加载组件
+const ForbiddenModal = defineAsyncComponent(() =>
+    import('@/vue/Components/ForbiddenModal.vue')
+)
 
 //组件props
 interface Props {
@@ -182,6 +189,7 @@ const props = withDefaults(defineProps<Props>(), {
 const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(null)
 const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
+const ForbiddenModalCom = ref<InstanceType<typeof ForbiddenModal> | null>(null)//禁止访问的时候的弹出图片
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -274,7 +282,7 @@ const postsListParams = computed<getPostsListParams>(() => {
 })
 
 //获取回复列表数据（监听props变更）
-const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSuccess } = useWatcher(
+const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSuccess, onError: postsListOnError } = useWatcher(
     () => postsListGetter(postsListParams.value),
     [() => props.threadId, () => props.page, () => props.search],
     { initialData: {}, immediate: true, }
@@ -288,16 +296,25 @@ postsListOnSuccess(() => {
         }
     })
 })
+postsListOnError((event) => {
+    showThis.value = false
+    // console.log(event.error.message)
+    ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+})
 
 //刷新回复列表数据
 const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
-const { fetching: postsListFetching, onSuccess: fetchPostsListOnSucess, fetch: fetchPostsList } = useFetcher();
+const { fetching: postsListFetching, onSuccess: fetchPostsListOnSuccess, onError: fetchPostsListOnError, fetch: fetchPostsList } = useFetcher();
 function handleFetchPostsList(remind: boolean = false) {
     remindFetch.value = remind
     fetchPostsList(postsListGetter(postsListParams.value))//刷新回复列表数据
     PostListCom.value?.refreshBattleData()//刷新所有大乱斗数据
 }
-fetchPostsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+fetchPostsListOnSuccess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+fetchPostsListOnError((event) => {
+    showThis.value = false
+    ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+})
 
 //从postsListData抽离出threadData和forumData方便使用
 const threadData = computed(() => postsListData.value.thread_data)
@@ -462,5 +479,11 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
 .thread-title-skeleton {
     border-radius: 10px;
     height: 48px;
+}
+
+.spin {
+    position: fixed;
+    left: calc(50% - 10px);
+    top: 40%;
 }
 </style>

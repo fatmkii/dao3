@@ -1,5 +1,5 @@
 <template>
-    <n-flex vertical :size="2" v-if="showThis">
+    <n-flex vertical :size="2">
         <!-- 回复card -->
         <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
             :your-posts-list="yourPostsList" :anti-jingfen="antiJingfen" :forum-id="forumId"
@@ -8,25 +8,20 @@
             @show-reward-modal="RewardModalCom?.show" @quote-click="quoteClick"
             @refresh-posts-list="emit('refreshPostsList')" ref="PostItemComs" />
     </n-flex>
-    <n-flex vertical :size="2" v-else>
-        <n-skeleton class="posts-card-skeleton" v-for="  n   in   10  " />
-    </n-flex>
-
     <!-- 各种弹出modal -->
     <RewardModal ref="RewardModalCom" @refresh-posts-list="emit('refreshPostsList')" />
 </template>
 
 <script setup lang="ts">
-import { NFlex, NSkeleton, NCard, NCollapse, NCollapseItem, NIcon, NDropdown, NText } from 'naive-ui'
-import { FButton, FCheckbox, FInput } from '@custom'
+import type { postData } from '@/api/methods/posts'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import type { postData } from '@/api/methods/posts'
-import RewardModal from './RewardModal.vue'
-import PostItem from './PostItem.vue'
+import { NFlex } from 'naive-ui'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ref, computed, watch, h } from 'vue'
+import PostItem from './PostItem.vue'
+import RewardModal from './RewardModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -37,7 +32,6 @@ const PostItemComs = ref<InstanceType<typeof PostItem>[]>([])
 
 //组件props
 interface Props {
-    showThis: boolean,
     postsDataRaw: postData[] | [],
     yourPostsList: number[] | [],
     forumId: number,
