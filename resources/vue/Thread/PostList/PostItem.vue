@@ -21,8 +21,14 @@
                 style="cursor: pointer;" @click="recoverPostHandle">
                 <Recover />
             </n-icon>
-            <n-dropdown trigger="click" :options="funcOptions" @select="dropdownSelect"
-                :size="commonStore.isMobile ? 'medium' : 'large'">
+            <!-- 下拉菜单，这里做了延后加载 -->
+            <n-icon v-if="!renderDropdown" :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;"
+                @click="renderDropdown = true">
+                <Dropdown />
+            </n-icon>
+            <n-dropdown v-if="renderDropdown" trigger="click" :options="funcOptions" @select="dropdownSelect"
+                :show="renderDropdown" :size="commonStore.isMobile ? 'medium' : 'large'"
+                @clickoutside="renderDropdown = false">
                 <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
                     <Dropdown />
                 </n-icon>
@@ -79,7 +85,7 @@ import { Delete } from '@vicons/carbon'
 import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
-import { computed, h, onMounted, ref, defineAsyncComponent } from 'vue'
+import { computed, h, onMounted, ref, defineAsyncComponent, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 //异步加载组件
@@ -89,6 +95,8 @@ const Battle = defineAsyncComponent(() =>
 const HongbaoPost = defineAsyncComponent(() =>
     import('./HongbaoPost.vue')
 )
+//延后加载Dropdown，提高显示速度（200个PostItem大约能改善120ms）
+const renderDropdown = ref<boolean>(false)
 
 //基础数据
 const userStore = useUserStore()
