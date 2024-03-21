@@ -166,10 +166,20 @@ const nissinTimeDisable = computed(() => {
     }
 })
 
-//随机头像组
+//随机头像组选项
 const randomHeadsOptions = computed(() => {
     return randomHeadsData.map((item) => { return { value: item.id, label: item.name } })
 })
+watch(() => forumsStore.forumsDataLoading, (value) => {
+    //板块信息读取后，自动选择该板块的默认头像组
+    if (value === false) {
+        const forumData = forumsStore.forumData(props.forumId)
+        if (forumData !== undefined) {
+            tabNormalInput.value.randomHeadsGroup = forumData.default_heads
+        }
+    }
+}, { immediate: true })
+
 
 //标题颜色
 const useTitleColor = ref<boolean>(false) //选择是否使用
