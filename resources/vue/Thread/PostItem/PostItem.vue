@@ -121,6 +121,7 @@ interface Props {
     noCustomEmojiMode?: boolean,
     noHeadMode?: boolean,
     noVideoMode?: boolean,
+    useUrlMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
     randomHeadGroupIndex: 1,
@@ -130,6 +131,7 @@ const props = withDefaults(defineProps<Props>(), {
     noCustomEmojiMode: false,
     noHeadMode: false,
     noVideoMode: false,
+    useUrlMode: false,
 })
 
 //回复内容的style，用来折叠高度等
@@ -308,6 +310,21 @@ const postContent = computed(() => {//数据处理
                 return `<span class="highlight">${match}</span>`
             })
         })
+    }
+
+    //自动转换超链接
+    if (props.useUrlMode) {
+        function urlReplacer(match: string) {
+            //判断是否是图片格式，如果非图片格式则转换为<a>标签
+            const reg = new RegExp(/.*(png|jpe?g|webp|gif)$/, 'i')
+            if (reg.test(match)) {
+                return match
+            } else {
+                return `<a href="${match}" target="_blank">${match}</a>`
+            }
+        }
+        const reg = new RegExp(/(https?:\/\/|www\.)[a-zA-Z_0-9\-@]+(\.\w[a-zA-Z_0-9\-:]+)+(\/[\(\)~#&\-=?\+\%/\.\w]+)?/, 'gi')
+        postContent = postContent.replace(reg, urlReplacer)
     }
 
     return postContent

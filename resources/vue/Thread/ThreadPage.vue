@@ -39,7 +39,7 @@
                 <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
                     :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
-                    :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
+                    :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
                     ref="PostItemComs" />
@@ -153,7 +153,7 @@ import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, useThemeVars } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, watch, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
@@ -219,6 +219,7 @@ const noBattleMode = useLocalStorageToRef<boolean>('no_battle_mode', false) //�
 const noRollMode = useLocalStorageToRef<boolean>('no_roll_mode', false) //roll点
 const noRewardMode = useLocalStorageToRef<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useLocalStorageToRef<boolean>('no_hongbao_mode', false) //红包结果
+const useUrlMode = useLocalStorageToRef<boolean>('no_hongbao_mode', false) //自动转换超链接（实验性）
 
 const refList = [//用于批量生成checkbox
     { ref: noVideoMode, label: '音频视频' },
@@ -230,6 +231,7 @@ const refList = [//用于批量生成checkbox
     { ref: noRollMode, label: 'roll点' },
     { ref: noRewardMode, label: '打赏' },
     { ref: noHongbaoMode, label: '红包结果' },
+    // { ref: useUrlMode, label: '自动转换超链接（实验性）' },
 ]
 function renderFuncOptions() {
     return h(
@@ -246,6 +248,21 @@ function renderFuncOptions() {
                     label: item.label
                 })
             }),
+            h(
+                NTooltip,
+                { keepAliveOnHover: false, placement: "bottom", style: { width: 'max-content' } },
+                {
+                    trigger: () => h(
+                        FCheckbox,
+                        {
+                            checked: useUrlMode.value,
+                            'onUpdate:checked': (value: boolean) => useUrlMode.value = value,
+                            label: "自动转换超链接"
+                        }
+                    ),
+                    default: () => "实验性功能，可能会导致回复显示出错"
+                }
+            )
         ]
     )
 }
