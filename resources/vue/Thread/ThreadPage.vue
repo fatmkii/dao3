@@ -1,124 +1,128 @@
 <template>
-    <n-flex vertical v-if="!postsListLoading && showThis">
-        <!-- 顶部功能按钮就及分页导航 -->
-        <n-flex :align="'center'" style="margin-top: 8px;">
-            <n-icon :size="commonStore.isMobile ? 28 : 34">
-                <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
-            </n-icon>
-            <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
-                :last-page="postsListData.posts_data.lastPage" style="margin-left: auto;" />
-        </n-flex>
-        <!-- 搜索输入（弹出） -->
-        <n-flex v-if="showSearchInput" :wrap="false">
-            <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索回复内容"
-                auto-size />
-            <f-button type="primary" @click="handleFetchPostsList(true)">搜索</f-button>
-            <f-button type="default" @click="handleSearchClear">清空</f-button>
-        </n-flex>
-        <!-- 浏览进度弹出提示 -->
-        <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
-            :disable-scroll="Boolean(search)" />
-        <!-- 标题 -->
-        <n-card class="thread-title-contain" size="small" key="title-card">
-            <span class="thread-title">
-                {{ postsListData.thread_data.title }} [{{ postsListData.thread_data.posts_num }}]
-            </span>
-            <f-button size="small" type="primary" v-if="threadData.is_your_thread"
-                style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
-                变色
-            </f-button>
-            <f-button size="small" type="warning" v-if="userStore.checkAdminForums(forumData?.id)"
-                style="float: right; margin-left: 0.5rem">
-                删主题
-            </f-button>
-        </n-card>
+    <n-flex vertical>
+        <template v-if="!postsListLoading && showThis">
+            <!-- 顶部功能按钮就及分页导航 -->
+            <n-flex :align="'center'" style="margin-top: 8px;">
+                <n-icon :size="commonStore.isMobile ? 28 : 34">
+                    <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
+                </n-icon>
+                <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
+                    :last-page="postsListData.posts_data.lastPage" style="margin-left: auto;" />
+            </n-flex>
+            <!-- 搜索输入（弹出） -->
+            <n-flex v-if="showSearchInput" :wrap="false">
+                <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;"
+                    placeholder="搜索回复内容" auto-size />
+                <f-button type="primary" @click="handleFetchPostsList(true)">搜索</f-button>
+                <f-button type="default" @click="handleSearchClear">清空</f-button>
+            </n-flex>
+            <!-- 浏览进度弹出提示 -->
+            <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
+                :disable-scroll="Boolean(search)" />
+            <!-- 标题 -->
+            <n-card class="thread-title-contain" size="small" key="title-card">
+                <span class="thread-title">
+                    {{ threadData.title }} [{{ threadData.posts_num }}]
+                </span>
+                <f-button size="small" type="primary" v-if="threadData.is_your_thread"
+                    style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
+                    变色
+                </f-button>
+                <f-button size="small" type="warning" v-if="userStore.checkAdminForums(forumData?.id)"
+                    style="float: right; margin-left: 0.5rem">
+                    删主题
+                </f-button>
+            </n-card>
 
-        <!-- 循环渲染各个回复 -->
-        <PostList :forum-id="postsListData.forum_data.id"
-            :random-head-group-index="postsListData.thread_data.random_heads_group"
-            :posts-data-raw="postsListData.posts_data.data" :your-posts-list="postsListData.your_post_floors"
-            :anti-jingfen="threadData?.anti_jingfen" :no-custom-emoji-mode="noCustomEmojiMode"
-            :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode" :no-image-mode="noImageMode"
-            :no-video-mode="noVideoMode" :no-battle-mode="noBattleMode" :no-hongbao-mode="noHongbaoMode"
-            :no-reward-mode="noRewardMode" :no-roll-mode="noRollMode" @quote-click="postInputCom?.quoteHandle"
-            @refresh-posts-list="handleFetchPostsList(false)" ref="PostListCom" />
+            <!-- 循环渲染各个回复 -->
+            <n-flex vertical :size="2">
+                <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
+                    :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
+                    :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
+                    :no-image-mode="noImageMode" :no-video-mode="noVideoMode"
+                    :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    ref="PostItemComs" />
+            </n-flex>
 
-        <!-- 自动涮锅和分页导航 -->
-        <n-flex :align="'center'" style="margin-top: 8px;">
-            <f-button type="primary" :disabled="postListening || postsListFetching"
-                :loading="postListening || postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
-            <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
-                <template #checked>
-                    涮锅中…
-                </template>
+            <!-- 自动涮锅和分页导航 -->
+            <n-flex :align="'center'" style="margin-top: 8px;">
+                <f-button type="primary" :disabled="postListening || postsListFetching"
+                    :loading="postListening || postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
+                <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
+                    <template #checked>
+                        涮锅中…
+                    </template>
 
-                <template #unchecked>
-                    自动涮锅
-                </template>
-            </n-switch>
-            <router-link :to="{ name: 'thread', params: { threadId: threadId, page: page + 1 } }"
-                v-if="postListenShowNextPage">回帖已经翻页、点击前往
-            </router-link>
-            <n-text v-if="!isLastPage">在最新一页才能自动涮锅</n-text>
-        </n-flex>
+                    <template #unchecked>
+                        自动涮锅
+                    </template>
+                </n-switch>
+                <router-link :to="{ name: 'thread', params: { threadId: threadId, page: page + 1 } }"
+                    v-if="postListenShowNextPage">回帖已经翻页、点击前往
+                </router-link>
+                <n-text v-if="!isLastPage">在最新一页才能自动涮锅</n-text>
+            </n-flex>
 
-        <!-- 分页导航 -->
-        <n-flex :align="'center'" style="margin-top: 8px;">
-            <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
-            <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
-                :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
-        </n-flex>
-        <!-- 输入框 -->
-        <PostInput ref="postInputCom" mode="post" :forum-id="postsListData.forum_data.id" :thread-id="threadId"
-            :disabled="false" :handling="newPostHandling"
-            :random-heads-group="postsListData.thread_data.random_heads_group" @content-commit="newPostHandle"
+            <!-- 分页导航 -->
+            <n-flex :align="'center'" style="margin-top: 8px;">
+                <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
+                <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
+                    :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
+            </n-flex>
+        </template>
+
+        <!-- 输入框（只有输入框用v-show避免重复加载） -->
+        <PostInput v-show="!postsListLoading && showThis" ref="postInputCom" mode="post" :forum-id="forumData?.id"
+            :thread-id="threadId" :disabled="false" :handling="newPostHandling"
+            :random-heads-group="threadData?.random_heads_group" @content-commit="newPostHandle"
             @refresh-posts-list="handleFetchPostsList" />
 
-
-        <!-- 底部提示 -->
-        <n-flex justify="end">
-            <n-text v-if="postsListData.forum_data.is_nissin === 2 && postsListData.thread_data.sub_id === 0">
-                本贴将于
-                <n-text type="error">
-                    {{ nissinTTL }}
+        <template v-if="!postsListLoading && showThis">
+            <!-- 底部提示 -->
+            <n-flex justify="end">
+                <n-text v-if="forumData.is_nissin === 2 && threadData.sub_id === 0">
+                    本贴将于
+                    <n-text type="error">
+                        {{ nissinTTL }}
+                    </n-text>
+                    日清，请及时更换帖子喔
                 </n-text>
-                日清，请及时更换帖子喔
-            </n-text>
-            <n-text v-if="postsListData.forum_data.is_nissin === 1 && postsListData.thread_data.sub_id === 0">
-                本小岛
-                <n-text type="error">
-                    每日早上8:00
+                <n-text v-if="forumData.is_nissin === 1 && threadData.sub_id === 0">
+                    本小岛
+                    <n-text type="error">
+                        每日早上8:00
+                    </n-text>
+                    日清，请及时更换帖子喔
                 </n-text>
-                日清，请及时更换帖子喔
-            </n-text>
-        </n-flex>
+            </n-flex>
 
-        <!-- 页面底部留空白 -->
-        <div style="height: 50px;"></div>
+            <!-- 页面底部留空白 -->
+            <div style="height: 50px;"></div>
 
-        <!-- 发送到TopBar的版面标题 -->
-        <Teleport to="#topbar-nav">
-            <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
-                <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
-                    {{ forumData?.name }}
-                </n-ellipsis>
-                <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
-                    }}</n-tag>
-            </router-link>
-        </Teleport>
-        <Teleport to="#topbar-func">
-            <!-- 屏蔽按钮 -->
-            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
-                <f-button>屏蔽</f-button>
-            </n-dropdown>
-        </Teleport>
+            <!-- 发送到TopBar的版面标题 -->
+            <Teleport to="#topbar-nav">
+                <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
+                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
+                        {{ forumData?.name }}
+                    </n-ellipsis>
+                    <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
+                        }}</n-tag>
+                </router-link>
+            </Teleport>
+            <Teleport to="#topbar-func">
+                <!-- 屏蔽按钮 -->
+                <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                    <f-button>屏蔽</f-button>
+                </n-dropdown>
+            </Teleport>
 
-        <!-- 各种弹出modal -->
-        <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
-        <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
-        <JumpModal ref="JumpModalCom" :thread-id="threadId"
-            :posts-num="postsListLoading ? 0 : postsListData.thread_data.posts_num" />
-
+            <!-- 各种弹出modal -->
+            <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
+            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
+            <JumpModal ref="JumpModalCom" :thread-id="threadId" :posts-num="threadData.posts_num" />
+            <RewardModal ref="RewardModalCom" @refresh-posts-list="handleFetchPostsList" />
+        </template>
         <!-- 侧边栏 -->
         <Sidebar :mode="'thread'" @refresh="handleFetchPostsList(true)" @show-jump-modal="JumpModalCom!.show()" />
     </n-flex>
@@ -145,7 +149,6 @@ import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import Sidebar from '@/vue/Components/Sidebar.vue'
 import JumpModal from '@/vue/Thread/JumpModal.vue'
-import PostList from '@/vue/Thread/PostList/PostList.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useFetcher, useRequest, useWatcher } from 'alova'
@@ -156,6 +159,8 @@ import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
+import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
+import RewardModal from '@/vue/Thread/PostItem/RewardModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -165,7 +170,7 @@ const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
-const PostListCom = ref<InstanceType<typeof PostList> | null>(null)//回复列表组件
+const PostItemComs = ref<InstanceType<typeof PostItem>[]>([])
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
@@ -190,19 +195,19 @@ const ChangeColorModalCom = ref<InstanceType<typeof ChangeColorModal> | null>(nu
 const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
 const ForbiddenModalCom = ref<InstanceType<typeof ForbiddenModal> | null>(null)//禁止访问的时候的弹出图片
+const RewardModalCom = ref<InstanceType<typeof RewardModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
 
 //显示TTL用的
 const nissinTTL = computed(() => {
-    const nissinDate = dayjs(postsListData.value.thread_data.nissin_date)
+    const nissinDate = dayjs(threadData.value.nissin_date)
     const now = dayjs()
     const hoursDiff = nissinDate.diff(now, 'hour')
     const minutesDiff = nissinDate.diff(now, 'minute') - 60 * hoursDiff
     return `${hoursDiff}小时${minutesDiff}分钟后`
 })
-
 
 //屏蔽选项下拉框
 const noVideoMode = useLocalStorageToRef<boolean>('no_video_mode', false) //音频视频
@@ -308,7 +313,9 @@ const { fetching: postsListFetching, onSuccess: fetchPostsListOnSuccess, onError
 function handleFetchPostsList(remind: boolean = false) {
     remindFetch.value = remind
     fetchPostsList(postsListGetter(postsListParams.value))//刷新回复列表数据
-    PostListCom.value?.refreshBattleData()//刷新所有大乱斗数据
+    PostItemComs.value.forEach((element: InstanceType<typeof PostItem>) => {
+        element.refreshBattleData()
+    });
 }
 fetchPostsListOnSuccess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 fetchPostsListOnError((event) => {
@@ -317,9 +324,35 @@ fetchPostsListOnError((event) => {
 })
 
 //从postsListData抽离出threadData和forumData方便使用
+const postsDataRaw = computed(() => postsListData.value.posts_data.data)
 const threadData = computed(() => postsListData.value.thread_data)
 const forumData = computed(() => postsListData.value.forum_data)
+const yourPostsList = computed(() => postsListData.value.your_post_floors)
 
+//回复数据处理（第一种屏蔽等）
+const postsData = computed(() => {
+    let postsData: postData[]
+    //第一种屏蔽类型：直接过滤掉整个postData元素的（大乱斗/roll点等）
+    postsData = postsDataRaw.value.filter((post) => {
+        if (noBattleMode.value === true && post.battle_id !== null) { return false }
+        if (noRollMode.value === true && post.created_by_admin === 2 && post.nickname === 'Roll点系统') { return false }
+        if (noRewardMode.value === true && post.created_by_admin === 2 && post.nickname === '奥利奥打赏系统' && !post.is_your_post) { return false }
+        if (noHongbaoMode.value === true) {
+            //红包结果屏蔽条件
+            const condition1 =
+                post.created_by_admin == 2 &&
+                post.nickname == "红包结果" &&
+                !post.is_your_post;
+            //抢红包的口令屏蔽条件
+            const condition2 = /^--红包口令: /.test(post.content) && !post.is_your_post;
+            if (condition1 || condition2) {
+                return false;
+            }
+        }
+        return true
+    })
+    return postsData
+})
 
 //搜索功能
 const searchContentInput = ref<string | undefined>(props.search)
