@@ -629,7 +629,7 @@ class UserController extends Controller
             $user->use_pingbici = true;
             $pingbici->user_id = $user->id;
             // $pingbici->title_pingbici = $request->title_pingbici;
-            $pingbici->content_pingbici = json_encode($pingbici_array);
+            $pingbici->content_pingbici = $pingbici_array;
             // $pingbici->fjf_pingbici = $request->fjf_pingbici;
             $user->save();
             $pingbici->save();

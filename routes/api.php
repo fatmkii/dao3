@@ -41,7 +41,7 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     // Route::post('/create_custom', [UserController::class, 'create_custom'])->middleware('CheckBinggan:create');   //新建自定义饼干
     Route::post('/reward', [UserController::class, 'reward'])->middleware('CheckBinggan:create');     //打赏
     // Route::post('/pingbici_set', [UserController::class, 'pingbici_set'])->middleware('CheckBinggan:create');     //设定屏蔽词
-    // Route::post('/pingbici_add', [UserController::class, 'pingbici_add'])->middleware('CheckBinggan:create');     //追加屏蔽词
+    Route::post('/pingbici_add', [UserController::class, 'pingbici_add'])->middleware('CheckBinggan:create');     //追加屏蔽词
     Route::post('/my_emoji_set', [UserController::class, 'my_emoji_set'])->middleware('CheckBinggan:create');     //设定表情包
     Route::post('/my_emoji_add', [UserController::class, 'my_emoji_add'])->middleware('CheckBinggan:create');     //追加表情包
     Route::post('/water_unlock', [UserController::class, 'water_unlock'])->middleware('CheckBinggan:create');     //解除灌水锁定

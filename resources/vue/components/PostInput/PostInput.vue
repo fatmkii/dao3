@@ -42,7 +42,7 @@
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 屏蔽词 -->
-                <Mute style="cursor: pointer;" />
+                <Mute style="cursor: pointer;" @click="PingbiciModalCom?.show()" />
             </n-icon>
             <n-divider vertical />
             <n-icon :size="commonStore.isMobile ? 28 : 32">
@@ -79,6 +79,7 @@
             :random-heads-group="randomHeadsGroup" @refresh-posts-list="emit('refreshPostsList')" />
         <RollModal ref="RollModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
+        <PingbiciModal ref="PingbiciModalCom"/>
 
 
     </n-flex>
@@ -101,6 +102,7 @@ import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import BattleModal from './BattleModal.vue'
 import RollModal from '@/vue/Components/PostInput/RollModal.vue'
+import PingbiciModal from './PingbiciModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -113,6 +115,7 @@ const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件�
 const HongbaoModalCom = ref<InstanceType<typeof HongbaoModal> | null>(null)
 const BattleModalCom = ref<InstanceType<typeof BattleModal> | null>(null)
 const RollModalCom = ref<InstanceType<typeof RollModal> | null>(null)
+const PingbiciModalCom = ref<InstanceType<typeof PingbiciModal> | null>(null)
 
 
 //组件props

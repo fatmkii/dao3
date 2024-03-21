@@ -33,7 +33,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
         name: 'userDataGetter',
         params: {},
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster']
+        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster', 'pingbiciAddPoster']
     }
 )
 
@@ -140,10 +140,7 @@ interface myEmojisAddParams {
 const myEmojisAddPoster = (params: myEmojisAddParams) => {
     const methodInstance = commonAlova.Post(
         'api/user/my_emoji_add',
-        {
-            ...params,
-            my_emoji: params.my_emoji,
-        },
+        params,
         {
             //第三个参数是config
             name: 'myEmojisAddPoster',
@@ -225,10 +222,32 @@ const incomeSumDataGetter = (params: incomeParams) => {
     return methodInstance
 }
 
-
+// 追加屏蔽词
+interface pingbiciAddParams {
+    binggan: string,
+    content_pingbici: string,
+}
+const pingbiciAddPoster = (params: pingbiciAddParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/pingbici_add',
+        params,
+        {
+            //第三个参数是config
+            name: 'pingbiciAddPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
     waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
-    checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams
+    checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,
+    pingbiciAddPoster, pingbiciAddParams
 }
