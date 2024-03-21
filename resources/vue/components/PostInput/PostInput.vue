@@ -38,7 +38,7 @@
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 代码 -->
-                <Code style="cursor: pointer;" />
+                <Code style="cursor: pointer;" @click="CodeModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 屏蔽词 -->
@@ -79,8 +79,8 @@
             :random-heads-group="randomHeadsGroup" @refresh-posts-list="emit('refreshPostsList')" />
         <RollModal ref="RollModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
-        <PingbiciModal ref="PingbiciModalCom"/>
-
+        <PingbiciModal ref="PingbiciModalCom" />
+        <CodeModal ref="CodeModalCom" @insert-code="insertCodeHandle" />
 
     </n-flex>
 </template>
@@ -92,16 +92,17 @@ import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { GameControllerOutline as Game, ArrowUndoOutline as Undo, DiceOutline as Dice } from '@vicons/ionicons5'
-import { NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NDivider } from 'naive-ui'
-import { h, ref, watch, computed } from 'vue'
+import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
+import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
+import { computed, h, ref, watch } from 'vue'
+import BattleModal from './BattleModal.vue'
+import CodeModal from './CodeModal.vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
-import BattleModal from './BattleModal.vue'
-import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 import PingbiciModal from './PingbiciModal.vue'
 
 //基础数据
@@ -116,7 +117,7 @@ const HongbaoModalCom = ref<InstanceType<typeof HongbaoModal> | null>(null)
 const BattleModalCom = ref<InstanceType<typeof BattleModal> | null>(null)
 const RollModalCom = ref<InstanceType<typeof RollModal> | null>(null)
 const PingbiciModalCom = ref<InstanceType<typeof PingbiciModal> | null>(null)
-
+const CodeModalCom = ref<InstanceType<typeof CodeModal> | null>(null)
 
 //组件props
 interface Props {
@@ -210,6 +211,12 @@ function insertTextAtCursor(element: HTMLTextAreaElement, text: string): void {
         currentValue.substring(0, caretPos) + text + currentValue.substring(caretPos);
     contentInput.value = newValue
 }
+function insertTextAtCursorAndLog(text: string) {
+    const contentInputTextarea = document.getElementById('content-input') as HTMLTextAreaElement
+    insertTextAtCursor(contentInputTextarea, text)
+    contentInputChange()//记录一次输入历史
+    contentInputTextarea.focus()//返回焦点
+}
 
 //清空内容
 function clearContent() {
@@ -236,11 +243,13 @@ function contentInputChange() {
 
 //响应子组件的emojiAppend事件
 function emojiAppend(emojiSrc: string, isMyEmoji: boolean) {
-    const contentInputTextarea = document.getElementById('content-input') as HTMLTextAreaElement
     const className = isMyEmoji ? 'custom-emoji-img' : 'emoji-img'
-    insertTextAtCursor(contentInputTextarea, `<img src='${emojiSrc}' class='${className}'>`)
-    contentInputChange()//记录一次输入历史
-    contentInputTextarea.focus()//返回焦点
+    insertTextAtCursorAndLog(`<img src='${emojiSrc}' class='${className}'>`)
+}
+
+//响应子组件的insertCode事件
+function insertCodeHandle(code: string) {
+    insertTextAtCursorAndLog(code)
 }
 
 //响应来自父组件的“回复引用”事件
