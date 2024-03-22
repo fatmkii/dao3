@@ -61,7 +61,7 @@
             @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
-            <f-button style="margin-right: auto;" :disabled="userIsLocked">上传图片</f-button>
+            <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"  @insert-image="insertImageHandle"/>
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
@@ -104,6 +104,7 @@ import CodeModal from './CodeModal.vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import PingbiciModal from './PingbiciModal.vue'
+import ImageUpload from './ImageUpload.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -250,6 +251,11 @@ function emojiAppend(emojiSrc: string, isMyEmoji: boolean) {
 //响应子组件的insertCode事件
 function insertCodeHandle(code: string) {
     insertTextAtCursorAndLog(code)
+}
+
+//响应子组件的insertImage事件
+function insertImageHandle(imgSrc: string) {
+    insertTextAtCursorAndLog(imgSrc)
 }
 
 //响应来自父组件的“回复引用”事件

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 
 export const useCommonStore = defineStore('commonStore', () => {
 
@@ -30,8 +31,10 @@ export const useCommonStore = defineStore('commonStore', () => {
         return now.toLocaleDateString() === double11.toLocaleDateString();
     })
 
+    //选择图床选项
+    const ImgHost = useLocalStorageToRef<string>('img_host', 'mjj')
 
-    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11 }
+    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, ImgHost }
 
 })
 
