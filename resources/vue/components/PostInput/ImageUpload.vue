@@ -100,7 +100,7 @@ const customRequest = ({
         uploading.value = true
         uploadImagePoster(params)
             .then((response) => {
-                emit('insertImage', `<img src='${response.file_url}' />`)//插入链接到输入框
+                emit('insertImage', response.file_url)//插入链接到输入框
                 NUploadCom.value?.clear() //清空已选择的图片
                 uploading.value = false
             })

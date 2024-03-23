@@ -25,7 +25,7 @@ const captchaGetter = () => {
 //上传图片
 interface uploadImageParams {
     binggan: string,
-    file: File,
+    file: File | Blob,
     mode: 'draw' | 'img',
     thread_id: number,
     forum_id: number

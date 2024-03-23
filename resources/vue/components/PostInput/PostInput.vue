@@ -34,7 +34,7 @@
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 涂鸦板 -->
-                <Draw style="cursor: pointer;" />
+                <Draw style="cursor: pointer;" @click="DrawerModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 代码 -->
@@ -61,7 +61,8 @@
             @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
-            <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"  @insert-image="insertImageHandle"/>
+            <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
+                @insert-image="insertImageHandle" />
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
@@ -81,6 +82,8 @@
             @refresh-posts-list="emit('refreshPostsList')" />
         <PingbiciModal ref="PingbiciModalCom" />
         <CodeModal ref="CodeModalCom" @insert-code="insertCodeHandle" />
+        <DrawerModal ref="DrawerModalCom" @insert-image="insertImageHandle" :user-is-locked="userIsLocked"
+            :forum-id="forumId" :thread-id="threadId" />
 
     </n-flex>
 </template>
@@ -105,6 +108,7 @@ import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import PingbiciModal from './PingbiciModal.vue'
 import ImageUpload from './ImageUpload.vue'
+import DrawerModal from './DrawerModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -119,6 +123,7 @@ const BattleModalCom = ref<InstanceType<typeof BattleModal> | null>(null)
 const RollModalCom = ref<InstanceType<typeof RollModal> | null>(null)
 const PingbiciModalCom = ref<InstanceType<typeof PingbiciModal> | null>(null)
 const CodeModalCom = ref<InstanceType<typeof CodeModal> | null>(null)
+const DrawerModalCom = ref<InstanceType<typeof DrawerModal> | null>(null)
 
 //组件props
 interface Props {
@@ -255,7 +260,7 @@ function insertCodeHandle(code: string) {
 
 //响应子组件的insertImage事件
 function insertImageHandle(imgSrc: string) {
-    insertTextAtCursorAndLog(imgSrc)
+    insertTextAtCursorAndLog(`<img src='${imgSrc}' />`)
 }
 
 //响应来自父组件的“回复引用”事件
