@@ -108,15 +108,14 @@ const battleResultMessage = computed<string>(() => {
 //用户输入
 const charaInput = ref<number>(8)
 
-
 //获取大乱斗数据
 const { data: battleData,
     loading: battleDataLoading,
     onSuccess: battleDataOnSuccess } = useRequest(battleDataGetter(props.battleId))
 battleDataOnSuccess((event) => {
-    if (event.data.battle.result === 0) {
+    if (event.data.battle.progress === 0) {
         //如果大乱斗处于未结束状态，则马上失效其缓存。
-        invalidateCache({ name: 'battleDataGetter-' + event.data.battle.id, })
+        invalidateCache(`battleDataGetter-${event.data.battle.id}`)
     }
     if (event.data.battle.chara_group > 0) {
         //如果是特别的乱斗主题group_id>0，则默认选择第一个角色
@@ -125,10 +124,16 @@ battleDataOnSuccess((event) => {
     }
 })
 //刷新大乱斗数据
-const { fetch: battleDataFetch, fetching: battleDataFetching } = useFetcher();
+const { fetch: battleDataFetch, fetching: battleDataFetching, onSuccess: battleDataFetchSuccess } = useFetcher();
 function refreshBattleDataHandle() {
     battleDataFetch(battleDataGetter(props.battleId))
 }
+battleDataFetchSuccess((event) => {
+    if (event.data.battle.progress === 0) {
+        //如果大乱斗处于未结束状态，则马上失效其缓存。
+        invalidateCache(`battleDataGetter-${event.data.battle.id}`)
+    }
+})
 
 //暴露刷新大乱斗数据的方法，当ThreadPage组件刷新回复列表的时候调用
 defineExpose({ refreshBattleDataHandle })
