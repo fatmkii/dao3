@@ -1,0 +1,150 @@
+.root-container {
+    //根容器，写在index.blade.php上
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+a {
+    //所有超链接正常不要下划线
+    text-decoration: none;
+    &:hover {
+        //hover时才有下划线
+        text-decoration: underline;
+    }
+}
+
+//顶部导航栏
+.top-bar {
+    position: sticky;
+    top: 0;
+}
+
+//需要把一些东西上下靠中对齐的时候
+.flex-item-center {
+    display: flex;
+    align-items: center;
+}
+
+//各种卡片/下拉框改成圆的
+.n-card,
+.n-dialog,
+.n-dropdown-menu {
+    border-radius: 10px;
+}
+
+//分页导航改成圆的
+.n-pagination .n-pagination-item {
+    border-radius: 14px;
+}
+.n-pagination-quick-jumper {
+    .n-input {
+        border-radius: 14px;
+    }
+}
+
+//所有选择器都设定成圆的
+.n-base-selection {
+    border-radius: 17px;
+}
+
+//数字输入框改成圆的
+.n-input-number .n-input {
+    border-radius: 17px;
+}
+
+//emoji相关
+.emoji-box {
+    width: 48px;
+    height: 48px;
+}
+.emoji-in-box {
+    max-width: 48px;
+    max-height: 48px;
+}
+.emoji-img,
+.emoji_img,
+.custom-emoji-img,
+.custom_emoji_img {
+    //旧2.0数据是下划线
+    max-width: 60px;
+    max-height: 60px;
+}
+.emoji-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+//tabs相关共同
+.n-tabs-tab-pad {
+    // 覆盖原本的tab之间间距(32px)
+    @media all and (min-width: 1200px) {
+        --n-tab-gap: 16px;
+    }
+    @media not all and (min-width: 1200px) {
+        --n-tab-gap: 0px;
+    }
+}
+
+.n-tabs-scroll-padding {
+    // 删掉最前面的留空
+    display: none;
+}
+
+.n-tabs .n-tabs-wrapper {
+    // 手动使tabs可以跨行
+    flex-wrap: wrap;
+    gap: 0px 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.n-tabs-tab {
+    // 上面通过把tabValue设定为-1使tab收起来，
+    // 但是当没有name=-1的tab时，有时候会出现tab收不起来的情况
+    // 所以放了一个隐藏的name=-1的tab
+    &[data-name="-1"] {
+        display: none !important;
+    }
+}
+
+//输入表单相关
+.n-form-item .n-form-item-feedback-wrapper {
+    --n-feedback-height: 12px;
+}
+
+//限制头像尺寸
+.random-head-container {
+    @media all and (min-width: 1200px) {
+        width: 32px;
+        height: 32px;
+    }
+    @media not all and (min-width: 1200px) {
+        width: 24px;
+        height: 24px;
+    }
+}
+img[class^="head_"] {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+//postItem相关
+.n-collapse .n-collapse-item .n-collapse-item__content-wrapper .n-collapse-item__content-inner {
+    padding-top: 6px;
+}
+.post-content {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow: hidden;
+    position: relative;
+}
+.post-content img {
+    max-width: 100%;
+}
+.img-svg,
+.img_svg {
+    cursor: pointer;
+}
