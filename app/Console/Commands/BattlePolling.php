@@ -67,7 +67,7 @@ class BattlePolling extends Command
                     [
                         'battle_id' => $battle_outdate->id,
                         'message_type' => 0,
-                        'message' => '由于超过了5分钟，乱斗已结束。奥利奥已退回。',
+                        'message' => '由于超过了5分钟，大乱斗已结束。奥利奥已退回。',
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                     ]
