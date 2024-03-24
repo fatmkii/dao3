@@ -1,6 +1,6 @@
 <template>
     <n-flex class="top-bar" :align="'center'">
-        <img src="/favicon2.png" alt="" @click="$router.push('/')">
+        <img src="/favicon.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
         <div id="topbar-func"></div>
