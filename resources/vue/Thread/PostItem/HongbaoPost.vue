@@ -11,7 +11,7 @@
                     <n-text>{{ hongbaoData.question }}</n-text>
                 </div>
                 <div>
-                    <n-text :depth="3" v-if="hongbaoData.question">口令：</n-text>
+                    <n-text :depth="3" v-if="hongbaoData.key_word">口令：</n-text>
                     <n-text>{{ hongbaoData.key_word }}</n-text>
                 </div>
                 <div>

@@ -1,0 +1,1 @@
+import{w as s,o as a,b as e,aK as r,g as o,u as t,A as u,M as m,f as n,z as _,a as c,k as f}from"./app-Dqwzfab-.js";import{u as p}from"./forums-CvKNDuZg.js";const F=s({__name:"TabCommon",setup(i){return a(),e(),p(),r(),o(),t(),(l,b)=>(u(),m(c(f),{vertical:""},{default:n(()=>[_(" 这是TabCommon ")]),_:1}))}});export{F as default};
