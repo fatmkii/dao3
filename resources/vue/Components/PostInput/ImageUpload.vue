@@ -13,7 +13,7 @@
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
 import { NUpload, type UploadCustomRequestOptions } from 'naive-ui'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { uploadImagePoster, type uploadImageParams } from '@/api/methods/common'
 import { useUserStore } from '@/stores/user'
 
@@ -43,6 +43,7 @@ function setImguploadPlugin(station: string) {
     //手动载入插图插件
     var body = document.getElementsByTagName("body")[0];
     var pup = document.createElement("script");
+    pup.setAttribute("id", "image-upload-js");
     var button = document.getElementById('upload-button');
     if (station == 'mjj') {
         pup.setAttribute("async", 'true');
@@ -68,8 +69,18 @@ function setImguploadPlugin(station: string) {
     body.appendChild(pup);
 }
 
+//删除旧的脚本，避免重复加载
+function removeImguploadPlugin() {
+    const pupOld = document.getElementById("image-upload-js");
+    pupOld?.remove()
+}
+
 onMounted(() => {
     setImguploadPlugin(commonStore.ImgHost)
+})
+
+onUnmounted(() => {
+    removeImguploadPlugin()
 })
 
 //自建图床上传配置
