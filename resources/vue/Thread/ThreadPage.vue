@@ -321,7 +321,6 @@ postsListOnSuccess(() => {
 })
 postsListOnError((event) => {
     showThis.value = false
-    // console.log(event.error.message)
     ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
 })
 

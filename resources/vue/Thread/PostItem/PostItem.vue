@@ -314,7 +314,6 @@ const postContent = computed(() => {//数据处理
     //自动转换超链接
     if (props.useUrlMode) {
         function urlReplacer(match: string) {
-            console.log(match)
             //判断是否是图片格式，如果非图片格式则转换为<a>标签
             const reg = new RegExp(/.*(png|jpe?g|webp|gif)$/, 'i')
             if (reg.test(match)) {

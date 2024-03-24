@@ -82,8 +82,6 @@ function jumpFloorHandle() {
         if (toPage === props.page) {
             //如果跳转目标在同一页，则并没有获取数据，则需要手动跳转到hash位置
             const floorTarget = document.querySelector(hash)
-            console.log('hash', hash)
-            console.log('floorTarget', floorTarget)
             floorTarget?.scrollIntoView({ block: "center", behavior: "auto" });
             floorTarget?.classList.add('on-focus');//高亮显示该楼层
         }
