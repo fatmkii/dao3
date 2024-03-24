@@ -131,8 +131,8 @@ class UserController extends Controller
         //如果没有存emojis，则返回null（不然前端会报错）
         $my_emoji = $user->MyEmoji;
         if ($my_emoji) {
-            $my_emoji_data = $my_emoji->emojis;
-            $emoji_excluded = $my_emoji->emoji_excluded;
+            $my_emoji_data = $my_emoji->emojis ?: [];
+            $emoji_excluded = $my_emoji->emoji_excluded ?: [];
         } else {
             $my_emoji_data = [];
             $emoji_excluded = [];
