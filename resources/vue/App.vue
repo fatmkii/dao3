@@ -1,30 +1,27 @@
-
 <template>
     <n-config-provider :theme="themeStore.themeClass" :theme-overrides="themeStore.themeOverrideClass" :locale="zhCN">
-        <n-theme-editor>
-            <n-global-style />
-            <n-message-provider>
-                <MessageApi />
-            </n-message-provider>
-            <n-dialog-provider>
-                <DialogApi />
-            </n-dialog-provider>
+        <n-global-style />
+        <n-message-provider>
+            <MessageApi />
+        </n-message-provider>
+        <n-dialog-provider>
+            <DialogApi />
+        </n-dialog-provider>
 
-            <TopBar />
-            <router-view></router-view>
-            <UnauthModal />
-        </n-theme-editor>
+        <TopBar />
+        <router-view></router-view>
+        <UnauthModal />
     </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import TopBar from '@/vue/TopBar/TopBar.vue';
-import UnauthModal from './Modals/UnauthModal.vue';
-import MessageApi from '@/vue/Components/MessageApi.vue';
-import DialogApi from '@/vue/Components/DialogApi.vue'
-import { NConfigProvider, NMessageProvider, NGlobalStyle, NDialogProvider, zhCN, useThemeVars, NThemeEditor } from 'naive-ui'
-import { usethemeStore } from '@/stores/theme'
+import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
+import DialogApi from '@/vue/Components/DialogApi.vue';
+import MessageApi from '@/vue/Components/MessageApi.vue';
+import TopBar from '@/vue/TopBar/TopBar.vue';
+import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
+import UnauthModal from './Modals/UnauthModal.vue';
 
 //加载主题相关的store
 const themeStore = usethemeStore()

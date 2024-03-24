@@ -45,9 +45,12 @@ const router = createRouter({
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {
             return savedPosition
-        } else {
-            return { top: 0 }
         }
+        if (to.hash) {
+            //如果有hash，则让其他代码控制滚动
+            return false
+        }
+        return { top: 0 }
     },
 })
 

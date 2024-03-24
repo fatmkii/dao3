@@ -50,9 +50,9 @@
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
             <!-- 正文下面的footer，楼号等 -->
-            <div style="display: flex; gap: 4px;" class="post-footer" ref="postFooterDom"
-                :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }"
-                size="small">
+            <n-flex :size="[4, 0]" class="post-footer"
+                :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }">
+
                 <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
                     {{ '№' + postData.floor }}
                 </n-text>
@@ -64,7 +64,7 @@
                     →{{ postData.created_binggan_hash?.slice(0, 5) }}
                 </n-text>
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
-            </div>
+            </n-flex>
         </template>
     </n-card>
 </template>
@@ -106,7 +106,6 @@ const router = useRouter()
 const themeVars = useThemeVars()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
-const postFooterDom = ref<HTMLDivElement | null>(null)//回复footer组件的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
 
 //组件props
@@ -168,7 +167,7 @@ function rewardHandle() {
         forumId: props.forumId,
         threadId: props.postData.thread_id,
         postId: props.postData.id,
-        postFloorMessage: postFooterDom.value!.innerText,
+        postFloorMessage: postFooterText.value,
     })
 }
 
@@ -315,6 +314,7 @@ const postContent = computed(() => {//数据处理
     //自动转换超链接
     if (props.useUrlMode) {
         function urlReplacer(match: string) {
+            console.log(match)
             //判断是否是图片格式，如果非图片格式则转换为<a>标签
             const reg = new RegExp(/.*(png|jpe?g|webp|gif)$/, 'i')
             if (reg.test(match)) {
@@ -331,7 +331,15 @@ const postContent = computed(() => {//数据处理
 })
 
 
+
 //点击引用的处理
+const postFooterText = computed<string>(() => {
+    if (props.antiJingfen) {
+        return `№${props.postData.floor} ${props.postData.nickname} ${props.postData.created_at} →${props.postData.created_binggan_hash?.slice(0, 5)}`
+    } else {
+        return `№${props.postData.floor} ${props.postData.nickname} ${props.postData.created_at}`
+    }
+})
 function quoteClick() {
     const maxQuote = 3; //最大可引用的层数
 
@@ -362,7 +370,7 @@ function quoteClick() {
         "<span class='quote-content'>" +
         postLines.join("\n") +
         "\n" +
-        '@' + postFooterDom.value!.innerText.replace(/\n/g, ' ') +
+        '@' + postFooterText.value +
         "</span>" +
         "\n";
 
@@ -489,6 +497,12 @@ defineExpose({ refreshBattleData })
 </script>
 
 <style scoped lang="scss">
+.post-card{
+    &.on-focus{
+        border-color: v-bind('themeVars.primaryColor');
+    }
+}
+
 .post-content {
     font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
 

@@ -23,15 +23,12 @@
 
 
 <script setup lang="ts">
-import { waterUnlockPoster, type waterUnlockParams } from '@/api/methods/user';
-import { captchaGetter, type captchaData } from '@/api/methods/common';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
-import { useRequest, useFetcher } from 'alova';
-import { FButton, FInput, FInputGroupLabel } from '@custom'
-import { NCard, NInputGroup, NInputNumber, NFlex, NModal, NText } from 'naive-ui';
+import { FButton, FInputGroupLabel } from '@custom';
+import { NCard, NFlex, NInputGroup, NInputNumber, NModal, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
 //基础数据
 const commonStore = useCommonStore()
@@ -42,6 +39,7 @@ const router = useRouter()
 interface Props {
     threadId: number,
     postsNum: number,
+    page?: number,
 }
 const props = withDefaults(defineProps<Props>(), {
 
@@ -72,16 +70,26 @@ defineExpose({ show })
 //跳楼功能
 function jumpFloorHandle() {
     if (floorInput.value !== undefined) {
-        // 不知道为何这样push的话，会丢掉#hash
+        const toPage = Math.ceil((floorInput.value + 1) / 200)
+        const hash = '#f_' + floorInput.value
         router.push({
             name: 'thread', params: {
                 threadId: props.threadId,
-                page: Math.ceil((floorInput.value + 1) / 200)
+                page: toPage
             },
-            hash: '#f_' + floorInput.value
+            hash: hash
         })
+        if (toPage === props.page) {
+            //如果跳转目标在同一页，则并没有获取数据，则需要手动跳转到hash位置
+            const floorTarget = document.querySelector(hash)
+            console.log('hash', hash)
+            console.log('floorTarget', floorTarget)
+            floorTarget?.scrollIntoView({ block: "center", behavior: "auto" });
+            floorTarget?.classList.add('on-focus');//高亮显示该楼层
+        }
         showThis.value = false
     }
 }
+
 
 </script>

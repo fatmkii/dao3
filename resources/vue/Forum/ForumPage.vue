@@ -29,7 +29,7 @@
         <n-flex v-if="showSearchInput" :wrap="false">
             <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题"
                 auto-size />
-            <f-button type="primary" @click="handleFetchThreadsList(true)">搜索</f-button>
+            <f-button type="primary" @click="handleSearch">搜索</f-button>
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
 
@@ -204,16 +204,21 @@ watch(searchTitleInput, (searchTitle) => {
     //设置防抖，searchTitleInput变更超过500ms后才改变路由
     const pushRoute = useDebounce(
         () => router.push({
-            name: "forum", params: { forumId: props.forumId, page: props.page },
+            name: "forum", params: { forumId: props.forumId, page: 1 },
             query: { search: searchTitle || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
         })
     )
     pushRoute()
 })
+function handleSearch() {
+    router.push({
+        name: "forum", params: { forumId: props.forumId, page: 1 },
+        query: { search: searchTitleInput.value || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+    })
+}
 function handleSearchClear() {
     searchTitleInput.value = undefined
     showSearchInput.value = false
-
 }
 
 //查看延时主题

@@ -15,7 +15,7 @@
                     <n-text>总共扣除：</n-text>
                     <n-text type="error">{{ Math.ceil(inputRewardCoin * (commonStore.isDouble11 ? 1.02 : 1.07)) }}
                     </n-text>
-                    <n-text>ge奥利奥。</n-text>
+                    <n-text>块奥利奥。</n-text>
                 </div>
 
                 <n-input-group>
@@ -94,7 +94,7 @@ const emit = defineEmits<{
 function rewardHandle() {
     const params: userRewardParams = {
         binggan: userStore.binggan!,
-        post_floor_message: '@' + rewardPayload.value!.postFloorMessage.replace(/\n/g, ' '),//3.0代码的引用前面加@
+        post_floor_message: '@' + rewardPayload.value!.postFloorMessage,//3.0代码的引用前面加@
         forum_id: rewardPayload.value!.forumId,
         thread_id: rewardPayload.value!.threadId,
         post_id: rewardPayload.value!.postId,

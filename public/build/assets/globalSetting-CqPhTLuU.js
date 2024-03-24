@@ -1,0 +1,1 @@
+import{bJ as e}from"./app-CKeLOz7-.js";const n=e.Get("/api/new_binggan_enable/",{name:"newBingganEnableGetter",params:{},localCache:null}),o=e.Get("/api/home_banners/",{name:"homeBannersGetter",params:{},localCache:{mode:"placeholder",expire:60*60*1e3}});export{o as h,n};

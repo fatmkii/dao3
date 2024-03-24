@@ -23,12 +23,13 @@
         </n-card>
         <n-flex size="small" :wrap="false">
             <f-input v-if="hongbaoData.hongbao_user === null" v-model:value="keywordInput" :maxlength="255"
-                @keyup.enter="hongbaoStoreHandle" style="max-width: 328px;" placeholder="请输入口令" auto-size
+                @keyup.enter="hongbaoStoreHandle" style="max-width: 328px;"
+                :placeholder="hongbaoData.num_remains === 0 ? '已经抢光啦' : '请输入口令'" auto-size
                 :disabled="hongbaoData.hongbao_user !== null" />
             <f-input v-else :value="`你抢到了${hongbaoData.hongbao_user?.olo.toLocaleString('en-us')}个olo`" :maxlength="255"
                 style="max-width: 328px;" auto-size disabled />
             <f-button type="primary" @click="hongbaoStoreHandle"
-                :disabled="hongbaoData.hongbao_user !== null || hongbaoPostStoreLoading">抢！</f-button>
+                :disabled="hongbaoData.hongbao_user !== null || hongbaoPostStoreLoading || hongbaoData.num_remains === 0">抢！</f-button>
         </n-flex>
     </n-flex>
 </template>
@@ -85,7 +86,7 @@ const keywordOrQuestionName = computed(() => {
         2: props.hongbaoData.question,//如果是抢答红包，不显示口令而显示提示
         3: props.hongbaoData.question,//如果是暗号红包，不显示口令而显示提示
     }
-    const index = props.hongbaoData.key_word_type
+    const index = props.hongbaoData.num_remains === 0 ? 1 : props.hongbaoData.key_word_type //如果红包已经抢完，则一定显示口令
     return keywordOrQuestion[index]
 })
 const keywordOrHintName = computed(() => {
@@ -94,7 +95,7 @@ const keywordOrHintName = computed(() => {
         2: '提示：',
         3: '提示：'
     };
-    const index = props.hongbaoData.key_word_type
+    const index = props.hongbaoData.num_remains === 0 ? 1 : props.hongbaoData.key_word_type
     return keywordOrHint[index]
 })
 

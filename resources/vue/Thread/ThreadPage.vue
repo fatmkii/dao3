@@ -13,7 +13,7 @@
             <n-flex v-if="showSearchInput" :wrap="false">
                 <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;"
                     placeholder="搜索回复内容" auto-size />
-                <f-button type="primary" @click="handleFetchPostsList(true)">搜索</f-button>
+                <f-button type="primary" @click="handleSearch">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
             <!-- 浏览进度弹出提示 -->
@@ -120,7 +120,7 @@
             <!-- 各种弹出modal -->
             <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
             <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
-            <JumpModal ref="JumpModalCom" :thread-id="threadId" :posts-num="threadData.posts_num" />
+            <JumpModal ref="JumpModalCom" :thread-id="threadId" :posts-num="threadData.posts_num" :page="page" />
             <RewardModal ref="RewardModalCom" @refresh-posts-list="handleFetchPostsList" />
         </template>
         <!-- 侧边栏 -->
@@ -311,10 +311,11 @@ const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSu
 );
 postsListOnSuccess(() => {
     nextTick(() => {
-        //如果地址有#hash，则滚动到对应hash
+        //如果地址有#hash，则滚动到对应hash并高亮显示
         if (route.hash) {
             const floorTarget = document.querySelector(route.hash)
             floorTarget?.scrollIntoView({ block: "center", behavior: "auto" });
+            floorTarget?.classList.add('on-focus');//高亮显示该楼层
         }
     })
 })
@@ -378,16 +379,21 @@ watch(searchContentInput, (searchContent) => {
     //设置防抖，searchContentInput变更超过500ms后才改变路由
     const pushRoute = useDebounce(
         () => router.push({
-            name: "thread", params: { threadId: props.threadId, page: props.page },
+            name: "thread", params: { threadId: props.threadId, page: 1 },
             query: { search: searchContent || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
         })
     )
     pushRoute()
 })
+function handleSearch() {
+    router.push({
+        name: "thread", params: { threadId: props.threadId, page: 1 },
+        query: { search: searchContentInput.value || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+    })
+}
 function handleSearchClear() {
     searchContentInput.value = undefined
     showSearchInput.value = false
-
 }
 
 

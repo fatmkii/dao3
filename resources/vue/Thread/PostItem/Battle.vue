@@ -89,14 +89,14 @@ const isRelative = computed(() => battleData.value.battle.is_your_battle || batt
 //大乱斗结果的文字
 const battleResultMessage = computed<string>(() => {
     const battle = battleData.value.battle
-    if (!isRelative) {
+    if (!isRelative.value) {
         //确定此大乱斗是否跟该用户有关系
         return ""
     }
     const isWin = //确认此用户是否胜利
-        (battle.progress === 1 && battle.is_your_battle === true) ||
-        (battle.progress === 2 && battle.you_are_challenger === true) ||
-        battle.progress === 3
+        (battle.result === 1 && battle.is_your_battle === true) ||
+        (battle.result === 2 && battle.you_are_challenger === true) ||
+        battle.result === 3
 
     const taxRate = commonStore.isDouble11 ? 1.98 : 1.96
     const olo = Math.floor(isWin ? battle.battle_olo * taxRate : battle.battle_olo).toLocaleString('en-us')
