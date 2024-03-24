@@ -1,1 +1,0 @@
-import{w as s,o as a,b as e,aK as r,g as t,u as o,A as u,M as m,f as _,z as n,a as c,k as f}from"./app-CKeLOz7-.js";import{u as l}from"./forums-DGdXgkYv.js";const x=s({__name:"TabMedal",setup(p){return a(),e(),l(),r(),t(),o(),(d,i)=>(u(),m(c(f),{vertical:""},{default:_(()=>[n(" 这是TabMedal ")]),_:1}))}});export{x as default};

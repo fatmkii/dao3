@@ -7,10 +7,13 @@
                     <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }" />
                 </n-flex>
                 <div>
-                    <n-text :depth="3">{{ keywordOrHintName }}</n-text>
-                    <n-text>{{ keywordOrQuestionName }}</n-text>
+                    <n-text :depth="3" v-if="hongbaoData.question">提示：</n-text>
+                    <n-text>{{ hongbaoData.question }}</n-text>
                 </div>
-
+                <div>
+                    <n-text :depth="3" v-if="hongbaoData.question">口令：</n-text>
+                    <n-text>{{ hongbaoData.key_word }}</n-text>
+                </div>
                 <div>
                     <n-text :depth="3">数量：</n-text>
                     <n-text>{{ hongbaoData.num_remains }} /{{ hongbaoData.num_total }} （{{ hongbaoTypeName }}）</n-text>
@@ -25,7 +28,7 @@
             <f-input v-if="hongbaoData.hongbao_user === null" v-model:value="keywordInput" :maxlength="255"
                 @keyup.enter="hongbaoStoreHandle" style="max-width: 328px;"
                 :placeholder="hongbaoData.num_remains === 0 ? '已经抢光啦' : '请输入口令'" auto-size
-                :disabled="hongbaoData.hongbao_user !== null" />
+                :disabled="hongbaoData.hongbao_user !== null || hongbaoData.num_remains === 0" />
             <f-input v-else :value="`你抢到了${hongbaoData.hongbao_user?.olo.toLocaleString('en-us')}个olo`" :maxlength="255"
                 style="max-width: 328px;" auto-size disabled />
             <f-button type="primary" @click="hongbaoStoreHandle"
@@ -79,24 +82,6 @@ const keywordTypeName = computed(() => {
         3: '暗号红包'
     };
     return keywordTypeMap[props.hongbaoData.key_word_type]
-})
-const keywordOrQuestionName = computed(() => {
-    const keywordOrQuestion = {
-        1: props.hongbaoData.key_word,//如果是一般口令红包，直接显示口令
-        2: props.hongbaoData.question,//如果是抢答红包，不显示口令而显示提示
-        3: props.hongbaoData.question,//如果是暗号红包，不显示口令而显示提示
-    }
-    const index = props.hongbaoData.num_remains === 0 ? 1 : props.hongbaoData.key_word_type //如果红包已经抢完，则一定显示口令
-    return keywordOrQuestion[index]
-})
-const keywordOrHintName = computed(() => {
-    const keywordOrHint = {
-        1: '口令：',
-        2: '提示：',
-        3: '提示：'
-    };
-    const index = props.hongbaoData.num_remains === 0 ? 1 : props.hongbaoData.key_word_type
-    return keywordOrHint[index]
 })
 
 //用户输入 
