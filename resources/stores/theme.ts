@@ -2,10 +2,10 @@ import { defineStore } from 'pinia'
 import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { ref, computed } from 'vue'
 import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, darkThemeColors, greenThemeColors } from '@/data/theme'
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
+import { useStorage } from '@vueuse/core'
 
 export const usethemeStore = defineStore('themeStore', () => {
-    const themeName = useLocalStorageToRef<string>('theme', 'light') //用来标记当前状态的
+    const themeName = useStorage<string>('theme', 'light') //用来标记当前状态的
 
     function themeChange(name: string) {
         themeName.value = name

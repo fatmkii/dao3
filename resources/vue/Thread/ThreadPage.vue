@@ -139,7 +139,7 @@ import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
 import { useDebounce } from '@/js/func/debounce'
 import getNewPostKey from '@/js/func/getNewPostKey'
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
+import { useStorage } from '@vueuse/core'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
@@ -210,16 +210,16 @@ const nissinTTL = computed(() => {
 })
 
 //屏蔽选项下拉框
-const noVideoMode = useLocalStorageToRef<boolean>('no_video_mode', false) //音频视频
-const noImageMode = useLocalStorageToRef<boolean>('no_image_mode', false)//图片
-const noEmojiMode = useLocalStorageToRef<boolean>('no_emoji_mode', false)//一般表情包
-const noCustomEmojiMode = useLocalStorageToRef<boolean>('no_custom_emoji_mode', false) //自定义表情包
-const noHeadMode = useLocalStorageToRef<boolean>('no_head_mode', false) //头像
-const noBattleMode = useLocalStorageToRef<boolean>('no_battle_mode', false) //大乱斗
-const noRollMode = useLocalStorageToRef<boolean>('no_roll_mode', false) //roll点
-const noRewardMode = useLocalStorageToRef<boolean>('no_reward_mode', false) //打赏
-const noHongbaoMode = useLocalStorageToRef<boolean>('no_hongbao_mode', false) //红包结果
-const useUrlMode = useLocalStorageToRef<boolean>('no_hongbao_mode', false) //自动转换超链接（实验性）
+const noVideoMode = useStorage<boolean>('no_video_mode', false) //音频视频
+const noImageMode = useStorage<boolean>('no_image_mode', false)//图片
+const noEmojiMode = useStorage<boolean>('no_emoji_mode', false)//一般表情包
+const noCustomEmojiMode = useStorage<boolean>('no_custom_emoji_mode', false) //自定义表情包
+const noHeadMode = useStorage<boolean>('no_head_mode', false) //头像
+const noBattleMode = useStorage<boolean>('no_battle_mode', false) //大乱斗
+const noRollMode = useStorage<boolean>('no_roll_mode', false) //roll点
+const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
+const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
+const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
 
 const refList = [//用于批量生成checkbox
     { ref: noVideoMode, label: '音频视频' },

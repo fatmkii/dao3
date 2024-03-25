@@ -89,7 +89,6 @@
 </template>
 
 <script setup lang="ts">
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
@@ -100,15 +99,16 @@ import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
+import { useStorage } from '@vueuse/core'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
+import DrawerModal from './DrawerModal.vue'
 import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
-import PingbiciModal from './PingbiciModal.vue'
 import ImageUpload from './ImageUpload.vue'
-import DrawerModal from './DrawerModal.vue'
+import PingbiciModal from './PingbiciModal.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -161,7 +161,7 @@ const postWithAdmin = ref<boolean>(false)
 
 //功能选项下拉框
 const showPreview = ref<boolean>(false) //实时预览
-const emojiAutoHide = useLocalStorageToRef<boolean>('emoji_auto_hide', false) //表情包自动收起
+const emojiAutoHide = useStorage<boolean>('emoji_auto_hide', false) //表情包自动收起
 function renderFuncOptions() {
     let options = [
         h(FCheckbox, {

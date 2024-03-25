@@ -54,20 +54,16 @@
 
 <script setup lang="ts">
 
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
-import { useTopbarNavControl } from '@/js/func/topbarNav'
+import { incomeDataGetter, incomeSumDataGetter, type incomeData, type incomeParams } from '@/api/methods/user'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { FButton, FCheckbox, FInput } from '@custom'
-import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NDatePicker, NCard, NDataTable, NFlex, NDropdown, NText, NPagination, NTag, NAlert, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { incomeDataGetter, incomeSumDataGetter, type incomeData, type incomeParams } from '@/api/methods/user'
+import { FButton } from '@custom'
+import { useRequest } from 'alova'
 import dayjs from 'dayjs'
-import { RouterLink } from 'vue-router'
+import { NCard, NDataTable, NDatePicker, NDropdown, NFlex, NPagination, NText, useThemeVars } from 'naive-ui'
+import { computed, h, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 //基础数据
 const userStore = useUserStore()

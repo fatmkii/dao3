@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
+import { useStorage } from '@vueuse/core'
 
 export const useCommonStore = defineStore('commonStore', () => {
 
@@ -32,9 +32,17 @@ export const useCommonStore = defineStore('commonStore', () => {
     })
 
     //选择图床选项
-    const ImgHost = useLocalStorageToRef<string>('img_host', 'mjj')
+    const ImgHost = useStorage<string>('img_host', 'mjj')
 
-    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, ImgHost }
+    //用户的一般设定（在个人中心设置的）
+    interface userCustomType {
+        loudspeakerPosition: 'top' | 'center' | 'bottom'
+    }
+    const userCustom = useStorage<userCustomType>('user_custom', {
+        loudspeakerPosition: 'bottom',
+    })
+
+    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, ImgHost, userCustom }
 
 })
 

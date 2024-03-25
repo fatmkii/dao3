@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { threadsListGetter, type getThreadsListParams } from '@/api/methods/forums'
 import { useDebounce } from '@/js/func/debounce'
-import { useLocalStorageToRef } from '@/js/func/localStorageToRef'
+import { useStorage } from '@vueuse/core'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
@@ -109,10 +109,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 
 //隐藏版头
-const hideBanner = useLocalStorageToRef<boolean>('banner_hiden', false)
+const hideBanner = useStorage<boolean>('banner_hiden', false)
 
 //新窗口打开(
-const newWindowToPost = useLocalStorageToRef<boolean>('new_window_to_post', false)
+const newWindowToPost = useStorage<boolean>('new_window_to_post', false)
 
 //功能选项下拉框
 function renderFuncOptions() {
@@ -154,7 +154,7 @@ const funcOptions = [
 ]
 
 //筛选功能
-const subtitlesIncluded = useLocalStorageToRef<(string | number)[]>('subtitles_included', subtitles)
+const subtitlesIncluded = useStorage<(string | number)[]>('subtitles_included', subtitles)
 const subtitlesExcluded = computed(() => subtitles.filter(item => !subtitlesIncluded.value!.includes(item)))
 
 //筛选选项下拉框
