@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 
+export type imgHostType = 'mjj' | 'imgbb' | 'freeimage'
+
 export const useCommonStore = defineStore('commonStore', () => {
 
     const unauthModalShow = ref<boolean>(false) //控制弹出未登录modal的
@@ -37,10 +39,24 @@ export const useCommonStore = defineStore('commonStore', () => {
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {
         loudspeakerPosition: 'top' | 'center' | 'bottom'
+        imgHost: imgHostType
+        sidebarLeft: boolean
+        hongbaoThenStop: boolean
+        // holdPageWhenListening: boolean
+        monochromeMode: boolean
+        quoteMax: number
+        fontRemSize: number
     }
     const userCustom = useStorage<userCustomType>('user_custom', {
-        loudspeakerPosition: 'bottom',
-    })
+        loudspeakerPosition: 'bottom',//TODO
+        imgHost: 'mjj',//图床选择
+        sidebarLeft: false, //TODO侧边栏放在左侧
+        hongbaoThenStop: false, //TODO自动涮锅时遇到红包停止
+        // holdPageWhenListening: false,//TODO自动涮锅时页面保持不动
+        monochromeMode: false,//TODO单色模式
+        quoteMax: 3,//TODO最大引用层数
+        fontRemSize: 32,//TODO字体大小
+    }, localStorage, { mergeDefaults: true })
 
     return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, ImgHost, userCustom }
 

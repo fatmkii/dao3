@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { useCommonStore } from '@/stores/common'
+import { useCommonStore, type imgHostType } from '@/stores/common'
 import { FButton } from '@custom'
 import { NUpload, type UploadCustomRequestOptions } from 'naive-ui'
 import { onMounted, onUnmounted, ref } from 'vue'
@@ -39,7 +39,7 @@ const emit = defineEmits<{
 
 
 //免费图床配置
-function setImguploadPlugin(station: string) {
+function setImguploadPlugin(station: imgHostType) {
     //手动载入插图插件
     var body = document.getElementsByTagName("body")[0];
     var pup = document.createElement("script");
@@ -76,7 +76,7 @@ function removeImguploadPlugin() {
 }
 
 onMounted(() => {
-    setImguploadPlugin(commonStore.ImgHost)
+    setImguploadPlugin(commonStore.userCustom.imgHost)
 })
 
 onUnmounted(() => {
