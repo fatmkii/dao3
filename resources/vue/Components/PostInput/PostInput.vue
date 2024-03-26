@@ -285,6 +285,16 @@ const emit = defineEmits<{
     refreshPostsList: []
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
+    if (!event.isTrusted) {
+        const dialogArgs = {
+            title: '错误',
+            closable: false,
+            content: '请不要用脚本回复喔，可能会被系统判断为脚本并碎饼干。',
+            positiveText: '确定',
+        }
+        window.$dialog.warning(dialogArgs)
+        return
+    }
     const promise = new Promise(function (resolve, reject) {
         emit('contentCommit', {
             contentInput: contentInput.value,
