@@ -60,7 +60,18 @@ export const useUserStore = defineStore('userStore', () => {
         }
     }
 
-    return { userDataLoading, userData, userLoginStatus, binggan, refreshUserData, checkAdminForums }
+    //快速获取管理员状态
+    const admin = computed(() => {
+        const adminLevel = userData.value.binggan.admin ?? 0
+        return {
+            isForumAdmin: adminLevel >= 1,
+            isNormalAdmin: adminLevel >= 10,
+            isSeniorAdmin: adminLevel >= 20,
+            isSuperAdmin: adminLevel >= 99,
+        }
+    })
+
+    return { userDataLoading, userData, userLoginStatus, binggan, admin, refreshUserData, checkAdminForums }
 
 })
 
