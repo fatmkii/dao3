@@ -32,8 +32,8 @@
             @update:page="(value) => page = value" style="margin-right: auto;" />
 
         <!-- 大喇叭数据 -->
-        <n-card v-for="loudspeaker in loudspeakerData" :key="loudspeaker.id" size="small" :bordered="true"
-            class="loudspeaker-card">
+        <n-card v-for="loudspeaker in loudspeakerData.slice(offset, offset + pageSize)" :key="loudspeaker.id"
+            size="small" :bordered="true" class="loudspeaker-card">
             <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
                 :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                 {{ loudspeaker.content }}
@@ -110,7 +110,7 @@ const loudspeakerData = computed(() => {
             return false
         }
         return true
-    }).slice(offset.value, offset.value + pageSize.value)
+    })
 })
 
 
