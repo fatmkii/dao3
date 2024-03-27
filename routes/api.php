@@ -11,7 +11,7 @@ use App\Http\Controllers\API\ThreadController;
 use App\Http\Controllers\API\HongbaoController;
 use App\Http\Controllers\API\HongbaoPostController;
 use App\Http\Controllers\API\BattleController;
-
+use App\Http\Controllers\API\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +57,30 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     // Route::post('/bank_withdraw', [UserController::class, 'bank_withdraw'])->middleware('CheckBinggan:create'); //从银行提款
     // Route::post('/show_bank', [UserController::class, 'show_bank_deposit'])->middleware('CheckBinggan:show'); //查询银行存款
 });
+
+//Admin系列
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    // Route::post('/thread_delete', [AdminController::class, 'thread_delete']); //删主题
+    // Route::delete('/post_delete/{post_id}', [AdminController::class, 'post_delete']); //删帖
+    // Route::put('/post_recover/{post_id}', [AdminController::class, 'post_recover']); //恢复帖子
+    // Route::post('/post_delete_all', [AdminController::class, 'post_delete_all']); //删主题内该作者全部回帖
+    // Route::post('/user_ban', [AdminController::class, 'user_ban']); //碎饼
+    // Route::post('/user_lock', [AdminController::class, 'user_lock']); //封id（临时）
+    // Route::post('/set_banner', [AdminController::class, 'set_banner']); //设置版头
+    // Route::post('/check_post', [AdminController::class, 'check_post']); //查某个回复的用户的状态
+    // Route::post('/thread_set_top', [AdminController::class, 'thread_set_top']); //设置置顶
+    // Route::post('/thread_cancel_top', [AdminController::class, 'thread_cancel_top']); //取消置顶
+    // Route::post('/create_medal', [AdminController::class, 'create_medal']); //查某个回复的用户的状态
+    // Route::post('/set_user_olo', [AdminController::class, 'set_user_olo']); //对用户奖罚olo
+    // Route::get('/global_setting', [AdminController::class, 'get_global_setting']); //读取全局变量
+    // Route::post('/set_global_setting', [AdminController::class, 'set_global_setting']); //设置全局变量
+    // Route::post('/create_annoucement', [AdminController::class, 'create_annoucement']); //发布站内公告
+    // Route::get('/annoucement', [AdminController::class, 'show_annoucements']); //查看站内公告
+    // Route::delete('/annoucement/{annoucement_id}', [AdminController::class, 'del_annoucements']); //查看站内公告
+    // Route::post('/check_jingfen', [AdminController::class, 'check_jingfen']); //查精分
+    Route::post('/del_loudspeaker', [AdminController::class, 'del_loudspeaker']); //删除大喇叭
+});
+
 
 //Forum系列
 Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
@@ -106,6 +130,13 @@ Route::prefix('battles')->middleware('auth:sanctum')->group(function () {
     Route::post('/c_roll', [BattleController::class, 'challenger_roll'])->middleware('CheckBinggan:create');  //挑战者投色子
 });
 
+//Loudspeaker系列
+Route::prefix('loudspeaker')->middleware('auth:sanctum')->group(function () {
+    Route::get('/show', [UserController::class, 'show_loudspeaker'])->middleware('CheckBinggan:show'); //获取大喇叭信息
+    Route::post('/create', [UserController::class, 'create_loudspeaker'])->middleware('CheckBinggan:create'); //发起大喇叭
+    Route::post('/repeal', [UserController::class, 'repeal_loudspeaker'])->middleware('CheckBinggan:create'); //撤回大喇叭
+
+});
 
 
 //各种杂项
@@ -115,7 +146,7 @@ Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
 // Route::get('/subtitles', [CommonController::class, 'subtitles_index']);
 // Route::get('/random_heads', [CommonController::class, 'random_heads_index']);
 Route::get('/captcha', [CommonController::class, 'get_captcha']);
-// Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);
+Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);
 Route::post('/img_upload', [CommonController::class, 'img_upload'])->middleware(['auth:sanctum', 'CheckBinggan:create']); //上传图片
 // Route::post('/store_pool', [CommonController::class, 'store_hongbao_pool'])->middleware('CheckBinggan:create'); //投入祝福池
 // Route::get('/get_pool', [CommonController::class, 'get_hongbao_pool'])->middleware('CheckBinggan:show'); //获取祝福池信息

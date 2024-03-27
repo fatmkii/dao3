@@ -26,18 +26,17 @@
 <script setup lang="ts">
 import { userLogoutPoster } from '@/api/methods/auth';
 import { userLogout } from '@/js/func/logout';
+import { renderIcon } from '@/js/func/renderIcon';
 import { useCommonStore } from '@/stores/common';
 import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
-import { renderIcon } from '@/js/func/renderIcon'
-import { Cog as CogIcon, Circle } from '@vicons/fa';
+import { FButton, FCheckbox } from '@custom';
+import { Circle, Cog as CogIcon } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { useRequest } from 'alova';
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
-import { h, onMounted, ref } from 'vue';
+import { defineAsyncComponent, h, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { FButton } from '@custom';
-import { defineAsyncComponent } from 'vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -52,7 +51,26 @@ const themeOptions = [
     { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
     { label: '芝麻锅', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
     { label: '青菜锅', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
+    { type: 'render', key: 'monochrome', render: renderOptions },
 ]
+//皮肤选项下拉框的下面部分
+function renderOptions() {
+    return h(
+        NFlex,
+        {
+            style: 'padding:6px 8px',
+            vertical: true,
+        },
+        () => [
+            h(FCheckbox, {
+                checked: commonStore.userCustom.monochromeMode,
+                'onUpdate:checked': (value: boolean) => commonStore.userCustom.monochromeMode = value,
+                label: '单色模式'
+            })
+        ]
+    )
+}
+
 
 //登录modal
 const LoginModal = defineAsyncComponent(() =>

@@ -10,6 +10,7 @@ use App\Facades\GlobalSetting;
 use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
 use App\Models\IncomeStatement;
+use App\Models\Loudspeaker;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Pingbici;
@@ -854,6 +855,181 @@ class UserController extends Controller
                     "sum_year" => $sum_year,
                     "sum_month" => $sum_month,
                 )
+            ]
+        );
+    }
+    //获取所有大喇叭
+    public function show_loudspeaker(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'nullable|string',
+            'mode' => 'required|string',
+        ]);
+
+
+
+        if ($request->mode == 'effective') {
+            //正常显示的已发布的大喇叭
+            $loudspeakers = Loudspeaker::where('effective_date', "<", Carbon::now())->orderBy('sub_id', 'desc')->orderBy('id', 'asc')->get();
+        } elseif ($request->mode == 'all') {
+            //全部大喇叭（不含软删除），用于确认包括未发布的清单
+            $loudspeakers = Loudspeaker::orderBy('sub_id', 'desc')->orderBy('id', 'asc')->get();
+        } else {
+            return response()->json([
+                'code' => ResponseCode::PARAM_FAILED,
+                'message' => ResponseCode::$codeMap[ResponseCode::PARAM_FAILED],
+            ]);
+        }
+
+        if ($request->query('binggan')) {
+            foreach ($loudspeakers as $loudspeaker) {
+                $loudspeaker->setBinggan($request->query('binggan'));
+            }
+        }
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获取大喇叭数据',
+                'data' => $loudspeakers,
+            ]
+        );
+    }
+
+    //发布新的大喇叭
+    public function create_loudspeaker(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'sub_id' => 'nullable|integer',
+            'content' => 'required|string|max:100',
+            'color' => 'nullable|string|max:8',
+            'thread_id' => 'nullable|integer',
+            'effective_date' => 'required|date_format:Y-m-d H:i:s',
+            'days' => 'required|integer|min:1|max:3',
+        ]);
+
+        if (!GlobalSetting::get('new_loudspeaker')) {
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => '暂时停止发布新的大喇叭',
+            ]);
+        }
+
+
+        $user = $request->user();
+
+        $effective_date = Carbon::parse($request->effective_date);
+        $expire_date = $effective_date->addDays($request->days);
+
+        if ($effective_date < Carbon::now()->addHours(-1)) { //减去1小时避免时间差
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => '生效时间不应早于现在',
+            ]);
+        }
+
+        if ($request->sub_id && $request->sub_id >= 10 && $user->admin != 99) {
+            //只有超管可以发布置顶大喇叭(sub_id>=10)
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $olo = 5000 * $request->days; //根据时长每天5000
+            $user->coinChange(
+                'normal', //记录类型
+                [
+                    'olo' => -$olo,
+                    'content' => '发布了大喇叭'
+                ]
+            ); //扣除用户相应olo（通过统一接口、记录操作）
+
+
+            $loudspeaker = Loudspeaker::create([
+                'sub_id' => $request->sub_id,
+                'user_id' => $user->id,
+                'created_binggan' => $user->binggan,
+                'content' => $request->content,
+                'color' => $request->color,
+                'thread_id' => $request->thread_id,
+                'effective_date' => $request->effective_date,
+                'expire_date' => $expire_date,
+            ]);
+
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        //检查成就（发布大喇叭）
+        $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+        $user_medal_record->push_loudspeakers_con();
+
+
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已发布大喇叭',
+                'data' => $loudspeaker,
+            ]
+        );
+    }
+
+    //用户自行撤回大喇叭
+    public function repeal_loudspeaker(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'loudspeaker_id' => 'required|integer',
+        ]);
+
+
+        $user = $request->user();
+        $loudspeaker = Loudspeaker::find($request->loudspeaker_id);
+
+        if (!$loudspeaker) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => '大喇叭不存在或已失效',
+            ]);
+        }
+
+        if ($user->id != $loudspeaker->user_id) {
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => ResponseCode::$codeMap[ResponseCode::USER_CANNOT],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $loudspeaker->delete();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        //检查成就（撤回大喇叭）
+        $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+        $user_medal_record->check_loudspeakers_withdraw();
+
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已撤回该大喇叭',
+                'data' => $loudspeaker,
             ]
         );
     }

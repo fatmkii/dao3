@@ -37,6 +37,11 @@ const routes = [
         component: () => import('@/vue/UserCenter/UserCenter.vue'),
         name: 'user-center',
     },
+    {
+        path: '/loudspeaker',
+        component: () => import('@/vue/Loudspeaker/LoudspeakerPage.vue'),
+        name: 'loudspeaker',
+    },
 ]
 
 const router = createRouter({

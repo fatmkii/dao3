@@ -21,7 +21,7 @@
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
             <div style="margin-left: auto;"></div>
-            <f-button type="primary">大喇叭</f-button>
+            <f-button type="primary" @click="$router.push({ name: 'loudspeaker' })">大喇叭</f-button>
             <f-button type="primary"
                 @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
         </n-flex>
@@ -32,7 +32,8 @@
             <f-button type="primary" @click="handleSearch">搜索</f-button>
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
-
+        <!-- 大喇叭 -->
+        <LoudspeakerComponent />
         <!-- 主题列表 -->
         <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
             :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
@@ -84,6 +85,7 @@ import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag, NE
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '@/vue/Components/Sidebar.vue'
+import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -91,6 +93,7 @@ const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
 const router = useRouter()
 const SidebarCom = ref<InstanceType<typeof Sidebar> | null>(null)
+const LoudspeakerComponentCom = ref<InstanceType<typeof LoudspeakerComponent> | null>()
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()

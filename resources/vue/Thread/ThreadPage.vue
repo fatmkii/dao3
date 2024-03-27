@@ -19,6 +19,8 @@
             <!-- 浏览进度弹出提示 -->
             <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
                 :disable-scroll="Boolean(search)" />
+            <!-- 大喇叭（top） -->
+            <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'top'" />
             <!-- 标题 -->
             <n-card class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
@@ -70,6 +72,8 @@
                 <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
                     :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
             </n-flex>
+            <!-- 大喇叭（center） -->
+            <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'center'" />
         </template>
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
@@ -96,6 +100,9 @@
                     日清，请及时更换帖子喔
                 </n-text>
             </n-flex>
+
+            <!-- 大喇叭（top） -->
+            <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'bottom'" />
 
             <!-- 页面底部留空白 -->
             <div style="height: 50px;"></div>
@@ -161,6 +168,7 @@ import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
 import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
 import RewardModal from '@/vue/Thread/PostItem/RewardModal.vue'
+import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 
 //基础数据
 const userStore = useUserStore()

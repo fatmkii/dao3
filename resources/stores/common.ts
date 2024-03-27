@@ -33,9 +33,6 @@ export const useCommonStore = defineStore('commonStore', () => {
         return now.toLocaleDateString() === double11.toLocaleDateString();
     })
 
-    //选择图床选项
-    const ImgHost = useStorage<string>('img_host', 'mjj')
-
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {
         loudspeakerPosition: 'top' | 'center' | 'bottom'
@@ -58,7 +55,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontRemSize: 32,//TODO字体大小
     }, localStorage, { mergeDefaults: true })
 
-    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, ImgHost, userCustom }
+    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, userCustom }
 
 })
 

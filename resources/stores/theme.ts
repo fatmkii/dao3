@@ -5,7 +5,7 @@ import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThem
 import { useStorage } from '@vueuse/core'
 
 export const usethemeStore = defineStore('themeStore', () => {
-    const themeName = useStorage<string>('theme', 'light') //用来标记当前状态的
+    const themeName = useStorage<string>('theme', 'green') //用来标记当前状态的
 
     function themeChange(name: string) {
         themeName.value = name

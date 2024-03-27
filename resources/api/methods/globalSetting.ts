@@ -18,5 +18,14 @@ const homeBannersGetter = commonAlova.Get<string[]>(
     }
 )
 
+const newLoudspeakerEnableGetter = commonAlova.Get<boolean>(
+    '/api/new_loudspeaker_enable',
+    {
+        name: 'newLoudspeakerEnableGetter',
+        params: {},
+        localCache: null,
+    }
+)
 
-export { newBingganEnableGetter, homeBannersGetter }
+
+export { newBingganEnableGetter, homeBannersGetter, newLoudspeakerEnableGetter }
