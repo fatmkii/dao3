@@ -3,11 +3,11 @@
         <n-card v-for=" threadData  in    threadsListData  " size="small" :bordered="true" :key="threadData.id"
             class="thread-cards" :content-style="threadCardsContentStyle" hoverable>
             <n-flex vertical>
-                <div :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1 }"
+                <div :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1 }"
                     class="thread-title">
                     {{ threadData.sub_title }}
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
-                        :style="{ color: threadData.title_color ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
+                        :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
