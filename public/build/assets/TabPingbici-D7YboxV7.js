@@ -1,0 +1,1 @@
+import{w as s,o as a,b as e,aH as r,g as t,u as o,A as u,M as i,f as m,z as n,a as _,k as c}from"./app-B4DzAUIj.js";import{u as f}from"./forums-CfRY0C10.js";const S=s({__name:"TabPingbici",setup(p){return a(),e(),f(),r(),t(),o(),(b,l)=>(u(),i(_(c),{vertical:""},{default:m(()=>[n(" 这是TabPinbici ")]),_:1}))}});export{S as default};

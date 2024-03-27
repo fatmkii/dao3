@@ -1,1 +1,0 @@
-import{_ as n,A as s,F as t,z as r,j as _}from"./app-D_NcfV-1.js";const o={},c=_("br",null,null,-1);function e(a,l){return s(),t("div",null,[r("嗷……页面被吃掉了！"),c,r(" 404 Not Found.")])}const d=n(o,[["render",e]]);export{d as default};
