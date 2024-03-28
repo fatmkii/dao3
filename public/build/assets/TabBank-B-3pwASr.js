@@ -1,1 +1,0 @@
-import{w as s,o as a,b as e,aH as r,g as t,u as o,A as u,M as m,f as n,z as _,a as c,k as f}from"./app-B4DzAUIj.js";import{u as p}from"./forums-CfRY0C10.js";const F=s({__name:"TabBank",setup(i){return a(),e(),p(),r(),t(),o(),(l,b)=>(u(),m(c(f),{vertical:""},{default:n(()=>[_(" 这是TabBank ")]),_:1}))}});export{F as default};
