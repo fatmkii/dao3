@@ -60,7 +60,9 @@ class ThreadController extends Controller
 
         if ($page > 1) {
             $posts0 = Post::suffix((intval($thread_id / 10000)))->where('thread_id', $thread_id)->first(); //为第2页及之后增加0楼
-            $posts->prepend($posts0); //为第2页及之后增加0楼
+            if ($posts0 != null) { //如果查询不到0楼，$posts会变成[null]（一个null的数组），从而引起后续bug
+                $posts->prepend($posts0); //为第2页及之后增加0楼
+            }
         }
 
         //查询最大页数
@@ -479,7 +481,6 @@ class ThreadController extends Controller
             // $posts = $CurrentThread->posts()->orderBy('id', 'asc')->paginate(200);
             list($posts, $lastPage) = $this->postsData($Thread_id, $currentPage); //更好的分页sql语句
         }
-
 
         // if ($posts->currentPage() > 1) {
         //     $posts->appendPost0($CurrentThread->posts()->first()); //为第2页及之后增加0楼
