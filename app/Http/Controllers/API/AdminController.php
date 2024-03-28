@@ -42,7 +42,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -94,7 +94,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -145,7 +145,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($thread->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -204,7 +204,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -284,7 +284,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -340,7 +340,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -437,7 +437,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -452,6 +452,13 @@ class AdminController extends Controller
             return response()->json([
                 'code' => ResponseCode::USER_NOT_FOUND,
                 'message' => ResponseCode::$codeMap[ResponseCode::USER_NOT_FOUND],
+            ]);
+        }
+
+        if ($user_to_ban->is_banned) {
+            return response()->json([
+                'code' => ResponseCode::DEFAULT,
+                'message' => '该饼干已经被碎过了。',
             ]);
         }
 
@@ -496,7 +503,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -514,6 +521,12 @@ class AdminController extends Controller
             ]);
         }
 
+        if ($user_to_lock->is_banned) {
+            return response()->json([
+                'code' => ResponseCode::DEFAULT,
+                'message' => '该饼干已经被碎过了。',
+            ]);
+        }
 
         if ($user_to_lock->locked_until != null && $user_to_lock->locked_until > Carbon::now()) {
             return response()->json([
@@ -571,7 +584,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('forum_admin') && in_array($forum->id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('forum_admin') && in_array($forum->id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -630,7 +643,7 @@ class AdminController extends Controller
 
         //确认是否拥有该版面的管理员权限
         if (
-            !($user->tokenCan('senior_admin') && in_array($post->forum_id, json_decode($user->AdminPermissions->forums)))
+            !($user->tokenCan('senior_admin') && in_array($post->forum_id, $user->AdminPermissions->forums))
         ) {
             return response()->json(
                 [
@@ -666,8 +679,10 @@ class AdminController extends Controller
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '已经查到用户信息',
-            'locked_count' => $user_target->locked_count,
-            'user_status' => $user_status,
+            'data' => [
+                'locked_count' => $user_target->locked_count,
+                'user_status' => $user_status,
+            ]
         ]);
     }
 
@@ -890,7 +905,7 @@ class AdminController extends Controller
     //     //确认是否拥有该版面的管理员权限
     //     $user = $request->user();
     //     if (
-    //         !in_array($CurrentThread->forum_id, json_decode($user->AdminPermissions->forums))
+    //         !in_array($CurrentThread->forum_id, $user->AdminPermissions->forums)
     //     ) {
     //         return response()->json(
     //             [

@@ -82,10 +82,12 @@ import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
-import { EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
+import { Question as Hint } from '@vicons/fa'
+import { LockClosed12Regular as Lock } from '@vicons/fluent'
+import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, NText, useThemeVars } from 'naive-ui'
-import { computed, h, onMounted, ref, defineAsyncComponent, nextTick } from 'vue'
+import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, NText, useThemeVars, type DropdownOption } from 'naive-ui'
+import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 //异步加载组件
@@ -147,16 +149,30 @@ const emit = defineEmits<{
     showRewardModal: [payload: rewardModalPayload],
     quoteClick: [content: string],
     refreshPostsList: [],
+    adminHandle: [{ action: 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery', postId: number }],
 }>()
 
 //打赏回复及管理员选项的下拉菜单
 const funcOptions = computed(() => {
-    const options = [{ label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) }]
+    const options: DropdownOption[] = [{ label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) }]
     if (!props.postData.is_your_post) {
         //不是自己回复的时候才追加打赏按钮
         options.unshift({ label: '打赏', key: 'gift', icon: renderIcon(Gift, { size: '1.5rem' }) })
     }
-    // if (userStore.checkAdminForums(1)) //TODO管理员功能
+    if (userStore.checkAdminForums(props.forumId)) {
+        options.push({ key: 'divider', type: 'divider' })
+        options.push(...[
+            { label: '提示', key: 'hint', icon: renderIcon(Hint, { size: '1.5rem' }) },
+            { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.5rem' }) },
+            { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.5rem' }) },
+            { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.5rem' }) },
+        ])
+        if (props.postData.is_deleted === 0) {
+            options.push({ label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.5rem' }) })
+        } else {
+            options.push({ label: '恢复', key: 'recovery', icon: renderIcon(Recover, { size: '1.5rem' }) })
+        }
+    }
     return options
 })
 
@@ -220,7 +236,7 @@ function recoverPostHandle() {
 }
 
 //下拉菜单的统一入口
-type dropdownNames = 'quote' | 'gift'
+type dropdownNames = 'quote' | 'gift' | 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery'
 function dropdownSelect(name: dropdownNames) {
     switch (name) {
         case 'gift'://打赏
@@ -230,6 +246,7 @@ function dropdownSelect(name: dropdownNames) {
             quoteClick()
             break;
         default:
+            emit('adminHandle', { action: name, postId: props.postData.id })
             break;
     }
 }
@@ -496,8 +513,8 @@ defineExpose({ refreshBattleData })
 </script>
 
 <style scoped lang="scss">
-.post-card{
-    &.on-focus{
+.post-card {
+    &.on-focus {
         border-color: v-bind('themeVars.primaryColor');
     }
 }

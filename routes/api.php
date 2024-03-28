@@ -60,17 +60,17 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 
 //Admin系列
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
-    // Route::post('/thread_delete', [AdminController::class, 'thread_delete']); //删主题
-    // Route::delete('/post_delete/{post_id}', [AdminController::class, 'post_delete']); //删帖
-    // Route::put('/post_recover/{post_id}', [AdminController::class, 'post_recover']); //恢复帖子
-    // Route::post('/post_delete_all', [AdminController::class, 'post_delete_all']); //删主题内该作者全部回帖
-    // Route::post('/user_ban', [AdminController::class, 'user_ban']); //碎饼
-    // Route::post('/user_lock', [AdminController::class, 'user_lock']); //封id（临时）
+    Route::post('/thread_delete', [AdminController::class, 'thread_delete']); //删主题
+    Route::delete('/post_delete/{post_id}', [AdminController::class, 'post_delete']); //删帖
+    Route::put('/post_recover/{post_id}', [AdminController::class, 'post_recover']); //恢复帖子
+    Route::post('/post_delete_all', [AdminController::class, 'post_delete_all']); //删主题内该作者全部回帖
+    Route::post('/user_ban', [AdminController::class, 'user_ban']); //碎饼
+    Route::post('/user_lock', [AdminController::class, 'user_lock']); //封id（临时）
     // Route::post('/set_banner', [AdminController::class, 'set_banner']); //设置版头
-    // Route::post('/check_post', [AdminController::class, 'check_post']); //查某个回复的用户的状态
-    // Route::post('/thread_set_top', [AdminController::class, 'thread_set_top']); //设置置顶
-    // Route::post('/thread_cancel_top', [AdminController::class, 'thread_cancel_top']); //取消置顶
-    // Route::post('/create_medal', [AdminController::class, 'create_medal']); //查某个回复的用户的状态
+    Route::post('/check_post', [AdminController::class, 'check_post']); //查某个回复的用户的状态
+    Route::post('/thread_set_top', [AdminController::class, 'thread_set_top']); //设置置顶
+    Route::post('/thread_cancel_top', [AdminController::class, 'thread_cancel_top']); //取消置顶
+    // Route::post('/create_medal', [AdminController::class, 'create_medal']); //对用户发放成就
     // Route::post('/set_user_olo', [AdminController::class, 'set_user_olo']); //对用户奖罚olo
     // Route::get('/global_setting', [AdminController::class, 'get_global_setting']); //读取全局变量
     // Route::post('/set_global_setting', [AdminController::class, 'set_global_setting']); //设置全局变量

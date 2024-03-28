@@ -26,13 +26,16 @@
                 <span class="thread-title">
                     {{ threadData.title }} [{{ threadData.posts_num }}]
                 </span>
+                <n-dropdown v-if="userStore.checkAdminForums(forumData?.id)" trigger="click" :options="adminOptions"
+                    @select="dropdownSelect" :size="commonStore.isMobile ? 'medium' : 'large'">
+                    <n-icon :size="commonStore.isMobile ? 20 : 24"
+                        style="cursor: pointer;float: right; margin-left: 0.5rem;">
+                        <Dropdown />
+                    </n-icon>
+                </n-dropdown>
                 <f-button size="small" type="primary" v-if="threadData.is_your_thread"
                     style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
                     变色
-                </f-button>
-                <f-button size="small" type="warning" v-if="userStore.checkAdminForums(forumData?.id)"
-                    style="float: right; margin-left: 0.5rem">
-                    删主题
                 </f-button>
             </n-card>
 
@@ -44,7 +47,7 @@
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    ref="PostItemComs" />
+                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -138,6 +141,9 @@
     <n-spin v-show="postsListLoading" size="large" class="spin" />
     <!-- 禁止访问的时候的弹出图片 -->
     <ForbiddenModal ref="ForbiddenModalCom" />
+    <!-- 管理员操作的弹出modal -->
+    <AdminActionModal ref="AdminActionModalCom" v-if="userStore.checkAdminForums(forumData?.id)"
+        @refresh-posts-list="handleFetchPostsList" :thread-id="threadId" :forum-id="forumData?.id" />
 </template>
 
 <script setup lang="ts">
@@ -146,34 +152,37 @@ import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
 import { useDebounce } from '@/js/func/debounce'
 import getNewPostKey from '@/js/func/getNewPostKey'
-import { useStorage } from '@vueuse/core'
+import { renderIcon } from '@/js/func/renderIcon'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import Sidebar from '@/vue/Components/Sidebar.vue'
+import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 import JumpModal from '@/vue/Thread/JumpModal.vue'
+import AdminActionModal from '@/vue/Thread/PostItem/AdminActionModal.vue'
+import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
+import RewardModal from '@/vue/Thread/PostItem/RewardModal.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
-import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { Delete } from '@vicons/carbon'
+import { ArrowDown as Down, ArrowUp as Up } from '@vicons/fa'
+import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch, defineAsyncComponent } from 'vue'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, useThemeVars, type DropdownOption } from 'naive-ui'
+import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
-import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
-import RewardModal from '@/vue/Thread/PostItem/RewardModal.vue'
-import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
+
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
 const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
@@ -204,6 +213,7 @@ const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
 const ForbiddenModalCom = ref<InstanceType<typeof ForbiddenModal> | null>(null)//禁止访问的时候的弹出图片
 const RewardModalCom = ref<InstanceType<typeof RewardModal> | null>(null)
+const AdminActionModalCom = ref<InstanceType<typeof AdminActionModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
@@ -290,6 +300,21 @@ const funcOptions = [
         render: renderFuncOptions,
     },
 ]
+const adminOptions = computed<DropdownOption[]>(() => {
+    const options = [
+        { label: '删除主题', key: 'deleteThread', icon: renderIcon(Delete, { size: '1.5rem' }) }
+    ]
+    if (threadData.value.sub_id === 0) {
+        options.push({ label: '设为置顶', key: 'setTop', icon: renderIcon(Up, { size: '1.5rem' }) })
+    } else {
+        options.push({ label: '取消置顶', key: 'cancelTop', icon: renderIcon(Down, { size: '1.5rem' }) })
+    }
+    return options
+})
+
+function dropdownSelect(key: 'deleteThread' | 'setTop' | 'cancelTop') {
+    AdminActionModalCom.value?.show({ action: key })
+}
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
