@@ -25,15 +25,12 @@
 <script setup lang="ts">
 import { type loudspeakerData } from '@/api/methods/user';
 import { useCommonStore } from '@/stores/common';
-import { useUserStore } from '@/stores/user';
 import { FButton } from '@custom';
-import { NCard, NFlex, NModal, useThemeVars, type FormInst } from 'naive-ui';
+import { NCard, NFlex, NModal, useThemeVars } from 'naive-ui';
 import { computed, ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
-const userStore = useUserStore()
-const formRef = ref<FormInst | null>(null)
 const themeVars = useThemeVars()
 
 //组件props

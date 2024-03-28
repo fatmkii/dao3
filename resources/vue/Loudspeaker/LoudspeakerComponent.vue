@@ -37,7 +37,6 @@
 
 import { loudspeakerDataGetter, type loudspeakerDataParams } from '@/api/methods/user'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { useRequest } from 'alova'
 import { NFlex, NSpin, useThemeVars } from 'naive-ui'
@@ -47,7 +46,6 @@ import LoudspeakerModal from './LoudspeakerModal.vue'
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
 const LoudspeakerModalCom = ref<InstanceType<typeof LoudspeakerModal> | null>()
 const themeVars = useThemeVars()
 
