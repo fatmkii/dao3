@@ -1,1 +1,0 @@
-import{w as s,o as a,b as e,aO as r,g as t,u as o,A as u,M as i,f as m,z as n,a as _,k as c}from"./app-BStV-yuR.js";import{u as f}from"./forums-DPJEWvF1.js";const S=s({__name:"TabPingbici",setup(p){return a(),e(),f(),r(),t(),o(),(b,l)=>(u(),i(_(c),{vertical:""},{default:m(()=>[n(" 这是TabPinbici ")]),_:1}))}});export{S as default};
