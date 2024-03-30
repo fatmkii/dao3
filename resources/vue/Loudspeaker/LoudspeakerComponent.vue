@@ -3,15 +3,15 @@
         <!-- 题图 -->
         <img style="height: 2.5rem;cursor: pointer;" src="https://oss.cpttmm.com/xhg_other/miku_loudspeaker.png"
             @click="LoudspeakerModalCom?.show()" />
-        <!-- 提示 -->
-        <n-spin v-if="loudspeakerDataLoading" size="small" />
-        <div v-if="noData">
-            <router-link to="/loudspeaker">
-                目前没有大喇叭，要发一个吗？
-            </router-link>
-        </div>
-        <div v-if="!noData" class="loudspeaker-container">
-            <n-flex vertical :size="[0, 4]" class="loudspeaker-content">
+        <div class="loudspeaker-container loudspeaker_container">
+            <!-- 提示 -->
+            <n-spin v-if="loudspeakerDataLoading" size="small" />
+            <div v-if="noData">
+                <router-link to="/loudspeaker">
+                    目前没有大喇叭，要发一个吗？
+                </router-link>
+            </div>
+            <n-flex v-if="!noData" vertical :size="[0, 4]" class="loudspeaker-content">
                 <!-- 大喇叭本体 -->
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="index"
                     :is="loudspeaker.thread_id ? 'router-link' : 'span'"
