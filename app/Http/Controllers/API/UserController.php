@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Common\Medals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 use App\Models\MyBattleChara;
+use App\Models\UserMedal;
 
 class UserController extends Controller
 {
@@ -1030,6 +1032,102 @@ class UserController extends Controller
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已撤回该大喇叭',
                 'data' => $loudspeaker,
+            ]
+        );
+    }
+
+    //获得已经获得的成就数据
+    public function show_medals(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        UserMedal::where('user_id', $user->id)->where('is_read', 0)->update(['is_read' => 1]);
+        $user_medals = $user->UserMedal()->pluck('medal_id')->toArray();
+        // $user_medals->where('is_read', 0)->update(['is_read' => 1]);
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获取成就数据',
+                'data' => $user_medals,
+            ]
+        );
+    }
+
+    //获得某个成就的进度
+    public function show_medal_progress(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'medal_id' => 'required|integer',
+        ]);
+
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::USER_NOT_FOUND],
+            ]);
+        }
+        $varname = Medals::DATA[$request->medal_id]['varname'];
+
+        $threshold = Medals::DATA[$request->medal_id]['threshold'];
+
+        $this_medal = $user->UserMedal()->where('medal_id', $request->medal_id)->first();
+        if ($this_medal) {
+            $medal_created_at = $this_medal->created_at;
+        } else {
+            $medal_created_at = null;
+        }
+
+        switch ($varname) {
+            case 'olo':
+                $progress = $user->coin;
+                break;
+            case 'user_lv':
+                $progress = $user->user_lv;
+                break;
+                // case 'emoji_contest':
+                //     $emoji_contest_user_total =
+                //         EmojiContestUserTotal::where('user_id', $user->id)
+                //         ->where('emoji_group_id', $request->medal_id - 200) //emoji_group_id从1开始，相应medal_id是201，差额200
+                //         ->first();
+                //     if ($emoji_contest_user_total) {
+                //         $progress = $emoji_contest_user_total->votes_num_total;
+                //     } else {
+                //         $progress = 0;
+                //     }
+                //     break;
+                // case 'emoji_contest_total':
+                //     $emoji_contest_user_total_sum = EmojiContestUserTotal::where('user_id', $user->id)->sum('votes_num_total');
+                //     $progress = $emoji_contest_user_total_sum;
+                //     break;
+            case null:
+                $progress = null;
+                break;
+            default:
+                $progress_arr = $user->UserMedalRecord()->pluck($varname)->toArray();
+                if ($progress_arr) {
+                    $progress = $progress_arr[0];
+                } else {
+                    $progress = 0;
+                }
+                break;
+        }
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获取成就进度',
+                'data' => [
+                    'medal_id' => $request->medal_id,
+                    'threshold' => $threshold,
+                    'progress' => $progress,
+                    'medal_created_at' => $medal_created_at,
+                ],
             ]
         );
     }

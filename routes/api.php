@@ -49,8 +49,8 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     // Route::get('/user_lv_show', [UserController::class, 'user_lv_show'])->middleware('CheckBinggan:show');
     // Route::post('/show_messages_index', [UserController::class, 'show_messages_index'])->middleware('CheckBinggan:show'); //获得站内消息列表
     // Route::post('/show_messages_content', [UserController::class, 'show_messages_content'])->middleware('CheckBinggan:show'); //获得站内消息具体内容
-    // Route::post('/show_medals', [UserController::class, 'show_medals'])->middleware('CheckBinggan:show'); //获得已经获得的成就数据
-    // Route::post('/show_medal_progress', [UserController::class, 'show_medal_progress'])->middleware('CheckBinggan:show'); //获得某个成就的进度
+    Route::post('/show_medals', [UserController::class, 'show_medals'])->middleware('CheckBinggan:show'); //获得已经获得的成就数据
+    Route::post('/show_medal_progress', [UserController::class, 'show_medal_progress'])->middleware('CheckBinggan:show'); //获得某个成就的进度
     // Route::get('/my_battle_chara', [UserController::class, 'my_battle_chara_show'])->middleware('CheckBinggan:show'); //获得已经获得的成就数据
     // Route::post('/my_battle_chara_set', [UserController::class, 'my_battle_chara_set'])->middleware('CheckBinggan:create'); //获得已经获得的成就数据
     // Route::post('/bank_deposit', [UserController::class, 'bank_deposit'])->middleware('CheckBinggan:create'); //往银行存款

@@ -1,54 +1,52 @@
 <template>
-    <n-flex vertical>
-        <n-flex size="small">
-            <!-- 日期选择和查询按钮 -->
-            <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date"
-                :size="commonStore.isMobile ? 'small' : 'medium'" />
-            <f-button type="primary" @click="getIncomeDatHandle('day')">
-                查询
-            </f-button>
-            <n-card title="收支记录" size="small">
-                <!-- 卡片头，显示总计 -->
-                <template #header-extra v-if="incomeData.length > 0">
-                    <n-flex size="small" :align="'center'">
-                        当日小计：{{ incomeDaySum }}
-                        <n-dropdown trigger="click" placement="bottom-end" :options="sumOptions">
-                            <f-button size="small" @click="getIncomeDatHandle('sum')">月年总计</f-button>
-                        </n-dropdown>
-                    </n-flex>
-                </template>
-                <!-- 电脑版表格 -->
-                <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="incomeData"
-                    :pagination="pagination" :bordered="false" />
-                <!-- 手机版列表F -->
-                <n-flex v-if="commonStore.isMobile && incomeData.length > 0" vertical :align="'start'" size="small">
-                    <div v-for="rowData in incomeData.slice(pageOffset, pageOffset + pageSize)" class="income-item">
-                        <n-flex>
-                            <div>
-                                <n-text :depth="3">时间：</n-text>
-                                <n-text>{{ rowData.created_at }}</n-text>
-                            </div>
-                            <div style="margin-left: auto;">
-                                <n-text :depth="3">收支：</n-text>
-                                <n-text>{{ rowData.olo }}</n-text>
-                            </div>
-                        </n-flex>
-                        <n-flex style="margin-top: 6px;  ">
-                            <div>
-                                <n-text :depth="3">内容：</n-text>
-                                <n-text>{{ rowData.content }}</n-text>
-                            </div>
-                        </n-flex>
-                        <div v-if="rowData.thread_id !== null" style="margin-top: 6px;  ">
-                            <n-text :depth="3">主题：</n-text>
-                            <router-link :to="getThreadLink(rowData)">{{ rowData.thread_title }}</router-link>
-                        </div>
-                    </div>
-                    <n-pagination v-model:page="pageSelected" :item-count="incomeData.length" :page-size="pageSize"
-                        size="small" style="margin-left: auto;" />
+    <n-flex size="small">
+        <!-- 日期选择和查询按钮 -->
+        <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date"
+            :size="commonStore.isMobile ? 'small' : 'medium'" />
+        <f-button type="primary" @click="getIncomeDatHandle('day')">
+            查询
+        </f-button>
+        <n-card title="收支记录" size="small">
+            <!-- 卡片头，显示总计 -->
+            <template #header-extra v-if="incomeData.length > 0">
+                <n-flex size="small" :align="'center'">
+                    当日小计：{{ incomeDaySum }}
+                    <n-dropdown trigger="click" placement="bottom-end" :options="sumOptions">
+                        <f-button size="small" @click="getIncomeDatHandle('sum')">月年总计</f-button>
+                    </n-dropdown>
                 </n-flex>
-            </n-card>
-        </n-flex>
+            </template>
+            <!-- 电脑版表格 -->
+            <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="incomeData" :pagination="pagination"
+                :bordered="false" />
+            <!-- 手机版列表F -->
+            <n-flex v-if="commonStore.isMobile && incomeData.length > 0" vertical :align="'start'" size="small">
+                <div v-for="rowData in incomeData.slice(pageOffset, pageOffset + pageSize)" class="income-item">
+                    <n-flex>
+                        <div>
+                            <n-text :depth="3">时间：</n-text>
+                            <n-text>{{ rowData.created_at }}</n-text>
+                        </div>
+                        <div style="margin-left: auto;">
+                            <n-text :depth="3">收支：</n-text>
+                            <n-text>{{ rowData.olo }}</n-text>
+                        </div>
+                    </n-flex>
+                    <n-flex style="margin-top: 6px;  ">
+                        <div>
+                            <n-text :depth="3">内容：</n-text>
+                            <n-text>{{ rowData.content }}</n-text>
+                        </div>
+                    </n-flex>
+                    <div v-if="rowData.thread_id !== null" style="margin-top: 6px;  ">
+                        <n-text :depth="3">主题：</n-text>
+                        <router-link :to="getThreadLink(rowData)">{{ rowData.thread_title }}</router-link>
+                    </div>
+                </div>
+                <n-pagination v-model:page="pageSelected" :item-count="incomeData.length" :page-size="pageSize"
+                    size="small" style="margin-left: auto;" />
+            </n-flex>
+        </n-card>
     </n-flex>
 </template>
 

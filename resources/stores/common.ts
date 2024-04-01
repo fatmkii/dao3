@@ -11,7 +11,11 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     //根据屏幕显示尺寸确定是否手机版
     const isMobile = ref<boolean>(document.body.clientWidth < 1200)
-    const checkMobile = () => isMobile.value = document.body.clientWidth < 1200
+    const clientWidth = ref<number>(document.body.clientWidth)
+    const checkMobile = () => {
+        isMobile.value = document.body.clientWidth < 1200
+        clientWidth.value = document.body.clientWidth
+    }
     window.addEventListener('resize', checkMobile)
 
     //是否显示topbar的“小火锅”
@@ -55,7 +59,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontRemSize: 32,//TODO字体大小
     }, localStorage, { mergeDefaults: true })
 
-    return { unauthModalShow, requestErrorCode, isMobile, showTopbarNav, bannerHeight, isDouble11, userCustom }
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom }
 
 })
 

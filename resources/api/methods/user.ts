@@ -245,31 +245,20 @@ const pingbiciAddPoster = (params: pingbiciAddParams) => {
     return methodInstance
 }
 
-//获取大喇叭数据
-interface loudspeakerData {
-    id: number,
-    sub_id: number,
-    content: string,
-    color: string | null,
-    thread_id: number | null,
-    effective_date: string,
-    expire_date: string,
-    created_at: string,
-    is_your_loudspeaker: boolean
-}
-interface loudspeakerDataParams {
+//获取已经获得的成就
+interface getMedalsDataParams {
     binggan: string,
-    mode: 'all' | 'effective'
 }
-const loudspeakerDataGetter = (params: loudspeakerDataParams) => {
-    const methodInstance = commonAlova.Get<loudspeakerData[]>(
-        'api/loudspeaker/show',
+const getMedalsDataPoster = (params: getMedalsDataParams) => {
+    const methodInstance = commonAlova.Post<number[]>(
+        'api/user/show_medals',
+        params,
         {
-            //第二个参数是config
-            name: 'loudspeakerDataGetter',
-            params: params,
-            localCache: { mode: 'restore', expire: 60 * 1000 },
-            hitSource: ['newLoudspeakerPoster', 'repealLoudspeakerPoster', 'deleteLoudspeakerPoster']
+            //第三个参数是config
+            name: 'getMedalsDataPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
         }
     )
     methodInstance.meta = {
@@ -278,60 +267,40 @@ const loudspeakerDataGetter = (params: loudspeakerDataParams) => {
     return methodInstance
 }
 
-interface newLoudspeakerParams {
+//获得某个成就的进度
+interface getMedalProgressParams {
     binggan: string,
-    sub_id: string,
-    content: string,
-    color?: string,
-    thread_id?: string,
-    effective_date: string,
-    days: number,
+    medal_id: number
 }
-const newLoudspeakerPoster = (params: newLoudspeakerParams) => {
-    const methodInstance = commonAlova.Post(
-        'api/loudspeaker/create',
+interface medalProgressData {
+    medal_id: number,
+    threshold: number,
+    progress: number | null,
+    medal_created_at: string | null
+}
+const getMedalProgressPoster = (params: getMedalProgressParams) => {
+    const methodInstance = commonAlova.Post<medalProgressData>(
+        'api/user/show_medal_progress',
         params,
         {
             //第三个参数是config
-            name: 'newLoudspeakerPoster',
+            name: 'getMedalProgressPoster',
             params: {},
             localCache: null,
             hitSource: []
         }
     )
     methodInstance.meta = {
-        shouldRemind: true
+        shouldRemind: false
     };
     return methodInstance
 }
 
-interface repealLoudspeakerParams {
-    binggan: string,
-    loudspeaker_id: number
-}
-const repealLoudspeakerPoster = (params: repealLoudspeakerParams) => {
-    const methodInstance = commonAlova.Post(
-        'api/loudspeaker/repeal',
-        params,
-        {
-            //第三个参数是config
-            name: 'repealLoudspeakerPoster',
-            params: {},
-            localCache: null,
-            hitSource: []
-        }
-    )
-    methodInstance.meta = {
-        shouldRemind: true
-    };
-    return methodInstance
-}
 
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
     waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
     checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,
-    pingbiciAddPoster, pingbiciAddParams, loudspeakerData, loudspeakerDataParams, loudspeakerDataGetter, newLoudspeakerParams, newLoudspeakerPoster,
-    repealLoudspeakerParams, repealLoudspeakerPoster
+    pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams, getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams
 }
