@@ -1776,7 +1776,7 @@ const emojiData = [
         name: "药水哥",
         emojis: [
             "https://ll4484.bvimg.com/21501/f2f33b0dc04756ec.gif",
-            "https://ll4484.bvimg.com/21501/0bbf7487e597fa6a.gif",
+            "https://ll4484.bvimg.com/21501/a0e0d33168d90543.gif",
             "https://ll4484.bvimg.com/21501/70f60f63c19f15f9.gif",
             "https://ll4484.bvimg.com/21501/a1a15cecae6d3af7.gif",
             "https://ll4484.bvimg.com/21501/40177836381cadb6.gif",
