@@ -66,7 +66,7 @@
 
 import { deleteLoudspeakerPoster } from '@/api/methods/admin'
 import { newLoudspeakerEnableGetter } from '@/api/methods/globalSetting'
-import { loudspeakerDataGetter, repealLoudspeakerPoster, type loudspeakerDataParams } from '@/api/methods/user'
+import { loudspeakerDataGetter, repealLoudspeakerPoster, type loudspeakerDataParams } from '@/api/methods/loudspeaker'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'

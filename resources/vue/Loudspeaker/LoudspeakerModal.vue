@@ -23,7 +23,7 @@
 
 
 <script setup lang="ts">
-import { type loudspeakerData } from '@/api/methods/user';
+import { type loudspeakerData } from '@/api/methods/loudspeaker';
 import { useCommonStore } from '@/stores/common';
 import { FButton } from '@custom';
 import { NCard, NFlex, NModal, useThemeVars } from 'naive-ui';

@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 
-import { loudspeakerDataGetter, type loudspeakerDataParams } from '@/api/methods/user'
+import { loudspeakerDataGetter, type loudspeakerDataParams } from '@/api/methods/loudspeaker'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { useRequest } from 'alova'

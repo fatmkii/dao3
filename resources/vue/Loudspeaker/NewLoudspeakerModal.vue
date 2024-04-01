@@ -46,7 +46,7 @@
 
 
 <script setup lang="ts">
-import { newLoudspeakerPoster, type newLoudspeakerParams } from '@/api/methods/user';
+import { newLoudspeakerPoster, type newLoudspeakerParams } from '@/api/methods/loudspeaker';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
 import { FButton, FInput } from '@custom';
