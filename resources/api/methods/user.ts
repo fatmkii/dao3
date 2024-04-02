@@ -19,8 +19,8 @@ interface userData {
         content_pingbici: string[]
         fjf_pingbici: string[]
         title_pingbici: string[]
-    } | null,
-    my_emoji: string[] | null,
+    },
+    my_emoji: string[],
     emoji_excluded: number[]
 }
 const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
@@ -33,7 +33,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
         name: 'userDataGetter',
         params: {},
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster', 'pingbiciAddPoster']
+        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster', 'pingbiciAddPoster', 'pingbiciSetPoster', 'myEmojisAddPoster', 'myEmojisSetPoster']
     }
 )
 
@@ -222,6 +222,33 @@ const incomeSumDataGetter = (params: incomeParams) => {
     return methodInstance
 }
 
+// 设定屏蔽词
+interface pingbiciSetParams {
+    binggan: string,
+    use_pingbici: boolean,
+    content_pingbici: string[],
+    title_pingbici: string[],
+    fjf_pingbici: string[],
+}
+const pingbiciSetPoster = (params: pingbiciSetParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/pingbici_set',
+        params,
+        {
+            //第三个参数是config
+            name: 'pingbiciSetPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+
 // 追加屏蔽词
 interface pingbiciAddParams {
     binggan: string,
@@ -301,6 +328,8 @@ const getMedalProgressPoster = (params: getMedalProgressParams) => {
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
     waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
+    pingbiciSetParams, pingbiciSetPoster,
     checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,
-    pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams, getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams
+    pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams,
+    getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams
 }

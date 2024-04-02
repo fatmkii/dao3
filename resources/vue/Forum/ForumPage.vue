@@ -35,9 +35,8 @@
         <!-- 大喇叭 -->
         <LoudspeakerComponent />
         <!-- 主题列表 -->
-        <ThreadList :threads-list-data="threadsDataLoading ? [] : threadsData.threads_data.data"
-            :new-window-to-post="newWindowToPost" :show-this="!threadsDataLoading"
-            @withdraw-delay-thread-success="handleFetchThreadsList" />
+        <ThreadList :threads-list-data="threadListData" :new-window-to-post="newWindowToPost"
+            :show-this="!threadsDataLoading" @withdraw-delay-thread-success="handleFetchThreadsList" />
 
         <!-- 底部分页导航及延时主题按钮 -->
         <n-flex :align="'center'">
@@ -267,6 +266,29 @@ function handleFetchThreadsList(remind: boolean = false) {
     fetchThreadsList(threadsListGetter(threadsDataRequestParams.value))
 }
 fetchThreadsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+
+//主题列表数据过滤（根据标题屏蔽词）
+const threadListData = computed(() => {
+    if (threadsDataLoading.value) {
+        return []
+    } else {
+        if (!userStore.userData.binggan.use_pingbici) {
+            //如果不使用屏蔽词，则直接返回数据以提升速度
+            return threadsData.value.threads_data.data
+        } else {
+            //处理标题屏蔽词
+            const regMode = commonStore.userCustom.pingbiciIngnoreCase ? "gi" : "g"
+            return threadsData.value.threads_data.data.filter((threadData) => {
+                for (let pingbici of userStore.userData.pingbici.title_pingbici) {
+                    const reg = new RegExp(pingbici, regMode);
+                    if (reg.test(threadData.title)) return false
+                }
+                return true
+            })
+        }
+    }
+})
+
 
 </script>
 

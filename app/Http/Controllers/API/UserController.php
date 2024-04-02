@@ -132,7 +132,7 @@ class UserController extends Controller
             $user->append('admin_forums');
         }
 
-        //如果没有存emojis，则返回null（不然前端会报错）
+        //如果没有存emojis，则返回[]（不然前端会报错）
         $my_emoji = $user->MyEmoji;
         if ($my_emoji) {
             $my_emoji_data = $my_emoji->emojis ?: [];
@@ -140,6 +140,22 @@ class UserController extends Controller
         } else {
             $my_emoji_data = [];
             $emoji_excluded = [];
+        }
+
+        //如果没有存pingbici，则返回[]（不然前端会报错）
+        $pingbici_data = $user->pingbici;
+        if ($pingbici_data == null) {
+            $pingbici_data = [
+                'title_pingbici' => [],
+                'content_pingbici' => [],
+                'fjf_pingbici' => [],
+            ];
+        } else {
+            $pingbici_data = [
+                'title_pingbici' => $pingbici_data->title_pingbici ?: [],
+                'content_pingbici' => $pingbici_data->content_pingbici ?: [],
+                'fjf_pingbici' => $pingbici_data->fjf_pingbici ?: [],
+            ];
         }
 
         //自定义大乱斗角色
@@ -155,7 +171,7 @@ class UserController extends Controller
                 'message' => '饼干认证成功，欢迎回来',
                 'data' => [
                     'binggan' => $user,
-                    'pingbici' => $user->pingbici,
+                    'pingbici' => $pingbici_data,
                     'my_emoji' => $my_emoji_data,
                     'emoji_excluded' => $emoji_excluded,
                     'my_battle_chara' => $my_battle_chara,

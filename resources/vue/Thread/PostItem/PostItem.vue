@@ -283,28 +283,42 @@ const postContent = computed(() => {//数据处理
 
     //第三种屏蔽类型：不变更postData，仅进行折叠
     if (userStore.userData?.binggan.use_pingbici) {
-        //处理内容屏蔽词
-        const pingbiciContent = userStore.userData.pingbici?.content_pingbici
+        const regMode = commonStore.userCustom.pingbiciIngnoreCase ? "gi" : "g"
+        if (!commonStore.userCustom.hidePingbiciFloor) {//如果选择了“完全隐藏楼层”，则ThreadPage已经过滤过数据，这里就不用处理了
+            //处理内容屏蔽词
+            const pingbiciContent = userStore.userData.pingbici.content_pingbici
+            pingbiciContent?.forEach(pingbici => {
+                const reg = new RegExp(pingbici, regMode)
+                if (reg.test(postContent)) {
+                    postIsFolded.value = true
+                    postFoldedMessage.value = '屏蔽词折叠（点击展开）'
+                }
+            })
 
-        pingbiciContent?.forEach(pingbici => {
-            const reg = new RegExp(pingbici, 'g')
-            if (reg.test(postContent)) {
-                postIsFolded.value = true
-                postFoldedMessage.value = '屏蔽词折叠（点击展开）'
-            }
-        })
+        }
+        if (props.antiJingfen && !commonStore.userCustom.hidePingbiciFloor) {//如果选择了“完全隐藏楼层”，则ThreadPage已经过滤过数据，这里就不用处理了
+            //处理fjf屏蔽词
+            const pingbiciFjf = userStore.userData.pingbici.fjf_pingbici
+            pingbiciFjf?.forEach(pingbici => {
+                const reg = new RegExp(pingbici, 'g') //这里不能用regMode（一定要区分大小写）
+                if (reg.test(props.postData.created_binggan_hash!.slice(0, 5)!)) {
+                    postIsFolded.value = true
+                    postFoldedMessage.value = '小尾巴黑名单（点击展开）'
+                }
+            })
+        }
 
-    }
-    if (props.antiJingfen === true && userStore.userData.pingbici?.fjf_pingbici !== null) {
-        //处理fjf屏蔽词
-        const pingbiciFjf = userStore.userData.pingbici?.fjf_pingbici
-        pingbiciFjf?.forEach(pingbici => {
-            const reg = new RegExp(pingbici, 'g')
-            if (reg.test(props.postData.created_binggan_hash!.slice(0, 5)!)) {
-                postIsFolded.value = true
-                postFoldedMessage.value = '小尾巴黑名单（点击展开）'
-            }
-        })
+        if (!commonStore.userCustom.hidePingbiciFloor) {//如果选择了“完全隐藏楼层”，则ThreadPage已经过滤过数据，这里就不用处理了
+            //处理固马屏蔽词（复用了FJF屏蔽词）
+            const pingbiciFjf = userStore.userData.pingbici.fjf_pingbici
+            pingbiciFjf?.forEach(pingbici => {
+                const reg = new RegExp(pingbici, regMode)
+                if (reg.test(props.postData.nickname)) {
+                    postIsFolded.value = true
+                    postFoldedMessage.value = '固马黑名单（点击展开）'
+                }
+            })
+        }
     }
 
     //处理折叠音视频模式

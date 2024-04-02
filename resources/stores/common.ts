@@ -52,6 +52,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         monochromeMode: boolean
         quoteMax: number
         fontRemSize: number
+        hidePingbiciFloor: boolean,
+        pingbiciIngnoreCase: boolean
     }
     const userCustom = useStorage<userCustomType>('user_custom', {
         loudspeakerPosition: 'bottom',//TODO
@@ -62,6 +64,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         monochromeMode: false,//TODO单色模式
         quoteMax: 3,//TODO最大引用层数
         fontRemSize: 32,//TODO字体大小
+        hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
+        pingbiciIngnoreCase: false, //屏蔽词忽略大小写
     }, localStorage, { mergeDefaults: true })
 
     return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth }

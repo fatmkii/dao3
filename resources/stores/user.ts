@@ -23,8 +23,12 @@ export const useUserStore = defineStore('userStore', () => {
         },
         my_battle_chara: [],
         emoji_excluded: [],
-        pingbici: null,
-        my_emoji: null
+        pingbici: {
+            content_pingbici: [],
+            fjf_pingbici: [],
+            title_pingbici: [],
+        },
+        my_emoji: []
     }
 
     const { loading: userDataLoading, data: userData, onSuccess: userDataOnSuccess, send: getUserData } = useRequest(
@@ -44,8 +48,9 @@ export const useUserStore = defineStore('userStore', () => {
 
     //需要强制重新拉取user data时候用
     function refreshUserData() {
-        const { fetch } = useFetcher()
-        fetch(userDataGetter(binggan!))
+        // const { fetch } = useFetcher()
+        // fetch(userDataGetter(binggan!))
+        getUserData(binggan)
     }
 
     //检查是否具有某个版面的管理员权限

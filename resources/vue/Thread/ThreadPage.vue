@@ -399,6 +399,27 @@ const postsData = computed(() => {
                 return false;
             }
         }
+        if (userStore.userData?.binggan.use_pingbici
+            && commonStore.userCustom.hidePingbiciFloor //如果选择了“完全隐藏楼层”，则这里直接过滤回复数据
+        ) {
+            const regMode = commonStore.userCustom.pingbiciIngnoreCase ? "gi" : "g"
+            //处理内容屏蔽词
+            for (let pingbici of userStore.userData.pingbici.content_pingbici) {
+                const reg = new RegExp(pingbici, regMode);
+                if (reg.test(post.content)) return false
+            }
+            //处理FJF屏蔽词
+            if (threadData.value.anti_jingfen) {
+                for (let pingbici of userStore.userData.pingbici.fjf_pingbici) {
+                    const reg = new RegExp(pingbici, 'g');//这里不能用regMode（一定要区分大小写）
+                    if (reg.test(post.created_binggan_hash!.slice(0, 5))) return false
+                }
+            }
+            for (let pingbici of userStore.userData.pingbici.fjf_pingbici) {
+                const reg = new RegExp(pingbici, regMode);
+                if (reg.test(post.nickname)) return false
+            }
+        }
         return true
     })
     return postsData
