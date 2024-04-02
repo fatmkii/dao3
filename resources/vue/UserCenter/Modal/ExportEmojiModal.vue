@@ -1,10 +1,10 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="我的表情包" closable @close="showThis = false"
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" :title="modalTitle" closable @close="showThis = false"
             size="small">
             <n-flex vertical>
                 <n-text>可以用来复制给别人</n-text>
-                <n-input :value="emojisArrayData" type="textarea" style="border-radius: 10px; margin-top: 6px; "
+                <n-input :value="modalData" type="textarea" style="border-radius: 10px; margin-top: 6px; "
                     :autosize="{ minRows: 3, maxRows: 8 }"></n-input>
             </n-flex>
             <template #action>
@@ -29,19 +29,21 @@ import { ref } from 'vue';
 const commonStore = useCommonStore()
 
 //输入数据
-const emojisArrayData = ref<string>('')
+const modalData = ref<string>('')
+const modalTitle = ref<string>('')
 
 //来自父组件的唤醒emit
 const showThis = ref<boolean>(false)
-function show(data: string) {
+function show(data: string, title: string) {
     showThis.value = true
-    emojisArrayData.value = data
+    modalData.value = data
+    modalTitle.value = title
 }
 defineExpose({ show })
 
 //复制到剪贴板
 function copyHandle() {
-    copyToClipboard(emojisArrayData.value)
+    copyToClipboard(modalData.value)
     window.$message.success('已复制到剪贴板')
 }
 

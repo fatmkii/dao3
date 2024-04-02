@@ -54,7 +54,8 @@
         <n-flex :align="'center'" :justify="'end'">
             <n-text :depth="3" style="font-size: 0.875rem;">上面所有变更都要提交后才生效喔</n-text>
             <f-button @click="exportAllEmoji">导出</f-button>
-            <f-button @click="emojiSetHandle" type="primary">提交</f-button>
+            <f-button @click="emojiSetHandle" type="primary" :loading="myEmojisSetLoading"
+                :disabled="myEmojisSetLoading">提交</f-button>
         </n-flex>
 
         <ExportEmojiModal ref="ExportEmojiModalCom" />
@@ -63,27 +64,21 @@
 
 <script setup lang="ts">
 
-import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
-import { useUserStore } from '@/stores/user'
 import { myEmojisSetPoster, type myEmojisSetParams } from '@/api/methods/user'
-import { FButton } from '@custom'
-import { NCard, NFlex, NText, NInput, NIcon, NCheckbox, NCheckboxGroup, useThemeVars } from 'naive-ui'
-import { ref, watch, computed, unref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import Emoji from '@/vue/UserCenter/Dnd/Emoji.vue'
-import { TrashCan } from '@vicons/carbon'
-import { useDrop } from 'vue3-dnd'
-import { toRefs } from '@vueuse/core'
 import emojiData from '@/data/emojiData'
+import { useUserStore } from '@/stores/user'
+import Emoji from '@/vue/UserCenter/Dnd/Emoji.vue'
+import { FButton } from '@custom'
+import { TrashCan } from '@vicons/carbon'
+import { toRefs } from '@vueuse/core'
+import { useRequest } from 'alova'
+import { NCard, NCheckbox, NCheckboxGroup, NFlex, NIcon, NInput, NText, useThemeVars } from 'naive-ui'
+import { computed, ref, unref, watch } from 'vue'
+import { useDrop } from 'vue3-dnd'
 import ExportEmojiModal from './Modal/ExportEmojiModal.vue'
 
 //基础数据
 const userStore = useUserStore()
-const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const route = useRoute()
-const router = useRouter()
 const themeVars = useThemeVars()
 const ExportEmojiModalCom = ref<InstanceType<typeof ExportEmojiModal> | null>(null)
 
@@ -111,7 +106,7 @@ if (userStore.userLoginStatus === true) {
 }
 watch(() => userStore.userDataLoading, (value) => {
     //监听userDataLoading，当用户数据重新读取时，把新数据更新到emojiListInput
-    if (value === true) setEmojiListInput(userStore.userData.my_emoji)
+    if (value === false) setEmojiListInput(userStore.userData.my_emoji)
 })
 
 //拖拽功能
@@ -172,12 +167,19 @@ function emojiSetHandle() {
         my_emoji: emojiListInput.value.map(item => item.emojiSrc),
         emoji_excluded: emojiExcluded.value,
     }
-    myEmojisSetPoster(params).then()
+    myEmojisSetSend(params)
 }
+const { loading: myEmojisSetLoading,
+    send: myEmojisSetSend,
+    onSuccess: myEmojisSetOnSuccess } = useRequest(
+        (params: myEmojisSetParams) => myEmojisSetPoster(params), { immediate: false, initialData: [] }
+    );
+myEmojisSetOnSuccess(() => userStore.refreshUserData())
+
 
 //导出表情包
 function exportAllEmoji() {
-    ExportEmojiModalCom.value?.show(emojiListInput.value.map(item => item.emojiSrc).join(',\n'))
+    ExportEmojiModalCom.value?.show(emojiListInput.value.map(item => item.emojiSrc).join(',\n'), '我的表情包')
 }
 
 </script>
