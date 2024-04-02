@@ -10,6 +10,7 @@ use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
 use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
+use App\Models\EmojiContestUserTotal;
 use App\Models\IncomeStatement;
 use App\Models\Loudspeaker;
 use App\Models\Post;
@@ -1090,21 +1091,21 @@ class UserController extends Controller
             case 'user_lv':
                 $progress = $user->user_lv;
                 break;
-                // case 'emoji_contest':
-                //     $emoji_contest_user_total =
-                //         EmojiContestUserTotal::where('user_id', $user->id)
-                //         ->where('emoji_group_id', $request->medal_id - 200) //emoji_group_id从1开始，相应medal_id是201，差额200
-                //         ->first();
-                //     if ($emoji_contest_user_total) {
-                //         $progress = $emoji_contest_user_total->votes_num_total;
-                //     } else {
-                //         $progress = 0;
-                //     }
-                //     break;
-                // case 'emoji_contest_total':
-                //     $emoji_contest_user_total_sum = EmojiContestUserTotal::where('user_id', $user->id)->sum('votes_num_total');
-                //     $progress = $emoji_contest_user_total_sum;
-                //     break;
+            case 'emoji_contest':
+                $emoji_contest_user_total =
+                    EmojiContestUserTotal::where('user_id', $user->id)
+                    ->where('emoji_group_id', $request->medal_id - 200) //emoji_group_id从1开始，相应medal_id是201，差额200
+                    ->first();
+                if ($emoji_contest_user_total) {
+                    $progress = $emoji_contest_user_total->votes_num_total;
+                } else {
+                    $progress = 0;
+                }
+                break;
+            case 'emoji_contest_total':
+                $emoji_contest_user_total_sum = EmojiContestUserTotal::where('user_id', $user->id)->sum('votes_num_total');
+                $progress = $emoji_contest_user_total_sum;
+                break;
             case null:
                 $progress = null;
                 break;

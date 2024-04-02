@@ -591,7 +591,7 @@ class UserMedalRecord extends Model
         $medal_id = $group_id + 200; //emoji_group_id从1开始，相应medal_id是201，差额200
 
         $medals_code_exists = UserMedal::where('user_id', $user->id)->where('medal_id', $medal_id)->exists();
-        // $votes_num_total = EmojiContestUserTotal::where('user_id', $user->id)->where('emoji_group_id', $group_id)->sum('votes_num_total');
+        $votes_num_total = EmojiContestUserTotal::where('user_id', $user->id)->where('emoji_group_id', $group_id)->sum('votes_num_total');
 
         if (!$medals_code_exists && $votes_num_total >= Medals::DATA[$medal_id]['threshold']) {
             $user_medal = new UserMedal;
