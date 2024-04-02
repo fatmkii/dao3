@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="Roll点" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="Roll点" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>
                     输出参考：
@@ -46,12 +47,10 @@ import { FButton, FInput, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
 import { NCard, NFlex, NInputGroup, NInputNumber, NModal, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
-const router = useRouter()
 
 //组件props
 interface Props {
@@ -60,16 +59,6 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 
-})
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
 })
 
 //模板显示用（骰子模拟）

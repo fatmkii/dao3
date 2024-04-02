@@ -1,7 +1,7 @@
-
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="我的表情包" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="我的表情包" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>可以用来复制给别人</n-text>
                 <n-input :value="emojisArrayData" type="textarea" style="border-radius: 10px; margin-top: 6px; "
@@ -16,30 +16,17 @@
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
+import copyToClipboard from '@/js/func/copyToClipboard';
 import { useCommonStore } from '@/stores/common';
-import { useUserStore } from '@/stores/user';
 import { FButton } from '@custom';
-import { NCard, NFlex, NModal, NInput, NText } from 'naive-ui';
-import { computed, ref } from 'vue';
-import copyToClipboard from '@/js/func/copyToClipboard'
+import { NCard, NFlex, NInput, NModal, NText } from 'naive-ui';
+import { ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
-const userStore = useUserStore()
-
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //输入数据
 const emojisArrayData = ref<string>('')
@@ -59,4 +46,3 @@ function copyHandle() {
 }
 
 </script>
-

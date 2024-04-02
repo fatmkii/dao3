@@ -9,14 +9,19 @@ export const useCommonStore = defineStore('commonStore', () => {
     const unauthModalShow = ref<boolean>(false) //控制弹出未登录modal的
     const requestErrorCode = ref<number>(0)  //request错误代码（有时候需要组件外使用）
 
-    //根据屏幕显示尺寸确定是否手机版
-    const isMobile = ref<boolean>(document.body.clientWidth < 1200)
-    const clientWidth = ref<number>(document.body.clientWidth)
-    const checkMobile = () => {
+    //一些根据屏幕宽度的响应式变量
+    const clientWidth = ref<number>(document.body.clientWidth)  //响应式的屏幕宽度
+    const isMobile = ref<boolean>(document.body.clientWidth < 1200)  //根据屏幕显示尺寸确定是否手机版
+    const modalMaxWidth = computed(() =>
+        //计算modal最大宽度（手机版时候两侧各留16px的空位）
+        clientWidth.value >= 500 + 16 + 16 ?
+            '500px' :
+            clientWidth.value - 32 + 'px'
+    )
+    window.addEventListener('resize', () => {
         isMobile.value = document.body.clientWidth < 1200
         clientWidth.value = document.body.clientWidth
-    }
-    window.addEventListener('resize', checkMobile)
+    })
 
     //是否显示topbar的“小火锅”
     const showTopbarNav = ref<boolean>(true)
@@ -59,7 +64,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontRemSize: 32,//TODO字体大小
     }, localStorage, { mergeDefaults: true })
 
-    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom }
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth }
 
 })
 

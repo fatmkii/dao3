@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="欢迎来到小火锅！" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="欢迎来到小火锅！" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <div>这里是私人论坛，欢迎来玩！<br>QQ小火锅避难群：156840110 <br>使用前需要在下面申请或者导入饼干喔</div>
                 <n-input-group>
@@ -45,24 +46,17 @@
 <script setup lang="ts">
 import { userLoginPoster } from '@/api/methods/auth';
 import { newBingganEnableGetter } from '@/api/methods/globalSetting';
-import { userRegisterPoster } from '@/api/methods/user';
-import { checkRegisterRecordGetter, type checkRegisterRecordData } from '@/api/methods/user';
+import { checkRegisterRecordGetter, userRegisterPoster } from '@/api/methods/user';
 import { getUUID } from '@/js/func/getUUID';
+import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
-import { FButton, FInput, FInputGroupLabel } from '@custom'
+import { FButton, FInput, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
 import { NCard, NFlex, NInputGroup, NModal, NPopover, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
 
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
+//基础数据
+const commonStore = useCommonStore()
 
 //将唤醒modal的方法暴露给父组件
 const showThis = ref<boolean>(false)

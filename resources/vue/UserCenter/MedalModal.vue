@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="大喇叭列表" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="大喇叭列表" closable @close="showThis = false"
+            size="small">
             <n-flex vertical :size="[0, 12]" class="loudspeaker-content" style="max-height:75vh;overflow-y:auto;">
                 <!-- 大喇叭本体 -->
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="loudspeaker.id"
@@ -27,7 +28,7 @@ import { type loudspeakerData } from '@/api/methods/loudspeaker';
 import { useCommonStore } from '@/stores/common';
 import { FButton } from '@custom';
 import { NCard, NFlex, NModal, useThemeVars } from 'naive-ui';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
@@ -39,16 +40,6 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 
-})
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
 })
 
 //来自父组件的唤醒emit和传递的payload

@@ -1,7 +1,7 @@
-
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="验证码" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="验证码" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>
                     嗷……你可能刷太多了，休息一下吧。
@@ -26,32 +26,21 @@
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
-import { waterUnlockPoster, type waterUnlockParams } from '@/api/methods/user';
 import { captchaGetter, type captchaData } from '@/api/methods/common';
+import { waterUnlockPoster, type waterUnlockParams } from '@/api/methods/user';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
-import { useRequest, useFetcher } from 'alova';
-import { FButton, FInput, FInputGroupLabel } from '@custom'
-import { NCard, NInputGroup, NFlex, NModal, NText } from 'naive-ui';
+import { FButton, FInput, FInputGroupLabel } from '@custom';
+import { useFetcher, useRequest } from 'alova';
+import { NCard, NFlex, NInputGroup, NModal, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
-
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //输入数据
 const captchaInput = ref<string>()
@@ -102,4 +91,3 @@ function waterUnlockHandle() {
 }
 
 </script>
-

@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="追加屏蔽词" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="追加屏蔽词" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>暂时只做了“内容屏蔽词”的追加</n-text>
                 <n-input-group>
@@ -27,21 +28,11 @@ import { useUserStore } from '@/stores/user';
 import { FButton, FInput, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
 import { NCard, NFlex, NInputGroup, NModal, NText } from 'naive-ui';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //输入数据
 const pingbiciInput = ref<string>()

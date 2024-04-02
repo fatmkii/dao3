@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="发布大喇叭" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="发布大喇叭" closable @close="showThis = false"
+            size="small">
             <div>
                 价格暂定为5000个olo（每天）<br>
                 禁止发布辱骂、诅咒、黑锦鲤等方面情绪。
@@ -53,22 +54,12 @@ import { FButton, FInput } from '@custom';
 import { useRequest } from 'alova';
 import dayjs from 'dayjs';
 import { NCard, NColorPicker, NDatePicker, NFlex, NForm, NFormItem, NInputNumber, NModal, NSwitch, type FormInst, type FormRules } from 'naive-ui';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
 const formRef = ref<FormInst | null>(null)
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //输入数据
 const userInput = ref({

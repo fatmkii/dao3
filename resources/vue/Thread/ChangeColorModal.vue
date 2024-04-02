@@ -1,7 +1,7 @@
-
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="标题改色" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="标题改色" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>
                     要更换标题颜色吗？每次收费500个olo喔
@@ -18,7 +18,7 @@
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
 import { threadChangeColorPoster, type threadChangeColorParams } from '@/api/methods/threads';
@@ -27,7 +27,7 @@ import { useUserStore } from '@/stores/user';
 import { FButton } from '@custom';
 import { useRequest } from 'alova';
 import { NCard, NColorPicker, NFlex, NModal, NText } from 'naive-ui';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
@@ -39,17 +39,6 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 
-})
-
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
 })
 
 //输入数据
@@ -88,4 +77,3 @@ function changeColorHandle() {
 }
 
 </script>
-

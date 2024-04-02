@@ -1,7 +1,7 @@
-
 <template>
     <n-modal v-model:show="commonStore.unauthModalShow" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" closable @close="commonStore.unauthModalShow = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="commonStore.unauthModalShow = false"
+            size="small">
             <n-flex vertical>
                 <img src="https://oss.cpttmm.com/xhg_other/notice_4.png" alt="需要饼干才能进入喔">
                 <div style="margin-left: auto;">{{ hintMessage }}</div>
@@ -15,24 +15,14 @@
         </n-card>
     </n-modal>
 </template>
- 
+
 
 <script setup lang="ts">
 import { userLogout } from '@/js/func/logout';
 import { useCommonStore } from '@/stores/common';
-import { FButton } from '@custom'
+import { FButton } from '@custom';
 import { NCard, NFlex, NModal } from 'naive-ui';
 import { computed } from 'vue';
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //通过全局的commonStore的state，在全局控制唤醒此modal
 const commonStore = useCommonStore()
@@ -50,4 +40,3 @@ const hintMessage = computed<string>(() => {
 
 
 </script>
-

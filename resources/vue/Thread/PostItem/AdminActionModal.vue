@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if" :size="'small'">
-        <n-card :style="{ maxWidth: maxWidth }" title="管理员操作" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="管理员操作" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text style="white-space: pre-wrap;" v-if="messages.contentMessage">
                     {{ messages.contentMessage }}
@@ -32,14 +33,20 @@
 
 <script setup lang="ts">
 import {
-    type deletePostParams, deletePostPoster, type recoveryPostParams, recoveryPostPoster, type deleteAllPostParams, deleteAllPostPoster, type userBanParams, userBanPoster,
-    type userLockParams, userLockPoster, type userCheckParams, userCheckPoster, type deleteThreadParams, deleteThreadPoster,
-    type threadSetTopParams, threadSetTopPoster, type threadCancelTopParams, threadCancelTopPoster
-} from '@/api/methods/admin'
+    type deleteAllPostParams, deleteAllPostPoster,
+    type deletePostParams, deletePostPoster,
+    type deleteThreadParams, deleteThreadPoster,
+    type recoveryPostParams, recoveryPostPoster,
+    type threadCancelTopParams, threadCancelTopPoster,
+    type threadSetTopParams, threadSetTopPoster,
+    type userBanParams, userBanPoster,
+    type userCheckParams, userCheckPoster,
+    type userLockParams, userLockPoster
+} from '@/api/methods/admin';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
 import { FButton, FInput } from '@custom';
-import { NCard, NFlex, NForm, NFormItem, NModal, NSwitch, NText, type FormRules, type FormInst } from 'naive-ui';
+import { type FormInst, type FormRules, NCard, NFlex, NForm, NFormItem, NModal, NSwitch, NText } from 'naive-ui';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -49,16 +56,6 @@ const userStore = useUserStore()
 const router = useRouter()
 const formRef = ref<FormInst | null>(null)
 type adminActions = 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery' | 'deleteThread' | 'setTop' | 'cancelTop'
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //组件props
 interface Props {

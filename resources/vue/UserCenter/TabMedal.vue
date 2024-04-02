@@ -35,7 +35,8 @@
 
         <!-- 徽章进度的弹出modal -->
         <n-modal v-model:show="showMedalModal" display-directive="if">
-            <n-card :style="{ maxWidth: maxWidth }" closable @close="showMedalModal = false" size="small">
+            <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="showMedalModal = false"
+                size="small">
                 <n-flex vertical :align="'center'" class="medal-box-modal">
                     <img :src="showMedalModalData?.img" class="medal-img">
                     <n-text style="font-size: 1rem;">
@@ -64,38 +65,19 @@
 
 <script setup lang="ts">
 
-import { useTopbarNavControl } from '@/js/func/topbarNav'
+import { getMedalProgressPoster, getMedalsDataPoster, type getMedalProgressParams, type getMedalsDataParams } from '@/api/methods/user'
+import { medalsHidden, medalsNormal, } from '@/data/medalData'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { FButton, FCheckbox, FInput } from '@custom'
-import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NSpin, NAlert, NText, useThemeVars, NModal } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { getMedalsDataPoster, type getMedalsDataParams } from '@/api/methods/user'
-import { getMedalProgressPoster, type getMedalProgressParams } from '@/api/methods/user'
-import { medalsNormal, medalsHidden, } from '@/data/medalData'
+import { useRequest } from 'alova'
+import { NCard, NFlex, NModal, NSpin, NSwitch, NText } from 'naive-ui'
+import { computed, ref } from 'vue'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const themeVars = useThemeVars()
 const showMedalModal = ref<boolean>(false)
 const showMedalModalData = ref<medalData>()
-
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
-
 
 //是否显示所有成就的开关
 const showAllMedals = ref<boolean>(false)

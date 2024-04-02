@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="表情包大乱斗！" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="表情包大乱斗！" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>小斗怡情，大斗伤身，强斗奥飞湮灭</n-text>
                 <n-input-group>
@@ -53,15 +54,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 })
 
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
 
 //NSelect选项
 const charaGroupOptions = computed(() => {

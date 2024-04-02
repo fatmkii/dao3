@@ -1,6 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: maxWidth }" title="快捷代码" closable @close="showThis = false" size="small">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="快捷代码" closable @close="showThis = false"
+            size="small">
             <n-flex vertical>
                 <n-text>代码预览：</n-text>
                 <n-text>{{ codeTypeMap[codeTypeSelected].insertText }}</n-text>
@@ -36,16 +37,10 @@
 import { FButton, FInput, FInputGroupLabel } from '@custom';
 import { NCard, NFlex, NInputGroup, NModal, NSelect, NText } from 'naive-ui';
 import { computed, ref, watch } from 'vue';
+import { useCommonStore } from '@/stores/common';
 
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 500 + 16 + 16) {
-        return '500px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
+//基础数据
+const commonStore = useCommonStore()
 
 //输入数据
 const codeTypeSelected = ref<number>(0)

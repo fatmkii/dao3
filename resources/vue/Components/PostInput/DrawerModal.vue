@@ -1,7 +1,7 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="show">
-        <n-card :style="{ maxWidth: maxWidth }" title="涂鸦板" closable @close="showThis = false" size="small"
-            :content-style="{ padding: '0px' }">
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="涂鸦板" closable @close="showThis = false"
+            size="small" :content-style="{ padding: '0px' }">
             <template #default>
                 <div id="canvas-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
                     <canvas id="drawer-canvas-background" ref="canvasBackground" :width="canvasWidth"
@@ -58,9 +58,11 @@ import { useUserStore } from '@/stores/user';
 import { FButton } from '@custom';
 import { NCard, NColorPicker, NFlex, NGi, NGrid, NModal, NUpload, type UploadFileInfo } from 'naive-ui';
 import { computed, onMounted, ref } from 'vue';
+import { useCommonStore } from '@/stores/common';
 
 //基础数据
 const userStore = useUserStore()
+const commonStore = useCommonStore()
 
 //组件props
 interface Props {
@@ -70,18 +72,6 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 })
-
-
-//计算modal最大宽度（手机版时候两侧各留16px的空位）
-const maxWidth = computed<string>(() => {
-    const screenWidth = window.innerWidth
-    if (screenWidth >= 800 + 16 + 16) {
-        return '800px'
-    } else {
-        return screenWidth - 32 + 'px'
-    }
-})
-
 
 //来自父组件的唤醒emit
 const showThis = ref<boolean>(false)
