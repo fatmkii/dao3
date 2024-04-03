@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 export type imgHostType = 'mjj' | 'imgbb' | 'freeimage'
@@ -56,17 +56,20 @@ export const useCommonStore = defineStore('commonStore', () => {
         pingbiciIngnoreCase: boolean
     }
     const userCustom = useStorage<userCustomType>('user_custom', {
-        loudspeakerPosition: 'bottom',//TODO
+        loudspeakerPosition: 'bottom', //大喇叭位置选择
         imgHost: 'mjj',//图床选择
-        sidebarLeft: false, //TODO侧边栏放在左侧
-        hongbaoThenStop: false, //TODO自动涮锅时遇到红包停止
-        // holdPageWhenListening: false,//TODO自动涮锅时页面保持不动
-        monochromeMode: false,//TODO单色模式
-        quoteMax: 3,//TODO最大引用层数
-        fontRemSize: 32,//TODO字体大小
+        sidebarLeft: false, //侧边栏放在左侧
+        hongbaoThenStop: false, //自动涮锅时遇到红包停止
+        // holdPageWhenListening: false,//自动涮锅时页面保持不动
+        monochromeMode: false,
+        quoteMax: 3,//最大引用层数
+        fontRemSize: 16,//字体大小
         hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
         pingbiciIngnoreCase: false, //屏蔽词忽略大小写
     }, localStorage, { mergeDefaults: true })
+
+    //监听设定，变更rem单位大小
+    watch(() => userCustom.value.fontRemSize, (newValue) => document.documentElement.style.fontSize = newValue + 'px', { immediate: true })
 
     return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth }
 

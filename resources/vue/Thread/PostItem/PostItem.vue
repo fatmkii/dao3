@@ -371,7 +371,7 @@ const postFooterText = computed<string>(() => {
     }
 })
 function quoteClick() {
-    const maxQuote = 3; //最大可引用的层数
+    const maxQuote = commonStore.userCustom.quoteMax; //最大可引用的层数
 
     // 折叠details标签的内容避免被引用;
     let elements_details = postContentDom.value!.getElementsByTagName("details");

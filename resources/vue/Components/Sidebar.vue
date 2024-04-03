@@ -1,5 +1,6 @@
 <template>
-    <n-flex vertical :size="[0, 16]" class="sidebar" :align="'center'">
+    <n-flex vertical :size="[0, 16]" class="sidebar" :class="[commonStore.userCustom.sidebarLeft ? 'left' : 'right']"
+        :align="'center'">
         <!-- 到顶部 -->
         <Transition name="slide-fade">
             <n-icon v-if="showButtons" :size="buttonSize + 2" class="icon" @click="scrollHandle('up')"
@@ -50,19 +51,18 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex, NIcon, useThemeVars } from 'naive-ui'
-import { LayerGroup as Layer, ArrowUp as Up, ArrowDown as Down, Forward as Forward } from '@vicons/fa'
-import { ChatbubbleEllipses as NewThread } from '@vicons/ionicons5'
+import { useCommonStore } from '@/stores/common'
 import { usethemeStore } from '@/stores/theme'
-import { useDrag } from 'vue3-dnd'
-import { toRefs } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { ArrowDown as Down, Forward, LayerGroup as Layer, ArrowUp as Up } from '@vicons/fa'
+import { NFlex, NIcon, useThemeVars } from 'naive-ui'
+import { ref } from 'vue'
 
 //基础数据
 const themeStore = usethemeStore()
 const themeVars = useThemeVars()
 const showButtons = ref<boolean>(false)//显示按钮
 const buttonSize = ref<number>(24)
+const commonStore = useCommonStore()
 
 //组件props
 interface Props {
@@ -83,6 +83,7 @@ function scrollHandle(to: 'up' | 'down') {
     if (to === 'down') { window.scrollTo(0, document.body.scrollHeight) }
 }
 
+
 </script>
 
 <style lang="scss" scoped>
@@ -92,17 +93,32 @@ function scrollHandle(to: 'up' | 'down') {
     z-index: 9;
     bottom: 40%;
 
-    //电脑屏幕大于1200px时，不要走到最右边
-    @media all and (min-width: 1240px) {
-        right: calc(50% - 600px);
-    }
-
-    @media not all and (min-width: 1240px) {
-        right: 16px;
-    }
-
     .icon {
         cursor: pointer;
+    }
+
+    &.right {
+
+        //电脑屏幕大于1200px时，不要走到最右边
+        @media all and (min-width: 1240px) {
+            right: calc(50% - 600px);
+        }
+
+        @media not all and (min-width: 1240px) {
+            right: 16px;
+        }
+    }
+
+    &.left {
+
+        //电脑屏幕大于1200px时，不要走到最右边
+        @media all and (min-width: 1240px) {
+            left: calc(50% - 600px);
+        }
+
+        @media not all and (min-width: 1240px) {
+            left: 16px;
+        }
     }
 }
 

@@ -3,27 +3,35 @@
         <n-card v-for=" threadData  in    threadsListData  " size="small" :bordered="true" :key="threadData.id"
             class="thread-cards" :content-style="threadCardsContentStyle" hoverable>
             <n-flex vertical>
+                <!-- 主题的标题本体 -->
                 <div :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1 }"
                     class="thread-title">
+                    <!-- 副标题 -->
                     {{ threadData.sub_title }}
+                    <!-- 标题内容 -->
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
+                        style="font-size:0.875rem;"
                         :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
-                    <router-link
+                    <!-- 页码 -->
+                    <router-link style="font-size:0.875rem;"
                         :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
+                    <!-- 根据浏览记录的按钮 -->
                     <f-button size="tiny" type="primary" v-if="browseLoggerData[threadData.id]"
-                        @click="$router.push({ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((browseLoggerData[threadData.id]!.floor + 1) / 200) }, hash: '#f_' + browseLoggerData[threadData.id]!.floor })">
+                        @click="$router.push({ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((browseLoggerData[threadData.id]!.floor + 1) / 200) }, hash: `#f_${browseLoggerData[threadData.id]!.floor}` })">
                         [{{ browseLoggerData[threadData.id]?.floor }}楼]
                     </f-button>
+                    <!-- 根据浏览记录的按钮 -->
                     <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
                 </div>
+                <!-- 回复数量等信息 -->
                 <n-flex size="small" class="thread-title-secondary">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
                     <span><n-text depth="3">发帖人:</n-text> {{ threadData.nickname }} </span>
@@ -52,7 +60,7 @@ import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
 import { useRequest } from 'alova'
-import { NCard, NFlex, NSkeleton, NText, useThemeVars } from 'naive-ui'
+import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
 import { computed } from 'vue'
 
 

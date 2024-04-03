@@ -486,6 +486,11 @@ function getPostDataAndPush(threadId: number, postId: number) {//获取单个回
     }
     postGetter(params).then((postData: postData) => {
         postsListData.value.posts_data.data.push(postData)
+        if (commonStore.userCustom.hongbaoThenStop && postData.hongbao_id !== null) {
+            //如果刷出来红包，并且启动了“自动涮锅遇到红包暂停”功能，则停止自动涮锅
+            window.$message.info('有红包！停止涮锅！（个人中心开启了红包自动停止涮锅）')
+            postListening.value = false
+        }
         const scrollTopNow =
             document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
         nextTick(() => {

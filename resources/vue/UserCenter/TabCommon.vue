@@ -18,10 +18,11 @@
                     <n-switch v-model:value="userInput.sidebarLeft" />
                 </n-form-item>
                 <n-form-item label="最大引用层数" path="quoteMax">
-                    <n-input-number v-model:value="userInput.quoteMax" :max="6" :min="1" :step="1" />
+                    <n-input-number v-model:value="userInput.quoteMax" placeholder="3" :max="6" :min="1" :step="1" />
                 </n-form-item>
                 <n-form-item label="字体大小" path="fontRemSize">
-                    <n-input-number v-model:value="userInput.fontRemSize" :max="24" :min="10" :step="1" />
+                    <n-input-number v-model:value="userInput.fontRemSize" placeholder="16" :max="20" :min="12"
+                        :step="0.5" />
                 </n-form-item>
 
             </n-gi>
@@ -45,22 +46,11 @@
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
-import { useUserStore } from '@/stores/user'
-import { FButton, FCheckbox, FInput } from '@custom'
-import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
-import { useFetcher, useRequest, useWatcher } from 'alova'
-import { NForm, NFormItem, NSelect, NDivider, NGrid, NGi, NInputNumber, NSwitch, NTag, NAlert, NText, useThemeVars } from 'naive-ui'
-import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { NDivider, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui'
 
 //基础数据
-const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const route = useRoute()
-const router = useRouter()
-const themeVars = useThemeVars()
+
 
 //收集表单的输入数据， 最后返回给父组件
 const userInput = commonStore.userCustom
