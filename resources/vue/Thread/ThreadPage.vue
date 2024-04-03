@@ -1,13 +1,13 @@
 <template>
     <n-flex vertical>
-        <template v-if="!postsListLoading && showThis">
+        <template v-if="showThis">
             <!-- 顶部功能按钮就及分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;">
                 <n-icon :size="commonStore.isMobile ? 28 : 34">
                     <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
                 </n-icon>
                 <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
-                    :last-page="postsListData.posts_data.lastPage" style="margin-left: auto;" />
+                    :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
             </n-flex>
             <!-- 搜索输入（弹出） -->
             <n-flex v-if="showSearchInput" :wrap="false">
@@ -18,13 +18,13 @@
             </n-flex>
             <!-- 浏览进度弹出提示 -->
             <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
-                :disable-scroll="Boolean(search)" />
+                :disable-scroll="Boolean(search)" :is-search="Boolean(search)" />
             <!-- 大喇叭（top） -->
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'top'" />
             <!-- 标题 -->
             <n-card class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
-                    {{ threadData.title }} [{{ threadData.posts_num }}]
+                    {{ threadData?.title }} [{{ threadData?.posts_num }}]
                 </span>
                 <n-dropdown v-if="userStore.checkAdminForums(forumData?.id)" trigger="click" :options="adminOptions"
                     @select="dropdownSelect" :size="commonStore.isMobile ? 'medium' : 'large'">
@@ -33,12 +33,13 @@
                         <Dropdown />
                     </n-icon>
                 </n-dropdown>
-                <f-button size="small" type="primary" v-if="threadData.is_your_thread"
+                <f-button size="small" type="primary" v-if="threadData?.is_your_thread"
                     style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
                     变色
                 </f-button>
             </n-card>
-
+        </template>
+        <template v-if="!postsListLoading && showThis">
             <!-- 循环渲染各个回复 -->
             <n-flex vertical :size="2">
                 <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"

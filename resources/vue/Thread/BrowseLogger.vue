@@ -1,5 +1,5 @@
 <template>
-    <n-alert type="success" closable v-if="showThis" style="border-radius: 10px;">
+    <n-alert type="success" closable v-if="showThis && !isSearch" style="border-radius: 10px;">
         你上次已经浏览到{{ browseLogger.get(threadId)!.floor }}楼，
         <router-link @click="showThis = false"
             :to="{ name: 'thread', params: { threadId: threadId, page: Math.ceil((browseLogger.get(threadId)!.floor + 1) / 200) } }">
@@ -20,6 +20,7 @@ import { useBrowseLogger } from '@/js/func/browseLogger'
 interface Props {
     postsListLoading: boolean,
     disableScroll: boolean,
+    isSearch: boolean,
     threadId: number
     page: number
 }
