@@ -121,6 +121,7 @@ onUnmounted(() => {
     overflow-y: hidden;
     position: relative;
     width: 100%;
+    word-break: break-all;
 
     .loudspeaker-content {
         position: absolute;
