@@ -79,6 +79,9 @@
             <!-- 大喇叭（center） -->
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'center'" />
         </template>
+        <n-flex vertical :size="2" v-else>
+            <n-card size="small" :bordered="true" class="post-card-skeleton" v-for="  n   in   200  " />
+        </n-flex>
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
         <PostInput v-show="!postsListLoading && showThis" ref="postInputCom" mode="post" :forum-id="forumData?.id"
@@ -173,7 +176,7 @@ import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vi
 import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, useThemeVars, type DropdownOption } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, NSkeleton, useThemeVars, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
@@ -595,5 +598,11 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
     position: fixed;
     left: calc(50% - 10px);
     top: 40%;
+}
+
+.post-card-skeleton {
+    border-radius: 10px;
+    height: 115px;
+    width: 100%;
 }
 </style>

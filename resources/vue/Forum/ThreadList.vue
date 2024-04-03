@@ -40,7 +40,7 @@
         </n-card>
     </n-flex>
     <n-flex vertical :size="2" v-else>
-        <n-skeleton class="threads-card-skeleton" v-for="  n   in   50  " />
+        <n-card class="threads-card-skeleton" v-for="  n   in   50  " />
     </n-flex>
 </template>
 
@@ -117,7 +117,7 @@ function handleWithdrawDelayThread(threadId: number) {
 
 .threads-card-skeleton {
     border-radius: 10px;
-    height: 65px;
+    height: 79px;
     width: 100%;
 }
 
