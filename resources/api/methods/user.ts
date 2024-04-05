@@ -324,6 +324,84 @@ const getMedalProgressPoster = (params: getMedalProgressParams) => {
 }
 
 
+//查询银行存款
+interface getBankDataParams {
+    binggan: string,
+}
+interface bankData {
+    id: number,
+    olo: number,
+    description: string,
+    expire_date: string,
+    created_at: string,
+}
+const getBankDataPoster = (params: getBankDataParams) => {
+    const methodInstance = commonAlova.Post<bankData[]>(
+        'api/user/show_bank',
+        params,
+        {
+            //第三个参数是config
+            name: 'getBankDataPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+// 存入银行
+interface bankDepositParams {
+    binggan: string,
+    olo: number,
+    description?: string,
+    expire_date: string,
+}
+const bankDepositPoster = (params: bankDepositParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/bank_deposit',
+        params,
+        {
+            //第三个参数是config
+            name: 'bankDepositPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+// 从银行取款
+interface bankWithdrawParams {
+    binggan: string,
+    deposit_id: number,
+    confirm_penalty: boolean,
+}
+const bankWithdrawPoster = (params: bankWithdrawParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/bank_withdraw',
+        params,
+        {
+            //第三个参数是config
+            name: 'bankWithdrawPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
@@ -331,5 +409,6 @@ export {
     pingbiciSetParams, pingbiciSetPoster,
     checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,
     pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams,
-    getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams
+    getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams,
+    getBankDataParams, bankData, getBankDataPoster, bankDepositParams, bankDepositPoster, bankWithdrawParams, bankWithdrawPoster
 }
