@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Common\BattleChara;
 use App\Common\Medals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\ResponseCode;
+use App\Exceptions\UserException;
 use App\Facades\GlobalSetting;
 use App\Jobs\ProcessUserActive;
 use App\Jobs\ProcessUserCreatedLocation;
@@ -22,6 +24,7 @@ use Exception;
 use Illuminate\Support\Facades\Redis;
 use App\Models\MyBattleChara;
 use App\Models\UserBank;
+use App\Models\UserLV;
 use App\Models\UserMedal;
 use App\Models\UserMedalRecord;
 
@@ -1317,6 +1320,171 @@ class UserController extends Controller
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已获取存款数据',
                 'data' => $user_bank,
+            ]
+        );
+    }
+
+    //饼干升级
+    public function user_lv_up(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'mode' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        try {
+            DB::beginTransaction();
+            if ($user->UserLV) {
+                $user_lv = $user->UserLV;
+            } else {
+                $user_lv = new UserLV();
+                $user_lv->user_id = $user->id;
+                $user_lv->title_pingbici = self::TITLE_PINGBICI_MIN;
+                $user_lv->content_pingbici = self::CONTENT_PINGBICI_MIN;
+                $user_lv->fjf_pingbici = self::FJF_PINGBICI_MIN;
+                $user_lv->my_emoji = self::MYEMOJI_MIN;
+                $user_lv->my_battle_chara = self::MYBATTLECHARA_MIN;
+            }
+            switch ($request->mode) {
+                case 'title_pingbici':
+                    $user_lv->title_pingbici += self::TITLE_PINGBICI_INTERVAL;
+                    if ($user_lv->title_pingbici > self::TITLE_PINGBICI_MAX) {
+                        throw new UserException('标题屏蔽词已升到满级了');
+                    }
+                    $user->coinChange(
+                        'normal', //记录类型
+                        [
+                            'olo' => self::TITLE_PINGBICI_OLO,
+                            'content' => '升级饼干（标题屏蔽词）',
+                        ]
+                    ); //扣除奥利奥（通过统一接口、记录操作）
+                    break;
+                case 'content_pingbici':
+                    $user_lv->content_pingbici += self::CONTENT_PINGBICI_INTERVAL;
+                    if ($user_lv->content_pingbici > self::CONTENT_PINGBICI_MAX) {
+                        throw new UserException('内容屏蔽词已升到满级了');
+                    }
+                    $user->coinChange(
+                        'normal', //记录类型
+                        [
+                            'olo' => self::CONTENT_PINGBICI_OLO,
+                            'content' => '升级饼干（内容屏蔽词）',
+                        ]
+                    ); //扣除奥利奥（通过统一接口、记录操作）
+                    break;
+                case 'fjf_pingbici':
+                    $user_lv->fjf_pingbici += self::FJF_PINGBICI_INTERVAL;
+                    if ($user_lv->fjf_pingbici > self::FJF_PINGBICI_MAX) {
+                        throw new UserException('内容屏蔽词已升到满级了');
+                    }
+                    $user->coinChange(
+                        'normal', //记录类型
+                        [
+                            'olo' => self::FJF_PINGBICI_OLO,
+                            'content' => '升级饼干（反精分屏蔽词）',
+                        ]
+                    ); //扣除奥利奥（通过统一接口、记录操作）
+                    break;
+                case 'my_emoji':
+                    $user_lv->my_emoji += self::MYEMOJI_INTERVAL;
+                    if ($user_lv->my_emoji > self::MYEMOJI_MAX) {
+                        throw new UserException('我的表情包已升到满级了');
+                    }
+                    $user->coinChange(
+                        'normal', //记录类型
+                        [
+                            'olo' => self::MYEMOJI_OLO,
+                            'content' => '升级饼干（我的表情包）',
+                        ]
+                    ); //扣除奥利奥（通过统一接口、记录操作）
+                    break;
+                case 'my_battle_chara':
+                    $user_lv->my_battle_chara += 1;
+                    if ($user_lv->my_battle_chara > self::MYBATTLECHARA_MAX) {
+                        throw new UserException('自定义大乱斗角色数量已经达到最大值了');
+                    }
+
+                    $default_chara = new BattleChara(8); //默认角色小豆泥(id=8)
+
+                    try {
+                        DB::beginTransaction();
+                        MyBattleChara::create(
+                            [
+                                'user_id' => $user->id,
+                                'chara_id' => $user_lv->my_battle_chara - 1, //chara_id从0开始，这里要-1
+                                'name' => $default_chara->CharaName(),
+                                'heads' => $default_chara->CharaHeadsAll(),
+                                'messages' => $default_chara->CharaAttackMessagesAll(),
+                            ]
+                        );
+
+                        $user->coinChange(
+                            'normal', //记录类型
+                            [
+                                'olo' => self::MYBATTLECHARA,
+                                'content' => '升级饼干（自定义大乱斗角色+1）',
+                            ]
+                        ); //扣除奥利奥（通过统一接口、记录操作）
+                        DB::commit();
+                    } catch (Exception $e) {
+                        DB::rollback();
+                        throw $e;
+                    }
+                    break;
+                default:
+                    throw new UserException('升级出错');
+            }
+            $user_lv->save();
+
+            $user->user_lv += 1;
+            $user->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        //检查成就
+        UserMedalRecord::Check_user_lv($user);
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '成功升级饼干！',
+                'data' => $user_lv,
+            ]
+        );
+    }
+
+    //显示饼干等级
+    public function user_lv_show(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        //如果没有升级过饼干user_lv为空，则返回默认值
+        $user_lv_data = $user->UserLV;
+        if (!$user_lv_data) {
+            $user_lv_data = array(
+                'title_pingbici' => self::TITLE_PINGBICI_MIN,
+                'content_pingbici' => self::CONTENT_PINGBICI_MIN,
+                'fjf_pingbici' => self::FJF_PINGBICI_MIN,
+                'my_emoji' => self::MYEMOJI_MIN,
+                'my_battle_chara' => self::MYBATTLECHARA_MIN,
+            );
+        }
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '查询成功！',
+                'data' => $user_lv_data,
             ]
         );
     }

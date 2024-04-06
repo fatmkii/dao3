@@ -402,6 +402,57 @@ const bankWithdrawPoster = (params: bankWithdrawParams) => {
     return methodInstance
 }
 
+//查询饼干等级信息
+interface getUserLevelParams {
+    binggan: string,
+}
+interface userLevelData {
+    title_pingbici: number,
+    content_pingbici: number,
+    fjf_pingbici: number,
+    my_emoji: number,
+    my_battle_chara: number
+}
+const getUserLevelGetter = (params: getUserLevelParams) => {
+    const methodInstance = commonAlova.Get<userLevelData>(
+        'api/user/user_lv_show',
+        {
+            name: 'getUserLevelGetter',
+            params: params,
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+// 饼干升级
+type userLevelUpMode = 'title_pingbici' | 'content_pingbici' | 'fjf_pingbici' | 'my_emoji' | 'my_battle_chara'
+interface userLevelUpParams {
+    binggan: string,
+    mode: userLevelUpMode,
+}
+const userLevelUpPoster = (params: userLevelUpParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/user/user_lv_up',
+        params,
+        {
+            //第三个参数是config
+            name: 'userLevelUpPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
@@ -410,5 +461,6 @@ export {
     checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,
     pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams,
     getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams,
-    getBankDataParams, bankData, getBankDataPoster, bankDepositParams, bankDepositPoster, bankWithdrawParams, bankWithdrawPoster
+    getBankDataParams, bankData, getBankDataPoster, bankDepositParams, bankDepositPoster, bankWithdrawParams, bankWithdrawPoster,
+    getUserLevelParams, userLevelData, getUserLevelGetter, userLevelUpMode, userLevelUpParams, userLevelUpPoster
 }
