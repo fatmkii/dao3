@@ -2,8 +2,8 @@
     <n-flex size="small">
         <!-- 日期选择和查询按钮 -->
         <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date"
-            :size="commonStore.isMobile ? 'small' : 'medium'" />
-        <f-button type="primary" @click="getIncomeDatHandle('day')">
+            :size="commonStore.isMobile ? 'small' : 'medium'" :is-date-disabled="dateDisabled" />
+        <f-button type="primary" @click="getIncomeDataHandle('day')">
             查询
         </f-button>
         <n-card title="收支记录" size="small">
@@ -12,7 +12,7 @@
                 <n-flex size="small" :align="'center'">
                     当日小计：{{ incomeDaySum }}
                     <n-dropdown trigger="click" placement="bottom-end" :options="sumOptions">
-                        <f-button size="small" @click="getIncomeDatHandle('sum')">月年总计</f-button>
+                        <f-button size="small" @click="getIncomeDataHandle('sum')">月年总计</f-button>
                     </n-dropdown>
                 </n-flex>
             </template>
@@ -20,32 +20,35 @@
             <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="incomeData" :pagination="pagination"
                 :bordered="false" :loading="incomeDataLoading" />
             <!-- 手机版列表 -->
-            <n-flex v-if="commonStore.isMobile && incomeData.length > 0" vertical :align="'start'" size="small">
-                <div v-for="rowData in incomeData.slice(pageOffset, pageOffset + pageSize)" class="income-item">
-                    <n-flex>
-                        <div>
-                            <n-text :depth="3">时间：</n-text>
-                            <n-text>{{ rowData.created_at }}</n-text>
+            <template v-if="commonStore.isMobile">
+                <n-flex v-if="incomeData.length > 0" vertical :align="'start'" size="small">
+                    <div v-for="rowData in incomeData.slice(pageOffset, pageOffset + pageSize)" class="income-item">
+                        <n-flex>
+                            <div>
+                                <n-text :depth="3">时间：</n-text>
+                                <n-text>{{ rowData.created_at }}</n-text>
+                            </div>
+                            <div style="margin-left: auto;">
+                                <n-text :depth="3">收支：</n-text>
+                                <n-text>{{ rowData.olo }}</n-text>
+                            </div>
+                        </n-flex>
+                        <n-flex style="margin-top: 6px;  ">
+                            <div>
+                                <n-text :depth="3">内容：</n-text>
+                                <n-text>{{ rowData.content }}</n-text>
+                            </div>
+                        </n-flex>
+                        <div v-if="rowData.thread_id !== null" style="margin-top: 6px;  ">
+                            <n-text :depth="3">主题：</n-text>
+                            <router-link :to="getThreadLink(rowData)">{{ rowData.thread_title }}</router-link>
                         </div>
-                        <div style="margin-left: auto;">
-                            <n-text :depth="3">收支：</n-text>
-                            <n-text>{{ rowData.olo }}</n-text>
-                        </div>
-                    </n-flex>
-                    <n-flex style="margin-top: 6px;  ">
-                        <div>
-                            <n-text :depth="3">内容：</n-text>
-                            <n-text>{{ rowData.content }}</n-text>
-                        </div>
-                    </n-flex>
-                    <div v-if="rowData.thread_id !== null" style="margin-top: 6px;  ">
-                        <n-text :depth="3">主题：</n-text>
-                        <router-link :to="getThreadLink(rowData)">{{ rowData.thread_title }}</router-link>
                     </div>
-                </div>
-                <n-pagination v-model:page="pageSelected" :item-count="incomeData.length" :page-size="pageSize"
-                    size="small" style="margin-left: auto;" />
-            </n-flex>
+                    <n-pagination v-model:page="pageSelected" :item-count="incomeData.length" :page-size="pageSize"
+                        size="small" style="margin-left: auto;" />
+                </n-flex>
+                <n-empty v-else />
+            </template>
         </n-card>
     </n-flex>
 </template>
@@ -59,8 +62,8 @@ import { useUserStore } from '@/stores/user'
 import { FButton } from '@custom'
 import { useRequest } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDataTable, NDatePicker, NDropdown, NFlex, NPagination, NText, useThemeVars } from 'naive-ui'
-import { computed, h, ref, watch } from 'vue'
+import { NCard, NDataTable, NDatePicker, NDropdown, NFlex, NPagination, NText, NEmpty, useThemeVars } from 'naive-ui'
+import { computed, h, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 //基础数据
@@ -74,7 +77,8 @@ const pageSize = 30 //每页数量
 
 //选择日期输入
 const dateSelected = ref<string>(dayjs().format('YYYY-MM-DD'))
-watch(dateSelected, () => incomeData.value = [])
+watch(dateSelected, () => getIncomeDataHandle('day'))
+onMounted(() => getIncomeDataHandle('day'))//不知道为什么上面设定immediate:true的话会报错
 
 //表格参数配置
 const pagination = ref({ pageSize: pageSize })
@@ -126,6 +130,12 @@ const sumOptions = computed(() => {
     }
 })
 
+//控制日历的可选时间（今天往前）
+function dateDisabled(timestamp: number) {
+    return dayjs().isBefore(timestamp)
+}
+
+
 //手机版的页数和偏移量
 const pageSelected = ref<number>(1)
 const pageOffset = computed(() => (pageSelected.value - 1) * pageSize)
@@ -147,7 +157,7 @@ const incomeDaySum = computed(() => incomeData.value
 )
 
 //查询数据
-function getIncomeDatHandle(mode: 'day' | 'sum') {
+function getIncomeDataHandle(mode: 'day' | 'sum') {
     if (dateSelected.value === null) {
         window.$message.error('需要选择日期')
     } else {

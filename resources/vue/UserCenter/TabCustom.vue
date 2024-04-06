@@ -24,7 +24,7 @@
                 </n-form-item>
                 <n-form-item label="重复密码" path="passwordRepeat">
                     <f-input v-model:value="userInput.passwordRepeat" placeholder="再次输入密码" type="password"
-                        :maxlength="20" :minlength="7" :show-password-on="'click'" />
+                        :maxlength="20" :minlength="7" :show-password-on="'click'" @keyup.enter="newCustomBingganHandle" />
                 </n-form-item>
             </n-form>
 
