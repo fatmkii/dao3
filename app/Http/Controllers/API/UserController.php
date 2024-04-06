@@ -1488,4 +1488,78 @@ class UserController extends Controller
             ]
         );
     }
+
+    //新建自定义饼干
+    public function create_custom(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'binggan_apply' => 'required|string|alpha_dash|max:16|min:7',
+            'password' => 'required|string|alpha_dash|max:20|min:7',
+        ]);
+
+        $user_origin = $request->user();
+
+        if (User::where('binggan', $request->binggan_apply)->exists()) {
+            return response()->json([
+                'code' => ResponseCode::USER_REGISTER_FAIL,
+                'message' => ResponseCode::$codeMap[ResponseCode::USER_REGISTER_FAIL] . '，该饼干已经存在了',
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+            $user = new User;
+            $user->binggan = $request->binggan_apply;
+            $user->created_ip = $request->ip();
+            $user->is_custom = true;
+            $user->coin = 300;
+            $user->password = hash('sha256', $request->password . config('app.password_salt'));
+            $user->save();
+
+            $user_origin->coinChange(
+                'normal', //记录类型
+                [
+                    'olo' => -100000, //定制饼干花费100000
+                    'content' => '申请了定制饼干',
+                ]
+            ); //通过统一接口、记录操作
+            $user_origin->save();
+
+            DB::table('user_custom')->insert([
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'from_binggan' => $user_origin->binggan,
+                'created_at' => Carbon::now(),
+            ]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        //检查成就
+        $user_medal_record = $user_origin->UserMedalRecord()->firstOrCreate();
+        $user_medal_record->check_custom_binggan();
+
+        //记录申请饼干IP所在地
+        ProcessUserCreatedLocation::dispatch(
+            [
+                'IP' => $request->ip(),
+                'user_id' => $user->id,
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '新建定制饼干成功！',
+                'data' => [
+                    'binggan' => $request->binggan_apply,
+                ],
+            ],
+            200
+        );
+    }
 }

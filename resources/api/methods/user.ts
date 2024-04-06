@@ -453,6 +453,30 @@ const userLevelUpPoster = (params: userLevelUpParams) => {
     return methodInstance
 }
 
+// 新建自定义饼干
+interface newCustomBingganParams {
+    binggan: string,
+    binggan_apply: string,
+    password: string,
+}
+const newCustomBingganPoster = (params: newCustomBingganParams) => {
+    const methodInstance = commonAlova.Post<{ binggan: string }>(
+        'api/user/create_custom',
+        params,
+        {
+            //第三个参数是config
+            name: 'newCustomBingganPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
@@ -462,5 +486,6 @@ export {
     pingbiciAddPoster, pingbiciAddParams, getMedalsDataParams,
     getMedalsDataPoster, getMedalProgressPoster, getMedalProgressParams,
     getBankDataParams, bankData, getBankDataPoster, bankDepositParams, bankDepositPoster, bankWithdrawParams, bankWithdrawPoster,
-    getUserLevelParams, userLevelData, getUserLevelGetter, userLevelUpMode, userLevelUpParams, userLevelUpPoster
+    getUserLevelParams, userLevelData, getUserLevelGetter, userLevelUpMode, userLevelUpParams, userLevelUpPoster,
+    newCustomBingganParams, newCustomBingganPoster,
 }
