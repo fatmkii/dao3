@@ -12,43 +12,46 @@
                 </div>
             </template>
             <!-- 电脑版表格 -->
-            <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="bankData" :pagination="pagination" :loading="bankDataLoading"
-                :bordered="false" />
+            <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="bankData" :pagination="pagination"
+                :loading="bankDataLoading" :bordered="false" />
             <!-- 手机版列表 -->
-            <n-flex v-if="commonStore.isMobile && bankData.length > 0" vertical :align="'start'" size="small">
-                <div v-for="rowData in bankData.slice(pageOffset, pageOffset + pageSize)" class="bank-item">
-                    <n-flex style="margin-bottom: 6px;" v-if="rowData.description">
-                        <div>
-                            <n-text :depth="3">存粮标签：</n-text>
-                            <n-text>{{ rowData.description }}</n-text>
-                        </div>
-                    </n-flex>
-                    <n-flex style="margin-bottom: 6px;">
-                        <div>
-                            <n-text :depth="3">存入时间：</n-text>
-                            <n-text>{{ rowData.created_at }}</n-text>
-                        </div>
-                        <div style="margin-left: auto;">
-                            <n-text :depth="3">存粮：</n-text>
-                            <n-text>{{ rowData.olo }}</n-text>
-                        </div>
-                    </n-flex>
-                    <n-flex style="margin-bottom: 6px;">
-                        <div>
-                            <n-text :depth="3">存入时间：</n-text>
-                            <n-text>{{ rowData.created_at }}</n-text>
-                        </div>
-                        <div style="margin-left: auto;">
-                            <f-button v-if="!rowData.isExpired" size="tiny" type="warning"
-                                @click="withdrawDepositHandle(rowData.id, rowData.isExpired)">提前开仓</f-button>
-                            <f-button v-if="rowData.isExpired" size="tiny" type="success"
-                                @click="withdrawDepositHandle(rowData.id, rowData.isExpired)">到期开仓</f-button>
-                        </div>
-                    </n-flex>
-                </div>
-                <n-pagination v-model:page="pageSelected" :item-count="bankData.length" :page-size="pageSize"
-                    size="small" style="margin-left: auto;" />
-            </n-flex>
+            <template v-if="commonStore.isMobile">
+                <n-flex v-if="bankData.length > 0" vertical :align="'start'" size="small">
+                    <div v-for="rowData in bankData.slice(pageOffset, pageOffset + pageSize)" class="bank-item">
+                        <n-flex style="margin-bottom: 6px;" v-if="rowData.description">
+                            <div>
+                                <n-text :depth="3">存粮标签：</n-text>
+                                <n-text>{{ rowData.description }}</n-text>
+                            </div>
+                        </n-flex>
+                        <n-flex style="margin-bottom: 6px;">
+                            <div>
+                                <n-text :depth="3">存入时间：</n-text>
+                                <n-text>{{ rowData.created_at }}</n-text>
+                            </div>
+                            <div style="margin-left: auto;">
+                                <n-text :depth="3">存粮：</n-text>
+                                <n-text>{{ rowData.olo }}</n-text>
+                            </div>
+                        </n-flex>
+                        <n-flex style="margin-bottom: 6px;">
+                            <div>
+                                <n-text :depth="3">存入时间：</n-text>
+                                <n-text>{{ rowData.created_at }}</n-text>
+                            </div>
+                            <div style="margin-left: auto;">
+                                <f-button v-if="!rowData.isExpired" size="tiny" type="warning"
+                                    @click="withdrawDepositHandle(rowData.id, rowData.isExpired)">提前开仓</f-button>
+                                <f-button v-if="rowData.isExpired" size="tiny" type="success"
+                                    @click="withdrawDepositHandle(rowData.id, rowData.isExpired)">到期开仓</f-button>
+                            </div>
+                        </n-flex>
+                    </div>
+                    <n-pagination v-model:page="pageSelected" :item-count="bankData.length" :page-size="pageSize"
+                        size="small" style="margin-left: auto;" />
+                </n-flex>
+                <n-empty v-else />
+            </template>
         </n-card>
 
         <!-- 存粮的弹出modal -->
@@ -101,7 +104,7 @@ import { useUserStore } from '@/stores/user'
 import { FButton, FInput, FInputGroupLabel } from '@custom'
 import { useRequest } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDataTable, NDatePicker, NFlex, NInputGroup, NInputNumber, NModal, NPagination, NText, useThemeVars } from 'naive-ui'
+import { NCard, NDataTable, NDatePicker, NFlex, NInputGroup, NInputNumber, NModal, NPagination, NText, NEmpty, useThemeVars } from 'naive-ui'
 import { computed, h, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 

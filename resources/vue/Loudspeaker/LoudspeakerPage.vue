@@ -32,30 +32,33 @@
             @update:page="(value) => page = value" style="margin-right: auto;" />
 
         <!-- 大喇叭数据 -->
-        <n-card v-for="loudspeaker in loudspeakerData.slice(offset, offset + pageSize)" :key="loudspeaker.id"
-            size="small" :bordered="true" class="loudspeaker-card">
-            <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
-                :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
-                {{ loudspeaker.content }}
-            </component>
-            <n-flex size="small">
-                <span>
-                    <n-text :depth="3">生效：</n-text>
-                    <n-text>{{ loudspeaker.effective_date }}</n-text>
-                </span>
-                <span>
-                    <n-text :depth="3">到期：</n-text>
-                    <n-text>{{ loudspeaker.expire_date }}</n-text>
-                </span>
-                <div style="margin-left: auto;"></div>
-                <n-icon v-if="loudspeaker.is_your_loudspeaker" :size="commonStore.isMobile ? 20 : 24"
-                    style="cursor: pointer;" @click="repealLoudspeakerHandle(loudspeaker.id)">
-                    <Delete />
-                </n-icon>
-                <f-button v-if="userStore.admin.isNormalAdmin" size="tiny" type="warning"
-                    @click="adminDeleteLoudspeakerHandle(loudspeaker.id)">强制删除</f-button>
-            </n-flex>
-        </n-card>
+        <template v-if="loudspeakerData.length > 0">
+            <n-card v-for="loudspeaker in loudspeakerData.slice(offset, offset + pageSize)" :key="loudspeaker.id"
+                size="small" :bordered="true" class="loudspeaker-card">
+                <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
+                    :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
+                    {{ loudspeaker.content }}
+                </component>
+                <n-flex size="small">
+                    <span>
+                        <n-text :depth="3">生效：</n-text>
+                        <n-text>{{ loudspeaker.effective_date }}</n-text>
+                    </span>
+                    <span>
+                        <n-text :depth="3">到期：</n-text>
+                        <n-text>{{ loudspeaker.expire_date }}</n-text>
+                    </span>
+                    <div style="margin-left: auto;"></div>
+                    <n-icon v-if="loudspeaker.is_your_loudspeaker" :size="commonStore.isMobile ? 20 : 24"
+                        style="cursor: pointer;" @click="repealLoudspeakerHandle(loudspeaker.id)">
+                        <Delete />
+                    </n-icon>
+                    <f-button v-if="userStore.admin.isNormalAdmin" size="tiny" type="warning"
+                        @click="adminDeleteLoudspeakerHandle(loudspeaker.id)">强制删除</f-button>
+                </n-flex>
+            </n-card>
+        </template>
+        <n-empty v-else />
 
         <!-- 发布大喇叭modal -->
         <NewLoudspeakerModal ref="NewLoudspeakerModalCom" @refresh-loudspeaker="loudspeakerDataSend(params)" />
@@ -74,7 +77,7 @@ import { FButton } from '@custom'
 import { Delete } from '@vicons/carbon'
 import { useRequest } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDatePicker, NFlex, NGradientText, NIcon, NPopover, NSwitch, NText } from 'naive-ui'
+import { NCard, NDatePicker, NFlex, NGradientText, NIcon, NPopover, NSwitch, NText, NEmpty } from 'naive-ui'
 import { computed, ref } from 'vue'
 import NewLoudspeakerModal from './NewLoudspeakerModal.vue'
 
