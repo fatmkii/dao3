@@ -1,7 +1,7 @@
 <template>
     <n-flex :align="'center'">
         <!-- 顶部按钮 -->
-        <f-button type="primary" @click="showMedalModal = true">我要存粮</f-button>
+        <f-button type="primary" @click="showDepositModal = true">我要存粮</f-button>
         <!-- 粮仓列表 -->
         <n-card title="我的粮仓" size="small">
             <!-- 卡片头，显示总计 -->
@@ -12,7 +12,7 @@
                 </div>
             </template>
             <!-- 电脑版表格 -->
-            <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="bankData" :pagination="pagination"
+            <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="bankData" :pagination="pagination" :loading="bankDataLoading"
                 :bordered="false" />
             <!-- 手机版列表 -->
             <n-flex v-if="commonStore.isMobile && bankData.length > 0" vertical :align="'start'" size="small">
@@ -52,9 +52,9 @@
         </n-card>
 
         <!-- 存粮的弹出modal -->
-        <n-modal v-model:show="showMedalModal" display-directive="if">
-            <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="存粮" closable @close="showMedalModal = false"
-                size="small">
+        <n-modal v-model:show="showDepositModal" display-directive="if">
+            <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="存粮" closable
+                @close="showDepositModal = false" size="small">
                 <n-flex vertical>
                     <div>
                         存粮没有利息、提前开仓扣12% <br> （那有什么用啊！）
@@ -82,7 +82,7 @@
                     <n-flex justify="end">
                         <f-button type="primary" :loading="setBankDepositLoading" :disabled="setBankDepositLoading"
                             @click="depositHandle">提交</f-button>
-                        <f-button @click="showMedalModal = false">关闭</f-button>
+                        <f-button @click="showDepositModal = false">关闭</f-button>
                     </n-flex>
                 </template>
             </n-card>
@@ -113,7 +113,7 @@ const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
 const pageSize = 10 //每页数量
-const showMedalModal = ref<boolean>(false)
+const showDepositModal = ref<boolean>(false)
 
 //输入的数据
 const descriptionInput = ref<string>()
@@ -206,8 +206,9 @@ const { loading: setBankDepositLoading, send: setBankDepositSend, onSuccess: set
     { immediate: false }
 );
 setBankDepositOnSuccess(() => {
+    userStore.refreshUserData() //刷新用户数据
     getBankDataSend({ binggan: userStore.binggan! }) //刷新数据
-    showMedalModal.value = false
+    showDepositModal.value = false
 })
 function depositHandle() {
     if (oloInput.value === null) {
@@ -243,6 +244,7 @@ function withdrawDepositHandle(depositId: number, isExpired: boolean) {
             confirm_penalty: !isExpired,
         }
         bankWithdrawPoster(params).then(() => {
+            userStore.refreshUserData() //刷新用户数据
             getBankDataSend({ binggan: userStore.binggan! }) //刷新数据
         })
     }

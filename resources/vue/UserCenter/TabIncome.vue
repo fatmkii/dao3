@@ -18,8 +18,8 @@
             </template>
             <!-- 电脑版表格 -->
             <n-data-table v-if="!commonStore.isMobile" :columns="columns" :data="incomeData" :pagination="pagination"
-                :bordered="false" />
-            <!-- 手机版列表F -->
+                :bordered="false" :loading="incomeDataLoading" />
+            <!-- 手机版列表 -->
             <n-flex v-if="commonStore.isMobile && incomeData.length > 0" vertical :align="'start'" size="small">
                 <div v-for="rowData in incomeData.slice(pageOffset, pageOffset + pageSize)" class="income-item">
                     <n-flex>
