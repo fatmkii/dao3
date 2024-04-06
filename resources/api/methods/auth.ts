@@ -42,5 +42,27 @@ const userLogoutPoster = (binggan: string) =>
     )
 
 
+interface userSetPasswordParams {
+    binggan: string,
+    old_password: string,
+    new_password: string,
+}
 
-export { userLoginPoster, userLogoutPoster };
+const userSetPasswordPoster = (params: userSetPasswordParams) => {
+    const methodInstance = commonAlova.Post<null>(
+        '/api/set_password',
+        params,
+        {
+            //第三个参数是config
+            name: 'userSetPasswordPoster',
+            params: {},
+            localCache: null
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+export { userLoginPoster, userLogoutPoster, userSetPasswordParams, userSetPasswordPoster };

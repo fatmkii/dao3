@@ -29,7 +29,7 @@ use App\Http\Controllers\API\EmojiConstestController;
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->Middleware('throttle:login')->withoutMiddleware('auth:sanctum'); //导入饼干
     Route::post('/logout', [AuthController::class, 'logout']); //退出饼干
-    // Route::post('/set_password', [AuthController::class, 'set_password'])->middleware('CheckBinggan:create');   //设定饼干密码
+    Route::post('/set_password', [AuthController::class, 'set_password'])->middleware('CheckBinggan:create');   //设定饼干密码
 });
 
 

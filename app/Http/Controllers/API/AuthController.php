@@ -229,14 +229,15 @@ class AuthController extends Controller
             'new_password' => 'required|string|alpha_dash|max:20|min:7',
         ]);
 
-        $binggan  = $request->get('binggan');
-        $user = User::where(DB::raw('BINARY `binggan`'), $binggan)->first(); //用DB::raw区分大小写
-        if (!$user) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => ResponseCode::$codeMap[ResponseCode::USER_NOT_FOUND],
-            ]);
-        }
+        $user = $request->user();
+        // $binggan  = $request->get('binggan');
+        // $user = User::where(DB::raw('BINARY `binggan`'), $binggan)->first(); //用DB::raw区分大小写
+        // if (!$user) {
+        //     return response()->json([
+        //         'code' => ResponseCode::USER_NOT_FOUND,
+        //         'message' => ResponseCode::$codeMap[ResponseCode::USER_NOT_FOUND],
+        //     ]);
+        // }
 
         if (
             $user->password != null &&
@@ -265,9 +266,7 @@ class AuthController extends Controller
             [
                 'code' => ResponseCode::SUCCESS,
                 'message' => '密码设定成功！',
-                'data' => [
-                    'binggan' => $binggan,
-                ],
+                'data' => null,
             ],
             200
         );
