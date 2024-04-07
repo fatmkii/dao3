@@ -1562,4 +1562,86 @@ class UserController extends Controller
             200
         );
     }
+
+    //查询自定义大乱斗角色
+    public function my_battle_chara_show(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        $my_battle_chara = MyBattleChara::where('user_id', $user->id)->get() ?? []; //返回数据必须是个数组
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '查询成功！',
+                'data' => $my_battle_chara,
+            ]
+        );
+    }
+
+    //设定自定义大乱斗角色
+    public function my_battle_chara_set(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'chara_id' => 'required|integer',
+            'name' => 'required|string|max:50',
+            'heads' => 'required|array|max:1000',
+            'messages' => 'required|array|max:1000',
+            'not_use' => 'required|boolean',
+        ]);
+
+        $user = $request->user();
+
+        //检查角色数量是否符合饼干等级
+        $user_lv = $user->UserLV['my_battle_chara'];
+        if (!$user_lv) {
+            //如果不存在，则输入默认值
+            $user_lv = self::MYBATTLECHARA_MIN;
+        }
+
+        if ($request->chara_id + 1 > $user_lv) { //因为chara_id从0开始，这里要+1
+            return response()->json([
+                'code' => ResponseCode::USER_ERROR,
+                'message' => '自定义大乱斗角色最大为' . $user_lv . '个。已超出了最大限制，可在个人中心升级。',
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            MyBattleChara::where(['user_id' => $user->id, 'chara_id' => $request->chara_id])
+                ->update([
+                    'name' => $request->name,
+                    'heads' => $request->heads,
+                    'messages' => $request->messages,
+                    'not_use' => $request->not_use
+                ]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => sprintf('用户更新了大乱斗角色(id:%d)', $request->chara_id),
+            ]
+        );
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => sprintf('已更新我的大乱斗角色：%s', $request->name),
+                'data' => null,
+            ],
+        );
+    }
 }

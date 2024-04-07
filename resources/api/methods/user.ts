@@ -477,6 +477,63 @@ const newCustomBingganPoster = (params: newCustomBingganParams) => {
     return methodInstance
 }
 
+//查询自定义大乱斗角色
+interface getUserCharaParams {
+    binggan: string,
+}
+interface userCharaData {
+    name: string,
+    heads: {
+        win: string
+        lose: string
+        name: string
+        wait: string
+        attack: string
+        against: string
+        [key: string]: string
+    },
+    messages: string[],
+    not_use: boolean
+}
+const getUserCharaGetter = (params: getUserCharaParams) => {
+    const methodInstance = commonAlova.Get<userCharaData[]>(
+        'api/user/my_battle_chara',
+        {
+            name: 'getUserLevelGetter',
+            params: params,
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+
+// 设定自定义大乱斗角色
+interface setUserCharaParams extends userCharaData {
+    binggan: string,
+    chara_id: number,
+}
+const setUserCharaPoster = (params: setUserCharaParams) => {
+    const methodInstance = commonAlova.Post<null>(
+        'api/user/my_battle_chara_set',
+        params,
+        {
+            //第三个参数是config
+            name: 'setUserCharaPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
 export {
     userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
@@ -488,4 +545,5 @@ export {
     getBankDataParams, bankData, getBankDataPoster, bankDepositParams, bankDepositPoster, bankWithdrawParams, bankWithdrawPoster,
     getUserLevelParams, userLevelData, getUserLevelGetter, userLevelUpMode, userLevelUpParams, userLevelUpPoster,
     newCustomBingganParams, newCustomBingganPoster,
+    getUserCharaParams, userCharaData, getUserCharaGetter, setUserCharaParams, setUserCharaPoster,
 }
