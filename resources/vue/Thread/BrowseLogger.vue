@@ -61,7 +61,7 @@ function scrollToLastTime() {
         if (browseLogger.get(props.threadId)) {
             const threadBrowseLog = browseLogger.get(props.threadId)!
             const pageLastTime = Math.ceil((threadBrowseLog.floor + 1) / 200)
-            if (pageLastTime === props.page) {
+            if (pageLastTime === props.page && threadBrowseLog.floor !== 0) {
                 //如果在上次浏览就在当前页，则滚动到对应的楼层
                 const elementTarget = document.getElementById('f_' + threadBrowseLog.floor)
                 if (elementTarget !== null) {
