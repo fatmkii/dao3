@@ -8,7 +8,7 @@
         </f-button>
         <n-card title="收支记录" size="small">
             <!-- 卡片头，显示总计 -->
-            <template #header-extra v-if="incomeData.length > 0">
+            <template #header-extra>
                 <n-flex size="small" :align="'center'">
                     当日小计：{{ incomeDaySum }}
                     <n-dropdown trigger="click" placement="bottom-end" :options="sumOptions">
