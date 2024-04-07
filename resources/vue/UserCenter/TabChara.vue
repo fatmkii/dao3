@@ -6,7 +6,8 @@
                 <n-text :depth="3" style="flex-shrink:0;">
                     选择要编辑的角色
                 </n-text>
-                <n-select v-model:value="charaSelectedInput" :options="charaSelectedOptions" />
+                <n-select v-model:value="charaSelectedInput" :options="charaSelectedOptions"
+                    :consistent-menu-width="false" />
             </template>
             <!-- 没有槽位时候的提示 -->
             <template #header-extra v-if="!userCharaDataLoading && userCharaData.length === 0">
