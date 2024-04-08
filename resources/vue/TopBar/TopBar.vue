@@ -155,11 +155,20 @@ const userOptions = [
 
 //登出操作
 function logoutHandle() {
-    const { onSuccess, data } = useRequest(userLogoutPoster(userStore.binggan!))
-    onSuccess(() => {
-        userLogout()
-        window.location.href = "/"; //因为希望重头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
-    })
+    const dialogArgs = {
+        title: '退出饼干',
+        closable: false,
+        content: `确定要退出饼干吗？请务必先记下自己的饼干喔。`,
+        positiveText: '确定',
+        negativeText: '取消',
+        onPositiveClick: () => {
+            userLogoutPoster(userStore.binggan!).then(() => {
+                userLogout()
+                window.location.href = "/"; //因为希望重头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
+            })
+        },
+    }
+    window.$dialog.warning(dialogArgs)
 }
 
 //鼠标hover（mouseenter事件）时刷新user data（主要是刷新olo）
