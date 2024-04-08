@@ -53,16 +53,16 @@
             <n-flex :size="[4, 0]" class="post-footer"
                 :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }">
 
-                <n-text :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
+                <span :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
                     {{ '№' + postData.floor }}
-                </n-text>
-                <n-text class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
+                </span>
+                <span class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
                     {{ postData.nickname }}
-                </n-text>
-                <n-text class="post-created-at">{{ postData.created_at }}</n-text>
-                <n-text v-if="antiJingfen" class="post-anti-jingfen">
+                </span>
+                <span class="post-created-at">{{ postData.created_at }}</span>
+                <span v-if="antiJingfen" class="post-anti-jingfen">
                     →{{ postData.created_binggan_hash?.slice(0, 5) }}
-                </n-text>
+                </span>
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
             </n-flex>
         </template>
@@ -77,7 +77,6 @@ import randomHeadsData from '@/data/randomHeads'
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
@@ -86,9 +85,8 @@ import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, NText, useThemeVars, type DropdownOption } from 'naive-ui'
+import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 //异步加载组件
 const Battle = defineAsyncComponent(() =>
@@ -103,9 +101,6 @@ const renderDropdown = ref<boolean>(false)
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const router = useRouter()
-const themeVars = useThemeVars()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
@@ -142,7 +137,6 @@ const postContentContainerStyle = computed(() => ({
 const postContentStyle = computed(() => ({
     top: postContentTopOffset.value === undefined ? undefined : postContentTopOffset.value + 'px',
 }))
-
 
 //注册事件
 const emit = defineEmits<{
@@ -360,8 +354,6 @@ const postContent = computed(() => {//数据处理
     return postContent
 })
 
-
-
 //点击引用的处理
 const postFooterText = computed<string>(() => {
     if (props.antiJingfen) {
@@ -406,7 +398,6 @@ function quoteClick() {
 
     emit("quoteClick", quoteContent);
 }
-
 
 //点击图片添加到表情包功能
 const emojiSelected = ref<HTMLImageElement>()
@@ -523,49 +514,4 @@ function refreshBattleData() {
 }
 defineExpose({ refreshBattleData })
 
-
 </script>
-
-<style scoped lang="scss">
-.post-card {
-    &.on-focus {
-        border-color: v-bind('themeVars.primaryColor');
-    }
-}
-
-.post-content {
-    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
-
-    span {
-        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"')
-    }
-}
-
-.post-content-container {
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-
-.post-footer {
-    margin-top: 0.2rem;
-    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
-
-    span {
-        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
-    }
-}
-
-.post-footer {
-    &.system-post .post-nick-name {
-        color: v-bind('themeVars.primaryColor')
-    }
-
-    &.admin-post .post-nick-name {
-        color: v-bind('themeVars.errorColor')
-    }
-}
-
-.unfold-height {
-    cursor: pointer;
-}
-</style>

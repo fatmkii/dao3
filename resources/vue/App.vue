@@ -22,6 +22,7 @@ import MessageApi from '@/vue/Components/MessageApi.vue';
 import TopBar from '@/vue/TopBar/TopBar.vue';
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
 import UnauthModal from './Modals/UnauthModal.vue';
+import { useCommonStore } from '@/stores/common';
 
 //加载主题相关的store
 const themeStore = usethemeStore()
@@ -29,6 +30,9 @@ const themeVars = useThemeVars()
 //加载用户信息的store
 //如果localstorage没有token或者binggan，实际上不会发起请求，store中是一些默认空白数值
 const userStore = useUserStore()
+
+//一般设定的store
+const commonStore = useCommonStore()
 
 </script>
 
@@ -45,5 +49,51 @@ const userStore = useUserStore()
     .highlight {
         color: v-bind('themeVars.warningColor');
     }
+}
+
+.post-card {
+    &.on-focus {
+        border-color: v-bind('themeVars.primaryColor');
+    }
+}
+
+.post-content {
+    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
+
+    span {
+        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"')
+    }
+}
+
+.post-content-container {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.post-footer {
+    margin-top: 0.2rem;
+    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
+
+    span {
+        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
+    }
+}
+
+.post-footer {
+    &.system-post .post-nick-name {
+        color: v-bind('themeVars.primaryColor')
+    }
+
+    &.admin-post .post-nick-name {
+        color: v-bind('themeVars.errorColor')
+    }
+
+    .post-footer-text {
+        color: v-bind('themeVars.textColor3')
+    }
+}
+
+.unfold-height {
+    cursor: pointer;
 }
 </style>
