@@ -116,7 +116,7 @@ onUnmounted(() => {
 
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .loudspeaker-container {
     height: 2.5rem;
     overflow-y: hidden;
@@ -139,5 +139,9 @@ onUnmounted(() => {
 .loudspeaker-container:hover .loudspeaker-content {
     animation-play-state: paused;
     -webkit-animation-play-state: paused;
+}
+
+a {
+    color: v-bind('themeVars.textColor1');
 }
 </style>

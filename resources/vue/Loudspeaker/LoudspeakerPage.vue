@@ -77,7 +77,7 @@ import { FButton } from '@custom'
 import { Delete } from '@vicons/carbon'
 import { useRequest } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDatePicker, NFlex, NGradientText, NIcon, NPopover, NSwitch, NText, NEmpty } from 'naive-ui'
+import { NCard, NDatePicker, NFlex, NGradientText, NIcon, NPopover, NSwitch, NText, NEmpty, useThemeVars } from 'naive-ui'
 import { computed, ref } from 'vue'
 import NewLoudspeakerModal from './NewLoudspeakerModal.vue'
 
@@ -85,6 +85,7 @@ import NewLoudspeakerModal from './NewLoudspeakerModal.vue'
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const NewLoudspeakerModalCom = ref<InstanceType<typeof NewLoudspeakerModal> | null>()
+const themeVars = useThemeVars()
 
 //用户输入
 const dateSelected = ref<string>()
@@ -159,8 +160,10 @@ function repealLoudspeakerHandle(id: number) {
     }
     window.$dialog.warning(dialogArgs)
 }
-
-
-
-
 </script>
+
+<style scoped lang="scss">
+a {
+    color: v-bind('themeVars.textColor1');
+}
+</style>

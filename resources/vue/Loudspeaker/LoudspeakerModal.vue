@@ -50,3 +50,9 @@ function show() {
 defineExpose({ show })
 
 </script>
+
+<style scoped lang="scss">
+a {
+    color: v-bind('themeVars.textColor1');
+}
+</style>
