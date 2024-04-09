@@ -73,7 +73,8 @@ loudspeakerDataOnSuccess(() => {
 //追加动画效果
 function addKeyFrames() {
     //因为loudspeaker_content的高度会根据内容改变，所以要动态调整keyframe的移动速度和高度
-    const container = document.getElementsByClassName("loudspeaker-content")[0] as HTMLDivElement
+    const container = document.getElementsByClassName("loudspeaker-content")[0] as HTMLDivElement | null
+    if (container === null) return
     const containerHeight = container.offsetHeight
 
     const style = document.createElement('style')
