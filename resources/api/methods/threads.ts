@@ -34,50 +34,51 @@ interface threadData {
 
 interface newThreadParams {
     binggan: string,
-    forumId: number,
+    forum_id: number,
     title: string,
     content: string,
     nickname: string,
     subtitle: subtitlesType,
-    threadType: threadType,
-    postWithAdmin: boolean,
-    antiJingfen: boolean,
-    isDelay: boolean,
-    isPrivate: boolean,
-    canBattle: boolean,
-    randomHeadsGroup: number,
-    nissinTime: number, //这是天数的数字
-    titleColor: string | null,
-    lockedByCoin: number | null,
-    subId: number,
+    thread_type: threadType,
+    post_with_admin: boolean,
+    anti_jingfen: boolean,
+    is_delay: boolean,
+    is_private: boolean,
+    can_battle: boolean,
+    random_heads_group: number,
+    nissin_time: number, //这是天数的数字
+    title_color: string | null,
+    locked_by_coin: number | null,
+    sub_id: number,
 
-    hongbaoParams?: {
+    hongbao_params?: {
+        olo: number,
+        num: number,
         type: number,
-        hongbaoOlo: number,
-        hongbaoNum: number,
-        hongbaoKeyWord: string,
-        hongbaoOloHide: boolean,
-        hongbaoLoudspeaker: boolean,
+        keyword: string,
+        message: string[],
+        olo_hide: boolean,
+        loudspeaker: boolean,
     },
 
-    voteParams?: {
-        voteMultiple: boolean,
-        voteTitle: string,
-        voteOptions: string[],
-        voteEndTime: string,
-        voteMaxChoices: number
+    vote_params?: {
+        multiple: boolean,
+        title: string,
+        options: string[],
+        end_time: string,
+        max_choices: number
     },
 
-    gambleParams?: {
-        gambleTitle: string,
-        gambleOptions: string[],
-        gambleEndTime: string,
+    gamble_params?: {
+        title: string,
+        options: string[],
+        end_time: string,
     }
 
-    crowdParams?: {
-        crowdTitle: string,
-        crowdEndTime: string,
-        crowdOloTarget: number,
+    crowd_params?: {
+        title: string,
+        end_time: string,
+        olo_target: number,
     }
 }
 interface newThreadData {
@@ -87,68 +88,7 @@ interface newThreadData {
 //发表新主题
 const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadData>(
     '/api/threads/create',
-    {
-        //第二个参数是data
-        binggan: params.binggan,
-        forum_id: params.forumId,
-        title: params.title,
-        content: params.content,
-        nickname: params.nickname,
-        subtitle: params.subtitle,
-        thread_type: params.threadType,
-        post_with_admin: params.postWithAdmin,
-        anti_jingfen: params.antiJingfen,
-        is_delay: params.isDelay,
-        is_private: params.isPrivate,
-        can_battle: params.canBattle,
-        random_heads_group: params.randomHeadsGroup,
-        nissin_time: params.nissinTime, //这是天数的数字
-        title_color: params.titleColor,
-        locked_by_coin: params.lockedByCoin,
-        sub_id: params.subId,
-
-        ...(params.hongbaoParams === undefined ? {} :
-            {
-                hongbao_params: {
-                    type: params.hongbaoParams.type,
-                    hongbao_olo: params.hongbaoParams.hongbaoOlo,
-                    hongbao_num: params.hongbaoParams.hongbaoNum,
-                    hongbao_keyword: params.hongbaoParams.hongbaoKeyWord,
-                    hongbao_olo_hide: params.hongbaoParams.hongbaoOloHide,
-                    hongbao_loudspeaker: params.hongbaoParams.hongbaoLoudspeaker,
-                }
-            }),
-
-        ...(params.voteParams === undefined ? {} :
-            {
-                vote_params: {
-                    vote_multiple: params.voteParams.voteMultiple,
-                    vote_title: params.voteParams.voteTitle,
-                    vote_options: params.voteParams.voteOptions,
-                    vote_end_time: params.voteParams.voteEndTime,
-                    vote_max_choices: params.voteParams.voteMaxChoices
-                }
-            }),
-
-        ...(params.gambleParams === undefined ? {} :
-            {
-                gamble_params: {
-                    gamble_title: params.gambleParams.gambleTitle,
-                    gamble_options: params.gambleParams.gambleOptions,
-                    gamble_end_time: params.gambleParams.gambleEndTime,
-                }
-            }),
-
-        ...(params.crowdParams === undefined ? {} :
-            {
-                crowd_params: {
-                    crowd_title: params.crowdParams.crowdTitle,
-                    crowd_end_time: params.crowdParams.crowdEndTime,
-                    crowd_olo_target: params.crowdParams.crowdOloTarget,
-                }
-            }),
-
-    },
+    params,
     {
         name: 'newThreadPoster',
         localCache: null,

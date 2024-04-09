@@ -29,6 +29,10 @@ class Hongbao extends Model
         'hongbao_user',
     ];
 
+    protected $casts = [
+        'olo_hide' => 'boolean',
+        'message_json' => 'array',
+    ];
 
     public function HongbaoUser()
     {
@@ -66,33 +70,32 @@ class Hongbao extends Model
     }
 
 
-    // public function getOloTotalAttribute($olo_total)
-    // {
-    //     if ($this->olo_hide) {
-    //         //隐藏olo总额
-    //         return null;
-    //     } else {
-    //         return $olo_total;
-    //     }
-    // }
+    public function getOloTotalAttribute($olo_total)
+    {
+        if ($this->olo_hide) {
+            //隐藏olo总额
+            return null;
+        } else {
+            return $olo_total;
+        }
+    }
 
     public static function create(Request $request, $thread_id)
     {
         $request->validate([
-            'hongbao_olo' => 'required|integer|min:20000|max:2000000',
-            'hongbao_num' => 'required|integer|min:1|max:600',
-            'type' => 'required|integer',
-            'hongbao_key_word' => 'required|string|max:255',
-            'hongbao_message' => 'nullable|string|max:255',
-            'hongbao_message_json' => 'nullable|array|max:3000',
-            'hongbao_olo_hide' => 'nullable|boolean',
-            'hongbao_loudspeaker' => 'nullable|boolean',
+            'hongbao_params.olo' => 'required|integer|min:20000|max:2000000',
+            'hongbao_params.num' => 'required|integer|min:10|max:600',
+            'hongbao_params.type' => 'required|integer',
+            'hongbao_params.keyword' => 'required|string|max:255',
+            'hongbao_params.message' => 'required|array|max:255',
+            'hongbao_params.olo_hide' => 'nullable|boolean',
+            'hongbao_params.loudspeaker' => 'nullable|boolean',
         ]);
 
         $user = $request->user();
 
         $tax_rate = GlobalSetting::get_tax('normal');
-        $coin_pay = ceil($request->hongbao_olo * $tax_rate);
+        $coin_pay = ceil($request->hongbao_params['olo'] * $tax_rate);
         $user->coinChange(
             'normal', //记录类型
             [
@@ -105,18 +108,19 @@ class Hongbao extends Model
 
         $hongbao = new Hongbao();
         $hongbao->thread_id = $thread_id;
-        $hongbao->olo_total = $request->hongbao_olo;
-        $hongbao->num_total = $request->hongbao_num;
-        $hongbao->olo_remains = $request->hongbao_olo;
-        $hongbao->num_remains = $request->hongbao_num;
-        $hongbao->type = $request->type;
-        $hongbao->key_word = $request->hongbao_key_word;
-        $hongbao->message = $request->hongbao_message;
-        $hongbao->message_json = $request->hongbao_message_json;
-        $hongbao->olo_hide = $request->hongbao_olo_hide;
+        $hongbao->olo_total = $request->hongbao_params['olo'];
+        $hongbao->num_total = $request->hongbao_params['num'];
+        $hongbao->olo_remains = $request->hongbao_params['olo'];
+        $hongbao->num_remains = $request->hongbao_params['num'];
+        $hongbao->type = $request->hongbao_params['type'];
+        $hongbao->key_word = $request->hongbao_params['keyword'];
+        // $hongbao->message = $request->hongbao_params['message'];
+        $hongbao->message = null; //3.0后改成直接使用使用下面message_json，前端提交的是string[]
+        $hongbao->message_json = $request->hongbao_params['message'];
+        $hongbao->olo_hide = $request->hongbao_params['olo_hide'];
         $hongbao->save();
 
-        if ($request->hongbao_loudspeaker) {
+        if ($request->hongbao_params['loudspeaker']) {
             //如果有设定自动发大喇叭，就发大喇叭
             $effective_date = Carbon::now();
             $expire_date = $effective_date->copy()->addDays(1); //记得copy否则会影响原变量
@@ -132,7 +136,7 @@ class Hongbao extends Model
         }
 
         $user_medal_record = $user->UserMedalRecord()->firstOrCreate();
-        $user_medal_record->push_hongbao_out($request->hongbao_olo);
+        $user_medal_record->push_hongbao_out($request->hongbao_params['olo']);
 
         return $hongbao;
     }

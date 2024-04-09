@@ -139,9 +139,8 @@ class HongbaoController extends Controller
                     $post_content = $post_content . '<br>——' . $hongbao->message;
                 }
 
-
                 $message = "";
-                if ($hongbao->message) {
+                if ($hongbao->message) { //3.0不再使用message，而直接使用message_json。这里暂时做2.0兼容。
                     //$hongbao->message当是单一message时候不为null
                     $message = $hongbao->message;
                     $post_content = $post_content . '<br>——' . $message;
@@ -150,10 +149,11 @@ class HongbaoController extends Controller
                 if ($hongbao->message_json) {
                     //$hongbao->message_json当是多选一message时候不为null
                     $message_array = $hongbao->message_json;
-                    $rand_key = array_rand($message_array);
-                    $message = $message_array[$rand_key]; //从多个回复中随机抽出一个
-
-                    $post_content = $post_content . '<br>——' . $message;
+                    if (count($message_array) >= 1) {
+                        $rand_key = array_rand($message_array);
+                        $message = $message_array[$rand_key]; //从多个回复中随机抽出一个
+                        $post_content = $post_content . '<br>——' . $message;
+                    }
                 }
 
 

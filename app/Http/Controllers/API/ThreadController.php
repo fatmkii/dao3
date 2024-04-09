@@ -220,52 +220,52 @@ class ThreadController extends Controller
             ]);
 
             //追加投票贴
-            // if ($request->thread_type == "vote") {
-            //     // $user->coin -= 1000; //发投票主题减1000奥利奥  
-            //     $user->coinChange(
-            //         'normal', //记录类型
-            //         [
-            //             'olo' => -1000,
-            //             'content' => '发布投票主题',
-            //             'thread_id' => $thread->id,
-            //             'thread_title' => $thread->title,
-            //         ]
-            //     ); //通过统一接口、记录操作  
-            //     $vote_question = VoteQuestion::create($request, $thread->id);
-            //     $thread->vote_question_id = $vote_question->id;
-            //     $thread->save();
-            // }
+            if ($request->thread_type == "vote") {
+                // $user->coin -= 1000; //发投票主题减1000奥利奥  
+                $user->coinChange(
+                    'normal', //记录类型
+                    [
+                        'olo' => -1000,
+                        'content' => '发布投票主题',
+                        'thread_id' => $thread->id,
+                        'thread_title' => $thread->title,
+                    ]
+                ); //通过统一接口、记录操作  
+                $vote_question = VoteQuestion::create($request, $thread->id);
+                $thread->vote_question_id = $vote_question->id;
+                $thread->save();
+            }
 
             //追加菠菜贴
-            // if ($request->thread_type == "gamble") {
-            //     // $user->coin -= 500; //发菠菜主题减500奥利奥  
-            //     $user->coinChange(
-            //         'normal', //记录类型
-            //         [
-            //             'olo' => -500,
-            //             'content' => '发布菠菜主题',
-            //             'thread_id' => $thread->id,
-            //             'thread_title' => $thread->title,
-            //         ]
-            //     ); //通过统一接口、记录操作  
-            //     $gamble_question = GambleQuestion::create($request, $thread->id);
-            //     $thread->gamble_question_id = $gamble_question->id; //$gamble_question->create会返回id
-            //     $thread->save();
-            // }
+            if ($request->thread_type == "gamble") {
+                // $user->coin -= 500; //发菠菜主题减500奥利奥  
+                $user->coinChange(
+                    'normal', //记录类型
+                    [
+                        'olo' => -500,
+                        'content' => '发布菠菜主题',
+                        'thread_id' => $thread->id,
+                        'thread_title' => $thread->title,
+                    ]
+                ); //通过统一接口、记录操作  
+                $gamble_question = GambleQuestion::create($request, $thread->id);
+                $thread->gamble_question_id = $gamble_question->id; //$gamble_question->create会返回id
+                $thread->save();
+            }
 
             //追加菠众筹贴
-            // if ($request->thread_type == "crowd") {
-            //     $crowd = Crowd::create($request, $thread->id);
-            //     $thread->crowd_id = $crowd->id; //$crowd->create会返回id
-            //     $thread->save();
-            // }
+            if ($request->thread_type == "crowd") {
+                $crowd = Crowd::create($request, $thread->id);
+                $thread->crowd_id = $crowd->id; //$crowd->create会返回id
+                $thread->save();
+            }
 
             //追加红包贴
-            // if ($request->thread_type == "hongbao") {
-            //     $hongbao = Hongbao::create($request, $thread->id);
-            //     $thread->hongbao_id = $hongbao->id; //$hongbao->create会返回id
-            //     $thread->save();
-            // }
+            if ($request->thread_type == "hongbao") {
+                $hongbao = Hongbao::create($request, $thread->id);
+                $thread->hongbao_id = $hongbao->id; //$hongbao->create会返回id
+                $thread->save();
+            }
 
 
             //统一判断奥利奥是否足够

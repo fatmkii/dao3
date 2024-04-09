@@ -1,36 +1,46 @@
 <template>
-    <n-checkbox :checked="threadType" checked-value="crowd" unchecked-value="normal"
-        @click="emit('threadTypeChange', 'crowd')">开启众筹 </n-checkbox>
+    <n-flex vertical style="max-width: 450px; margin-top: 8px;">
+        <n-input-group>
+            <f-input-group-label style="width: 5.2rem;">众筹项目</f-input-group-label>
+            <f-input v-model:value="title" placeholder="必填" />
+        </n-input-group>
+        <n-input-group>
+            <f-input-group-label style="width: 5.2rem;">目标金额</f-input-group-label>
+            <n-input-number v-model:value="oloTarget" :max="10000000" :min="100000" :step="100000"
+                :parse="inputNumberParse" :format="inputNumberFormat" />
+        </n-input-group>
+        <n-input-group>
+            <f-input-group-label style="width: 5.2rem;">结束日期</f-input-group-label>
+            <n-date-picker v-model:formatted-value="endTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetime"
+                :is-date-disabled="dateDisabled" />
+        </n-input-group>
+    </n-flex>
 </template>
 
 <script setup lang="ts">
-import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
-import { usethemeStore } from '@/stores/theme'
-import { useUserStore } from '@/stores/user'
-import { useRouter } from 'vue-router'
-import { NCheckbox } from 'naive-ui'
-import type { threadType } from './'
-
-//基础数据
-const userStore = useUserStore()
-const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const themeStore = usethemeStore()
-const router = useRouter()
+import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat'
+import { FInput, FInputGroupLabel } from '@custom'
+import dayjs from 'dayjs'
+import { NDatePicker, NFlex, NInputGroup, NInputNumber } from 'naive-ui'
+import { computed, ref } from 'vue'
 
 
-//组件props
-interface Props {
-    threadType: string
+//输入数据
+const title = ref<string>()
+const endTime = ref<string>(dayjs().add(7, 'day').format('YYYY-MM-DD 00:00:00'))
+const oloTarget = ref<number>(1000000)
+
+//控制日历的可选时间（1天到1个月）
+function dateDisabled(timestamp: number) {
+    return dayjs().isAfter(timestamp) || dayjs().add(1, 'month').isBefore(dayjs(timestamp))
 }
-const props = withDefaults(defineProps<Props>(), {
-    threadType: 'normal'
-})
 
-//手动触发checkbox的更新事件
-const emit = defineEmits<{
-    threadTypeChange: [type: threadType]
-}>()
+//汇总输入数据返回给父组件
+const crowdParams = computed(() => ({
+    title: title.value,
+    olo_target: oloTarget.value,
+    end_time: endTime.value,
+}))
+defineExpose({ crowdParams })
 
 </script>
