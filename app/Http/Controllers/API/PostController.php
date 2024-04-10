@@ -130,8 +130,10 @@ class PostController extends Controller
                     'content' => '回帖',
                 ]
             ); //回复+10奥利奥（通过统一接口、记录操作）
-            $user->nickname = $request->nickname; //记录昵称
-            $user->save();
+            if ($request->nickname != '管理员') { //昵称是管理员的话不记录
+                $user->nickname = $request->nickname; //记录昵称
+                $user->save();
+            }
 
             // if ($thread->hongbao_id != null) {
             //     HongbaoController::store($request, $thread, $post); //抢红包流程（是否符合条件的判断也在里面）

@@ -4,8 +4,7 @@
         <n-flex size="small" :wrap="false" :align="'center'">
             <n-input-group style="max-width: 300px;">
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
-                <f-input :maxlength="30" v-model:value="nicknameInput" show-count
-                    :style="{ color: postWithAdmin ? 'FF6060' : undefined }" />
+                <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
             </n-input-group>
             <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
                 <f-button size="medium" style="flex-shrink:0" :secondary="false">功能</f-button>
@@ -91,8 +90,6 @@
 <script setup lang="ts">
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
-import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
@@ -113,8 +110,7 @@ import PingbiciModal from './PingbiciModal.vue'
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const themeStore = usethemeStore()
+
 const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件引用
 
 //各种Modal
@@ -158,6 +154,10 @@ const contentInput = ref<string>("")
 const isDelayInput = ref<boolean>(false)
 const postWithAdmin = ref<boolean>(false)
 
+//nicknameInput的clas式样
+const nicknameInputStyle = computed(() => {
+    return { class: { 'nickname-input': true, 'admin': postWithAdmin.value } }
+})
 
 //功能选项下拉框
 const showPreview = ref<boolean>(false) //实时预览

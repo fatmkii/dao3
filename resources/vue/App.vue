@@ -96,4 +96,9 @@ const commonStore = useCommonStore()
 .unfold-height {
     cursor: pointer;
 }
+
+// PostInput组件中使用的
+.nickname-input.admin {
+    color: v-bind('themeVars.errorColor')
+}
 </style>
