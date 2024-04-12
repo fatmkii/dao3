@@ -40,6 +40,9 @@
             </n-card>
         </template>
         <template v-if="!postsListLoading && showThis">
+            <!-- 投票、菠菜、红包、众筹等组件 -->
+            <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
+                :vote-id="threadData.vote_question_id" />
             <!-- 循环渲染各个回复 -->
             <n-flex vertical :size="2">
                 <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
@@ -80,7 +83,7 @@
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'center'" />
         </template>
         <n-flex vertical :size="2" v-else>
-            <n-card size="small" :bordered="true" class="post-card-skeleton" v-for="  n   in   200  " />
+            <n-card size="small" :bordered="true" class="post-card-skeleton" v-for="  n in 200  " />
         </n-flex>
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
@@ -176,22 +179,26 @@ import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vi
 import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, NSkeleton, useThemeVars, type DropdownOption } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
 
+//异步加载组件
+const VoteComponent = defineAsyncComponent(() =>
+    import('./VoteComponent.vue')
+)
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const route = useRoute()
 const router = useRouter()
-const themeVars = useThemeVars()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 const PostItemComs = ref<InstanceType<typeof PostItem>[]>([])
+const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()

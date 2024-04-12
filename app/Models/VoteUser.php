@@ -15,9 +15,11 @@ class VoteUser extends ModelWithSuffix
     public $hidden = [
         'user_id',
         'vote_question_id',
+        'created_at',
+        'updated_at',
     ];
 
-    protected $cast = [
+    protected $casts = [
         'options_id' => 'array'
     ];
 

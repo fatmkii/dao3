@@ -13,6 +13,8 @@ class VoteOption extends Model
     protected $guarded = [];
     public $hidden = [
         'vote_question_id',
+        'created_at',
+        'updated_at',
     ];
 
     public function VoteQuestion()

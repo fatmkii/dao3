@@ -13,6 +13,7 @@ use App\Http\Controllers\API\HongbaoPostController;
 use App\Http\Controllers\API\BattleController;
 use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\EmojiConstestController;
+use App\Http\Controllers\api\VoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,6 +104,12 @@ Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
     Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
     Route::post('/create_roll', [PostController::class, 'create_roll'])->middleware('CheckBinggan:create'); //新roll点
     Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
+});
+
+//Vote系列
+Route::prefix('votes')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{vote_id}', [VoteController::class, 'show'])->middleware('CheckBinggan:show'); //显示投票结果
+    Route::post('', [VoteController::class, 'store'])->middleware('CheckBinggan:create');  //用户参与投票
 });
 
 //IncomeStatement系列

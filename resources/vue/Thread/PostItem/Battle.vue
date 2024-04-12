@@ -1,38 +1,35 @@
 <template>
-    <n-flex size="small" vertical>
-        <n-card size="small" :bordered="true" embedded class="battle-card">
-            <n-spin :show="battleDataLoading || battleDataFetching">
-                <n-flex vertical size="small" v-if="battleData !== undefined">
-                    <!-- 大乱斗的语句 -->
-                    <n-flex v-for="battleMessage in battleData.battle_messages" :align="'center'" :wrap="false"
-                        :style="messageStyle[battleMessage.message_type]">
-                        <img class="emoji-img" :src="battleMessage.chara_url">
-                        <n-text v-if="battleMessage.message_type !== 0">
-                            {{ battleMessage.message }}
-                        </n-text>
-                        <n-tag v-else round> {{ battleMessage.message }}</n-tag>
-                    </n-flex>
-                    <!-- 提示信息 -->
-                    <n-flex :style="messageStyle[0]">
-                        <n-tag v-if="battleData.battle.progress === 0" round>正在等待挑战者</n-tag>
-                        <n-tag v-if="battleData.battle.progress === 2 && isRelative" round>{{ battleResultMessage
-                            }}</n-tag>
-                    </n-flex>
-                    <!-- 下方挑战按钮 -->
-                    <n-flex v-if="battleData.battle.progress === 0 && battleData.battle.is_your_battle === false"
-                        size="small" :wrap="false" :align="'center'" :justify="'center'" style="margin-top: 6px;">
-                        <n-input-group style="max-width: 15.2rem;">
-                            <f-input-group-label style="width: 3.2rem;">角色</f-input-group-label>
-                            <n-select v-model:value="charaInput" :options="charaOptions" />
-                        </n-input-group>
-                        <f-button type="primary" @click="battleRollHandle" :disabled="battleRollLoading"
-                            :loading="battleRollLoading">挑战</f-button>
-                    </n-flex>
+    <n-card size="small" :bordered="true" embedded class="battle-card">
+        <n-spin :show="battleDataLoading || battleDataFetching">
+            <n-flex vertical size="small" v-if="battleData !== undefined">
+                <!-- 大乱斗的语句 -->
+                <n-flex v-for="battleMessage in battleData.battle_messages" :align="'center'" :wrap="false"
+                    :style="messageStyle[battleMessage.message_type]">
+                    <img class="emoji-img" :src="battleMessage.chara_url">
+                    <n-text v-if="battleMessage.message_type !== 0">
+                        {{ battleMessage.message }}
+                    </n-text>
+                    <n-tag v-else round> {{ battleMessage.message }}</n-tag>
                 </n-flex>
-            </n-spin>
-        </n-card>
-    </n-flex>
-    <!-- TODO做个骨架屏? -->
+                <!-- 提示信息 -->
+                <n-flex :style="messageStyle[0]">
+                    <n-tag v-if="battleData.battle.progress === 0" round>正在等待挑战者</n-tag>
+                    <n-tag v-if="battleData.battle.progress === 2 && isRelative" round>{{ battleResultMessage
+                        }}</n-tag>
+                </n-flex>
+                <!-- 下方挑战按钮 -->
+                <n-flex v-if="battleData.battle.progress === 0 && battleData.battle.is_your_battle === false"
+                    size="small" :wrap="false" :align="'center'" :justify="'center'" style="margin-top: 6px;">
+                    <n-input-group style="max-width: 15.2rem;">
+                        <f-input-group-label style="width: 3.2rem;">角色</f-input-group-label>
+                        <n-select v-model:value="charaInput" :options="charaOptions" />
+                    </n-input-group>
+                    <f-button type="primary" @click="battleRollHandle" :disabled="battleRollLoading"
+                        :loading="battleRollLoading">挑战</f-button>
+                </n-flex>
+            </n-flex>
+        </n-spin>
+    </n-card>
 </template>
 
 <script setup lang="ts">

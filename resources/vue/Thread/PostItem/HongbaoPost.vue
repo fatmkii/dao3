@@ -42,20 +42,16 @@ import { hongbaoPostStorePoster, type hongbaoPostStoreParams } from '@/api/metho
 import { hongbaoPostData } from '@/api/methods/posts'
 import getNewPostKey from '@/js/func/getNewPostKey'
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { FButton, FInput } from '@/vue/Custom'
 import { useRequest } from 'alova'
-import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
+import { NCard, NFlex, NText } from 'naive-ui'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const router = useRouter()
-const themeVars = useThemeVars()
+
 
 //组件props
 interface Props {

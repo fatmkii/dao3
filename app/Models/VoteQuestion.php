@@ -32,8 +32,10 @@ class VoteQuestion extends Model
 
     public function VoteUserChoices($user_id)
     {
-        return VoteUser::suffix(intval($this->id / 10000))->where('vote_question_id', $this->id)
-            ->where('user_id', $user_id)->first();
+        return VoteUser::suffix(intval($this->id / 10000))
+            ->where('vote_question_id', $this->id)
+            ->where('user_id', $user_id)
+            ->first();
     }
 
     public function Thread()
@@ -63,7 +65,7 @@ class VoteQuestion extends Model
         $vote_question->title = $request->vote_params['title'];
         $vote_question->end_date = Carbon::parse($request->vote_params['end_time']);
         $vote_question->multiple = $request->vote_params['multiple'];
-        $vote_question->max_choices = $request->vote_params['max_choices'];
+        $vote_question->max_choices = $request->vote_params['multiple'] ? $request->vote_params['max_choices'] : 1;
         $vote_question->save();
 
         foreach ($request->vote_params['options'] as $request_option) {

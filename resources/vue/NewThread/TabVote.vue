@@ -81,7 +81,7 @@ function dateDisabled(timestamp: number) {
 //汇总输入数据返回给父组件
 const voteParams = computed(() => ({
     multiple: multiple.value,
-    max_choices: maxChoices.value,
+    max_choices: multiple ? maxChoices.value : 1,
     title: title.value,
     options: options.value,
     end_time: endTime.value,
