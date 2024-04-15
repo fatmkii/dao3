@@ -40,12 +40,22 @@
             </n-card>
         </template>
         <template v-if="!postsListLoading && showThis">
-            <!-- 投票、菠菜、红包、众筹等组件 -->
-            <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
-                :vote-id="threadData.vote_question_id" />
+
             <!-- 循环渲染各个回复 -->
             <n-flex vertical :size="2">
-                <PostItem v-for="postData in postsData" :key="postData.id" :post-data="postData"
+                <!-- 这是第0楼 -->
+                <PostItem :post-data="postsData[0]" :your-posts-list="yourPostsList"
+                    :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
+                    :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
+                    :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
+                    :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    @admin-handle="AdminActionModalCom?.show" />
+                <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
+                <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
+                    :vote-id="threadData.vote_question_id" />
+                <!-- 这是第1楼及之后 -->
+                <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
                     :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
@@ -197,7 +207,7 @@ const commonStore = useCommonStore()
 const route = useRoute()
 const router = useRouter()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
-const PostItemComs = ref<InstanceType<typeof PostItem>[]>([])
+const PostItemComs = ref<InstanceType<typeof PostItem>[]>([]) //回复内容的组件，但注意这里ref不包括第0楼
 const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
