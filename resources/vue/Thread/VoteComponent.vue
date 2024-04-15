@@ -15,7 +15,7 @@
                         <div v-for="(option, index) in voteOptionsData" :key="option.id">
                             <n-checkbox :value="option.id" :label="`${index + 1}. ${option.option_text}`" />
                             <n-progress status="success" type="line" :height="commonStore.isMobile ? 20 : 24"
-                                :percentage="Math.floor((option.vote_total / voteQuetionData.vote_total) * 100)"
+                                :percentage="Math.floor((option.vote_total / voteQuestionData.vote_total) * 100)"
                                 :indicator-placement="'inside'">
                                 {{ option.vote_total }}票
                             </n-progress>
@@ -30,7 +30,7 @@
                 <template v-else>
                     <div>
                         <n-text :depth="3">最多选择：</n-text>
-                        <span>{{ voteQuetionData.max_choices }}个选项</span>
+                        <span>{{ voteQuestionData.max_choices }}个选项</span>
                     </div>
                     <div>
                         <n-text :depth="3">结束时间：</n-text>
@@ -74,9 +74,9 @@ const commonStore = useCommonStore()
 //用户选择
 const voteOptionsSelected = ref<number[]>([])
 watch(voteOptionsSelected, (newValue, oldValue) => {
-    if (newValue.length > voteQuetionData.value.max_choices) {
+    if (newValue.length > voteQuestionData.value.max_choices) {
         // 如果超过了最大选择数，则禁止选择
-        window.$message.error(`最多只能选择${voteQuetionData.value.max_choices}个选项喔`)
+        window.$message.error(`最多只能选择${voteQuestionData.value.max_choices}个选项喔`)
         voteOptionsSelected.value = oldValue
     }
 })
@@ -84,7 +84,7 @@ watch(voteOptionsSelected, (newValue, oldValue) => {
 
 //过期时间提示
 const outdateTTL = computed<string>(() => {
-    const outdate = dayjs(voteQuetionData.value.end_date)
+    const outdate = dayjs(voteQuestionData.value.end_date)
     const now = dayjs()
     const hoursDiff = outdate.diff(now, 'hour')
     if (hoursDiff >= 1) {
@@ -96,10 +96,10 @@ const outdateTTL = computed<string>(() => {
 })
 //格式化日期显示
 const outdate = computed<string>(() => {
-    const outdate = dayjs(voteQuetionData.value.end_date)
+    const outdate = dayjs(voteQuestionData.value.end_date)
     return outdate.format('YY年M月D日 HH:mm')
 })
-const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs(voteQuetionData.value.end_date)))
+const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs(voteQuestionData.value.end_date)))
 
 
 //获取投票数据
@@ -123,7 +123,7 @@ if (userStore.binggan!) { getVoteData() }
 defineExpose({ getVoteData })
 
 //拆分数据方便使用
-const voteQuetionData = computed(() => voteData.value.vote_question)
+const voteQuestionData = computed(() => voteData.value.vote_question)
 const voteOptionsData = computed(() => voteData.value.vote_options)
 const voteUserChoicesData = computed(() => voteData.value.user_choices)
 const userHasVoted = computed(() => voteUserChoicesData.value !== null)
