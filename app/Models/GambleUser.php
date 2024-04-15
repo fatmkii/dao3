@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\myModel;
+use App\Models\ModelWithSuffix;
 use App\Models\GambleQuestion;
 use App\Models\User;
 
-class GambleUser extends myModel
+class GambleUser extends ModelWithSuffix
 {
     use HasFactory;
 

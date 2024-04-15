@@ -54,6 +54,8 @@
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
+                <GambleComponent ref="GambleComponentCom" v-if="threadData.gamble_question_id !== null"
+                    :gamble-id="threadData.gamble_question_id" :forum-id="forumData?.id"/>
                 <!-- 这是第1楼及之后 -->
                 <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
                     :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
@@ -200,6 +202,9 @@ import ChangeColorModal from './ChangeColorModal.vue'
 const VoteComponent = defineAsyncComponent(() =>
     import('./VoteComponent.vue')
 )
+const GambleComponent = defineAsyncComponent(() =>
+    import('./GambleComponent.vue')
+)
 
 //基础数据
 const userStore = useUserStore()
@@ -209,6 +214,7 @@ const router = useRouter()
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 const PostItemComs = ref<InstanceType<typeof PostItem>[]>([]) //回复内容的组件，但注意这里ref不包括第0楼
 const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//输入框组件的ref
+const GambleComponentCom = ref<InstanceType<typeof GambleComponent> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()

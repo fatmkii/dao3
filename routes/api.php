@@ -13,6 +13,7 @@ use App\Http\Controllers\API\HongbaoPostController;
 use App\Http\Controllers\API\BattleController;
 use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\EmojiConstestController;
+use App\Http\Controllers\API\GambleController;
 use App\Http\Controllers\api\VoteController;
 
 /*
@@ -110,6 +111,14 @@ Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
 Route::prefix('votes')->middleware('auth:sanctum')->group(function () {
     Route::get('/{vote_id}', [VoteController::class, 'show'])->middleware('CheckBinggan:show'); //显示投票结果
     Route::post('', [VoteController::class, 'store'])->middleware('CheckBinggan:create');  //用户参与投票
+});
+
+//Gamble系列
+Route::prefix('gambles')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{gamble_id}', [GambleController::class, 'show']); //显示菠菜结果
+    Route::post('', [GambleController::class, 'store'])->middleware('CheckBinggan:create');  //用户投注
+    Route::post('/close', [GambleController::class, 'close']);  //开奖菠菜（只能由管理员操作）
+    Route::post('/repeal', [GambleController::class, 'repeal']);  //中止菠菜（只能由管理员操作）
 });
 
 //IncomeStatement系列

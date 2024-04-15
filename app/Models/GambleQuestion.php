@@ -64,15 +64,15 @@ class GambleQuestion extends Model
             'gamble_params.options' => 'array|required'
         ]);
 
-        // $request_options = json_decode($request->gamble_param['gamble_options'], true);  //前端提交的已经是array了
+        // $request_options = json_decode($request->gamble_params['gamble_options'], true);  //前端提交的已经是array了
 
         $gamble_question = new GambleQuestion();
         $gamble_question->thread_id = $thread_id;
-        $gamble_question->title = $request->gamble_param['title'];
-        $gamble_question->end_date = Carbon::parse($request->gamble_param['end_time']);
+        $gamble_question->title = $request->gamble_params['title'];
+        $gamble_question->end_date = Carbon::parse($request->gamble_params['end_time']);
         $gamble_question->save();
 
-        foreach ($request->gamble_param['options'] as $request_option) {
+        foreach ($request->gamble_params['options'] as $request_option) {
             $options = new GambleOption;
             $options->gamble_question_id = $gamble_question->id;
             $options->option_text = $request_option;
