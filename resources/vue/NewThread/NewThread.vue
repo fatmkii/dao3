@@ -57,7 +57,6 @@ import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import showDialog from '@/js/func/showDialog'
 import { TabCommon, TabCrowd, TabGamble, TabHongbao, TabVote, type threadType } from './'
-import { useRequest } from 'alova'
 import { newThreadPoster, newThreadParams } from '@/api/methods/threads'
 import { NEllipsis, NFlex, NTag, NTabs, NTabPane, NCheckbox } from 'naive-ui'
 import { useRouter } from 'vue-router'
@@ -93,11 +92,7 @@ const TabGambleCom = ref<InstanceType<typeof TabGamble> | null>(null)
 const TabVoteCom = ref<InstanceType<typeof TabVote> | null>(null)
 
 //发送新主题
-const { loading: newThreadHandling, data: newThreadData, onSuccess: newThreadOnSuccess, send: newThreadPost } = useRequest
-    (
-        newThreadPoster, { immediate: false, }
-    );
-
+let newThreadHandling = false
 function newThreadHandle(content: contentCommit, resolve: (value: any) => void) {
     // 请求参数
     let params: newThreadParams
@@ -174,15 +169,15 @@ function newThreadHandle(content: contentCommit, resolve: (value: any) => void) 
             title: crowdParams.title! //我上面明明已经判断过了，这里编译器还是会以为是title: string | undefined;
         }
     }
-    
-    newThreadPost(params)
-    newThreadOnSuccess(() => {
+    newThreadHandling = true
+    newThreadPoster(params).then((event) => { //因为这里要resolve，所以用.then()处理
         resolve('success')
+        newThreadHandling = false
         showDialog(
             {
                 title: '已发送主题，是否跳转？',
                 mode: 'success',
-                onPositiveClick: () => router.push({ name: 'thread', params: { threadId: newThreadData.value.thread_id } })
+                onPositiveClick: () => router.push({ name: 'thread', params: { threadId: event.thread_id } })
             })
     })
 }
