@@ -6,10 +6,10 @@
         <div id="topbar-func"></div>
         <template v-if="!userStore.userDataLoading">
             <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="margin-left: auto;">
+                <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;" class="img-icon">
             </n-dropdown>
             <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" @mouseenter="refreshUserData">
+                <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData" class="img-icon">
             </n-dropdown>
             <f-button type="primary" v-if="!userStore.userLoginStatus" @click="LoginModalCom?.show">
                 导入饼干
@@ -91,7 +91,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://oss.cpttmm.com/xhg_other/icon_binggan.png'
+                        src: 'https://ll4484.bvimg.com/21501/6fe7ac5fa3fe2159.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '我的饼干' })]),
@@ -109,7 +109,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://oss.cpttmm.com/xhg_other/icon_olo.png'
+                        src: 'https://ll4484.bvimg.com/21501/f411b2d1d632cf32.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '奥利奥' })]),
@@ -224,6 +224,11 @@ onMounted(() => {
     img {
         height: 100%;
         cursor: pointer;
+    }
+    
+    .img-icon{
+        border-radius: 40%;
+        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3); /* 水平偏移 垂直偏移 模糊半径 阴影颜色 */
     }
 
     .forum-tag {

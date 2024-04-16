@@ -3,7 +3,7 @@
         <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="commonStore.unauthModalShow = false"
             size="small">
             <n-flex vertical>
-                <img src="https://oss.cpttmm.com/xhg_other/notice_4.png" alt="需要饼干才能进入喔">
+                <img src="https://ll4484.bvimg.com/21501/35a95bd9d55dec07.png" alt="需要饼干才能进入喔">
                 <div style="margin-left: auto;">{{ hintMessage }}</div>
             </n-flex>
             <template #action>

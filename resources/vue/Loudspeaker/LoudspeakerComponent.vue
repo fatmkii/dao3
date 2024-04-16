@@ -1,7 +1,7 @@
 <template>
     <n-flex :wrap="false" style="margin-top: 8px;">
         <!-- 题图 -->
-        <img style="height: 2.5rem;cursor: pointer;" src="https://oss.cpttmm.com/xhg_other/miku_loudspeaker.png"
+        <img style="height: 2.5rem;cursor: pointer;" src="https://ll4484.bvimg.com/21501/47292a78bd68f016.png"
             @click="LoudspeakerModalCom?.show()" />
         <div class="loudspeaker-container loudspeaker_container">
             <!-- 提示 -->
@@ -26,7 +26,7 @@
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ loudspeaker.content }}
                 </component>
-            </n-flex>
+            </n-flex>   
         </div>
         <!-- 显示全部大喇叭的modal -->
         <LoudspeakerModal :loudspeaker-data="loudspeakerData" ref="LoudspeakerModalCom" />

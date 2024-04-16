@@ -3,7 +3,7 @@
         <!-- 题图和发布按钮 -->
         <n-flex size="small" :align="'center'">
             <img :style="{ height: commonStore.isMobile ? '48px' : '64px' }"
-                src="https://oss.cpttmm.com/xhg_other/miku_loudspeaker.png" />
+                src="https://ll4484.bvimg.com/21501/47292a78bd68f016.png" />
             <n-gradient-text :style="{ fontSize: commonStore.isMobile ? '16px' : '20px' }"
                 :gradient="{ from: '#7fcab9', to: '#99b1c5' }">
                 爱乃是盲目～🎵

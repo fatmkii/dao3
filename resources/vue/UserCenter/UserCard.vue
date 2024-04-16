@@ -2,7 +2,7 @@
     <n-card hoverable size="small">
         <n-flex justify="space-around" :vertical="commonStore.isMobile" :size="commonStore.isMobile ? 'small' : 'medium'">
             <n-flex :vertical="!commonStore.isMobile" :align="'start'">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan.png" style="max-height: 40px;">
+                <img src="https://ll4484.bvimg.com/21501/6fe7ac5fa3fe2159.png" style="max-height: 40px;">
                 <div>
                     <div>
                         <n-text :depth="3">我的饼干</n-text>
@@ -20,7 +20,7 @@
                 </div>
             </n-flex>
             <n-flex :vertical="!commonStore.isMobile" :align="'start'">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_binggan_lv.png" style="max-height: 40px;">
+                <img src="https://ll4484.bvimg.com/21501/15c509267f071c08.png" style="max-height: 40px;">
                 <div>
                     <div>
                         <n-text :depth="3">饼干等级</n-text>
@@ -32,7 +32,7 @@
                 </div>
             </n-flex>
             <n-flex :vertical="!commonStore.isMobile" :align="'start'">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_olo.png" style="max-height: 40px;">
+                <img src="https://ll4484.bvimg.com/21501/f411b2d1d632cf32.png" style="max-height: 40px;">
                 <div>
                     <div>
                         <n-text :depth="3">奥利奥</n-text>
@@ -46,7 +46,7 @@
                 </div>
             </n-flex>
             <n-flex :vertical="!commonStore.isMobile" :align="'start'">
-                <img src="https://oss.cpttmm.com/xhg_other/icon_bank_olo.png" style="max-height: 40px;">
+                <img src="https://ll4484.bvimg.com/21501/b4ad6a18cc56d41a.png" style="max-height: 40px;">
                 <div>
                     <div>
                         <n-text :depth="3">粮仓奥利奥</n-text>
