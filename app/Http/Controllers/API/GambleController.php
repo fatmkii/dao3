@@ -214,7 +214,7 @@ class GambleController extends Controller
         $gamble_options  = $gamble_question->GambleOptions;
 
 
-        $user = User::where('binggan', $request->query('binggan'))->first();
+        $user = $request->user();
 
         if ($user) {
             $user_choices = $gamble_question->GambleUserChoices($user->id);

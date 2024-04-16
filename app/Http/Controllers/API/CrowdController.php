@@ -29,7 +29,7 @@ class CrowdController extends Controller
             ]);
         }
 
-        $user = User::where('binggan', $request->query('binggan'))->first();
+        $user = $request->user();
 
         if ($user) {
             $crowd_record = $crowd->CrowdUserRecord($user->id);

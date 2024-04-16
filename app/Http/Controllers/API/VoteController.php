@@ -148,7 +148,7 @@ class VoteController extends Controller
         $vote_options  = $vote_question->VoteOption;
 
 
-        $user = User::where('binggan', $request->query('binggan'))->first();
+        $user = $request->user();
 
         if ($user) {
             $user_choices = $vote_question->VoteUserChoices($user->id);
