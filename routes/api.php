@@ -12,6 +12,7 @@ use App\Http\Controllers\API\HongbaoController;
 use App\Http\Controllers\API\HongbaoPostController;
 use App\Http\Controllers\API\BattleController;
 use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\API\CrowdController;
 use App\Http\Controllers\API\EmojiConstestController;
 use App\Http\Controllers\API\GambleController;
 use App\Http\Controllers\api\VoteController;
@@ -121,6 +122,14 @@ Route::prefix('gambles')->middleware('auth:sanctum')->group(function () {
     Route::post('/repeal', [GambleController::class, 'repeal']);  //中止菠菜（只能由管理员操作）
 });
 
+//Crowd系列
+Route::prefix('crowds')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{crowd_id}', [CrowdController::class, 'show']); //显示众筹结果
+    Route::post('', [CrowdController::class, 'store'])->middleware('CheckBinggan:create');  //用户参加众筹
+    Route::post('/repeal', [CrowdController::class, 'repeal']);  //中止众筹（只能由管理员操作）
+});
+
+
 //IncomeStatement系列
 Route::prefix('income')->middleware('auth:sanctum')->group(function () {
     Route::get('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
@@ -165,9 +174,6 @@ Route::prefix('emoji_contest')->middleware('auth:sanctum')->group(function () {
 //各种杂项
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']);
 Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
-// Route::get('/emoji', [CommonController::class, 'emoji_index']);
-// Route::get('/subtitles', [CommonController::class, 'subtitles_index']);
-// Route::get('/random_heads', [CommonController::class, 'random_heads_index']);
 Route::get('/captcha', [CommonController::class, 'get_captcha']);
 Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);
 Route::post('/img_upload', [CommonController::class, 'img_upload'])->middleware(['auth:sanctum', 'CheckBinggan:create']); //上传图片
