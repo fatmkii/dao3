@@ -44,7 +44,7 @@
                 <!-- 菠菜按钮 -->
                 <n-flex size="small" :align="'center'">
                     <n-input-number :max="1000000" :min="1" :step="1000" placeholder="投注额"
-                        :disabled="hasOutdate || gambleQuestionData.is_closed !== 0" v-model:value="gambleBettinOlo" />
+                        :disabled="hasOutdate || gambleQuestionData.is_closed !== 0" v-model:value="gambleBettingOlo" />
                     <f-button type="primary" @click="userGambleHandle" :loading="userGambleHandling"
                         :disabled="userGambleHandling || hasOutdate || gambleQuestionData.is_closed !== 0">投注</f-button>
                     <n-dropdown v-if="userStore.checkAdminForums(forumId) && gambleQuestionData.is_closed === 0"
@@ -120,7 +120,7 @@ const themeVars = useThemeVars()
 
 //用户输入
 const gambleOptionSelected = ref<number>()
-const gambleBettinOlo = ref<number>(1000)
+const gambleBettingOlo = ref<number>(1000)
 
 
 //过期时间提示
@@ -220,7 +220,7 @@ userGambleOnSuccess(() => {
     getGambleData()
 })
 function userGambleHandle() {
-    if (!gambleOptionSelected.value || !gambleBettinOlo.value) {
+    if (!gambleOptionSelected.value || !gambleBettingOlo.value) {
         window.$message.error('请选择选项和输入投注额喔')
         return
     }
@@ -228,12 +228,12 @@ function userGambleHandle() {
         binggan: userStore.binggan!,
         gamble_question_id: props.gambleId,
         bet_option: gambleOptionSelected.value,
-        betting_olo: gambleBettinOlo.value,
+        betting_olo: gambleBettingOlo.value,
     }
     const dialogArgs = {
         title: '参加菠菜',
         closable: false,
-        content: `确定要参加菠菜吗？将消耗${gambleBettinOlo.value}个olo`,
+        content: `确定要参加菠菜吗？将消耗${gambleBettingOlo.value}个olo`,
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: () => {
