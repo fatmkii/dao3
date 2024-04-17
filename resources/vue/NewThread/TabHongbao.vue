@@ -51,8 +51,8 @@
         </n-flex>
         <!-- 选项 -->
         <n-flex size="small" :align="'center'" :justify="'end'">
-            <n-checkbox v-model:checked="hideOlo" label="附带发出大喇叭" />
-            <n-checkbox v-model:checked="withLoudspeaker" label="隐藏olo总额" />
+            <n-checkbox v-model:checked="withLoudspeaker" label="附带发出大喇叭" />
+            <n-checkbox v-model:checked="hideOlo" label="隐藏olo总额" />
         </n-flex>
     </n-flex>
 </template>
