@@ -113,14 +113,10 @@ voteDataOnSuccess((event) => {
         voteOptionsSelected.value = event.data.user_choices.options_id
     }
 })
-//刷新或刷新大乱斗数据
 function getVoteData() {
     voteDataGetterSend({ binggan: userStore.binggan! })
 }
 if (userStore.binggan!) { getVoteData() }
-
-//暴露刷新大乱斗数据的方法，当ThreadPage组件刷新回复列表的时候调用
-defineExpose({ getVoteData })
 
 //拆分数据方便使用
 const voteQuestionData = computed(() => voteData.value.vote_question)
@@ -135,7 +131,6 @@ const { loading: userVoteLoading,
 userVoteOnSuccess(() => {
     getVoteData()
 })
-//刷新或刷新大乱斗数据
 function userVoteHandle() {
     const params: userVoteParams = {
         binggan: userStore.binggan!,
@@ -144,8 +139,6 @@ function userVoteHandle() {
     }
     userVotePosterSend(params)
 }
-if (userStore.binggan!) { getVoteData() }
-
 
 </script>
 
