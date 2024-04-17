@@ -11,28 +11,30 @@
             <n-button text v-if="postFoldedMessage !== undefined" @click="postIsFolded = !postIsFolded">
                 {{ postFoldedMessage }}
             </n-button>
-            <!-- 右边是删除按钮和下拉菜单 -->
-            <div style="margin-left: auto;"></div>
-            <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 0"
-                style="cursor: pointer;" @click="deletePostHandle">
-                <Delete />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 1"
-                style="cursor: pointer;" @click="recoverPostHandle">
-                <Recover />
-            </n-icon>
-            <!-- 下拉菜单，这里做了延后加载 -->
-            <n-icon v-if="!renderDropdown" :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;"
-                @click="renderDropdown = true">
-                <Dropdown />
-            </n-icon>
-            <n-dropdown v-if="renderDropdown" trigger="click" :options="funcOptions" @select="dropdownSelect"
-                :show="renderDropdown" :size="commonStore.isMobile ? 'medium' : 'large'"
-                @clickoutside="renderDropdown = false">
-                <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
+            <!-- 右边是删除按钮和下拉菜单（预览模式时无需加载） -->
+            <template v-if="!previewMode">
+                <div style="margin-left: auto;"></div>
+                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 0"
+                    style="cursor: pointer;" @click="deletePostHandle">
+                    <Delete />
+                </n-icon>
+                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 1"
+                    style="cursor: pointer;" @click="recoverPostHandle">
+                    <Recover />
+                </n-icon>
+                <!-- 下拉菜单，这里做了延后加载 -->
+                <n-icon v-if="!renderDropdown" :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;"
+                    @click="renderDropdown = true">
                     <Dropdown />
                 </n-icon>
-            </n-dropdown>
+                <n-dropdown v-if="renderDropdown" trigger="click" :options="funcOptions" @select="dropdownSelect"
+                    :show="renderDropdown" :size="commonStore.isMobile ? 'medium' : 'large'"
+                    @clickoutside="renderDropdown = false">
+                    <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
+                        <Dropdown />
+                    </n-icon>
+                </n-dropdown>
+            </template>
         </n-flex>
 
         <!-- 隐藏时候需要被折叠的内容 -->
@@ -109,8 +111,8 @@ const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
 interface Props {
     forumId: number,
     postData: postData,
-    yourPostsList: number[] | [],
-    randomHeadGroupIndex: number,
+    yourPostsList?: number[] | [],
+    randomHeadGroupIndex?: number,
     antiJingfen?: boolean,
     noImageMode?: boolean,
     noEmojiMode?: boolean,
@@ -118,8 +120,10 @@ interface Props {
     noHeadMode?: boolean,
     noVideoMode?: boolean,
     useUrlMode?: boolean,
+    previewMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
+    yourPostsList: () => [],
     randomHeadGroupIndex: 1,
     antiJingfen: false,
     noImageMode: false,
@@ -128,6 +132,7 @@ const props = withDefaults(defineProps<Props>(), {
     noHeadMode: false,
     noVideoMode: false,
     useUrlMode: false,
+    previewMode: false,
 })
 
 //回复内容的style，用来折叠高度等

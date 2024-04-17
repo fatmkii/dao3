@@ -1,5 +1,7 @@
 <template>
     <n-flex vertical>
+        <!-- 实时预览用组件 -->
+        <PostItem v-if="showPreview" :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
         <!-- 昵称输入及功能 -->
         <n-flex size="small" :wrap="false" :align="'center'">
             <n-input-group style="max-width: 300px;">
@@ -98,7 +100,7 @@ import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as E
 import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
-import { computed, h, ref, watch } from 'vue'
+import { computed, h, ref, watch, defineAsyncComponent } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
 import DrawerModal from './DrawerModal.vue'
@@ -106,6 +108,11 @@ import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import ImageUpload from './ImageUpload.vue'
 import PingbiciModal from './PingbiciModal.vue'
+
+//异步加载组件
+const PostItem = defineAsyncComponent(() =>
+    import('@/vue/Thread/PostItem/PostItem.vue')
+)
 
 //基础数据
 const userStore = useUserStore()
@@ -154,7 +161,24 @@ const contentInput = ref<string>("")
 const isDelayInput = ref<boolean>(false)
 const postWithAdmin = ref<boolean>(false)
 
-//nicknameInput的clas式样
+//实时预览用的虚拟postData
+const postDataForPreview = computed(() => ({
+    id: 0,
+    created_at: '预览模式',
+    is_deleted: 0,//0=正常；1=被用户删除；2=被管理员删除
+    thread_id: 0,
+    battle_id: null,
+    hongbao_id: null,
+    floor: 0,
+    random_head: 1,
+    created_by_admin: 0, //0=一般用户 1=管理员发布，2=系统发布
+    content: contentInput.value,
+    nickname: nicknameInput.value,
+    is_your_post: true,
+    hongbao_data: null
+}))
+
+//nicknameInput的class式样
 const nicknameInputStyle = computed(() => {
     return { class: { 'nickname-input': true, 'admin': postWithAdmin.value } }
 })
