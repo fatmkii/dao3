@@ -8,6 +8,11 @@
                     class="thread-title">
                     <!-- 副标题 -->
                     {{ threadData.sub_title }}
+                    <!-- 红包、菠菜、众筹、投票图标 -->
+                    {{ threadData.vote_question_id ? '🗳️' : '' }}
+                    {{ threadData.gamble_question_id ? '🎲' : '' }}
+                    {{ threadData.crowd_id ? '💰' : '' }}
+                    {{ threadData.hongbao_id ? '🧧' : '' }}
                     <!-- 标题内容 -->
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
                         style="font-size:0.875rem;"
@@ -37,10 +42,6 @@
                     <span><n-text depth="3">发帖人:</n-text> {{ threadData.nickname }} </span>
                     <span style="margin-left: auto;"></span>
                     {{ threadData.posts_num > 1200 ? '🔥' : '' }}
-                    {{ threadData.vote_question_id ? '🗳️' : '' }}
-                    {{ threadData.gamble_question_id ? '🎲' : '' }}
-                    {{ threadData.crowd_id ? '💰' : '' }}
-                    {{ threadData.hongbao_id ? '🧧' : '' }}
                     <span v-if="threadData.locked_by_coin > 0">🔒{{ threadData.locked_by_coin }}</span>
                     <span><n-text depth="3">Re:</n-text> {{ threadData.posts_num }}</span>
                 </n-flex>
