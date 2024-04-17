@@ -23,6 +23,8 @@ class Hongbao extends Model
         'created_binggan',
         'created_at',
         'updated_at',
+        'message_json',
+        'message',
     ];
 
     protected $appends = [

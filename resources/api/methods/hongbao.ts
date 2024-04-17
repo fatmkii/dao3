@@ -1,6 +1,8 @@
 import { commonAlova } from '@/api/index';
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore()
 
-//发送新红包
+//发送新红包（回复红包）
 interface hongbaoPostCreateParams {
     binggan: string,
     forum_id: number,
@@ -33,7 +35,7 @@ const hongbaoPostCreatePoster = (params: hongbaoPostCreateParams) => {
     return methodInstance
 }
 
-//抢红包
+//抢红包（回复红包）
 interface hongbaoPostStoreParams {
     binggan: string,
     forum_id: number,
@@ -64,4 +66,71 @@ const hongbaoPostStorePoster = (params: hongbaoPostStoreParams) => {
     return methodInstance
 }
 
-export { hongbaoPostCreateParams, hongbaoPostCreatePoster, hongbaoPostStoreParams, hongbaoPostStorePoster }
+//获得红包数据（主题红包）
+interface hongbaoData {
+    id: number,
+    num_total: number,
+    num_remains: number,
+    type: 1 | 2,
+    olo_hide: number,
+    olo_total?: number,
+    key_word: string,
+    hongbao_user: {
+        id: number,
+        olo: number,
+        created_at: string,
+    }
+}
+const hongbaoDataGetter = (hongbao_id: number) => {
+    const methodInstance = commonAlova.Get<hongbaoData>(
+        'api/hongbao/' + hongbao_id,
+        {
+            name: 'hongbaoDataGetter-' + hongbao_id,
+            params: {
+                binggan: userStore.binggan
+            },
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+interface hongbaoStoreParams {
+    binggan: string,
+    forum_id: number,
+    thread_id: number,
+    content: string,
+    nickname: string,
+    post_with_admin: boolean,
+    new_post_key: string,
+    timestamp: number,
+    hongbao_id: number,
+    hongbao_key_word: string
+}
+const hongbaoStorePoster = (params: hongbaoStoreParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/hongbao/store',
+        params,
+        {
+            //第三个参数是config
+            name: 'hongbaoStorePoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+
+export {
+    hongbaoPostCreateParams, hongbaoPostCreatePoster, hongbaoPostStoreParams, hongbaoPostStorePoster,
+    hongbaoData, hongbaoDataGetter, hongbaoStoreParams, hongbaoStorePoster
+}

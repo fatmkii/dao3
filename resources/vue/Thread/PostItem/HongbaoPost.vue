@@ -66,8 +66,8 @@ const props = withDefaults(defineProps<Props>(), {
 //显示用的computed
 const hongbaoTypeName = computed(() => {
     const hongbaoTypeMap = {
-        1: '随机',
-        2: '定额',
+        1: '随机olo',
+        2: '定额olo',
     };
     return hongbaoTypeMap[props.hongbaoData.type]
 })

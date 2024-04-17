@@ -140,6 +140,7 @@ Route::prefix('income')->middleware('auth:sanctum')->group(function () {
 //Hongbao系列
 Route::prefix('hongbao')->middleware('auth:sanctum')->group(function () {
     Route::get('/{hongbao_id}', [HongbaoController::class, 'show'])->middleware('CheckBinggan:show'); //显示红包数据
+    Route::post('/store', [HongbaoController::class, 'store'])->middleware('CheckBinggan:show'); //抢主题红包
 });
 
 //HongbaoPost系列
