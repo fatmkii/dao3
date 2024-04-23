@@ -38,6 +38,11 @@ const routes = [
         name: 'user-center',
     },
     {
+        path: '/admin-center',
+        component: () => import('@/vue/AdminCenter/AdminCenter.vue'),
+        name: 'admin-center',
+    },
+    {
         path: '/loudspeaker',
         component: () => import('@/vue/Loudspeaker/LoudspeakerPage.vue'),
         name: 'loudspeaker',

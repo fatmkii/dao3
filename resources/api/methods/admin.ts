@@ -1,5 +1,6 @@
 import { commonAlova } from '@/api/index';
-
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore()
 
 //管理员删除主题
 interface deleteThreadParams {
@@ -248,10 +249,131 @@ const deleteLoudspeakerPoster = (params: deleteLoudspeakerParams) => {
     return methodInstance
 }
 
+//管理员设置版头
+interface setBannersParams {
+    binggan: string,
+    forum_id: number,
+    banners: string[]
+}
+const setBannersPoster = (params: setBannersParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/set_banner',
+        params,
+        {
+            //第三个参数是config
+            name: 'setBannersPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+//管理员发放成就徽章
+interface createMedalParams {
+    binggan: string,
+    binggan_target: string,
+    medal_id: number,
+}
+const createMedalPoster = (params: createMedalParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/create_medal',
+        params,
+        {
+            //第三个参数是config
+            name: 'createMedalPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+//管理员奖罚olo
+interface setUserOloParams {
+    binggan: string,
+    binggan_target: string,
+    olo_num: number,
+    olo_message: string,
+}
+const setUserOloPoster = (params: setUserOloParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/set_user_olo',
+        params,
+        {
+            //第三个参数是config
+            name: 'setUserOloPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
+//获取全局变量数据
+interface globalSettingData {
+    new_binggan: boolean,
+    new_loudspeaker: boolean,
+    home_banners: string[]
+}
+const globalSettingDataGetter = (key?: number) => {
+    const methodInstance = commonAlova.Get<globalSettingData>(
+        'api/globalSettings/' + key,
+        {
+            name: 'globalSettingDataGetter',
+            params: {
+                binggan: userStore.binggan
+            },
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
+//管理员设定全局变量
+interface setGlobalSettingParams {
+    key: string,
+    value: any
+}
+const setGlobalSettingPoster = (params: setGlobalSettingParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/set_user_olo',
+        params,
+        {
+            //第三个参数是config
+            name: 'setGlobalSettingPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
     userLockParams, userLockPoster, userCheckParams, userCheckPoster, threadSetTopParams, threadSetTopPoster,
-    threadCancelTopParams, threadCancelTopPoster
+    threadCancelTopParams, threadCancelTopPoster,
+    setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
+    globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
 }

@@ -569,7 +569,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'forum_id' => 'required|Integer',
-            'banners' => 'required|json|max:5000',
+            'banners' => 'required|array|max:5000',
         ]);
 
         $user = $request->user();
@@ -613,7 +613,7 @@ class AdminController extends Controller
                 'binggan' => $user->binggan,
                 'user_id' => $user->id,
                 'active' => $admin_name . '更新了版头。板块：' . $request->forum_id,
-                'content' => '版头字符串长度：' . mb_strlen($request->banners),
+                'content' => '版头字符串长度：' . mb_strlen(json_encode($request->banners)),
             ]
         );
 
@@ -826,7 +826,7 @@ class AdminController extends Controller
         // 手动给用户发送成就（超管功能）
         $request->validate([
             'key' => 'required|string',
-            'value' => 'required|json',
+            'value' => 'required|array',
         ]);
 
         $user = $request->user();

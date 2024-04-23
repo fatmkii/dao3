@@ -5,10 +5,11 @@ import { forumsDataGetter, threadsListGetter } from '@/api/methods/forums';
 export const useForumsStore = defineStore('forumsStore', () => {
 
     //请求所有板块信息
-    const { loading: forumsDataLoading, data: forumsData } = useRequest(
+    const { loading: forumsDataLoading, data: forumsData, send: getForumsData } = useRequest(
         forumsDataGetter,
-        { initialData: [] }
+        { initialData: [], immediate: false }
     );
+    getForumsData()
 
     //根据forumId获得某个版的数据
     function forumData(forumId: number) {
@@ -21,7 +22,7 @@ export const useForumsStore = defineStore('forumsStore', () => {
     //     { initialData: [], immediate: false }
     // );
 
-    return { forumsDataLoading, forumsData, forumData}
+    return { forumsDataLoading, forumsData, forumData, getForumsData }
 
 })
 

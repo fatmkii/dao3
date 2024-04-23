@@ -2,7 +2,6 @@
     <n-flex vertical style="margin-top: 8px;">
         <DndProvider :backend="commonStore.isMobile ? TouchBackend : HTML5Backend">
             <UserCard />
-            <n-divider style="margin-top: 0px;margin-bottom: 0px;"></n-divider>
             <n-tabs type="line" :bar-width="commonStore.isMobile ? 0 : undefined" animated
                 :size="commonStore.isMobile ? 'small' : 'large'" v-model:value="tabValue">
                 <n-tab-pane v-for="tab in tabsList" :name="tab.name" :tab="tab.tab" :key="tab.name">

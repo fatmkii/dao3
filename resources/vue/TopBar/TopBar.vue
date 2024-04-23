@@ -6,10 +6,12 @@
         <div id="topbar-func"></div>
         <template v-if="!userStore.userDataLoading">
             <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
-                <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;" class="img-icon">
+                <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;"
+                    class="img-icon">
             </n-dropdown>
             <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
-                <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData" class="img-icon">
+                <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData"
+                    class="img-icon">
             </n-dropdown>
             <f-button type="primary" v-if="!userStore.userLoginStatus" @click="LoginModalCom?.show">
                 导入饼干
@@ -33,9 +35,9 @@ import { useUserStore } from '@/stores/user';
 import { FButton, FCheckbox } from '@custom';
 import { Circle, Cog as CogIcon } from '@vicons/fa';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
-import { useRequest } from 'alova';
+import { Shield24Regular as Admin } from '@vicons/fluent'
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
-import { defineAsyncComponent, h, onMounted, ref } from 'vue';
+import { defineAsyncComponent, h, onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 //基础数据
@@ -125,33 +127,49 @@ function renderCustomHeader() {
             )]
     )
 }
-const userOptions = [
-    {
-        key: 'header',
-        type: 'render',
-        render: renderCustomHeader
-    },
-    {
-        key: 'header-divider',
-        type: 'divider'
-    },
-    {
-        label: '个人中心',
-        key: 'profile',
-        icon: renderIcon(CogIcon, { size: '1.25rem' }),
-        props: {
-            onClick: () => router.push('/user-center')
+const userOptions = computed(() => {
+    const arr = [
+        {
+            key: 'header',
+            type: 'render',
+            render: renderCustomHeader
+        },
+        {
+            key: 'header-divider',
+            type: 'divider'
+        },
+        {
+            label: '个人中心',
+            key: 'profile',
+            icon: renderIcon(CogIcon, { size: '1.25rem' }),
+            props: {
+                onClick: () => router.push('/user-center')
+            }
+        },
+        {
+            label: '退出饼干',
+            key: 'logout',
+            icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
+            props: {
+                onClick: logoutHandle
+            }
         }
-    },
-    {
-        label: '退出饼干',
-        key: 'logout',
-        icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
-        props: {
-            onClick: logoutHandle
-        }
+    ]
+
+    //如果是管理员，则加入管理中新选项
+    if (userStore.admin.isForumAdmin) {
+        arr.splice(3, 0, {
+            label: '管理中心',
+            key: 'admin',
+            icon: renderIcon(Admin, { size: '1.25rem' }),
+            props: {
+                onClick: () => router.push('/admin-center')
+            }
+        })
     }
-]
+
+    return arr
+})
 
 //登出操作
 function logoutHandle() {
@@ -225,10 +243,11 @@ onMounted(() => {
         height: 100%;
         cursor: pointer;
     }
-    
-    .img-icon{
+
+    .img-icon {
         border-radius: 40%;
-        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3); /* 水平偏移 垂直偏移 模糊半径 阴影颜色 */
+        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+        /* 水平偏移 垂直偏移 模糊半径 阴影颜色 */
     }
 
     .forum-tag {
