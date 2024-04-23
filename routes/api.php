@@ -62,7 +62,7 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 });
 
 //Admin系列
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/thread_delete', [AdminController::class, 'thread_delete']); //删主题
     Route::delete('/post_delete/{post_id}', [AdminController::class, 'post_delete']); //删帖
     Route::put('/post_recover/{post_id}', [AdminController::class, 'post_recover']); //恢复帖子
@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/thread_cancel_top', [AdminController::class, 'thread_cancel_top']); //取消置顶
     Route::post('/create_medal', [AdminController::class, 'create_medal']); //对用户发放成就
     Route::post('/set_user_olo', [AdminController::class, 'set_user_olo']); //对用户奖罚olo
-    Route::get('/global_setting/{key}', [AdminController::class, 'get_global_setting']); //读取全局变量
+    Route::get('/global_setting/{key?}', [AdminController::class, 'get_global_setting']); //读取全局变量
     Route::post('/set_global_setting', [AdminController::class, 'set_global_setting']); //设置全局变量
     // Route::post('/create_annoucement', [AdminController::class, 'create_annoucement']); //发布站内公告
     // Route::get('/annoucement', [AdminController::class, 'show_annoucements']); //查看站内公告

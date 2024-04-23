@@ -1,7 +1,7 @@
 import { defineAsyncComponent } from 'vue'
 
 export const TabBanners = defineAsyncComponent(() => import('./TabBanners.vue'))
-// export const TabBank = defineAsyncComponent(() => import('./TabBank.vue'))
+export const TabGlobal = defineAsyncComponent(() => import('./TabGlobal.vue'))
 // export const TabChara = defineAsyncComponent(() => import('./TabChara.vue'))
 // export const TabCustom = defineAsyncComponent(() => import('./TabCustom.vue'))
 // export const TabEmojis = defineAsyncComponent(() => import('./TabEmojis.vue'))

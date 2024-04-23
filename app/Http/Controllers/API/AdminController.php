@@ -790,7 +790,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function get_global_setting(Request $request)
+    public function get_global_setting(Request $request, $key = null)
     {
         $request->validate([
             'key' => 'nullable|string',
@@ -808,8 +808,8 @@ class AdminController extends Controller
             );
         }
 
-        if ($request->key) {
-            $value = GlobalSetting::get($request->key);
+        if ($key) {
+            $value = GlobalSetting::get($key);
         } else {
             $value = GlobalSetting::get_all();
         }
@@ -826,7 +826,7 @@ class AdminController extends Controller
         // 手动给用户发送成就（超管功能）
         $request->validate([
             'key' => 'required|string',
-            'value' => 'required|array',
+            'value' => 'required|json',
         ]);
 
         $user = $request->user();

@@ -328,9 +328,9 @@ interface globalSettingData {
     new_loudspeaker: boolean,
     home_banners: string[]
 }
-const globalSettingDataGetter = (key?: number) => {
+const globalSettingDataGetter = (key: string = '') => {
     const methodInstance = commonAlova.Get<globalSettingData>(
-        'api/globalSettings/' + key,
+        'api/admin/global_setting/' + key,
         {
             name: 'globalSettingDataGetter',
             params: {
@@ -348,12 +348,13 @@ const globalSettingDataGetter = (key?: number) => {
 
 //管理员设定全局变量
 interface setGlobalSettingParams {
+    binggan: string,
     key: string,
     value: any
 }
 const setGlobalSettingPoster = (params: setGlobalSettingParams) => {
     const methodInstance = commonAlova.Post(
-        'api/admin/set_user_olo',
+        'api/admin/set_global_setting',
         params,
         {
             //第三个参数是config
