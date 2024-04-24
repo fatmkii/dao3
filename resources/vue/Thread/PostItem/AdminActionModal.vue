@@ -111,6 +111,8 @@ function show(payload: { action: adminActions, postId?: number }) {
     if (payload.action === 'hint') {
         showCommit.value = false
         requestHandle('hint')
+    } else {
+        showCommit.value = true
     }
 }
 defineExpose({ show })
