@@ -20,7 +20,7 @@ import { useUserStore } from '@/stores/user'
 import { NDivider, NFlex, NTabPane, NTabs, useThemeVars } from 'naive-ui'
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AdminCard, TabBanners, TabGlobal } from './index'
+import { AdminCard, TabBanners, TabGlobal, TabMedal } from './index'
 
 //基础数据
 const userStore = useUserStore()
@@ -40,7 +40,7 @@ const tabsList = computed(() => {
     if (userStore.admin.isSuperAdmin) {
         return arr.concat([
             { name: 'global', tab: '全局设置', component: TabGlobal },
-            { name: 'medals', tab: '发放成就', component: null },
+            { name: 'medals', tab: '发放成就', component: TabMedal },
             { name: 'olo', tab: '奖罚olo', component: null },
         ])
     } else {
