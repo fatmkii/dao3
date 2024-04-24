@@ -15,7 +15,7 @@ use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\CrowdController;
 use App\Http\Controllers\API\EmojiConstestController;
 use App\Http\Controllers\API\GambleController;
-use App\Http\Controllers\api\VoteController;
+use App\Http\Controllers\API\VoteController;
 
 /*
 |--------------------------------------------------------------------------
