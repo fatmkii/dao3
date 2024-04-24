@@ -15,20 +15,14 @@
 <script setup lang="ts">
 
 import { useCommonStore } from '@/stores/common'
-import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
-import { NDivider, NFlex, NTabPane, NTabs, useThemeVars } from 'naive-ui'
-import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { AdminCard, TabBanners, TabGlobal, TabMedal } from './index'
+import { NFlex, NTabPane, NTabs } from 'naive-ui'
+import { computed, ref } from 'vue'
+import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal } from './index'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const forumsStore = useForumsStore()
-const route = useRoute()
-const router = useRouter()
-const themeVars = useThemeVars()
 const tabValue = ref<string>()
 
 //生成tabs
@@ -41,15 +35,12 @@ const tabsList = computed(() => {
         return arr.concat([
             { name: 'global', tab: '全局设置', component: TabGlobal },
             { name: 'medals', tab: '发放成就', component: TabMedal },
-            { name: 'olo', tab: '奖罚olo', component: null },
+            { name: 'olo', tab: '奖罚olo', component: TabCoin },
         ])
     } else {
         return arr
     }
 })
-
-
-
 
 
 </script>
