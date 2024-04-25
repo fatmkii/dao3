@@ -501,8 +501,21 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://ll4484.bvimg.com/21501/6126f591197b14fc.png',
     },
-
-
+    //24年3周年
+    154: {
+        'name': '小火锅三周年快乐~！',
+        'describe': '3.0也同时上线喔',
+        'threshold': 0,
+        'img': 'https://ll4484.bvimg.com/21501/b08141fb4d5daa6e.png',
+    },
+    //24年3.0纪念
+    155: {
+        'name': '小火锅3.0',
+        'describe': '诶？我来测试咒岛3.0？真的假的？！',
+        'threshold': 0,
+        'img': 'https://ll4484.bvimg.com/21501/b08141fb4d5daa6e.png',
+    },
+    
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',

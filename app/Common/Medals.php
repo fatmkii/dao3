@@ -324,8 +324,20 @@ class Medals
             'threshold' => null,
             'varname' => null,
         ),
-
-
+        //24年3周年
+        154 => array(
+            'name' => '小火锅三周年快乐~！',
+            'describe' => '3.0也同时上线喔',
+            'threshold' => null,
+            'varname' => null,
+        ),
+        //24年3.0纪念
+        155 => array(
+            'name' => '小火锅3.0',
+            'describe' => '诶？我来测试咒岛3.0？真的假的？！',
+            'threshold' => null,
+            'varname' => null,
+        ),
 
         //通过打赏获得的olo数量 
         161 => array(

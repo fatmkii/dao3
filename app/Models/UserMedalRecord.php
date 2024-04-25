@@ -538,23 +538,37 @@ class UserMedalRecord extends Model
 
     public function check_anniversary()
     {
+        if (Carbon::now() < Carbon::create("2024-4-28 8:0:0")) {
+            //如果时间未到，就什么都不做
+            return;
+        }
 
-        if (Carbon::now() > Carbon::create("2023-5-7 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2024-5-1 0:0:0")) {
             //如果时间已经过期，就什么都不做
             return;
         }
 
-        $medal_id = 151;
+        // 3周年活动
+        $medals_id = array(154, 155); //3周年有2个徽章（3周年和3.0）
 
         //纯粹行为型的徽章，直接查询
-        // $medals_code_exists = $this->UserMedal()->where('medal_id', 131)->exists();
-        $medals_code_exists = UserMedal::where('user_id', $this->user_id)->where('medal_id', $medal_id)->exists();
-        if (!$medals_code_exists) {
-            $user_medal = new UserMedal;
-            $user_medal->user_id = $this->user_id;
-            $user_medal->medal_id = $medal_id;
-            $user_medal->created_at = Carbon::now();
-            $user_medal->save();
+        //已经获得过的徽章（统一查询一次，用于后续判断）
+        $medals_id_retain = UserMedal::where('user_id', $this->user_id)->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();
+        if (count($medals_id) == count($medals_id_retain)) {
+            //如果数量一样，说明整个系列都已经获得，不需要再判断了
+            return;
+        }
+
+        foreach ($medals_id as $medal_id) {
+            //循环判断此系列的成就id是否满足阈值threshold条件
+            // $varname = Medals::DATA[$medal_id]['varname'];
+            if (!in_array($medal_id, $medals_id_retain)) {
+                $user_medal = new UserMedal;
+                $user_medal->user_id = $this->user_id;
+                $user_medal->medal_id = $medal_id;
+                $user_medal->created_at = Carbon::now();
+                $user_medal->save();
+            }
         }
     }
 
