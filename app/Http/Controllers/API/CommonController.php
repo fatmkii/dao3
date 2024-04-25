@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use App\Models\Post;
+use App\Models\Thread;
+use Exception;
 
 class CommonController extends Controller
 {
@@ -192,5 +195,110 @@ class CommonController extends Controller
                 'data' =>  GlobalSetting::get('new_loudspeaker'),
             ],
         );
+    }
+
+    public static  function post_hongbao(Request $request, Thread $thread, Post $post)
+    {
+        $user = $request->user();
+
+        $coin = 0; //红包金额
+        $message = ""; //红包回帖信息
+
+        if (Carbon::now() < Carbon::create("2024-4-28 8:0:0")) {
+            $coin = 0;
+            $message = "本次活动尚未开始，请稍等喔";
+        } elseif (Carbon::now() > Carbon::create("2024-5-1 0:0:0")) {
+            $coin = 0;
+            $message = "本次活动已经结束，你来晚啦";
+        } elseif (DB::table("hongbao_record")->where('user_id', $user->id)->lockForUpdate()->exists()) {
+            $coin = 0;
+            $message = "你已经领取过了，不要贪心喔！";
+        } elseif (Carbon::parse($user->created_at) > Carbon::create("2024-4-28 0:0:0")) {
+            $coin = 0;
+            $message = "你的饼干不符合领取条件（需要是24年4月28日0点前领取的饼干）";
+        } else {
+            $rand_num = random_int(1, 1000);
+            switch ($rand_num) {
+                case $rand_num == 1000: {
+                        if (DB::table("hongbao_record")->where('rand_num', 1000)->exists()) {
+                            $coin = 10000;
+                            $message = "哇喔！恭喜抽到1w个olo！谢谢你一直支持小火锅~";
+                            break;
+                        } else {
+                            $coin = 100000;
+                            $message = "这是岛主埋单唯一大礼！10w个olo！谢谢你一直支持小火锅~";
+                            break;
+                        }
+                    }
+                case $rand_num >= 990: {
+                        $coin = 10000;
+                        $message = "哇喔！恭喜抽到1w个olo！谢谢你一直支持小火锅~";
+                        break;
+                    }
+                case $rand_num >= 900: {
+                        $coin = 3000;
+                        $message = "恭喜抽到3000个olo！谢谢你一直支持小火锅~";
+                        break;
+                    }
+                case $rand_num >= 600: {
+                        $coin = 1000;
+                        $message = "恭喜抽到1000个olo！谢谢你一直支持小火锅~";
+                        break;
+                    }
+                default: {
+                        $coin = 500;
+                        $message = "恭喜抽到500个olo！谢谢你一直支持小火锅~";
+                        break;
+                    }
+            }
+        }
+
+        $message = "To №" . $post->floor . "：" . $message;
+
+        //执行追加新回复流程
+        try {
+            DB::beginTransaction();
+
+            $post = Post::create([
+                'created_binggan' => $request->binggan,
+                'forum_id' => $request->forum_id,
+                'thread_id' => $request->thread_id,
+                'content' => $message,
+                'nickname' => '3周年红包系统',
+                'created_by_admin' => 2,
+                'created_IP' => $request->ip(),
+            ]);
+
+
+            if ($coin > 0) {
+                // $user->coin += $coin;
+                $user->coinChange(
+                    'normal', //记录类型
+                    [
+                        'olo' => $coin,
+                        'content' => '3周年红包奖励',
+                        'thread_id' => $thread->id,
+                        'thread_title' => $thread->title,
+                        'post_id' => $post->id,
+                        'floor' => $post->floor,
+                    ]
+                );
+                $user->save();
+
+                DB::table("hongbao_record")->insert([
+                    "thread_id" => $thread->id,
+                    "post_id" => $post->id,
+                    "user_id" => $user->id,
+                    "created_binggan" => $user->binggan,
+                    "rand_num" => $rand_num,
+                    "olo" => $coin,
+                    "created_at" => Carbon::now(),
+                ]);
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 }

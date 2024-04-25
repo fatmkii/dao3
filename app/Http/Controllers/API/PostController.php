@@ -146,9 +146,9 @@ class PostController extends Controller
         }
 
         // if (
-        //     //国庆活动
-        //     $request->thread_id == 100656
-        //     && strpos($request->content, '新春快乐') !== false
+        //     //三周年活动测试
+        //     $request->thread_id == 88361
+        //     // && strpos($request->content, '新春快乐') !== false
         // ) {
         //     CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
         // }
