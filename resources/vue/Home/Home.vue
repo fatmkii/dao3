@@ -120,9 +120,9 @@ function forumClick(forumId: number, event: PointerEvent) {
     }
 }
 
-.carousel-box {
-    height: v-bind('commonStore.bannerHeight');
-}
+// .carousel-box {
+//     height: v-bind('commonStore.bannerHeight');
+// }
 
 .carousel-skeleton {
     height: 100%;
