@@ -61,6 +61,6 @@ class DailyNissinHandle extends Command
             ->where('nissin_date', '<', Carbon::today()->addHours(8))
             ->update(['has_nissined' => 1]);
 
-        return true;
+        return false; //好像return false才是显示Done
     }
 }

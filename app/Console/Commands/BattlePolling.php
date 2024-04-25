@@ -82,9 +82,9 @@ class BattlePolling extends Command
         } catch (Exception $e) {
             DB::rollback();
             Log::debug('$exception', [$e]);
-            return false;
+            return $e;
         }
 
-        return true;
+        return false; //好像return false才是显示Done
     }
 }

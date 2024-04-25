@@ -48,6 +48,6 @@ class DelayThreadHandle extends Command
                 'updated_at' => Carbon::now()->addSeconds(10),
             ]);
 
-        return true;
+        return false; //好像return false才是显示Done
     }
 }
