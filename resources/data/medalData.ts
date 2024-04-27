@@ -513,7 +513,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅3.0',
         'describe': '诶？我来测试咒岛3.0？真的假的？！',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/b08141fb4d5daa6e.png',
+        'img': 'https://ll4484.bvimg.com/21501/929f251b010486b0.png',
     },
     
     //画师荣誉徽章
