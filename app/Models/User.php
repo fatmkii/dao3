@@ -108,6 +108,26 @@ class User extends Authenticatable
         return Attribute::make(get: fn () => $this->AdminPermissions->forums);
     }
 
+    //计算平均值和方差
+    private function get_avg_var(array $array)
+    {
+        $sum = 0;
+        $count = count($array);
+        foreach ($array as $num) {
+            $sum += $num;
+        }
+        $avg = $sum / $count;
+
+        $square = 0;
+        foreach ($array as $num) {
+            $square += pow($num - $avg, 2);
+        }
+        $variance = $square / $count;
+
+        return [$avg, $variance];
+    }
+
+
     //消费奥利奥并检查是否足够（用于不留下income_statement的操作）
     public function coinConsume(int $coin)
     {
