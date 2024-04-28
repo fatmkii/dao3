@@ -25,6 +25,9 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const tabValue = ref<string>()
 
+//设置浏览器标题
+document.title = '管理员中心'
+
 //生成tabs
 const tabsList = computed(() => {
     const arr = [

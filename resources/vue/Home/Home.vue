@@ -1,4 +1,3 @@
-
 <template>
     <n-flex justify="center" vertical>
         <!-- 版头图片 -->
@@ -20,8 +19,8 @@
         <!-- 板块列表 -->
         <n-flex justify="center" vertical :size="1">
             <n-card v-for="forumData in forumsDataSorted" size="small" :bordered="true" :key="forumData.id"
-                class="forum-cards" :header-style="forumCardsHeaderStyle" :content-style="forumCardsContentStyle" hoverable
-                @click="forumClick(forumData.id, $event)">
+                class="forum-cards" :header-style="forumCardsHeaderStyle" :content-style="forumCardsContentStyle"
+                hoverable @click="forumClick(forumData.id, $event)">
                 <template #header><n-flex>
                         <ForumsStar :is-favorite="forumFavorites.includes(forumData.id)" :forum-id="forumData.id"
                             @favorite-add="favoriteAdd" @favorite-cancel="favoriteCancel" />
@@ -55,6 +54,9 @@ const router = useRouter()
 //主页banner数据
 const { loading: homeBannersLoading, data: homeBannersData } = useRequest(homeBannersGetter)
 const homeBannersDataSorted = computed(() => homeBannersData.value.sort(() => 0.5 - Math.random()))
+
+//设置浏览器标题
+document.title = '小火锅'
 
 //外观调整
 const forumCardsHeaderStyle = computed(() => {

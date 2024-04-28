@@ -87,6 +87,9 @@ const commonStore = useCommonStore()
 const NewLoudspeakerModalCom = ref<InstanceType<typeof NewLoudspeakerModal> | null>()
 const themeVars = useThemeVars()
 
+//设置浏览器标题
+document.title = '大喇叭'
+
 //用户输入
 const dateSelected = ref<string>()
 const onlyMyLoudspeaker = ref<boolean>(false)

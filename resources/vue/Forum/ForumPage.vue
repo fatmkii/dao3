@@ -97,7 +97,6 @@ const LoudspeakerComponentCom = ref<InstanceType<typeof LoudspeakerComponent> | 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
 
-
 //组件props
 interface Props {
     forumId: number //来自路由
@@ -109,6 +108,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 })
 
+//设置浏览器标题
+document.title = forumsStore.forumData(props.forumId)?.name ?? '小火锅'
 
 //隐藏版头
 const hideBanner = useStorage<boolean>('banner_hiden', false)
@@ -252,7 +253,7 @@ const threadsDataRequestParams = computed<getThreadsListParams>(() => {
 })
 
 //获取主题列表数据（监听props变更）
-const { loading: threadsDataLoading, data: threadsData } = useWatcher(
+const { loading: threadsDataLoading, data: threadsData, onSuccess: threadsDataOnSuccess } = useWatcher(
     () => threadsListGetter(threadsDataRequestParams.value),
     [() => props.forumId, () => props.page, () => props.search, () => props.delay, subtitlesExcluded],
     { initialData: [], immediate: true, }

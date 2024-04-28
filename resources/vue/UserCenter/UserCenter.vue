@@ -36,6 +36,9 @@ const router = useRouter()
 const themeVars = useThemeVars()
 const tabValue = ref<string>()
 
+//设置浏览器标题
+document.title = '个人中心'
+
 //生成tabs
 const tabsList = [
     { name: 'medals', tab: '我的成就', component: TabMedal },

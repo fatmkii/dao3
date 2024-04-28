@@ -384,7 +384,8 @@ const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSu
     [() => props.threadId, () => props.page, () => props.search],
     { initialData: {}, immediate: true, }
 );
-postsListOnSuccess(() => {
+postsListOnSuccess((event) => {
+    document.title = event.data.thread_data.title
     nextTick(() => {
         //如果地址有#hash，则滚动到对应hash并高亮显示
         if (route.hash) {

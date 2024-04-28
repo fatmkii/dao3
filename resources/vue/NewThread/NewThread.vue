@@ -74,6 +74,9 @@ const threadTypeSeleted = ref<threadType>('normal')
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
 
+//设置浏览器标题
+document.title = '新主题'
+
 //组件props
 interface Props {
     forumId: number //来自路由
