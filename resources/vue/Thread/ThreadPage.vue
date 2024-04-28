@@ -73,11 +73,11 @@
 
             <!-- 自动涮锅和分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;">
-                <f-button type="primary" :disabled="postListening || postsListFetching"
-                    :loading="postListening || postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
+                <f-button type="primary" :disabled="postsListFetching" :loading="postsListFetching"
+                    @click="handleFetchPostsList(true)">刷新</f-button>
                 <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
                     <template #checked>
-                        涮锅中…
+                        涮锅中
                     </template>
 
                     <template #unchecked>
