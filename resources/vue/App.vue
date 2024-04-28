@@ -58,10 +58,10 @@ const commonStore = useCommonStore()
 }
 
 .post-content {
-    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"');
+    font-size: v-bind('commonStore.isMobile ? "1.0rem" : "1.0rem"');
 
     span {
-        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "1.0rem"')
+        font-size: v-bind('commonStore.isMobile ? "1.0rem" : "1.0rem"')
     }
 }
 

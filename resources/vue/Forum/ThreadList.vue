@@ -15,13 +15,13 @@
                     {{ threadData.hongbao_id ? '🧧' : '' }}
                     <!-- 标题内容 -->
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
-                        style="font-size:0.875rem;"
+                        style="font-size:1.0rem;"
                         :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
                     <!-- 页码 -->
-                    <router-link style="font-size:0.875rem;"
+                    <router-link style="font-size:1.0rem;"
                         :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
@@ -117,10 +117,10 @@ function handleWithdrawDelayThread(threadId: number) {
 }
 
 .thread-title-secondary {
-    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
+    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "0.875rem"');
 
     span {
-        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
+        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "0.875rem"')
     }
 }
 
