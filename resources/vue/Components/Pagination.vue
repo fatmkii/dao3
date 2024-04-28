@@ -1,11 +1,11 @@
 <template>
-    <n-pagination v-model:page="page" :page-count="lastPage" :size="commonStore.isMobile ? 'small' : 'medium'" show-quick-jumper
-        :page-slot="6" :simple="commonStore.isMobile ? true : false"
-        :display-order="['quick-jumper', 'pages', 'size-picker']">
+    <n-pagination v-model:page="page" :page-count="lastPage" :size="'medium'" show-quick-jumper :page-slot="6"
+        :simple="commonStore.isMobile ? true : false" :display-order="['quick-jumper', 'pages', 'size-picker']">
         <template #goto>跳
         </template>
         <template #prefix v-if="commonStore.isMobile">
-            <div class="n-pagination-item n-pagination-item--button" :class="{ 'n-pagination-item--disabled': page == 1 }">
+            <div class="n-pagination-item n-pagination-item--button"
+                :class="{ 'n-pagination-item--disabled': page == 1 }">
                 <n-icon :size="14">
                     <PlaySkipBackOutline @click="page = 1" />
                 </n-icon>
