@@ -6,7 +6,7 @@
                 <div>这里是私人论坛，欢迎来玩！<br>QQ小火锅避难群：156840110 <br>使用前需要在下面申请或者导入饼干喔</div>
                 <n-input-group>
                     <f-input-group-label style="width: 3.2rem;">饼干</f-input-group-label>
-                    <f-input v-model:value="inputBinggan" placeholder="请输入饼干" maxlength="9" show-count
+                    <f-input v-model:value="inputBinggan" placeholder="请输入饼干" maxlength="16"
                         @keyup.enter="loginHandle" />
                 </n-input-group>
                 <n-input-group>
