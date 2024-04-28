@@ -41,7 +41,7 @@
         <template v-if="!postIsFolded">
             <!-- 正文内容 -->
             <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle"
-                style="margin-top: 6px;">
+                style="margin-top: 12px;">
                 <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
             </div>
 
@@ -52,7 +52,7 @@
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
             <!-- 正文下面的footer，楼号等 -->
-            <n-flex :size="[4, 0]" class="post-footer"
+            <n-flex :size="[4, 0]" class="post-footer" style="margin-top: 12px;"
                 :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }">
 
                 <span :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
