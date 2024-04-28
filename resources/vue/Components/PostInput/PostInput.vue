@@ -3,7 +3,7 @@
         <!-- 实时预览用组件 -->
         <PostItem v-if="showPreview" :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
         <!-- 昵称输入及功能 -->
-        <n-flex size="small" :wrap="false" :align="'center'">
+        <n-flex size="small" :wrap="false" :align="'center'" :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
             <n-input-group style="max-width: 300px;">
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
                 <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
@@ -20,7 +20,8 @@
         <!-- 表情包 -->
         <EmojiTab :auto-hide="emojiAutoHide" :random-heads-group="randomHeadsGroup" @append-emoji="emojiAppend" />
         <!-- 功能图标栏 -->
-        <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'">
+        <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'"
+            :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 红包 -->
                 <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
@@ -61,7 +62,7 @@
             :input-props="{ id: 'content-input' }" :disabled="userIsLocked" @change="contentInputChange"
             @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
-        <n-flex justify="end" :align="'center'">
+        <n-flex justify="end" :align="'center'" >
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>

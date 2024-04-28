@@ -91,8 +91,18 @@
             </n-flex>
 
             <!-- 分页导航 -->
-            <n-flex :align="'center'" style="margin-top: 8px;">
-                <f-button @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
+            <n-flex :align="'center'" style="margin-top: 8px;"
+                :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+                <n-popover placement="bottom-start" trigger="hover">
+                    <template #trigger>
+                        <n-icon :size="34">
+                            <Back @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })"
+                                style="cursor: pointer;" />
+                        </n-icon>
+                    </template>
+                    <n-text>返回小岛</n-text>
+                </n-popover>
+
                 <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
                     :last-page="postsListLoading ? 1 : postsListData.posts_data.lastPage" style="margin-left: auto;" />
             </n-flex>
@@ -193,10 +203,11 @@ import { FButton, FCheckbox, FInput } from '@custom'
 import { Delete } from '@vicons/carbon'
 import { ArrowDown as Down, ArrowUp as Up } from '@vicons/fa'
 import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { ArrowCircleLeft48Regular as Back } from '@vicons/fluent'
 import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, NPopover, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
