@@ -27,7 +27,7 @@ const darkThemeOverrides: GlobalThemeOverrides = {
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
     "common": {
-        "bodyColor": "#f0faef",
+        "bodyColor": "#eefaee",
     },
     "Card": {
         "color": "#fafffa00", //透明背景
