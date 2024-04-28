@@ -61,7 +61,7 @@ const codeTypeMap = computed(() => [
         inputEnable_2: true,
         inputDefault_1: "显示内容",
         inputDefault_2: "隐藏内容",
-        insertText: `<details><summary>${textInput2.value}</summary>${textInput1.value}</details>`,
+        insertText: `<details><summary>${textInput1.value}</summary>${textInput2.value}</details>`,
     },
     {
         prepend_1: "显示文字",
