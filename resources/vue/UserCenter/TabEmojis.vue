@@ -21,7 +21,7 @@
                 </n-flex>
             </template>
             <!-- 表情包 -->
-            <n-flex size="small">
+            <n-flex size="small" style="touch-action: none;">
                 <Emoji v-for="(emojiItem, index) in emojiListInput" :key="emojiItem.id" :emojiSrc="emojiItem.emojiSrc"
                     :index="index" @move-card="moveCard" @delete-emoji="deleteEmojiHandle" />
             </n-flex>
@@ -42,7 +42,7 @@
                 </n-flex>
             </template>
             <n-flex size="small">
-                <div class="emoji-box" v-for="( emojiSrc, key, index ) in  appendEmojiInputArray">
+                <div class="emoji-box" v-for="( emojiSrc, key, index ) in appendEmojiInputArray">
                     <img :src="emojiSrc" class="emoji-in-box">
                 </div>
             </n-flex>
