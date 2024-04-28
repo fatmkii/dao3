@@ -9,6 +9,10 @@ const lightThemeOverrides: GlobalThemeOverrides = {
     },
     "Button": {
         "colorPrimary": "#32BA32FF"
+    },
+    "Card": {
+        "colorPrimary": "#32BA32FF",
+        "color": "rgba(255, 255, 255, 0)" //透明背景
     }
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
@@ -17,15 +21,16 @@ const darkThemeOverrides: GlobalThemeOverrides = {
         "textColor2": "rgba(255, 255, 255, 0.66)",
     },
     "Card": {
-        "colorEmbedded": "rgba(44, 44, 50, 1)"
+        "colorEmbedded": "rgba(44, 44, 50, 1)",
+        "color": "rgba(44, 44, 50, 0)" //透明背景
     }
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
     "common": {
-        "bodyColor": "#f3fdf3FF",
+        "bodyColor": "#f0faef",
     },
     "Card": {
-        "color": "#fafffaFF",
+        "color": "#fafffa00", //透明背景
         "borderColor": "rgba(233, 245, 234, 1)",
     },
     // "Input": {
