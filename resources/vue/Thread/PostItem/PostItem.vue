@@ -41,7 +41,7 @@
         <template v-if="!postIsFolded">
             <!-- 正文内容 -->
             <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle"
-                style="margin-top: 12px;">
+                style="margin-top: 12px;line-height: 28px;">
                 <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
             </div>
 
