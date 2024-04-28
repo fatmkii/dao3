@@ -207,7 +207,7 @@ class CommonController extends Controller
         if (Carbon::now() < Carbon::create("2024-4-28 8:0:0")) {
             $coin = 0;
             $message = "本次活动尚未开始，请稍等喔";
-        } elseif (Carbon::now() > Carbon::create("2024-5-1 0:0:0")) {
+        } elseif (Carbon::now() > Carbon::create("2024-5-2 0:0:0")) {
             $coin = 0;
             $message = "本次活动已经结束，你来晚啦";
         } elseif (DB::table("hongbao_record")->where('user_id', $user->id)->lockForUpdate()->exists()) {
