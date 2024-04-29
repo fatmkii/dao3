@@ -98,7 +98,7 @@ import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
+import { NAlert, NButton, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
 
 //异步加载组件

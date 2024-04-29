@@ -23,6 +23,12 @@
         <!-- 功能图标栏 -->
         <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'"
             :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
+            <n-dropdown trigger="click" :options="IconOptions" @select="dropdownSelect"
+                :size="commonStore.isMobile ? 'medium' : 'large'">
+                <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
+                    <Dropdown />
+                </n-icon>
+            </n-dropdown>
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 红包 -->
                 <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
@@ -36,16 +42,8 @@
                 <Dice style="cursor: pointer;" @click="RollModalCom?.show()" />
             </n-icon>
             <n-icon :size="commonStore.isMobile ? 28 : 32">
-                <!-- 涂鸦板 -->
-                <Draw style="cursor: pointer;" @click="DrawerModalCom?.show()" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32">
                 <!-- 代码 -->
                 <Code style="cursor: pointer;" @click="CodeModalCom?.show()" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32">
-                <!-- 屏蔽词 -->
-                <Mute style="cursor: pointer;" @click="PingbiciModalCom?.show()" />
             </n-icon>
             <n-divider vertical />
             <n-icon :size="commonStore.isMobile ? 28 : 32">
@@ -100,7 +98,7 @@ import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
+import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo, EllipsisHorizontal as Dropdown } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, type DropdownOption } from 'naive-ui'
 import { computed, h, ref, watch, defineAsyncComponent } from 'vue'
@@ -234,7 +232,16 @@ const IconOptions = [
     { label: '涂鸦板', key: 'draw', icon: renderIcon(Draw, { size: '1.5rem' }) },
     { label: '屏蔽词', key: 'mute', icon: renderIcon(Mute, { size: '1.5rem' }) },
 ]
-
+function dropdownSelect(name: 'draw' | 'mute') {
+    switch (name) {
+        case 'mute':
+            PingbiciModalCom.value?.show()
+            break;
+        case 'draw':
+            DrawerModalCom.value?.show()
+            break;
+    }
+}
 
 //监控管理员自动设置昵称
 watch(postWithAdmin, (value) => nicknameInput.value = value ? '管理员' : '= =')
