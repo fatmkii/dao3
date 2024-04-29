@@ -92,7 +92,7 @@
 
             <!-- 分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;"
-                :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+                :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
                 <n-popover placement="bottom-start" trigger="hover">
                     <template #trigger>
                         <n-icon :size="34">

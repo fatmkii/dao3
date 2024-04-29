@@ -2,7 +2,7 @@
     <!-- 回复card -->
     <div class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
         <!-- header -->
-        <n-flex size="small" :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+        <n-flex size="small" :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
             <!-- 左边是头像和折叠提示 -->
             <div class="random-head-container" v-if="!noHeadMode">
                 <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
@@ -238,19 +238,9 @@ function recoverPostHandle() {
 }
 
 //下拉菜单的统一入口
-type dropdownNames = 'quote' | 'gift' | 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery'
+type dropdownNames = 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery'
 function dropdownSelect(name: dropdownNames) {
-    switch (name) {
-        case 'gift'://打赏
-            rewardHandle()
-            break;
-        case 'quote'://引用
-            quoteClick()
-            break;
-        default:
-            emit('adminHandle', { action: name, postId: props.postData.id })
-            break;
-    }
+    emit('adminHandle', { action: name, postId: props.postData.id })
 }
 
 //回复数据处理（各种屏蔽等）

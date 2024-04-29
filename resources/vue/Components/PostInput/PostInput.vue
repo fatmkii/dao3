@@ -4,7 +4,7 @@
         <PostItem v-if="showPreview" :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
         <!-- 昵称输入及功能 -->
         <n-flex size="small" :wrap="false" :align="'center'"
-            :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+            :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
             <n-input-group style="max-width: 300px;">
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
                 <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
@@ -22,7 +22,7 @@
         <EmojiTab :auto-hide="emojiAutoHide" :random-heads-group="randomHeadsGroup" @append-emoji="emojiAppend" />
         <!-- 功能图标栏 -->
         <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'"
-            :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+            :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
             <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
                 <!-- 红包 -->
                 <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
@@ -102,7 +102,7 @@ import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vi
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
-import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
+import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, type DropdownOption } from 'naive-ui'
 import { computed, h, ref, watch, defineAsyncComponent } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
@@ -111,6 +111,7 @@ import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import ImageUpload from './ImageUpload.vue'
 import PingbiciModal from './PingbiciModal.vue'
+import { renderIcon } from '@/js/func/renderIcon'
 
 //异步加载组件
 const PostItem = defineAsyncComponent(() =>
@@ -156,7 +157,6 @@ const textareaPlaceHolder = computed(() => {
 })
 const userIsLocked = computed(() => userStore.userData.binggan.locked_ttl > 0)
 
-
 //用户输入内容
 const nicknameInput = ref<string>(userStore.userData.binggan.nickname || '= =')
 const titleInput = ref<string>("")
@@ -186,7 +186,7 @@ const nicknameInputStyle = computed(() => {
     return { class: { 'nickname-input': true, 'admin': postWithAdmin.value } }
 })
 
-//功能选项下拉框
+//“功能”选项下拉框
 const showPreview = ref<boolean>(false) //实时预览
 const emojiAutoHide = useStorage<boolean>('emoji_auto_hide', false) //表情包自动收起
 function renderFuncOptions() {
@@ -229,6 +229,12 @@ const funcOptions = [
         render: renderFuncOptions,
     },
 ]
+//部分不常用图标按钮的下拉菜单
+const IconOptions = [
+    { label: '涂鸦板', key: 'draw', icon: renderIcon(Draw, { size: '1.5rem' }) },
+    { label: '屏蔽词', key: 'mute', icon: renderIcon(Mute, { size: '1.5rem' }) },
+]
+
 
 //监控管理员自动设置昵称
 watch(postWithAdmin, (value) => nicknameInput.value = value ? '管理员' : '= =')

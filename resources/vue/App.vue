@@ -40,8 +40,6 @@ const commonStore = useCommonStore()
 .quote_content,
 .quote-content {
     color: v-bind('themeVars.textColor3');
-
-
 }
 
 .quote_content,
@@ -53,7 +51,7 @@ const commonStore = useCommonStore()
 
 .post-item {
     padding-top: 6px;
-    padding-bottom: 6px;
+    padding-bottom: 2px;
     border-bottom: 1px solid;
     border-color: v-bind('themeStore.themeColor.postItemBorderColor');
     // &.on-focus {
