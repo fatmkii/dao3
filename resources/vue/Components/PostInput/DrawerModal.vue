@@ -1,6 +1,6 @@
 <template>
     <n-modal v-model:show="showThis" display-directive="show">
-        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="涂鸦板" closable @close="showThis = false"
+        <n-card :style="{ maxWidth: (canvasWidth + 4) + 'px' }" title="涂鸦板" closable @close="showThis = false"
             size="small" :content-style="{ padding: '0px' }">
             <template #default>
                 <div id="canvas-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
