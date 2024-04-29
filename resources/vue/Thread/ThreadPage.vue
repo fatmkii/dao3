@@ -208,7 +208,7 @@ import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, NPopover, type DropdownOption } from 'naive-ui'
-import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
@@ -587,8 +587,6 @@ watch([() => props.threadId, () => props.page, () => props.search],//路由变�
     }
 )
 
-
-
 //发送新回复
 let contentCommitTemp: contentCommit
 let resolveTemp: (value: any) => void
@@ -624,6 +622,19 @@ function newPostHandleAgain() {
 const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess, onError: newPostOnError } = useRequest(
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
+
+//Ctrl+X刷新功能
+function keyupListener(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === "x") {
+        handleFetchPostsList(true)
+    }
+}
+onMounted(() => {
+    window.addEventListener("keyup", keyupListener);
+})
+onUnmounted(() => {
+    window.removeEventListener("keyup", keyupListener);
+})
 
 
 </script>
