@@ -138,7 +138,12 @@
                 </n-text>
             </n-flex>
 
-            <!-- 大喇叭（top） -->
+            <!-- 返回小岛按钮 -->
+            <n-flex>
+                <f-button type="primary" @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
+            </n-flex>
+
+            <!-- 大喇叭（bottom） -->
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'bottom'" />
 
             <!-- 页面底部留空白 -->
