@@ -1,6 +1,6 @@
 <template>
     <!-- 回复card -->
-    <n-card size="small" :bordered="true" class="post-card" :id="'f_' + postData.floor" :floor="postData.floor">
+    <n-card size="small" :bordered="true" class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
         <!-- header -->
         <n-flex size="small">
             <!-- 左边是头像和折叠提示 -->
@@ -40,9 +40,9 @@
         <!-- 隐藏时候需要被折叠的内容 -->
         <template v-if="!postIsFolded">
             <!-- 正文内容 -->
-            <div class="post-content-container" ref="postContentContainerDom" :style="postContentContainerStyle"
+            <div class="post-content" ref="postContentContainerDom" :style="postContentContainerStyle"
                 style="margin-top: 12px;line-height: 28px;">
-                <span v-html="postContent" class="post-content" ref="postContentDom" :style="postContentStyle"></span>
+                <span v-html="postContent" class="post-span" ref="postContentDom" :style="postContentStyle"></span>
             </div>
 
             <!-- 红包组件 -->

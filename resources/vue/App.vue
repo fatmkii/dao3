@@ -45,19 +45,19 @@ const commonStore = useCommonStore()
 }
 
 .quote_content,
-.post-content {
+.post-span {
     .highlight {
         color: v-bind('themeVars.warningColor');
     }
 }
 
-.post-card {
+.post-item {
     &.on-focus {
         border-color: v-bind('themeVars.primaryColor');
     }
 }
 
-.post-content {
+.post-span {
     font-size: v-bind('commonStore.isMobile ? "1.0rem" : "1.0rem"');
 
     span {
@@ -65,7 +65,7 @@ const commonStore = useCommonStore()
     }
 }
 
-.post-content-container {
+.post-content {
     overflow-x: hidden;
     overflow-y: hidden;
 }
