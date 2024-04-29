@@ -49,7 +49,7 @@
                         <f-button type="primary" @click="userCrowdHandle" :loading="userCrowdHandling"
                             :disabled="userCrowdHandling || hasOutdate || crowdData.is_closed !== 0">投入</f-button>
                         <n-dropdown v-if="userStore.checkAdminForums(forumId) && crowdData.is_closed === 0"
-                            trigger="hover" :options="funcOptions" @select="dropdownSelect" placement="bottom-start">
+                            :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" @select="dropdownSelect" placement="bottom-start">
                             <f-button type="warning">管理</f-button>
                         </n-dropdown>
                     </n-flex>

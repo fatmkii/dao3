@@ -5,16 +5,16 @@
             <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
                 <n-skeleton class="carousel-skeleton" sharp />
             </div>
-            <n-carousel show-arrow trigger="hover" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
+            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
                 <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
             </n-carousel>
         </div>
         <!-- 各种按钮 -->
         <n-flex style="margin-top:8px ;" size="small">
-            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
                 <f-button>功能</f-button>
             </n-dropdown>
-            <n-dropdown trigger="hover" :options="filterOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="filterOptions" placement="bottom-start">
                 <f-button>筛选</f-button>
             </n-dropdown>
             <n-icon :size="commonStore.isMobile ? 28 : 34">

@@ -9,7 +9,7 @@
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
                 <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
             </n-input-group>
-            <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
                 <f-button size="medium" style="flex-shrink:0" :secondary="false">功能</f-button>
             </n-dropdown>
         </n-flex>
@@ -66,7 +66,7 @@
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
-            <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
+            <n-popover placement="bottom-start" :trigger="commonStore.isMobile ? 'click' : 'hover'" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
                         :disabled="userIsLocked">提交</f-button>

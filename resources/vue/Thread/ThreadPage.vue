@@ -161,7 +161,7 @@
             </Teleport>
             <Teleport to="#topbar-func">
                 <!-- 屏蔽按钮 -->
-                <n-dropdown trigger="hover" :options="funcOptions" placement="bottom-start">
+                <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
                     <f-button>屏蔽</f-button>
                 </n-dropdown>
             </Teleport>

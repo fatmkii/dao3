@@ -3,7 +3,7 @@
         <!-- 版头图片 -->
         <div class="carousel-box">
             <n-skeleton class="carousel-skeleton" sharp v-if="homeBannersLoading" />
-            <n-carousel show-arrow trigger="hover" autoplay v-if="!homeBannersLoading" :interval="10000">
+            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay v-if="!homeBannersLoading" :interval="10000">
                 <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
             </n-carousel>
         </div>

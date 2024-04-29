@@ -5,11 +5,11 @@
         <div id="topbar-nav"></div>
         <div id="topbar-func"></div>
         <template v-if="!userStore.userDataLoading">
-            <n-dropdown trigger="hover" :options="themeOptions" @select="themeStore.themeChange">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions" @select="themeStore.themeChange">
                 <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;"
                     class="img-icon">
             </n-dropdown>
-            <n-dropdown v-if="userStore.userLoginStatus" trigger="hover" :options="userOptions">
+            <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="userOptions">
                 <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData"
                     class="img-icon">
             </n-dropdown>

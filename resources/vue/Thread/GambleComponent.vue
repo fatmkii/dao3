@@ -48,7 +48,7 @@
                     <f-button type="primary" @click="userGambleHandle" :loading="userGambleHandling"
                         :disabled="userGambleHandling || hasOutdate || gambleQuestionData.is_closed !== 0">投注</f-button>
                     <n-dropdown v-if="userStore.checkAdminForums(forumId) && gambleQuestionData.is_closed === 0"
-                        trigger="hover" :options="funcOptions" @select="dropdownSelect" placement="bottom-start">
+                        :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" @select="dropdownSelect" placement="bottom-start">
                         <f-button type="warning">管理</f-button>
                     </n-dropdown>
                 </n-flex>
