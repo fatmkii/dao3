@@ -2,7 +2,7 @@
     <!-- 回复card -->
     <div class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
         <!-- header -->
-        <n-flex size="small">
+        <n-flex size="small" :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
             <!-- 左边是头像和折叠提示 -->
             <div class="random-head-container" v-if="!noHeadMode">
                 <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
@@ -14,22 +14,33 @@
             <!-- 右边是删除按钮和下拉菜单（预览模式时无需加载） -->
             <template v-if="!previewMode">
                 <div style="margin-left: auto;"></div>
+                <!-- 删除按钮 -->
                 <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 0"
                     style="cursor: pointer;" @click="deletePostHandle">
                     <Delete />
                 </n-icon>
+                <!-- 恢复按钮 -->
                 <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 1"
                     style="cursor: pointer;" @click="recoverPostHandle">
                     <Recover />
                 </n-icon>
+                <!-- 打赏按钮 -->
+                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="!postData.is_your_post" style="cursor: pointer;"
+                    @click="rewardHandle">
+                    <Gift />
+                </n-icon>
+                <!-- 回复按钮 -->
+                <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;" @click="quoteClick">
+                    <Quote />
+                </n-icon>
                 <!-- 下拉菜单，这里做了延后加载 -->
-                <n-icon v-if="!renderDropdown" :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;"
-                    @click="renderDropdown = true">
+                <n-icon v-if="!renderDropdown && userStore.checkAdminForums(props.forumId)"
+                    :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;" @click="renderDropdown = true">
                     <Dropdown />
                 </n-icon>
-                <n-dropdown v-if="renderDropdown" trigger="click" :options="funcOptions" @select="dropdownSelect"
-                    :show="renderDropdown" :size="commonStore.isMobile ? 'medium' : 'large'"
-                    @clickoutside="renderDropdown = false">
+                <n-dropdown v-if="renderDropdown && userStore.checkAdminForums(props.forumId)" trigger="click"
+                    :options="funcOptions" @select="dropdownSelect" :show="renderDropdown"
+                    :size="commonStore.isMobile ? 'medium' : 'large'" @clickoutside="renderDropdown = false">
                     <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
                         <Dropdown />
                     </n-icon>
@@ -151,26 +162,18 @@ const emit = defineEmits<{
     adminHandle: [{ action: 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery', postId: number }],
 }>()
 
-//打赏回复及管理员选项的下拉菜单
+//管理员选项的下拉菜单
 const funcOptions = computed(() => {
-    const options: DropdownOption[] = [{ label: '回复', key: 'quote', icon: renderIcon(Quote, { size: '1.5rem' }) }]
-    if (!props.postData.is_your_post) {
-        //不是自己回复的时候才追加打赏按钮
-        options.unshift({ label: '打赏', key: 'gift', icon: renderIcon(Gift, { size: '1.5rem' }) })
-    }
-    if (userStore.checkAdminForums(props.forumId)) {
-        options.push({ key: 'divider', type: 'divider' })
-        options.push(...[
-            { label: '提示', key: 'hint', icon: renderIcon(Hint, { size: '1.5rem' }) },
-            { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.5rem' }) },
-            { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.5rem' }) },
-            { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.5rem' }) },
-        ])
-        if (props.postData.is_deleted === 0) {
-            options.push({ label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.5rem' }) })
-        } else {
-            options.push({ label: '恢复', key: 'recovery', icon: renderIcon(Recover, { size: '1.5rem' }) })
-        }
+    const options: DropdownOption[] = [
+        { label: '提示', key: 'hint', icon: renderIcon(Hint, { size: '1.5rem' }) },
+        { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.5rem' }) },
+        { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.5rem' }) },
+        { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.5rem' }) },
+    ]
+    if (props.postData.is_deleted === 0) {
+        options.push({ label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.5rem' }) })
+    } else {
+        options.push({ label: '恢复', key: 'recovery', icon: renderIcon(Recover, { size: '1.5rem' }) })
     }
     return options
 })
