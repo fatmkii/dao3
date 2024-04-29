@@ -12,7 +12,7 @@
             <!-- 搜索输入（弹出） -->
             <n-flex v-if="showSearchInput" :wrap="false">
                 <f-input v-model:value="searchContentInput" :maxlength="100" style="max-width: 400px;"
-                    placeholder="搜索回复内容" auto-size />
+                    placeholder="搜索回复内容" auto-size @keyup.enter="handleSearch" />
                 <f-button type="primary" @click="handleSearch">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
@@ -184,7 +184,6 @@
 import { newPostPoster, postGetter, type newPostParams, type postData, type postParams } from '@/api/methods/posts'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
-import { useDebounce } from '@/js/func/debounce'
 import getNewPostKey from '@/js/func/getNewPostKey'
 import { renderIcon } from '@/js/func/renderIcon'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
@@ -202,12 +201,12 @@ import RewardModal from '@/vue/Thread/PostItem/RewardModal.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { Delete } from '@vicons/carbon'
 import { ArrowDown as Down, ArrowUp as Up } from '@vicons/fa'
-import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { ArrowCircleLeft48Regular as Back } from '@vicons/fluent'
+import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
-import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NSpin, NSwitch, NTag, NText, NTooltip, NPopover, type DropdownOption } from 'naive-ui'
+import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
@@ -482,16 +481,17 @@ const postsData = computed(() => {
 //搜索功能
 const searchContentInput = ref<string | undefined>(props.search)
 const showSearchInput = ref<boolean>(props.search ? true : false)
-watch(searchContentInput, (searchContent) => {
-    //设置防抖，searchContentInput变更超过500ms后才改变路由
-    const pushRoute = useDebounce(
-        () => router.push({
-            name: "thread", params: { threadId: props.threadId, page: 1 },
-            query: { search: searchContent || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
-        })
-    )
-    pushRoute()
-})
+//取消掉输入即刻搜索功能
+// watch(searchContentInput, (searchContent) => {
+//     //设置防抖，searchContentInput变更超过500ms后才改变路由
+//     const pushRoute = useDebounce(
+//         () => router.push({
+//             name: "thread", params: { threadId: props.threadId, page: 1 },
+//             query: { search: searchContent || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+//         })
+//     )
+//     pushRoute()
+// })
 function handleSearch() {
     router.push({
         name: "thread", params: { threadId: props.threadId, page: 1 },
@@ -501,6 +501,7 @@ function handleSearch() {
 function handleSearchClear() {
     searchContentInput.value = undefined
     showSearchInput.value = false
+    router.push({ name: "thread", params: { threadId: props.threadId, page: 1 } })
 }
 
 

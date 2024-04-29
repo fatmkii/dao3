@@ -28,7 +28,7 @@
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
             <f-input v-model:value="searchTitleInput" :maxlength="100" style="max-width: 400px;" placeholder="搜索标题"
-                auto-size />
+                auto-size @keyup.enter="handleSearch" />
             <f-button type="primary" @click="handleSearch">搜索</f-button>
             <f-button type="default" @click="handleSearchClear">清空</f-button>
         </n-flex>
@@ -68,23 +68,22 @@
 
 <script setup lang="ts">
 import { threadsListGetter, type getThreadsListParams } from '@/api/methods/forums'
-import { useDebounce } from '@/js/func/debounce'
-import { useStorage } from '@vueuse/core'
+import { subtitles } from '@/data/subtitles'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
+import Sidebar from '@/vue/Components/Sidebar.vue'
 import ThreadList from '@/vue/Forum/ThreadList.vue'
+import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
-import { subtitles } from '@/data/subtitles'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
+import { useStorage } from '@vueuse/core'
 import { useFetcher, useWatcher } from 'alova'
-import { NCarousel, NCheckboxGroup, NDropdown, NFlex, NIcon, NSkeleton, NTag, NEllipsis } from 'naive-ui'
+import { NCarousel, NCheckboxGroup, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NTag } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Sidebar from '@/vue/Components/Sidebar.vue'
-import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -203,16 +202,17 @@ const filterOptions = [
 //搜索功能
 const searchTitleInput = ref<string | undefined>(props.search)
 const showSearchInput = ref<boolean>(props.search ? true : false)
-watch(searchTitleInput, (searchTitle) => {
-    //设置防抖，searchTitleInput变更超过500ms后才改变路由
-    const pushRoute = useDebounce(
-        () => router.push({
-            name: "forum", params: { forumId: props.forumId, page: 1 },
-            query: { search: searchTitle || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
-        })
-    )
-    pushRoute()
-})
+//取消掉输入即刻搜索功能
+// watch(searchTitleInput, (searchTitle) => {
+//     //设置防抖，searchTitleInput变更超过500ms后才改变路由
+//     const pushRoute = useDebounce(
+//         () => router.push({
+//             name: "forum", params: { forumId: props.forumId, page: 1 },
+//             query: { search: searchTitle || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+//         })
+//     )
+//     pushRoute()
+// })
 function handleSearch() {
     router.push({
         name: "forum", params: { forumId: props.forumId, page: 1 },
@@ -222,6 +222,7 @@ function handleSearch() {
 function handleSearchClear() {
     searchTitleInput.value = undefined
     showSearchInput.value = false
+    router.push({ name: "forum", params: { forumId: props.forumId, page: 1 } })
 }
 
 //查看延时主题
