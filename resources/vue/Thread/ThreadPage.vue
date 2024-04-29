@@ -110,7 +110,7 @@
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'center'" />
         </template>
         <n-flex vertical :size="2" v-else>
-            <n-card size="small" :bordered="true" class="post-card-skeleton" v-for="  n in 200  " />
+            <div :bordered="true" class="post-item-skeleton" v-for="  n in 200  " />
         </n-flex>
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
@@ -655,7 +655,7 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
     top: 40%;
 }
 
-.post-card-skeleton {
+.post-item-skeleton {
     border-radius: 10px;
     height: 115px;
     width: 100%;

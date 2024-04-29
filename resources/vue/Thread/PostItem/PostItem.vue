@@ -1,6 +1,6 @@
 <template>
     <!-- 回复card -->
-    <n-card size="small" :bordered="true" class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
+    <div class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
         <!-- header -->
         <n-flex size="small">
             <!-- 左边是头像和折叠提示 -->
@@ -68,7 +68,7 @@
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
             </n-flex>
         </template>
-    </n-card>
+    </div>
 </template>
 
 <script setup lang="ts">

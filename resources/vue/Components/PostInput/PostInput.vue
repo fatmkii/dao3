@@ -3,7 +3,8 @@
         <!-- 实时预览用组件 -->
         <PostItem v-if="showPreview" :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
         <!-- 昵称输入及功能 -->
-        <n-flex size="small" :wrap="false" :align="'center'" :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
+        <n-flex size="small" :wrap="false" :align="'center'"
+            :style="{ paddingRight: commonStore.isMobile ? '32px' : '0px' }">
             <n-input-group style="max-width: 300px;">
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
                 <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
@@ -58,11 +59,12 @@
         </n-flex>
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder"
-            :autosize="{ minRows: 5, maxRows: 10 }" ref="contentInputDom" style="border-radius: 10px; "
-            :input-props="{ id: 'content-input' }" :disabled="userIsLocked" @change="contentInputChange"
-            @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
+            :autosize="{ minRows: 5, maxRows: 10 }" ref="contentInputDom"
+            style="border-radius: 10px;font-size: 1.0rem; " :input-props="{ id: 'content-input' }"
+            :disabled="userIsLocked" @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)"
+            @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
-        <n-flex justify="end" :align="'center'" >
+        <n-flex justify="end" :align="'center'">
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>

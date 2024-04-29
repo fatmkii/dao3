@@ -52,9 +52,13 @@ const commonStore = useCommonStore()
 }
 
 .post-item {
-    &.on-focus {
-        border-color: v-bind('themeVars.primaryColor');
-    }
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid;
+    border-color: v-bind('themeStore.themeColor.postItemBorderColor');
+    // &.on-focus {
+    //     border-color: v-bind('themeVars.primaryColor');
+    // }
 }
 
 .post-span {
@@ -80,6 +84,10 @@ const commonStore = useCommonStore()
 }
 
 .post-footer {
+    span {
+        font-size: 0.875rem;
+    }
+
     &.system-post .post-nick-name {
         color: v-bind('themeVars.primaryColor')
     }
@@ -89,7 +97,11 @@ const commonStore = useCommonStore()
     }
 
     .post-footer-text {
-        color: v-bind('themeVars.textColor3')
+        color: v-bind('themeStore.themeColor.postFooterColor')
+    }
+
+    .post-created-at {
+        color: v-bind('themeStore.themeColor.postFooterColor')
     }
 }
 

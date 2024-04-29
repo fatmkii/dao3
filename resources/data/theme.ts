@@ -12,7 +12,7 @@ const lightThemeOverrides: GlobalThemeOverrides = {
     },
     "Card": {
         "colorPrimary": "#32BA32FF",
-        "color": "rgba(255, 255, 255, 0)" //透明背景
+        "color": "#fafffa80" //透明背景
     }
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
@@ -22,7 +22,7 @@ const darkThemeOverrides: GlobalThemeOverrides = {
     },
     "Card": {
         "colorEmbedded": "rgba(44, 44, 50, 1)",
-        "color": "rgba(44, 44, 50, 0)" //透明背景
+        "color": "rgba(44, 44, 50, 0.5)" //透明背景
     }
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
@@ -30,7 +30,7 @@ const greenThemeOverrides: GlobalThemeOverrides = {
         "bodyColor": "#eefaee",
     },
     "Card": {
-        "color": "#fafffa00", //透明背景
+        "color": "#fafffa80", //透明背景
         "borderColor": "rgba(233, 245, 234, 1)",
     },
     // "Input": {
@@ -60,15 +60,21 @@ const greenThemeOverrides: GlobalThemeOverrides = {
 //自己用的各个颜色
 const lightThemeColors = {
     topBarBackgroudColor: "#FFF",
-    sidebarColor: "#90d590"
+    sidebarColor: "#90d590",
+    postItemBorderColor: "#111111",
+    postFooterColor: "#767C82FF",
 }
 const darkThemeColors = {
     topBarBackgroudColor: "#18181CFF",
-    sidebarColor: "#316c58"
+    sidebarColor: "#316c58",
+    postItemBorderColor: "#FFFFFF17",
+    postFooterColor: "#FFFFFF85",
 }
 const greenThemeColors = {
     topBarBackgroudColor: "#fafffaFF",
-    sidebarColor: "#52b051"
+    sidebarColor: "#52b051",
+    postItemBorderColor: "#5FB878",
+    postFooterColor: "#5FB878",
 }
 
 
