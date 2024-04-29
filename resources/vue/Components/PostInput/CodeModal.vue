@@ -92,6 +92,9 @@ watch(codeTypeSelected, () => {
 // 插入代码
 function insertHandle() {
     emit('insertCode', codeTypeMap.value[codeTypeSelected.value].insertText)
+    // 恢复默认内容
+    textInput1.value = codeTypeMap.value[codeTypeSelected.value].inputDefault_1
+    textInput2.value = codeTypeMap.value[codeTypeSelected.value].inputDefault_2
     showThis.value = false
 }
 
