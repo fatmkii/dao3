@@ -147,7 +147,7 @@
             <!-- 发送到TopBar的版面标题 -->
             <Teleport to="#topbar-nav">
                 <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
-                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
+                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '100px' : '900px' }" :tooltip="false">
                         {{ forumData?.name }}
                     </n-ellipsis>
                     <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
