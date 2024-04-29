@@ -105,7 +105,7 @@ function scrollHandle(to: 'up' | 'down') {
         }
 
         @media not all and (min-width: 1240px) {
-            right: 16px;
+            right: 8px;
         }
     }
 
@@ -117,7 +117,7 @@ function scrollHandle(to: 'up' | 'down') {
         }
 
         @media not all and (min-width: 1240px) {
-            left: 16px;
+            left: 8px;
         }
     }
 }
