@@ -36,8 +36,8 @@
                         </n-flex>
                         <n-flex style="margin-bottom: 6px;">
                             <div>
-                                <n-text :depth="3">存入时间：</n-text>
-                                <n-text>{{ rowData.created_at }}</n-text>
+                                <n-text :depth="3">到期时间：</n-text>
+                                <n-text>{{ rowData.expire_date }}</n-text>
                             </div>
                             <div style="margin-left: auto;">
                                 <f-button v-if="!rowData.isExpired" size="tiny" type="warning"
