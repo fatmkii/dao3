@@ -9,7 +9,8 @@
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
                 <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
             </n-input-group>
-            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions"
+                placement="bottom-start">
                 <f-button size="medium" style="flex-shrink:0" :secondary="false">功能</f-button>
             </n-dropdown>
         </n-flex>
@@ -23,37 +24,72 @@
         <!-- 功能图标栏 -->
         <n-flex :size="commonStore.isMobile ? 'small' : 'medium'" justify="end" :align="'center'"
             :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
+            <!-- 不常用涂鸦板和屏蔽词折叠 -->
             <n-dropdown trigger="click" :options="IconOptions" @select="dropdownSelect"
                 :size="commonStore.isMobile ? 'medium' : 'large'">
                 <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
                     <Dropdown />
                 </n-icon>
             </n-dropdown>
-            <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
-                <!-- 红包 -->
-                <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
-                <!-- 大乱斗 -->
-                <Game style="cursor: pointer;" @click="BattleModalCom?.show()" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32" v-if="mode === 'post'">
-                <!-- roll点 -->
-                <Dice style="cursor: pointer;" @click="RollModalCom?.show()" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32">
-                <!-- 代码 -->
-                <Code style="cursor: pointer;" @click="CodeModalCom?.show()" />
-            </n-icon>
+            <!-- 红包 -->
+            <n-popover v-if="mode === 'post'" placement="bottom-start"
+                :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Hongbao style="cursor: pointer;" @click="HongbaoModalCom?.show()" />
+                    </n-icon>
+                </template>
+                发红包
+            </n-popover>
+            <!-- 大乱斗 -->
+            <n-popover v-if="mode === 'post'" placement="bottom-start"
+                :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Game style="cursor: pointer;" @click="BattleModalCom?.show()" />
+                    </n-icon>
+                </template>
+                大乱斗
+            </n-popover>
+            <!-- roll点 -->
+            <n-popover v-if="mode === 'post'" placement="bottom-start"
+                :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Dice style="cursor: pointer;" @click="RollModalCom?.show()" />
+                    </n-icon>
+                </template>
+                Roll点
+            </n-popover>
+            <!-- 代码 -->
+            <n-popover placement="bottom-start" :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Code style="cursor: pointer;" @click="CodeModalCom?.show()" />
+                    </n-icon>
+                </template>
+                快捷代码
+            </n-popover>
+            <!-- 分割线 -->
             <n-divider vertical />
-            <n-icon :size="commonStore.isMobile ? 28 : 32">
-                <!-- 撤销 -->
-                <Undo style="cursor: pointer;" @click="contentInputRevoke" />
-            </n-icon>
-            <n-icon :size="commonStore.isMobile ? 28 : 32">
-                <!-- 清空 -->
-                <Earser style="cursor: pointer;" @click="clearContent" />
-            </n-icon>
+            <!-- 撤销 -->
+            <n-popover placement="bottom-start" :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Undo style="cursor: pointer;" @click="contentInputRevoke" />
+                    </n-icon>
+                </template>
+                撤销
+            </n-popover>
+            <!-- 清空 -->
+            <n-popover placement="bottom-start" :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32">
+                        <Earser style="cursor: pointer;" @click="clearContent" />
+                    </n-icon>
+                </template>
+                清空
+            </n-popover>
         </n-flex>
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder"
@@ -66,7 +102,7 @@
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
             <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
-            <n-popover placement="bottom-start" :trigger="commonStore.isMobile ? 'click' : 'hover'" :disabled="commonStore.isMobile">
+            <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
                         :disabled="userIsLocked">提交</f-button>
@@ -74,7 +110,6 @@
                 可以Ctrl+Enter
             </n-popover>
         </n-flex>
-
         <!-- 各种modal -->
         <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
