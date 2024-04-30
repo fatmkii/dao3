@@ -32,7 +32,7 @@ interface Props {
     autoHide?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
-    randomHeadsGroup: 0,
+    randomHeadsGroup: 1,
     autoHide: true,
 })
 
