@@ -41,7 +41,12 @@
                     <n-form-item label="自动涮锅时遇红包停止" path="hongbaoThenStop">
                         <n-switch v-model:value="userInput.hongbaoThenStop" />
                     </n-form-item>
-
+                    <n-form-item label="自动涮锅时页面不动" path="holdPageWhenListening">
+                        <n-switch v-model:value="userInput.holdPageWhenListening" />
+                    </n-form-item>
+                    <n-form-item label="减少弹出提示" path="lessToast">
+                        <n-switch v-model:value="userInput.lessToast" />
+                    </n-form-item>
                 </n-gi>
             </n-grid>
         </n-form>

@@ -48,7 +48,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         imgHost: imgHostType
         sidebarLeft: boolean
         hongbaoThenStop: boolean
-        // holdPageWhenListening: boolean
+        holdPageWhenListening: boolean
+        lessToast: boolean
         monochromeMode: boolean
         quoteMax: number
         fontRemSize: number
@@ -60,7 +61,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         imgHost: 'mjj',//图床选择
         sidebarLeft: false, //侧边栏放在左侧
         hongbaoThenStop: false, //自动涮锅时遇到红包停止
-        // holdPageWhenListening: false,//自动涮锅时页面保持不动
+        holdPageWhenListening: false,//自动涮锅时页面保持不动
+        lessToast: false,  //减少弹出提示
         monochromeMode: false,
         quoteMax: 3,//最大引用层数
         fontRemSize: 16,//字体大小

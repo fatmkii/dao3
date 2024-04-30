@@ -53,7 +53,7 @@ export const commonAlova = createAlova({
                 throw new Error(json.message, { cause: { code: json.code } });
             }
 
-            if (method.meta?.shouldRemind) {
+            if (method.meta?.shouldRemind && !commonStore.userCustom.lessToast) {
                 //在method中写入meta.shoudRemind，使请求成功后弹出提示
                 window.$message.success(json.message)
             }

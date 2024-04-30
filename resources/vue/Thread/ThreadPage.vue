@@ -156,9 +156,9 @@
                         <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '100px' : '900px' }" :tooltip="false">
                             {{ forumData?.name }}
                         </n-ellipsis>
-                        <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{
-                            forumData?.id
-                            }}</n-tag>
+                        <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">
+                            {{ forumData?.id }}
+                        </n-tag>
                     </router-link>
                 </Teleport>
                 <Teleport to="#topbar-func">
@@ -568,8 +568,8 @@ function getPostDataAndPush(threadId: number, postId: number) {//获取单个回
         const scrollTopNow =
             document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
         nextTick(() => {
-            if (postInputCom.value?.isTyping) {
-                //如果正在输入，则使窗口位置保持不变
+            if (postInputCom.value?.isTyping || commonStore.userCustom.holdPageWhenListening) {
+                //如果正在输入或者个人中心选择了保持不动，则使窗口位置保持不变
                 document.documentElement.scrollTop =
                     document.body.clientHeight - scrollTopNow;
             }
