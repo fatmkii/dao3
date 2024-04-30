@@ -72,7 +72,7 @@ const hongbaoTypeName = computed(() => {
 const { data: hongbaoData,
     loading: hongbaoDataLoading,
     send: hongbaoDataGetterSend,
-    onSuccess: hongbaoDataOnSuccess } = useRequest(hongbaoDataGetter(props.hongbaoId), { immediate: false })
+    onSuccess: hongbaoDataOnSuccess } = useRequest(hongbaoDataGetter(props.hongbaoId), { immediate: false, initialData: {} })
 hongbaoDataOnSuccess((event) => {
     keywordInput.value = event.data.key_word
 })
