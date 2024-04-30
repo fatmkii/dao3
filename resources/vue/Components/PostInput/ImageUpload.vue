@@ -47,6 +47,7 @@ function setImguploadPlugin(station: imgHostType) {
     var button = document.getElementById('upload-button');
     if (station == 'mjj') {
         pup.setAttribute("async", 'true');
+        pup.setAttribute("data-mode", "manual");
         pup.setAttribute("src", "https://mjj.today/sdk/pup.js");
         pup.setAttribute("data-url", "https://mjj.today/upload");
         pup.setAttribute("data-auto-insert", "html-embed");
@@ -54,6 +55,7 @@ function setImguploadPlugin(station: imgHostType) {
     }
     if (station == 'imgbb') {
         pup.setAttribute("async", 'true');
+        pup.setAttribute("data-mode", "manual");
         pup.setAttribute("src", "https://imgbb.com/upload.js");
         pup.setAttribute("data-url", "https://imgbb.com/upload");
         pup.setAttribute("data-auto-insert", "html-embed-medium");
@@ -61,6 +63,7 @@ function setImguploadPlugin(station: imgHostType) {
     }
     if (station == 'freeimage') {
         pup.setAttribute("async", 'true');
+        pup.setAttribute("data-mode", "manual");
         pup.setAttribute("src", "https://freeimage.host/sdk/pup.js");
         pup.setAttribute("data-url", "https://freeimage.host/upload");
         pup.setAttribute("data-auto-insert", "html-embed-medium");
