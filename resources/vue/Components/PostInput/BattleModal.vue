@@ -14,7 +14,7 @@
                 </n-input-group>
                 <n-input-group>
                     <f-input-group-label style="width: 3.2rem;">下注</f-input-group-label>
-                    <n-input-number v-model:value="olo" :max="1000000" :min="100" :step="100" :parse="inputNumberParse"
+                    <n-input-number v-model:value="olo" :max="1000000" :min="1" :step="100" :parse="inputNumberParse"
                         :format="inputNumberFormat" @keyup.enter="battleCreateHandle" />
                 </n-input-group>
             </n-flex>
