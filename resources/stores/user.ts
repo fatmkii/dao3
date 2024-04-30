@@ -38,11 +38,12 @@ export const useUserStore = defineStore('userStore', () => {
             immediate: false,
         }
     );
-    userDataOnSuccess(() => {
-        userLoginStatus.value = true
-    })
+    // userDataOnSuccess(() => {
+    //     userLoginStatus.value = true
+    // })
 
     if (binggan && token) {//Localstorage中有token和饼干才请求用户数据
+        userLoginStatus.value = true
         getUserData(binggan)
     }
 
