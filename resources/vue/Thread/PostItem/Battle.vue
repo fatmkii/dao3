@@ -117,7 +117,7 @@ battleDataOnSuccess((event) => {
     if (event.data.battle.chara_group > 0) {
         //如果是特别的乱斗主题group_id>0，则默认选择第一个角色
         //如果是特别的共通主题group_id=0，则不改变默认选择（8，小豆泥）
-        charaInput.value = charaIndex[event.data.battle.chara_group - 1][0].value
+        charaInput.value = charaIndex[event.data.battle.chara_group][0].value
     }
 })
 //刷新大乱斗数据
