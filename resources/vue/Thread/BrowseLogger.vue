@@ -1,5 +1,5 @@
 <template>
-    <n-alert type="success" closable v-if="showThis && !isSearch" style="border-radius: 10px;">
+    <n-alert type="success" closable v-if="showThis && !isSearch" style="border-radius: 10px;"> 
         你上次已经浏览到{{ browseLogger.get(threadId)!.floor }}楼，
         <router-link @click="showThis = false"
             :to="{ name: 'thread', params: { threadId: threadId, page: Math.ceil((browseLogger.get(threadId)!.floor + 1) / 200) } }">
@@ -10,11 +10,11 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, h, onMounted, ref, watch } from 'vue'
-import { NAlert } from 'naive-ui'
-import { useDebounce } from '@/js/func/debounce'
+import { useBrowseLogger } from '@/js/func/browseLogger';
+import { useDebounce } from '@/js/func/debounce';
+import { NAlert } from 'naive-ui';
+import { nextTick, onActivated, onDeactivated, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useBrowseLogger } from '@/js/func/browseLogger'
 
 //组件props
 interface Props {
@@ -81,8 +81,11 @@ watch(() => props.postsListLoading, (newValue) => {
     }
 })
 
-onMounted(() => {
+onActivated(() => {
     window.addEventListener("scroll", scrollWatch)
+})
+onDeactivated(() => {
+    window.removeEventListener("scroll", scrollWatch)
 })
 
 </script>

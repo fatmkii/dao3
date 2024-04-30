@@ -197,6 +197,15 @@ const contentInput = ref<string>("")
 const isDelayInput = ref<boolean>(false)
 const postWithAdmin = ref<boolean>(false)
 
+//复位输入内容
+function resetInput() {
+    nicknameInput.value = userStore.userData.binggan.nickname || '= ='
+    titleInput.value = ""
+    contentInput.value = ""
+    isDelayInput.value = false
+    postWithAdmin.value = false
+}
+
 //实时预览用的虚拟postData
 const postDataForPreview = computed(() => ({
     id: 0,
@@ -393,6 +402,6 @@ function resetContent() {
 //确认输入框是否在输入中，并且向父组件返回
 const isTyping = ref<boolean>(false)
 
-defineExpose({ quoteHandle, isTyping })
+defineExpose({ quoteHandle, isTyping, resetInput })
 
 </script>

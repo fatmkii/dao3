@@ -9,7 +9,11 @@
         </n-dialog-provider>
 
         <TopBar />
-        <router-view></router-view>
+        <router-view v-slot="{ Component }">
+            <KeepAlive include="ThreadPage,NewThread">
+                <component :is="Component" />
+            </KeepAlive>
+        </router-view>
         <UnauthModal />
     </n-config-provider>
 </template>

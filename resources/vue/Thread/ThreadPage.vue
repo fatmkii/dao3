@@ -16,11 +16,13 @@
                 <f-button type="primary" @click="handleSearch">搜索</f-button>
                 <f-button type="default" @click="handleSearchClear">清空</f-button>
             </n-flex>
+            <!-- 大喇叭（top） -->
+            <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'top'" />
             <!-- 浏览进度弹出提示 -->
             <BrowseLogger :page="page" :thread-id="threadId" :posts-list-loading="postsListLoading"
                 :disable-scroll="Boolean(search)" :is-search="Boolean(search)" />
-            <!-- 大喇叭（top） -->
-            <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'top'" />
+        </template>
+        <template v-if="!postsListLoading && showThis">
             <!-- 标题 -->
             <n-card class="thread-title-contain" size="small" key="title-card">
                 <span class="thread-title">
@@ -38,9 +40,6 @@
                     变色
                 </f-button>
             </n-card>
-        </template>
-        <template v-if="!postsListLoading && showThis">
-
             <!-- 循环渲染各个回复 -->
             <n-flex vertical :size="2">
                 <!-- 这是第0楼 -->
@@ -140,7 +139,8 @@
 
             <!-- 返回小岛按钮 -->
             <n-flex>
-                <f-button type="primary" @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
+                <f-button type="primary"
+                    @click="router.push({ name: 'forum', params: { forumId: forumData?.id } })">返回小岛</f-button>
             </n-flex>
 
             <!-- 大喇叭（bottom） -->
@@ -150,21 +150,25 @@
             <div style="height: 50px;"></div>
 
             <!-- 发送到TopBar的版面标题 -->
-            <Teleport to="#topbar-nav">
-                <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
-                    <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '100px' : '900px' }" :tooltip="false">
-                        {{ forumData?.name }}
-                    </n-ellipsis>
-                    <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumData?.id
-                        }}</n-tag>
-                </router-link>
-            </Teleport>
-            <Teleport to="#topbar-func">
-                <!-- 屏蔽按钮 -->
-                <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
-                    <f-button>屏蔽</f-button>
-                </n-dropdown>
-            </Teleport>
+            <template v-if="isActive">
+                <Teleport to="#topbar-nav">
+                    <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
+                        <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '100px' : '900px' }" :tooltip="false">
+                            {{ forumData?.name }}
+                        </n-ellipsis>
+                        <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{
+                            forumData?.id
+                            }}</n-tag>
+                    </router-link>
+                </Teleport>
+                <Teleport to="#topbar-func">
+                    <!-- 屏蔽按钮 -->
+                    <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions"
+                        placement="bottom-start">
+                        <f-button>屏蔽</f-button>
+                    </n-dropdown>
+                </Teleport>
+            </template>
 
             <!-- 各种弹出modal -->
             <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
@@ -212,7 +216,7 @@ import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
-import { computed, defineAsyncComponent, h, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, h, nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
@@ -247,7 +251,12 @@ const CrowdComponentCom = ref<InstanceType<typeof CrowdComponent> | null>(null)/
 const HongbaoComponentCom = ref<InstanceType<typeof HongbaoComponent> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
-useTopbarNavControl()
+onActivated(() => {
+    commonStore.showTopbarNav = false//使Topbar的“小火锅”隐藏
+})
+onDeactivated(() => {
+    commonStore.showTopbarNav = true//使Topbar的“小火锅”显示
+})
 
 //异步加载组件
 const ForbiddenModal = defineAsyncComponent(() =>
@@ -274,6 +283,11 @@ const AdminActionModalCom = ref<InstanceType<typeof AdminActionModal> | null>(nu
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
 const showThis = ref<boolean>(true)
+
+//因为这个组件用了KeepAlive，这个flag用来判断自身是否处于激活状态
+const isActive = ref<boolean>(false)
+onActivated(() => { isActive.value = true })
+onDeactivated(() => { isActive.value = false })
 
 //显示TTL用的
 const nissinTTL = computed(() => {
@@ -394,7 +408,7 @@ const postsListParams = computed<getPostsListParams>(() => {
 })
 
 //获取回复列表数据（监听props变更）
-const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSuccess, onError: postsListOnError } = useWatcher(
+const { loading: postsListLoading, data: postsListData, onSuccess: postsListOnSuccess, onError: postsListOnError, send: sendpostsListGetter } = useWatcher(
     () => postsListGetter(postsListParams.value),
     [() => props.threadId, () => props.page, () => props.search],
     { initialData: {}, immediate: true, }
@@ -414,6 +428,10 @@ postsListOnError((event) => {
     showThis.value = false
     ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
 })
+
+//因为组件用了KeepAlive，当组件重新激活的时候，重新获取一次数据。并且退出时清空一次输入内容。
+onActivated(() => { sendpostsListGetter() })
+onDeactivated(() => { postInputCom.value?.resetInput() })
 
 //刷新回复列表数据
 const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
@@ -581,10 +599,8 @@ watch(postListening, (value) => {//开关广播监听
         }
     }
 })
-onBeforeUnmount(() => {
-    if (echo.isConnected) {
-        echo.disconnect()
-    }
+onDeactivated(() => {
+    postListening.value = false
 })
 watch([() => props.threadId, () => props.page, () => props.search],//路由变化时停止自动涮锅
     () => {
@@ -635,10 +651,10 @@ function keyupListener(event: KeyboardEvent) {
         handleFetchPostsList(true)
     }
 }
-onMounted(() => {
+onActivated(() => {
     window.addEventListener("keyup", keyupListener);
 })
-onUnmounted(() => {
+onDeactivated(() => {
     window.removeEventListener("keyup", keyupListener);
 })
 

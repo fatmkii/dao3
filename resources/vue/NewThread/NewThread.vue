@@ -1,6 +1,6 @@
 <template>
     <n-flex vertical style="margin-top: 8px;">
-        <PostInput mode="thread" :forum-id="forumId" :disabled="false" :handling="newThreadHandling"
+        <PostInput ref="postInputCom" mode="thread" :forum-id="forumId" :disabled="false" :handling="newThreadHandling"
             @content-commit="newThreadHandle" />
 
         <n-tabs type="line" animated :size="commonStore.isMobile ? 'small' : 'medium'" v-model:value="tabValue">
@@ -36,7 +36,7 @@
         </n-tabs>
 
         <!-- 发送到TopBar的版面标题 -->
-        <Teleport to="#topbar-nav">
+        <Teleport to="#topbar-nav" v-if="isActive">
             <router-link :to="{ name: 'forum', params: { forumId: props.forumId } }" class="flex-item-center">
                 <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
                     {{ forumsStore.forumData(forumId)?.name }}
@@ -48,31 +48,40 @@
 </template>
 
 <script setup lang="ts">
-import { useTopbarNavControl } from '@/js/func/topbarNav'
+import { newThreadParams, newThreadPoster } from '@/api/methods/threads'
+import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
-import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
-import showDialog from '@/js/func/showDialog'
-import { TabCommon, TabCrowd, TabGamble, TabHongbao, TabVote, type threadType } from './'
-import { newThreadPoster, newThreadParams } from '@/api/methods/threads'
-import { NEllipsis, NFlex, NTag, NTabs, NTabPane, NCheckbox } from 'naive-ui'
+import PostInput from '@/vue/Components/PostInput/PostInput.vue'
+import { NCheckbox, NEllipsis, NFlex, NTabPane, NTabs, NTag } from 'naive-ui'
+import { computed, onActivated, onDeactivated, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
+import { TabCommon, TabCrowd, TabGamble, TabHongbao, TabVote, type threadType } from './'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
-const themeStore = usethemeStore()
 const router = useRouter()
 const tabValue = ref<string>()//功能选项tabs
 const threadTypeSeleted = ref<threadType>('normal')
+const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
-useTopbarNavControl()
+onActivated(() => {
+    commonStore.showTopbarNav = false//使Topbar的“小火锅”隐藏
+})
+onDeactivated(() => {
+    commonStore.showTopbarNav = true//使Topbar的“小火锅”显示
+})
+
+//因为这个组件用了KeepAlive，这个flag用来判断自身是否处于激活状态
+const isActive = ref<boolean>(false)
+onActivated(() => { isActive.value = true })
+onDeactivated(() => { isActive.value = false })
+
 
 //设置浏览器标题
 document.title = '新主题'
@@ -184,6 +193,12 @@ function newThreadHandle(content: contentCommit, resolve: (value: any) => void) 
             })
     })
 }
+
+//因为做了KeepAlive，失活前要手动复位内容
+onDeactivated(() => {
+    threadTypeSeleted.value = 'normal'
+    postInputCom.value?.resetInput()
+})
 
 
 </script>

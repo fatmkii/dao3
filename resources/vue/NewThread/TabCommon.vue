@@ -64,7 +64,7 @@ import { useForumsStore } from '@/stores/forums'
 import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { NColorPicker, NDivider, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, onDeactivated, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 //基础数据
@@ -94,8 +94,8 @@ interface tabNormalInputType {
     isPrivate: boolean,
     subId: number,
 }
-const tabNormalInput = ref<tabNormalInputType>({
-    subtitle: "[闲聊]",
+const tabNormalInputDefault = {
+    subtitle: "[闲聊]" as subtitlesType,
     nissinTime: 1,
     antiJingfen: false,
     randomHeadsGroup: 1,
@@ -104,7 +104,8 @@ const tabNormalInput = ref<tabNormalInputType>({
     lockedByCoin: null,
     isPrivate: false,
     subId: 10,
-})
+}
+const tabNormalInput = ref<tabNormalInputType>({ ...tabNormalInputDefault })
 
 //副标题选项
 const subtitles = computed(() => {
@@ -205,5 +206,11 @@ const tabNormalInputToParent = computed(() => {
     }
 })
 defineExpose({ tabNormalInput: tabNormalInputToParent })
+
+//因为做了KeepAlive，失活前要手动复位内容
+onDeactivated(() => {
+    tabNormalInput.value = { ...tabNormalInputDefault }
+})
+
 
 </script>
