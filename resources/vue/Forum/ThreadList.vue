@@ -1,6 +1,6 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
-        <n-card v-for=" threadData  in    threadsListData  " size="small" :bordered="true" :key="threadData.id"
+        <n-card v-for=" threadData in threadsListData  " size="small" :bordered="true" :key="threadData.id"
             class="thread-cards" :content-style="threadCardsContentStyle" hoverable>
             <n-flex vertical>
                 <!-- 主题的标题本体 -->
@@ -14,8 +14,7 @@
                     {{ threadData.crowd_id ? '💰' : '' }}
                     {{ threadData.hongbao_id ? '🧧' : '' }}
                     <!-- 标题内容 -->
-                    <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
-                        style="font-size:1.0rem;"
+                    <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }" style="font-size:1.0rem;"
                         :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
@@ -49,7 +48,7 @@
         </n-card>
     </n-flex>
     <n-flex vertical :size="2" v-else>
-        <n-card class="threads-card-skeleton" v-for="  n   in   50  " />
+        <n-card class="threads-card-skeleton" v-for="  n in 50  " />
     </n-flex>
 </template>
 
@@ -90,9 +89,14 @@ const threadCardsContentStyle = computed(() => {
 })
 
 //记录浏览进度和显示
-const browseLogger = useBrowseLogger({}) //用于记录浏览进度的类
+const browseLogger = useBrowseLogger() //用于记录浏览进度的类
 const browseLoggerData = browseLogger.data
 
+//父组件刷新ThreadList时候，重新加载浏览进度
+function reloadBrowseLogger() {
+    browseLogger.reload()
+}
+defineExpose({ reloadBrowseLogger })
 
 //撤回延时主题功能
 const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSuccess: withdrawDelayThreadSuccess } = useRequest(

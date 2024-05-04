@@ -5,16 +5,19 @@
             <div class="carousel-box" v-if="forumsStore.forumsDataLoading">
                 <n-skeleton class="carousel-skeleton" sharp />
             </div>
-            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000" v-if="!forumsStore.forumsDataLoading">
+            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000"
+                v-if="!forumsStore.forumsDataLoading">
                 <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
             </n-carousel>
         </div>
         <!-- 各种按钮 -->
         <n-flex style="margin-top:8px ;" size="small">
-            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions"
+                placement="bottom-start">
                 <f-button>功能</f-button>
             </n-dropdown>
-            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="filterOptions" placement="bottom-start">
+            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="filterOptions"
+                placement="bottom-start">
                 <f-button>筛选</f-button>
             </n-dropdown>
             <n-icon :size="commonStore.isMobile ? 28 : 34">
@@ -35,7 +38,7 @@
         <!-- 大喇叭 -->
         <LoudspeakerComponent />
         <!-- 主题列表 -->
-        <ThreadList :threads-list-data="threadListData" :new-window-to-post="newWindowToPost"
+        <ThreadList ref="ThreadListCom" :threads-list-data="threadListData" :new-window-to-post="newWindowToPost"
             :show-this="!threadsDataLoading" @withdraw-delay-thread-success="handleFetchThreadsList" />
 
         <!-- 底部分页导航及延时主题按钮 -->
@@ -92,6 +95,7 @@ const forumsStore = useForumsStore()
 const router = useRouter()
 const SidebarCom = ref<InstanceType<typeof Sidebar> | null>(null)
 const LoudspeakerComponentCom = ref<InstanceType<typeof LoudspeakerComponent> | null>()
+const ThreadListCom = ref<InstanceType<typeof ThreadList> | null>()
 
 //用teleport组件替代掉topbar的“小火锅”
 useTopbarNavControl()
@@ -266,6 +270,7 @@ const { fetching: threadsDataFetching, onSuccess: fetchThreadsListOnSucess, fetc
 function handleFetchThreadsList(remind: boolean = false) {
     remindFetch.value = remind
     fetchThreadsList(threadsListGetter(threadsDataRequestParams.value))
+    ThreadListCom.value?.reloadBrowseLogger()
 }
 fetchThreadsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 

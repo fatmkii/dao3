@@ -6,15 +6,16 @@ interface browseLogValue {
         floor: number,
     } | undefined;
 }
-function useBrowseLogger(defaultValue: browseLogValue) {
+function useBrowseLogger() {
 
     class browseLogger {
-        _logData = ref<browseLogValue>(defaultValue)
+        _defaultValue = {}
+        _logData = ref<browseLogValue>(this._defaultValue)
 
-        constructor(defaultValue: browseLogValue) {
+        constructor() {
             const valueRaw = localStorage.getItem('browseLogger')
             if (!valueRaw) {
-                this._logData.value = defaultValue
+                this._logData.value = this._defaultValue
             } else {
                 let valueTemp: browseLogValue = JSON.parse(valueRaw)
                 for (let key in valueTemp) {
@@ -23,12 +24,20 @@ function useBrowseLogger(defaultValue: browseLogValue) {
                         delete valueTemp[key]
                     }
                 }
+                this._logData.value = valueTemp
+                localStorage.setItem('browseLogger', JSON.stringify(this._logData.value)) //将已经过期的浏览记录删除
+            }
+        }
+
+        reload() {
+            const valueRaw = localStorage.getItem('browseLogger')
+            if (valueRaw) {
                 this._logData.value = JSON.parse(valueRaw)
             }
         }
 
         log(threadId: number, floor: number): void {
-            const timestamp = new Date().getTime()
+            const timestamp = new Date().getTime() + 3600 * 24 * 1000 //过期时间为1天
             this._logData.value[threadId] = {
                 expireTime: timestamp,
                 floor: floor
@@ -51,7 +60,7 @@ function useBrowseLogger(defaultValue: browseLogValue) {
         }
     }
 
-    const logger = new browseLogger(defaultValue)
+    const logger = new browseLogger()
     return logger
 }
 

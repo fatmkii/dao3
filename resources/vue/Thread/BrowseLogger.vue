@@ -33,7 +33,7 @@ const showThis = ref<boolean>(false)
 const route = useRoute()
 
 //记录浏览进度的功能
-const browseLogger = useBrowseLogger({}) //用于记录浏览进度的类
+const browseLogger = useBrowseLogger() //用于记录浏览进度的类
 browseLogger.initThread(props.threadId)
 function scrollWatch() { //监控并记录浏览激怒的
     function getFloorDom() {//获取当前屏幕中心的元素
