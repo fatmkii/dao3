@@ -20,10 +20,16 @@
                     <f-button type="primary" @click="showAppendEmoji = true" v-if="!showAppendEmoji">追加</f-button>
                 </n-flex>
             </template>
+            <!-- 点击删除功能开关 -->
+            <n-flex size="small" style="margin-bottom: 6px;">
+                <n-switch v-model:value="emojiDeleteMode" />
+                <span>启用点击删除功能</span>
+            </n-flex>
             <!-- 表情包 -->
             <n-flex size="small" style="touch-action: none;">
                 <Emoji v-for="(emojiItem, index) in emojiListInput" :key="emojiItem.id" :emojiSrc="emojiItem.emojiSrc"
-                    :index="index" @move-card="moveCard" @delete-emoji="deleteEmojiHandle" />
+                    :index="index" @click="emojiImgClick(index)" @move-card="moveCard"
+                    @delete-emoji="deleteEmojiHandle" />
             </n-flex>
             <!-- 垃圾桶 -->
             <div :ref="dropTrash" class="emoji-trash" :style="{ backgroundColor: backgroundColor }">
@@ -72,7 +78,7 @@ import { FButton } from '@custom'
 import { TrashCan } from '@vicons/carbon'
 import { toRefs } from '@vueuse/core'
 import { useRequest } from 'alova'
-import { NCard, NCheckbox, NCheckboxGroup, NFlex, NIcon, NInput, NText, useThemeVars } from 'naive-ui'
+import { NCard, NCheckbox, NCheckboxGroup, NFlex, NIcon, NInput, NText, NSwitch, useThemeVars } from 'naive-ui'
 import { computed, ref, unref, watch } from 'vue'
 import { useDrop } from 'vue3-dnd'
 import ExportEmojiModal from './Modal/ExportEmojiModal.vue'
@@ -132,6 +138,13 @@ function deleteEmojiHandle(index: number) {
     emojiListInput.value.splice(index, 1)
 }
 
+//点击删除表情包功能
+const emojiDeleteMode = ref<boolean>(false)
+function emojiImgClick(index: number) {
+    if (emojiDeleteMode.value === true) {
+        emojiListInput.value.splice(index, 1)
+    }
+}
 
 //新表情包的追加
 const showAppendEmoji = ref<boolean>(false)
