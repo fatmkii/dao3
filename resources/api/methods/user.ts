@@ -32,8 +32,17 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
         //第三个参数是config
         name: 'userDataGetter',
         params: {},
+        // localCache: null,
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },
-        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster', 'pingbiciAddPoster', 'pingbiciSetPoster', 'myEmojisAddPoster', 'myEmojisSetPoster']
+        hitSource: [/^user(?!DataGetter).*$/, 'newPostPoster', 'pingbiciAddPoster',
+            'pingbiciSetPoster', 'myEmojisAddPoster', 'myEmojisSetPoster',
+            'bankDepositPoster', 'bankWithdrawPoster', 'newCustomBingganPoster',
+            'battleCreatePoster', 'battleChanllengerRollPoster',
+            'hongbaoPostCreatePoster', 'hongbaoPostStorePoster', 'hongbaoStorePoster',
+            'newLoudspeakerPoster',
+            'deletePostDeleter', 'recoverPostPutter',
+            'newThreadPoster', 'threadChangeColorPoster',
+        ]
     }
 )
 
