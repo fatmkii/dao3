@@ -24,6 +24,7 @@
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
+            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="battleCreateHandle" />
         </n-card>
     </n-modal>
 </template>
@@ -39,11 +40,13 @@ import { useUserStore } from '@/stores/user';
 import { FButton, FInputGroupLabel } from '@custom';
 import { useRequest } from 'alova';
 import { NCard, NFlex, NInputGroup, NInputNumber, NModal, NSelect, NText } from 'naive-ui';
+import CaptchaModal from '@/vue/Thread/CaptchaModal.vue'
 import { computed, ref, watch } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
+const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 
 //组件props
 interface Props {
@@ -95,13 +98,18 @@ watch(charaGroupInput, (newValue) => {
     }
 }, { immediate: true })
 
-//提交发起红包
-const { loading: battleCreateLoading, send: battleCreateSend, onSuccess: battleCreateOnsuccess } = useRequest(
+//提交发起大乱斗
+const { loading: battleCreateLoading, send: battleCreateSend, onSuccess: battleCreateOnSuccess, onError: battleCreateOnError } = useRequest(
     (params: battleCreateParams) => battleCreatePoster(params),
     { immediate: false }
 )
-function battleCreateHandle(event: MouseEvent | KeyboardEvent) {
-    const { timestamp, newPostKey } = getNewPostKey(event.isTrusted, props.threadId, userStore.binggan!)
+
+function battleCreateHandle(event: MouseEvent | KeyboardEvent | undefined) {
+    const { timestamp, newPostKey } = getNewPostKey(
+        event?.isTrusted ?? true,  //如果是从CaptchaModal调用的，则event是undefine，此时强制给isTrust以true代替
+        props.threadId,
+        userStore.binggan!
+    )
     const params: battleCreateParams = {
         binggan: userStore.binggan!,
         forum_id: props.forumId,
@@ -115,10 +123,16 @@ function battleCreateHandle(event: MouseEvent | KeyboardEvent) {
     }
     battleCreateSend(params)
 }
-battleCreateOnsuccess(() => {
+battleCreateOnSuccess(() => {
     emit('refreshPostsList')
     showThis.value = false
 })
+battleCreateOnError((event) => {
+    if (event.error.cause.code === 244291) {
+        CaptchaModalCom.value?.show()
+    }
+})
+
 
 
 //来自父组件的唤醒emit
