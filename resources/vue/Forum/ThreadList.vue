@@ -27,10 +27,10 @@
                     </router-link>
                     <!-- 根据浏览记录的按钮 -->
                     <f-button size="tiny" type="primary" v-if="browseLoggerData[threadData.id]"
-                        @click="$router.push({ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((browseLoggerData[threadData.id]!.floor + 1) / 200) }, hash: `#f_${browseLoggerData[threadData.id]!.floor}` })">
+                        @click="toThreadPage(threadData.id)">
                         [{{ browseLoggerData[threadData.id]?.floor }}楼]
                     </f-button>
-                    <!-- 根据浏览记录的按钮 -->
+                    <!-- 延时主题的撤回按钮 -->
                     <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
@@ -62,11 +62,13 @@ import { FButton } from '@custom'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 
 //基础数据
 const commonStore = useCommonStore()
 const themeVars = useThemeVars()
+const router = useRouter()
 
 //组件props
 interface Props {
@@ -97,6 +99,23 @@ function reloadBrowseLogger() {
     browseLogger.reload()
 }
 defineExpose({ reloadBrowseLogger })
+
+//浏览进度小按钮的跳转
+function toThreadPage(threadId: number) {
+    const routerParams = {
+        name: 'thread',
+        params: { threadId: threadId, page: Math.ceil((browseLoggerData.value[threadId]!.floor + 1) / 200) },
+        hash: `#f_${browseLoggerData.value[threadId]!.floor}`
+    }
+    if (props.newWindowToPost) {
+        //新窗口打开时，先解析域名再进行打开
+        const href = router.resolve(routerParams)
+        window.open(href.href, '_blank')
+    } else {
+        //本窗口打开时，直接push
+        router.push(routerParams)
+    }
+}
 
 //撤回延时主题功能
 const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSuccess: withdrawDelayThreadSuccess } = useRequest(
