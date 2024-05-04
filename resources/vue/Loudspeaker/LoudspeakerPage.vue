@@ -28,7 +28,7 @@
         </n-flex>
 
         <!-- 分页器 -->
-        <Pagination v-model:page="page" :last-page="Math.floor(loudspeakerData.length / pageSize)"
+        <Pagination v-model:page="page" :last-page="Math.ceil(loudspeakerData.length / pageSize)"
             @update:page="(value) => page = value" style="margin-right: auto;" />
 
         <!-- 大喇叭数据 -->
