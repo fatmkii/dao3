@@ -4,19 +4,19 @@
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
         <div id="topbar-nav"></div>
         <div id="topbar-func"></div>
-        <template v-if="!userStore.userDataLoading">
-            <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions" @select="themeStore.themeChange">
-                <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;"
-                    class="img-icon">
-            </n-dropdown>
-            <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="userOptions">
-                <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData"
-                    class="img-icon">
-            </n-dropdown>
-            <f-button type="primary" v-if="!userStore.userLoginStatus" @click="LoginModalCom?.show">
-                导入饼干
-            </f-button>
-        </template>
+        <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions"
+            @select="themeStore.themeChange">
+            <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;" class="img-icon">
+        </n-dropdown>
+        <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'"
+            :options="userOptions">
+            <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData"
+                class="img-icon">
+        </n-dropdown>
+        <f-button type="primary" v-if="!userStore.userDataLoading && !userStore.userLoginStatus"
+            @click="LoginModalCom?.show">
+            导入饼干
+        </f-button>
         <template v-if="!userStore.userDataLoading && !userStore.userLoginStatus">
             <LoginModal ref="LoginModalCom" @submit-register="callRegisterHintModal" />
             <RegisterHintModal ref="registerHintModalCom" />

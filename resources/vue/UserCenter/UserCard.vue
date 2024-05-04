@@ -85,7 +85,7 @@ function copyBingganHandle() {
     window.$message.success('已将饼干复制到粘贴板，请保存好喔！')
 }
 
-
-
+//拉取最新的用户数据（可能会用alova缓存）
+userStore.refreshUserData()
 
 </script>

@@ -53,10 +53,4 @@ const tabsList = [
     { name: 'password', tab: '密码设定', component: TabPassword },
 ]
 
-
-
-
-
-
-
 </script>
