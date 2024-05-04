@@ -4,8 +4,8 @@
 
         <n-spin :show="getMedalsDataLoading">
             <n-card title="成就徽章" size="small">
-                <!-- 隐藏成就的徽章 -->
-                <n-flex :size="[4, 0]" v-if="medalsDataHidden.length > 0">
+                <!-- 隐藏成就的徽章（电脑版，flex布局，图片尺寸100px） -->
+                <n-flex :size="[4, 0]" v-if="!(commonStore.isMobile) && medalsDataHidden.length > 0">
                     <n-flex v-for="medalData in medalsDataHidden" vertical :align="'center'" class="medal-box"
                         @click="showModal(medalData)">
                         <img :src="medalData.img" class="medal-img">
@@ -14,9 +14,19 @@
                         </n-text>
                     </n-flex>
                 </n-flex>
+                <!-- 隐藏成就的徽章（手机版，grid布局，每行5个） -->
+                <n-grid x-gap="4" :cols="5" v-if="commonStore.isMobile && medalsDataHidden.length > 0">
+                    <n-gi v-for="medalData in medalsDataHidden" :align="'center'" class="medal-box"
+                        @click="showModal(medalData)">
+                        <img :src="medalData.img" class="medal-img">
+                        <n-text class="medal-text">
+                            {{ medalData.name }}
+                        </n-text>
+                    </n-gi>
+                </n-grid>
 
-                <!-- 一般成就的徽章 -->
-                <n-flex :size="[4, 0]">
+                <!-- 一般成就的徽章（电脑版，flex布局，图片尺寸100px） -->
+                <n-flex :size="[4, 0]" v-if="!commonStore.isMobile">
                     <n-flex v-for="medalData in medalsDataNormal" vertical :align="'center'" class="medal-box"
                         @click="showModal(medalData)">
                         <img :src="medalData.img" class="medal-img">
@@ -25,6 +35,17 @@
                         </n-text>
                     </n-flex>
                 </n-flex>
+                <!-- 一般成就的徽章（手机版，grid布局，每行5个） -->
+                <n-grid x-gap="4" :cols="5" v-if="commonStore.isMobile">
+                    <n-gi v-for="medalData in medalsDataNormal" :align="'center'" class="medal-box"
+                        @click="showModal(medalData)">
+                        <img :src="medalData.img" class="medal-img">
+                        <n-text class="medal-text">
+                            {{ medalData.name }}
+                        </n-text>
+                    </n-gi>
+                </n-grid>
+
                 <!-- 开关 -->
                 <template #header-extra>
                     <n-switch v-model:value="showAllMedals" />
@@ -70,7 +91,7 @@ import { medalsHidden, medalsNormal, } from '@/data/medalData'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { useRequest } from 'alova'
-import { NCard, NFlex, NModal, NSpin, NSwitch, NText } from 'naive-ui'
+import { NCard, NFlex, NGi, NGrid, NModal, NSpin, NSwitch, NText } from 'naive-ui'
 import { computed, ref } from 'vue'
 
 //基础数据
@@ -83,16 +104,7 @@ const showMedalModalData = ref<medalData>()
 const showAllMedals = ref<boolean>(false)
 
 //下面css用的变量
-const medalImgSize = computed<string>(() => {
-    const clientWidth = commonStore.clientWidth
-    if (clientWidth >= 4 * 100 + 26 + 32 + 12) {
-        return '100px'
-    } else {
-        //保持一排4个徽章的宽度
-        return Math.floor((clientWidth - 26 - 32 - 12) / 4) + 'px'
-    }
-})
-const medalTextSize = commonStore.isMobile ? '0.75rem' : '0.875rem'
+const medalTextSize = commonStore.isMobile ? '0.70rem' : '0.875rem'
 
 
 //（模板显示用的）成就数据的接口
@@ -179,7 +191,7 @@ const { loading: getMedalProgressLoading,
 <style lang="scss">
 .medal-box {
     cursor: pointer;
-    width: v-bind(medalImgSize)
+    max-width: 100px;
 }
 
 .medal-box-modal {
@@ -187,8 +199,7 @@ const { loading: getMedalProgressLoading,
 }
 
 .medal-img {
-    height: v-bind(medalImgSize);
-    max-width: 100%;
+    width: 100%;
 }
 
 .medal-text {
