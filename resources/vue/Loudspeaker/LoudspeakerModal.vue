@@ -14,7 +14,7 @@
 
             <template #action>
                 <n-flex justify="end">
-                    <f-button type="primary" @click="$router.push('/loudspeaker')">去发大喇叭</f-button>
+                    <f-button type="primary" @click="pushHandle">去发大喇叭</f-button>
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
@@ -29,10 +29,12 @@ import { useCommonStore } from '@/stores/common';
 import { FButton } from '@custom';
 import { NCard, NFlex, NModal, useThemeVars } from 'naive-ui';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 //基础数据
 const commonStore = useCommonStore()
 const themeVars = useThemeVars()
+const router = useRouter()
 
 //组件props
 interface Props {
@@ -48,6 +50,12 @@ function show() {
     showThis.value = true
 }
 defineExpose({ show })
+
+//去发大喇叭按钮
+function pushHandle() {
+    router.push('/loudspeaker')
+    showThis.value = false
+}
 
 </script>
 
