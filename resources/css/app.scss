@@ -117,14 +117,16 @@ a {
 
 //限制头像尺寸
 .random-head-container {
-    @media all and (min-width: 1200px) {
-        width: 32px;
-        height: 32px;
-    }
-    @media not all and (min-width: 1200px) {
-        width: 24px;
-        height: 24px;
-    }
+    width: 32px;
+    height: 32px;
+    // @media all and (min-width: 1200px) {
+    //     width: 32px;
+    //     height: 32px;
+    // }
+    // @media not all and (min-width: 1200px) {
+    //     width: 24px;
+    //     height: 24px;
+    // }
 }
 img[class^="head_"] {
     max-width: 100%;

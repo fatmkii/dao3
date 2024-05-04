@@ -15,33 +15,33 @@
             <template v-if="!previewMode">
                 <div style="margin-left: auto;"></div>
                 <!-- 删除按钮 -->
-                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 0"
+                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 0"
                     style="cursor: pointer;" @click="deletePostHandle">
                     <Delete />
                 </n-icon>
                 <!-- 恢复按钮 -->
-                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="postData.is_your_post && postData.is_deleted === 1"
+                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 1"
                     style="cursor: pointer;" @click="recoverPostHandle">
                     <Recover />
                 </n-icon>
                 <!-- 打赏按钮 -->
-                <n-icon :size="commonStore.isMobile ? 20 : 24" v-if="!postData.is_your_post" style="cursor: pointer;"
+                <n-icon :size="24" v-if="!postData.is_your_post" style="cursor: pointer;"
                     @click="rewardHandle">
                     <Gift />
                 </n-icon>
                 <!-- 回复按钮 -->
-                <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;" @click="quoteClick">
+                <n-icon :size="24" style="cursor: pointer;" @click="quoteClick">
                     <Quote />
                 </n-icon>
                 <!-- 下拉菜单，这里做了延后加载 -->
                 <n-icon v-if="!renderDropdown && userStore.checkAdminForums(props.forumId)"
-                    :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;" @click="renderDropdown = true">
+                    :size="24" style="cursor: pointer;" @click="renderDropdown = true">
                     <Dropdown />
                 </n-icon>
                 <n-dropdown v-if="renderDropdown && userStore.checkAdminForums(props.forumId)" trigger="click"
                     :options="funcOptions" @select="dropdownSelect" :show="renderDropdown"
                     :size="commonStore.isMobile ? 'medium' : 'large'" @clickoutside="renderDropdown = false">
-                    <n-icon :size="commonStore.isMobile ? 20 : 24" style="cursor: pointer;">
+                    <n-icon :size="24" style="cursor: pointer;">
                         <Dropdown />
                     </n-icon>
                 </n-dropdown>
