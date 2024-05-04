@@ -430,8 +430,13 @@ postsListOnError((event) => {
 })
 
 //因为组件用了KeepAlive，当组件重新激活的时候，重新获取一次数据。并且退出时清空一次输入内容。
-onActivated(() => { sendpostsListGetter() })
-onDeactivated(() => { postInputCom.value?.resetInput() })
+onActivated(() => {
+    sendpostsListGetter()
+    showThis.value = true
+})
+onDeactivated(() => {
+    postInputCom.value?.resetInput()
+})
 
 //刷新回复列表数据
 const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
