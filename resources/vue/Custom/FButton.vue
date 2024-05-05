@@ -11,12 +11,12 @@
 <script setup lang="ts">
 import { NButton, type ButtonProps } from 'naive-ui'
 import { useCommonStore } from '@/stores/common'
-import { usethemeStore } from '@/stores/theme'
+import { useThemeStore } from '@/stores/theme'
 import { useAttrs, computed } from 'vue'
 
 //基础数据
 const commonStore = useCommonStore()
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const attrs = useAttrs()
 
 //声明props

@@ -52,13 +52,13 @@
 
 <script lang="ts" setup>
 import { useCommonStore } from '@/stores/common'
-import { usethemeStore } from '@/stores/theme'
+import { useThemeStore } from '@/stores/theme'
 import { ArrowDown as Down, Forward, LayerGroup as Layer, ArrowUp as Up } from '@vicons/fa'
 import { NFlex, NIcon, useThemeVars } from 'naive-ui'
 import { ref } from 'vue'
 
 //基础数据
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const themeVars = useThemeVars()
 const showButtons = ref<boolean>(false)//显示按钮
 const buttonSize = ref<number>(24)

@@ -61,7 +61,7 @@ import { subtitles as subtitleRaw, type subtitlesType } from '@/data/subtitles'
 import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
-import { usethemeStore } from '@/stores/theme'
+import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { NColorPicker, NDivider, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui'
 import { computed, onDeactivated, ref, watch } from 'vue'
@@ -71,7 +71,7 @@ import { useRouter } from 'vue-router'
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const forumsStore = useForumsStore()
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const router = useRouter()
 
 //组件props

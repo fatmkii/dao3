@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 import { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, darkThemeColors, greenThemeColors } from '@/data/theme'
 import { useStorage } from '@vueuse/core'
 
-export const usethemeStore = defineStore('themeStore', () => {
+export const useThemeStore = defineStore('themeStore', () => {
     const themeName = useStorage<string>('theme', 'green') //用来标记当前状态的
 
     function themeChange(name: string) {

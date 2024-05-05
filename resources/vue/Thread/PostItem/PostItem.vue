@@ -100,7 +100,7 @@ import randomHeadsData from '@/data/randomHeads'
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
-import { usethemeStore } from '@/stores/theme'
+import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
@@ -125,7 +125,7 @@ const renderDropdown = ref<boolean>(false)
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)

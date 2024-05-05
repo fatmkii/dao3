@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores/common';
-import { usethemeStore } from '@/stores/theme';
+import { useThemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
 import DialogApi from '@/vue/Components/DialogApi.vue';
 import MessageApi from '@/vue/Components/MessageApi.vue';
@@ -29,7 +29,7 @@ import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useTh
 import UnauthModal from './Modals/UnauthModal.vue';
 
 //加载主题相关的store
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const themeVars = useThemeVars()
 //加载用户信息的store
 //如果localstorage没有token或者binggan，实际上不会发起请求，store中是一些默认空白数值

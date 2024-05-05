@@ -30,7 +30,7 @@ import { userLogoutPoster } from '@/api/methods/auth';
 import { userLogout } from '@/js/func/logout';
 import { renderIcon } from '@/js/func/renderIcon';
 import { useCommonStore } from '@/stores/common';
-import { usethemeStore } from '@/stores/theme';
+import { useThemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
 import { FButton, FCheckbox } from '@custom';
 import { Circle, Cog as CogIcon } from '@vicons/fa';
@@ -47,7 +47,7 @@ const router = useRouter()
 const route = useRoute()
 
 //主题相关
-const themeStore = usethemeStore()
+const themeStore = useThemeStore()
 const themeVars = useThemeVars()
 const themeOptions = [
     { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
