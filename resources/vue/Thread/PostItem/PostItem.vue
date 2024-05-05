@@ -1,6 +1,7 @@
 <template>
     <!-- 回复card -->
-    <div class="post-item" :id="'f_' + postData.floor" :floor="postData.floor">
+    <component :is="commonStore.userCustom.postLegacyMode ? 'div' : NCard" class="post-item" :id="'f_' + postData.floor"
+        :floor="postData.floor" :style="postItemStyle" :content-style="postItemCardStyle">
         <!-- header -->
         <n-flex size="small" :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
             <!-- 左边是头像和折叠提示 -->
@@ -88,7 +89,7 @@
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
             </n-flex>
         </template>
-    </div>
+    </component>
 </template>
 
 <script setup lang="ts">
@@ -99,6 +100,7 @@ import randomHeadsData from '@/data/randomHeads'
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
+import { usethemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
@@ -107,7 +109,7 @@ import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
+import { NAlert, NButton, NDropdown, NFlex, NIcon, NCard, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
 
 //异步加载组件
@@ -123,6 +125,7 @@ const renderDropdown = ref<boolean>(false)
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const themeStore = usethemeStore()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
@@ -155,6 +158,26 @@ const props = withDefaults(defineProps<Props>(), {
     previewMode: false,
 })
 
+//回复框本体的style(传统模式时)
+const postItemStyle = computed(() =>
+    commonStore.userCustom.postLegacyMode ?
+        {
+            paddingTop: '6px',
+            paddingBottom: '6px',
+            borderBottom: '1px solid',
+            borderColor: themeStore.themeColor.postItemBorderColor,
+        } : undefined
+)
+
+//回复框本体的style(Card模式时)
+const postItemCardStyle = computed(() =>
+    !commonStore.userCustom.postLegacyMode ?
+        {
+            padding: commonStore.userCustom.postCardPadding + 'px'
+        } : undefined
+)
+
+
 //回复内容的style，用来折叠高度、自定义式样等
 const postContentContainerStyle = computed(() => ({
     maxHeight: postContentContainerMaxHeight.value === undefined ? undefined : postContentContainerMaxHeight.value + 'px',
@@ -169,7 +192,8 @@ const postContentStyle = computed(() => ({
 //回复Footer的style，用来自定义式样
 const postFooterStyle = computed(() => ({
     marginTop: commonStore.userCustom.postInnerMargin + 'px',
-    fontSize: commonStore.userCustom.fontSizeFooter + 'px'
+    fontSize: commonStore.userCustom.fontSizeFooter + 'px',
+    lineHeight: commonStore.userCustom.fontSizeFooter + 'px',
 }))
 
 //注册事件

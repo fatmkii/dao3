@@ -54,16 +54,6 @@ const commonStore = useCommonStore()
     }
 }
 
-.post-item {
-    padding-top: 6px;
-    padding-bottom: 2px;
-    border-bottom: 1px solid;
-    border-color: v-bind('themeStore.themeColor.postItemBorderColor');
-    // &.on-focus {
-    //     border-color: v-bind('themeVars.primaryColor');
-    // }
-}
-
 .post-content {
     overflow-x: hidden;
     overflow-y: hidden;

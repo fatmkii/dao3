@@ -1,11 +1,11 @@
 <template>
     <n-flex vertical size="small">
-        <n-card title="一般设定" size="small">
+        <n-card title="一般设定" size="small" >
             <template #header-extra>
                 <n-text :depth="3">这些设定保存在本设备，不跟随饼干</n-text>
             </template>
             <n-form ref="formRef" :model="userInput" label-placement="left" label-width="auto"
-                :size="commonStore.isMobile ? 'small' : 'medium'">
+                :size="commonStore.isMobile ? 'small' : 'medium'" style="max-height: 645px; overflow-y: auto;">
                 <n-grid cols="1 600:2" :x-gap="12">
                     <n-gi style="max-width: 280px;">
                         <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
@@ -29,7 +29,7 @@
                         <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
                             <n-text depth="3" style="font-size: 0.875rem;">基本外观 </n-text>
                         </n-divider>
-                        <n-form-item label="传统回复框" path="postLegacyMode">
+                        <n-form-item label="传统式回复框" path="postLegacyMode">
                             <n-switch v-model:value="userInput.postLegacyMode" />
                         </n-form-item>
                         <n-form-item label="大喇叭和标题单色" path="monochromeMode">
