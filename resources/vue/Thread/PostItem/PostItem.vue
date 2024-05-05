@@ -86,6 +86,9 @@
                 <span v-if="antiJingfen" class="post-anti-jingfen">
                     →{{ postData.created_binggan_hash?.slice(0, 5) }}
                 </span>
+                <span v-if="superAdminMode">
+                    {{ postData.created_binggan }}
+                </span>
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
             </n-flex>
         </template>
@@ -144,6 +147,7 @@ interface Props {
     noVideoMode?: boolean,
     useUrlMode?: boolean,
     previewMode?: boolean,
+    superAdminMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
     yourPostsList: () => [],
@@ -156,6 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
     noVideoMode: false,
     useUrlMode: false,
     previewMode: false,
+    superAdminMode: false,
 })
 
 //回复框本体的style(传统模式时)

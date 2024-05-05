@@ -47,9 +47,9 @@
                     :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
-                    :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
-                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" />
+                    :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
+                    @show-reward-modal="RewardModalCom?.show" @quote-click="postInputCom?.quoteHandle"
+                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show" />
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
@@ -65,9 +65,10 @@
                     :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
-                    :random-head-group-index="threadData.random_heads_group" @show-reward-modal="RewardModalCom?.show"
-                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
+                    :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
+                    @show-reward-modal="RewardModalCom?.show" @quote-click="postInputCom?.quoteHandle"
+                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show"
+                    ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -308,20 +309,26 @@ const noBattleMode = useStorage<boolean>('no_battle_mode', false) //大乱斗
 const noRollMode = useStorage<boolean>('no_roll_mode', false) //roll点
 const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
+const superAdminMode = ref<boolean>(false) //超级管理员模式
 const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
 
-const refList = [//用于批量生成checkbox
-    { ref: noVideoMode, label: '音频视频' },
-    { ref: noImageMode, label: '图片' },
-    { ref: noEmojiMode, label: '一般表情包' },
-    { ref: noCustomEmojiMode, label: '自定义表情包' },
-    { ref: noHeadMode, label: '头像' },
-    { ref: noBattleMode, label: '大乱斗' },
-    { ref: noRollMode, label: 'roll点' },
-    { ref: noRewardMode, label: '打赏' },
-    { ref: noHongbaoMode, label: '红包结果' },
-    // { ref: useUrlMode, label: '自动转换超链接（实验性）' },
-]
+const refList = computed(() => {
+    const checkboxArray = [//用于批量生成checkbox
+        { ref: noVideoMode, label: '音频视频' },
+        { ref: noImageMode, label: '图片' },
+        { ref: noEmojiMode, label: '一般表情包' },
+        { ref: noCustomEmojiMode, label: '自定义表情包' },
+        { ref: noHeadMode, label: '头像' },
+        { ref: noBattleMode, label: '大乱斗' },
+        { ref: noRollMode, label: 'roll点' },
+        { ref: noRewardMode, label: '打赏' },
+        { ref: noHongbaoMode, label: '红包结果' },
+    ]
+    if (userStore.admin.isSuperAdmin) {
+        checkboxArray.unshift({ ref: superAdminMode, label: '超管模式启动！' })
+    }
+    return checkboxArray
+})
 function renderFuncOptions() {
     return h(
         NFlex,
@@ -330,7 +337,7 @@ function renderFuncOptions() {
             vertical: true,
         },
         () => [
-            Array.from(refList).map((item) => {
+            Array.from(refList.value).map((item) => {
                 return h(FCheckbox, {
                     checked: item.ref.value,
                     'onUpdate:checked': (value: boolean) => item.ref.value = value,
