@@ -25,7 +25,7 @@
         <template v-if="!postsListLoading && showThis">
             <!-- 标题 -->
             <n-card class="thread-title-container" size="small" key="title-card">
-                <span class="thread-title" :style="{ fontSize: commonStore.userCustom.fontSizeThreadList }">
+                <span class="thread-title" :style="{ fontSize: commonStore.userCustom.fontSizeThreadList + 'px' }">
                     {{ threadData?.title }} [{{ threadData?.posts_num }}]
                 </span>
                 <n-dropdown v-if="userStore.checkAdminForums(forumData?.id)" trigger="click" :options="adminOptions"
