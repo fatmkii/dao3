@@ -17,13 +17,13 @@
                     {{ threadData.crowd_id ? '💰' : '' }}
                     {{ threadData.hongbao_id ? '🧧' : '' }}
                     <!-- 标题内容 -->
-                    <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }" style="font-size:1.0rem;"
+                    <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
                         :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>
                     <!-- 页码 -->
-                    <router-link style="font-size:1.0rem;"
+                    <router-link
                         :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
