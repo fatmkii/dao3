@@ -65,7 +65,7 @@ class BattleController extends Controller
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',
-            'battle_olo' => 'required|integer|max:1000000|min:100',
+            'battle_olo' => 'required|integer|max:1000000|min:1',
             'chara_id' => 'required|integer',
             'is_custom_chara' => 'nullable|boolean',
             'chara_group' => 'required|integer',
