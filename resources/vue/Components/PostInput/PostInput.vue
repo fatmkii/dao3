@@ -93,10 +93,9 @@
         </n-flex>
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder"
-            :autosize="{ minRows: 5, maxRows: 10 }" ref="contentInputDom"
-            style="border-radius: 10px;font-size: 1.0rem; " :input-props="{ id: 'content-input' }"
-            :disabled="userIsLocked" @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)"
-            @blur="isTyping = false" @focus="isTyping = true" />
+            :autosize="{ minRows: 5, maxRows: 10 }" ref="contentInputDom" :style="inputStyle"
+            :input-props="{ id: 'content-input' }" :disabled="userIsLocked" @change="contentInputChange"
+            @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false" @focus="isTyping = true" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
@@ -179,6 +178,12 @@ const props = withDefaults(defineProps<Props>(), {
     threadId: 0,
     randomHeadsGroup: 1,
 })
+
+//输入框style
+const inputStyle = computed(() => ({
+    fontSize: commonStore.userCustom.fontSizeInput + 'px',
+    borderRadius: '10px',
+}))
 
 //用户禁言显示
 const textareaPlaceHolder = computed(() => {

@@ -92,7 +92,15 @@
                             </n-input-number>
                         </n-form-item>
                         <n-form-item label="主题列表脚注" path="fontSizeThreadListFooter">
-                            <n-input-number v-model:value="userInput.fontSizeThreadListFooter" :max="24" :min="10"
+                            <n-input-number v-model:value="userInput.fontSizeThreadListFooter" :max="22" :min="8"
+                                :step="0.5">
+                                <template #suffix>
+                                    px
+                                </template>
+                            </n-input-number>
+                        </n-form-item>
+                        <n-form-item label="输入框" path="fontSizeInput">
+                            <n-input-number v-model:value="userInput.fontSizeInput" :max="24" :min="10"
                                 :step="0.5">
                                 <template #suffix>
                                     px

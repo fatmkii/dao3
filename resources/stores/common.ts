@@ -66,6 +66,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontSizeFooter: number, //楼层号的字体大小
         fontSizeThreadList: number, //主题列表的字体大小
         fontSizeThreadListFooter: number, //主题列表Footer的字体大小
+        fontSizeInput: 16, //回复输入框的字体大小
         threadListInnerMargin: number,//ThreadList内部的元素的margin（控制主题标题正文和Footer的margin-top）
         threadListCardPadding: number,//主题列表Card的上下左右padding
         postCardPadding: number,//postItem Card的上下左右padding
@@ -99,6 +100,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontSizeFooter: 14, //楼层号的字体大小
         fontSizeThreadList: 16, //主题列表的字体大小
         fontSizeThreadListFooter: 14, //主题列表Footer的字体大小
+        fontSizeInput: 16, //回复输入框的字体大小
         threadListCardPadding: 12,//主题列表Card的上下左右padding
         threadListInnerMargin: 6,//ThreadList内部的元素的margin（控制主题标题正文和Footer的margin-top）
         postCardPadding: 12,//postItem Card的上下左右padding
