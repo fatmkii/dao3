@@ -309,13 +309,16 @@ class HongbaoPostController extends Controller
         //用redis记录回帖频率。
         $user->waterRecord('new_post', $request->ip());
 
-        //追加该IP的抢红包记录，限制同一IP抢同一个红包（无论红包关键词是否正确）
-        $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
-        $ttl = 10; //限制10秒
-        Redis::setex($key, $ttl, 1);
+
 
         //检查红包关键词是否正确 
         if ($hongbao->key_word == $request->hongbao_key_word) { //口令正确的流程：
+
+            //追加该IP的抢红包记录，限制同一IP抢同一个红包（当关键词正确时）
+            $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
+            $ttl = 10; //限制10秒
+            Redis::setex($key, $ttl, 1);
+
             try {
                 DB::beginTransaction();
 
