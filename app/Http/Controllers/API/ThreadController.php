@@ -499,7 +499,7 @@ class ThreadController extends Controller
 
         //如果有提供binggan，生成一个该用户发言的floor楼号清单，使前端标记用户被回复的清空
         if ($request->query('binggan')) {
-            $your_post_floors = $CurrentThread->posts()->where('created_binggan', $user->binggan)->pluck('floor');
+            $your_post_floors = $CurrentThread->posts()->where('created_binggan', $user->binggan)->orderBy('id', 'desc')->limit(50)->pluck('floor');
         }
 
         //为反精分帖子加上created_binggan_hash
