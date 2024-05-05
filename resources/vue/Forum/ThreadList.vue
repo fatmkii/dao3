@@ -1,11 +1,14 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
         <n-card v-for=" threadData in threadsListData  " size="small" :bordered="true" :key="threadData.id"
-            class="thread-cards" :content-style="threadCardsContentStyle" hoverable>
-            <n-flex vertical>
+            class="thread-cards" :content-style="{ padding: commonStore.userCustom.threadListCardPadding + 'px' }"
+            hoverable>
+            <n-flex vertical :size="[0, 0]">
                 <!-- 主题的标题本体 -->
-                <div :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1 }"
-                    class="thread-title">
+                <div :style="{
+                    color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1,
+                    fontSize: commonStore.userCustom.fontSizeThreadList + 'px'
+                }" class="thread-title">
                     <!-- 副标题 -->
                     {{ threadData.sub_title }}
                     <!-- 红包、菠菜、众筹、投票图标 -->
@@ -36,7 +39,10 @@
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
                 </div>
                 <!-- 回复数量等信息 -->
-                <n-flex size="small" class="thread-title-secondary">
+                <n-flex size="small" class="thread-title-secondary" :style="{
+                    fontSize: commonStore.userCustom.fontSizeThreadListFooter + 'px',
+                    marginTop: commonStore.userCustom.threadListInnerMargin + 'px'
+                }">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
                     <span><n-text depth="3">发帖人:</n-text> {{ threadData.nickname }} </span>
                     <span style="margin-left: auto;"></span>
@@ -61,7 +67,6 @@ import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 
@@ -82,13 +87,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 //自定义触发事件
 const emit = defineEmits(['withdrawDelayThreadSuccess'])
-
-//外观调整
-const threadCardsContentStyle = computed(() => {
-    return {
-        paddingBottom: commonStore.isMobile ? '6px' : '',
-    }
-})
 
 //记录浏览进度和显示
 const browseLogger = useBrowseLogger() //用于记录浏览进度的类
@@ -136,14 +134,6 @@ function handleWithdrawDelayThread(threadId: number) {
 .thread-cards {
     &:hover {
         background-color: v-bind('themeVars.hoverColor');
-    }
-}
-
-.thread-title-secondary {
-    font-size: v-bind('commonStore.isMobile ? "0.875rem" : "0.875rem"');
-
-    span {
-        font-size: v-bind('commonStore.isMobile ? "0.875rem" : "0.875rem"')
     }
 }
 

@@ -15,18 +15,17 @@
             <template v-if="!previewMode">
                 <div style="margin-left: auto;"></div>
                 <!-- 删除按钮 -->
-                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 0"
-                    style="cursor: pointer;" @click="deletePostHandle">
+                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 0" style="cursor: pointer;"
+                    @click="deletePostHandle">
                     <Delete />
                 </n-icon>
                 <!-- 恢复按钮 -->
-                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 1"
-                    style="cursor: pointer;" @click="recoverPostHandle">
+                <n-icon :size="24" v-if="postData.is_your_post && postData.is_deleted === 1" style="cursor: pointer;"
+                    @click="recoverPostHandle">
                     <Recover />
                 </n-icon>
                 <!-- 打赏按钮 -->
-                <n-icon :size="24" v-if="!postData.is_your_post" style="cursor: pointer;"
-                    @click="rewardHandle">
+                <n-icon :size="24" v-if="!postData.is_your_post" style="cursor: pointer;" @click="rewardHandle">
                     <Gift />
                 </n-icon>
                 <!-- 回复按钮 -->
@@ -34,8 +33,8 @@
                     <Quote />
                 </n-icon>
                 <!-- 下拉菜单，这里做了延后加载 -->
-                <n-icon v-if="!renderDropdown && userStore.checkAdminForums(props.forumId)"
-                    :size="24" style="cursor: pointer;" @click="renderDropdown = true">
+                <n-icon v-if="!renderDropdown && userStore.checkAdminForums(props.forumId)" :size="24"
+                    style="cursor: pointer;" @click="renderDropdown = true">
                     <Dropdown />
                 </n-icon>
                 <n-dropdown v-if="renderDropdown && userStore.checkAdminForums(props.forumId)" trigger="click"
@@ -46,13 +45,23 @@
                     </n-icon>
                 </n-dropdown>
             </template>
+            <template v-else>
+                <div style="margin-left: auto;"></div>
+                <!-- 打赏按钮 -->
+                <n-icon :size="24" style="cursor: pointer;">
+                    <Gift />
+                </n-icon>
+                <!-- 回复按钮 -->
+                <n-icon :size="24" style="cursor: pointer;">
+                    <Quote />
+                </n-icon>
+            </template>
         </n-flex>
 
         <!-- 隐藏时候需要被折叠的内容 -->
         <template v-if="!postIsFolded">
             <!-- 正文内容 -->
-            <div class="post-content" ref="postContentContainerDom" :style="postContentContainerStyle"
-                style="margin-top: 12px;line-height: 28px;">
+            <div class="post-content" ref="postContentContainerDom" :style="postContentContainerStyle">
                 <span v-html="postContent" class="post-span" ref="postContentDom" :style="postContentStyle"></span>
             </div>
 
@@ -63,7 +72,7 @@
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
             <!-- 正文下面的footer，楼号等 -->
-            <n-flex :size="[4, 0]" class="post-footer" style="margin-top: 12px;"
+            <n-flex :size="[4, 0]" class="post-footer" :style="postFooterStyle"
                 :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }">
 
                 <span :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
@@ -146,12 +155,21 @@ const props = withDefaults(defineProps<Props>(), {
     previewMode: false,
 })
 
-//回复内容的style，用来折叠高度等
+//回复内容的style，用来折叠高度、自定义式样等
 const postContentContainerStyle = computed(() => ({
     maxHeight: postContentContainerMaxHeight.value === undefined ? undefined : postContentContainerMaxHeight.value + 'px',
+    marginTop: commonStore.userCustom.postInnerMargin + 'px',
+    lineHeight: commonStore.userCustom.lineHeightPost + 'px'
 }))
 const postContentStyle = computed(() => ({
     top: postContentTopOffset.value === undefined ? undefined : postContentTopOffset.value + 'px',
+    fontSize: commonStore.userCustom.fontSizePost + 'px'
+}))
+
+//回复Footer的style，用来自定义式样
+const postFooterStyle = computed(() => ({
+    marginTop: commonStore.userCustom.postInnerMargin + 'px',
+    fontSize: commonStore.userCustom.fontSizeFooter + 'px'
 }))
 
 //注册事件

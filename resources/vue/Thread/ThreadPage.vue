@@ -24,8 +24,8 @@
         </template>
         <template v-if="!postsListLoading && showThis">
             <!-- 标题 -->
-            <n-card class="thread-title-contain" size="small" key="title-card">
-                <span class="thread-title">
+            <n-card class="thread-title-container" size="small" key="title-card">
+                <span class="thread-title" :style="{ fontSize: commonStore.userCustom.fontSizeThreadList }">
                     {{ threadData?.title }} [{{ threadData?.posts_num }}]
                 </span>
                 <n-dropdown v-if="userStore.checkAdminForums(forumData?.id)" trigger="click" :options="adminOptions"
@@ -667,18 +667,7 @@ onDeactivated(() => {
 </script>
 
 <style scoped lang="scss">
-.thread-title {
-    @media all and (min-width: 1200px) {
-        font-size: 1.125rem;
-    }
-
-    @media not all and (min-width: 1200px) {
-        font-size: 1rem;
-
-    }
-}
-
-.thread-title-contain {
+.thread-title-container {
     border-radius: 10px;
 }
 

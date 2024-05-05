@@ -44,34 +44,74 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {
-        loudspeakerPosition: 'top' | 'center' | 'bottom'
-        imgHost: imgHostType
-        sidebarLeft: boolean
-        hongbaoThenStop: boolean
-        holdPageWhenListening: boolean
-        lessToast: boolean
-        monochromeMode: boolean
-        quoteMax: number
-        fontRemSize: number
-        hidePingbiciFloor: boolean,
-        pingbiciIngnoreCase: boolean
+        version: number, //版本号，方便日后做重置
+
+        // 功能选项
+        imgHost: string,//图床选择
+        hongbaoThenStop: boolean, //自动涮锅时遇到红包停止
+        holdPageWhenListening: boolean,//自动涮锅时页面保持不动
+        lessToast: boolean,  //减少弹出提示
+
+        // 外观选项
+        postLegacyMode: boolean, //传统式回复框（相对于卡片式)
+        monochromeMode: boolean, //单色模式（大喇叭和主题）
+        sidebarLeft: boolean, //侧边栏放在左侧
+        loudspeakerPosition: 'top' | 'center' | 'bottom', //大喇叭位置选择
+        quoteMax: number,//最大引用层数
+        foldMaxLine: number,//回复行数限高
+        // fontRemSize: 16,//字体大小
+        lineHeightPost: number, //回复内容行距
+        fontSizePost: number, //回复主要内容字体大小
+        fontSizeQuote: number, //引用字体大小 
+        fontSizeFooter: number, //楼层号的字体大小
+        fontSizeThreadList: number, //主题列表的字体大小
+        fontSizeThreadListFooter: number, //主题列表Footer的字体大小
+        threadListInnerMargin: number,//ThreadList内部的元素的margin（控制主题标题正文和Footer的margin-top）
+        threadListCardPadding: number,//主题列表Card的上下左右padding
+        postCardPadding: number,//postItem Card的上下左右padding
+        postInnerMargin: number,//PostItem内部的元素的margin（控制回复正文和Footer的margin-top）
+
+
+        // 其他选项
+        hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
+        pingbiciIngnoreCase: false, //屏蔽词忽略大小写
     }
     const userCustom = useStorage<userCustomType>('user_custom', {
-        loudspeakerPosition: 'bottom', //大喇叭位置选择
+        version: 240505, //版本号，方便日后做重置
+
+        // 功能选项
         imgHost: 'mjj',//图床选择
-        sidebarLeft: false, //侧边栏放在左侧
         hongbaoThenStop: false, //自动涮锅时遇到红包停止
         holdPageWhenListening: false,//自动涮锅时页面保持不动
         lessToast: false,  //减少弹出提示
-        monochromeMode: false,
+
+        // 外观选项
+        postLegacyMode: false, //传统式回复框（相对于卡片式)
+        monochromeMode: false, //单色模式（大喇叭和主题）
+        sidebarLeft: false, //侧边栏放在左侧
+        loudspeakerPosition: 'bottom', //大喇叭位置选择
         quoteMax: 3,//最大引用层数
-        fontRemSize: 16,//字体大小
+        foldMaxLine: 16,//回复行数限高
+        // fontRemSize: 16,//字体大小
+        lineHeightPost: 28, //回复内容行距
+        fontSizePost: 16, //回复主要内容字体大小
+        fontSizeQuote: 16, //引用字体大小 
+        fontSizeFooter: 14, //楼层号的字体大小
+        fontSizeThreadList: 16, //主题列表的字体大小
+        fontSizeThreadListFooter: 14, //主题列表Footer的字体大小
+        threadListCardPadding: 12,//主题列表Card的上下左右padding
+        threadListInnerMargin: 6,//ThreadList内部的元素的margin（控制主题标题正文和Footer的margin-top）
+        postCardPadding: 12,//postItem Card的上下左右padding
+        postInnerMargin: 12,//PostItem内部的元素的margin（控制回复正文和Footer的margin-top）
+
+        // 其他选项
         hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
         pingbiciIngnoreCase: false, //屏蔽词忽略大小写
+
     }, localStorage, { mergeDefaults: true })
 
     //监听设定，变更rem单位大小
-    watch(() => userCustom.value.fontRemSize, (newValue) => document.documentElement.style.fontSize = newValue + 'px', { immediate: true })
+    // watch(() => userCustom.value.fontRemSize, (newValue) => document.documentElement.style.fontSize = newValue + 'px', { immediate: true })
 
     return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth }
 

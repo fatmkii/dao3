@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCommonStore } from '@/stores/common';
 import { usethemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
 import DialogApi from '@/vue/Components/DialogApi.vue';
@@ -26,7 +27,6 @@ import MessageApi from '@/vue/Components/MessageApi.vue';
 import TopBar from '@/vue/TopBar/TopBar.vue';
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
 import UnauthModal from './Modals/UnauthModal.vue';
-import { useCommonStore } from '@/stores/common';
 
 //加载主题相关的store
 const themeStore = usethemeStore()
@@ -43,6 +43,7 @@ const commonStore = useCommonStore()
 <style lang="scss">
 .quote_content,
 .quote-content {
+    font-size: v-bind('commonStore.userCustom.fontSizeQuote + "px"');
     color: v-bind('themeVars.textColor3');
 }
 
@@ -63,14 +64,6 @@ const commonStore = useCommonStore()
     // }
 }
 
-.post-span {
-    font-size: v-bind('commonStore.isMobile ? "1.0rem" : "1.0rem"');
-
-    span {
-        font-size: v-bind('commonStore.isMobile ? "1.0rem" : "1.0rem"')
-    }
-}
-
 .post-content {
     overflow-x: hidden;
     overflow-y: hidden;
@@ -79,18 +72,6 @@ const commonStore = useCommonStore()
 }
 
 .post-footer {
-    margin-top: 0.2rem;
-    font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"');
-
-    span {
-        font-size: v-bind('commonStore.isMobile ? "0.75rem" : "0.875rem"')
-    }
-}
-
-.post-footer {
-    span {
-        font-size: 0.875rem;
-    }
 
     &.system-post .post-nick-name {
         color: v-bind('themeVars.primaryColor')
