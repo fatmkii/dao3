@@ -46,7 +46,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                 output: {
                     // 控制代码分割
                     manualChunks(id) {
-                        id.includes
                         if (id.includes('node_modules')) {
                             // 依赖模块分包
                             return 'vendor';
