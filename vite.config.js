@@ -30,7 +30,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     defineModel: true
                 }
             }),
-
         ],
         resolve: {
             alias: {
@@ -39,6 +38,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                 '@custom': '/resources/vue/Custom',
             },
         },
+        build: { target: "es2015" },
     }
 }
 );
