@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
+import { splitVendorChunkPlugin } from 'vite'
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
 
@@ -30,6 +31,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     defineModel: true
                 }
             }),
+            splitVendorChunkPlugin(),
         ],
         resolve: {
             alias: {
@@ -38,7 +40,27 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                 '@custom': '/resources/vue/Custom',
             },
         },
-        build: { target: "es2015" },
+        build: {
+            target: "es2015",
+            rollupOptions: {
+                output: {
+                    // 控制代码分割
+                    manualChunks(id) {
+                        id.includes
+                        if (id.includes('node_modules')) {
+                            // 依赖模块分包
+                            return 'vendor';
+                        } else {
+                            return 'app';
+                        }
+                    }
+                    // manualChunks: {
+                    //     vendor: ['vue', 'pinia', 'vue-router', 'naive-ui', 'alova', 'dayjs', 'crypto-js', 'pusher-js', 'sass', 'vue3-dnd', 'laravel-echo'],
+                    //     app: ['*']
+                    // }
+                }
+            }
+        },
     }
 }
 );
