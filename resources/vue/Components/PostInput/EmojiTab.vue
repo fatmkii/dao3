@@ -1,10 +1,10 @@
 <template>
     <n-tabs type="line" :bar-width="0" animated @before-leave="tabOnBeforeLeave"
         :size="commonStore.isMobile ? 'small' : 'medium'" :default-value="-1" v-model:value="tabValue">
-        <n-tab-pane v-for="( emojiGroup, key, index ) in  emojiData " :name="emojiGroup.id"
-            :tab="tabRender(emojiGroup.name, emojiGroup.id)">
-            <n-flex size="small" class="emoji-container">
-                <div class="emoji-box" v-for="( emojiSrc, key, index ) in  emojiGroup.emojis "
+        <n-tab-pane v-for="( emojiGroup, key, index ) in emojiData " :name="emojiGroup.id"
+            :tab="tabRender(emojiGroup.name, emojiGroup.id)" >
+            <n-flex size="small" class="emoji-container" :style="tabPaneStyle">
+                <div class="emoji-box" v-for="( emojiSrc, key, index ) in emojiGroup.emojis "
                     @click="emojiClick(emojiSrc, emojiGroup.name)">
                     <img :src="emojiSrc" class="emoji-in-box">
                 </div>
@@ -34,6 +34,24 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     randomHeadsGroup: 1,
     autoHide: true,
+})
+
+//TabPane的style，主要是给侧边栏留白
+const tabPaneStyle = computed(() => {
+    // 这是给侧边栏的padding,避免阻挡文字内容。
+    let paddingLeft = 0
+    let paddingRight = 0
+    if (commonStore.isMobile) { //电脑版不需要padding
+        if (commonStore.userCustom.sidebarLeft) {
+            paddingLeft = 20
+        } else {
+            paddingRight = 20
+        }
+    }
+    return {
+        paddingLeft: paddingLeft + 'px',
+        paddingRight: paddingRight + 'px',
+    }
 })
 
 
