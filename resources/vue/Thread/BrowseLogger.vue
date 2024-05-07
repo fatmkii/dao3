@@ -1,5 +1,5 @@
 <template>
-    <n-alert type="success" closable v-if="showThis && !isSearch" style="border-radius: 10px;"> 
+    <n-alert type="success" closable v-if="showThis && !isSearch" style="border-radius: 10px;">
         你上次已经浏览到{{ browseLogger.get(threadId)!.floor }}楼，
         <router-link @click="showThis = false"
             :to="{ name: 'thread', params: { threadId: threadId, page: Math.ceil((browseLogger.get(threadId)!.floor + 1) / 200) } }">
@@ -34,7 +34,6 @@ const route = useRoute()
 
 //记录浏览进度的功能
 const browseLogger = useBrowseLogger() //用于记录浏览进度的类
-browseLogger.initThread(props.threadId)
 function scrollWatch() { //监控并记录浏览激怒的
     function getFloorDom() {//获取当前屏幕中心的元素
         const X = window.innerWidth / 2
@@ -82,6 +81,7 @@ watch(() => props.postsListLoading, (newValue) => {
 })
 
 onActivated(() => {
+    browseLogger.initThread(props.threadId)
     window.addEventListener("scroll", scrollWatch)
 })
 onDeactivated(() => {
