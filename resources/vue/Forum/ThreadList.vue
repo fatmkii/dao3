@@ -7,7 +7,8 @@
                 <!-- 主题的标题本体 -->
                 <div :style="{
                     color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1,
-                    fontSize: commonStore.userCustom.fontSizeThreadList + 'px'
+                    fontSize: commonStore.userCustom.fontSizeThreadList + 'px',
+                    lineHeight: 1.5,
                 }" class="thread-title">
                     <!-- 副标题 -->
                     {{ threadData.sub_title }}
@@ -41,7 +42,8 @@
                 <!-- 回复数量等信息 -->
                 <n-flex size="small" class="thread-title-secondary" :style="{
                     fontSize: commonStore.userCustom.fontSizeThreadListFooter + 'px',
-                    marginTop: commonStore.userCustom.threadListInnerMargin + 'px'
+                    marginTop: commonStore.userCustom.threadListInnerMargin + 'px',
+                    lineHeight: 1.5,
                 }">
                     <span><n-text depth="3">最新回复:</n-text> {{ threadData.updated_at }}</span>
                     <span><n-text depth="3">发帖人:</n-text> {{ threadData.nickname }} </span>
