@@ -5,7 +5,8 @@ import { GlobalThemeOverrides } from 'naive-ui'
 //naive ui的override
 const lightThemeOverrides: GlobalThemeOverrides = {
     "common": {
-        "bodyColor": "rgba(249, 249, 249, 1)"
+        "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
+        "bodyColor": "rgba(249, 249, 249, 1)",
     },
     "Button": {
         "colorPrimary": "#32BA32FF"
@@ -17,6 +18,7 @@ const lightThemeOverrides: GlobalThemeOverrides = {
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
     "common": {
+        "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
         "textColor1": "rgba(255, 255, 255, 0.73)",
         "textColor2": "rgba(255, 255, 255, 0.66)",
     },
@@ -27,6 +29,7 @@ const darkThemeOverrides: GlobalThemeOverrides = {
 }
 const greenThemeOverrides: GlobalThemeOverrides = {
     "common": {
+        "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
         "bodyColor": "#eefaee",
     },
     "Card": {
