@@ -1,11 +1,12 @@
 <template>
     <n-flex vertical size="small">
-        <n-card title="一般设定" size="small" >
+        <n-card title="一般设定" size="small">
             <template #header-extra>
-                <n-text :depth="3">这些设定保存在本设备，不跟随饼干</n-text>
+                <f-button @click="commonStore.userCustomReset">恢复默认</f-button>
             </template>
             <n-form ref="formRef" :model="userInput" label-placement="left" label-width="auto"
-                :size="commonStore.isMobile ? 'small' : 'medium'" style="max-height: 645px; overflow-y: auto;">
+                :size="commonStore.isMobile ? 'small' : 'medium'" style="max-height: 655px; overflow-y: auto;">
+                <n-text :depth="3">这些设定保存在本设备，不跟随饼干</n-text>
                 <n-grid cols="1 600:2" :x-gap="12">
                     <n-gi style="max-width: 280px;">
                         <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
@@ -100,8 +101,7 @@
                             </n-input-number>
                         </n-form-item>
                         <n-form-item label="输入框" path="fontSizeInput">
-                            <n-input-number v-model:value="userInput.fontSizeInput" :max="24" :min="10"
-                                :step="0.5">
+                            <n-input-number v-model:value="userInput.fontSizeInput" :max="24" :min="10" :step="0.5">
                                 <template #suffix>
                                     px
                                 </template>
@@ -134,7 +134,8 @@
                             </n-input-number>
                         </n-form-item>
                         <n-form-item label="主题内容上下间距" path="threadListInnerMargin">
-                            <n-input-number v-model:value="userInput.threadListInnerMargin" :max="30" :min="0" :step="1">
+                            <n-input-number v-model:value="userInput.threadListInnerMargin" :max="30" :min="0"
+                                :step="1">
                                 <template #suffix>
                                     px
                                 </template>
@@ -164,6 +165,7 @@
 import { useCommonStore } from '@/stores/common';
 import ThreadList from '@/vue/Forum/ThreadList.vue';
 import PostItem from '@/vue/Thread/PostItem/PostItem.vue';
+import { FButton } from '@custom';
 import { NCard, NDivider, NFlex, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui';
 
 //基础数据

@@ -66,20 +66,19 @@ export const useCommonStore = defineStore('commonStore', () => {
         fontSizeFooter: number, //楼层号的字体大小
         fontSizeThreadList: number, //主题列表的字体大小
         fontSizeThreadListFooter: number, //主题列表Footer的字体大小
-        fontSizeInput: 16, //回复输入框的字体大小
+        fontSizeInput: number, //回复输入框的字体大小
         threadListInnerMargin: number,//ThreadList内部的元素的margin（控制主题标题正文和Footer的margin-top）
         threadListCardPadding: number,//主题列表Card的上下左右padding
         postCardPadding: number,//postItem Card的上下左右padding
         postInnerMargin: number,//PostItem内部的元素的margin（控制回复正文和Footer的margin-top）
 
-
         // 其他选项
-        hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
-        pingbiciIngnoreCase: false, //屏蔽词忽略大小写
+        hidePingbiciFloor: boolean, //完全隐藏屏蔽词楼层
+        pingbiciIngnoreCase: boolean, //屏蔽词忽略大小写
     }
+
     const userCustom = useStorage<userCustomType>('user_custom', {
         version: 240505, //版本号，方便日后做重置
-
         // 功能选项
         imgHost: 'mjj',//图床选择
         hongbaoThenStop: false, //自动涮锅时遇到红包停止
@@ -90,7 +89,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         postLegacyMode: false, //传统式回复框（相对于卡片式)
         monochromeMode: false, //单色模式（大喇叭和主题）
         sidebarLeft: false, //侧边栏放在左侧
-        loudspeakerPosition: 'bottom', //大喇叭位置选择
+        loudspeakerPosition: 'bottom' as 'top' | 'center' | 'bottom', //大喇叭位置选择
         quoteMax: 3,//最大引用层数
         foldMaxLine: 16,//回复行数限高
         // fontRemSize: 16,//字体大小
@@ -109,13 +108,39 @@ export const useCommonStore = defineStore('commonStore', () => {
         // 其他选项
         hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
         pingbiciIngnoreCase: false, //屏蔽词忽略大小写
-
     }, localStorage, { mergeDefaults: true })
 
-    //监听设定，变更rem单位大小
-    // watch(() => userCustom.value.fontRemSize, (newValue) => document.documentElement.style.fontSize = newValue + 'px', { immediate: true })
 
-    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth }
+    //重置userCustom
+    function userCustomReset() {
+        const dialogArgs = {
+            title: '重置设定',
+            closable: false,
+            content: `确定要重置所有一般设定吗？`,
+            positiveText: '确定',
+            negativeText: '取消',
+            onPositiveClick: () => {
+                //不知道为何直接赋值会失去响应性？
+                userCustom.value.quoteMax = 3
+                userCustom.value.foldMaxLine = 16
+                userCustom.value.lineHeightPost = 28
+                userCustom.value.fontSizePost = 16
+                userCustom.value.fontSizeQuote = 16
+                userCustom.value.fontSizeFooter = 14
+                userCustom.value.fontSizeThreadList = 16
+                userCustom.value.fontSizeThreadListFooter = 14
+                userCustom.value.fontSizeInput = 16
+                userCustom.value.threadListCardPadding = 12
+                userCustom.value.threadListInnerMargin = 6
+                userCustom.value.postCardPadding = 12
+                userCustom.value.postInnerMargin = 12
+            },
+        }
+        window.$dialog.warning(dialogArgs)
+
+    }
+
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth, userCustomReset }
 
 })
 
