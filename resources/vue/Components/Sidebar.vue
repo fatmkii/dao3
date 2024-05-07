@@ -1,5 +1,5 @@
 <template>
-    <n-flex vertical :size="[0, 16]" class="sidebar" :class="[commonStore.userCustom.sidebarLeft ? 'left' : 'right']"
+    <n-flex vertical :size="[0, 24]" class="sidebar" :class="[commonStore.userCustom.sidebarLeft ? 'left' : 'right']"
         :align="'center'">
         <!-- 到顶部 -->
         <Transition name="slide-fade">
@@ -43,7 +43,8 @@
                 <Down />
             </n-icon>
         </Transition>
-        <n-icon :size="buttonSize" class="icon" @click="showButtons = !showButtons" style="margin-top: 6px;"
+        <!-- 初始按钮 -->
+        <n-icon :size="buttonSize" class="icon" @click="showButtons = !showButtons"
             :color="themeStore.themeColor.sidebarColor">
             <Layer />
         </n-icon>
@@ -124,11 +125,11 @@ function scrollHandle(to: 'up' | 'down') {
 
 
 .slide-fade-enter-active {
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .slide-fade-leave-active {
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .slide-fade-enter-from,
