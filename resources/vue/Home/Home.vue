@@ -1,7 +1,7 @@
 <template>
     <n-flex justify="center" vertical>
         <!-- 版头图片 -->
-        <div class="carousel-box">
+        <div class="carousel-box" v-if="!hideBanner">
             <n-skeleton class="carousel-skeleton" sharp v-if="homeBannersLoading" />
             <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay v-if="!homeBannersLoading" :interval="10000">
                 <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
@@ -35,14 +35,15 @@
 </template>
 
 <script setup lang="ts">
-import { NFlex, NCarousel, NSkeleton, NCard, NText, NTag, useThemeVars } from 'naive-ui'
-import { useRequest } from 'alova'
-import { homeBannersGetter } from '@/api/methods/globalSetting'
-import { useForumsStore } from '@/stores/forums'
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router'
-import ForumsStar from '@/vue/Home/ForumsStar.vue'
+import { homeBannersGetter } from '@/api/methods/globalSetting';
 import { useCommonStore } from '@/stores/common';
+import { useForumsStore } from '@/stores/forums';
+import ForumsStar from '@/vue/Home/ForumsStar.vue';
+import { useStorage } from '@vueuse/core';
+import { useRequest } from 'alova';
+import { NCard, NCarousel, NFlex, NSkeleton, NTag, NText, useThemeVars } from 'naive-ui';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 
 //基础数据
@@ -57,6 +58,10 @@ const homeBannersDataSorted = computed(() => homeBannersData.value.sort(() => 0.
 
 //设置浏览器标题
 document.title = '小火锅'
+
+//隐藏版头
+const hideBanner = useStorage<boolean>('banner_hiden', false)
+
 
 //外观调整
 const forumCardsHeaderStyle = computed(() => {
