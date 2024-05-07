@@ -57,8 +57,6 @@ const commonStore = useCommonStore()
 .post-content {
     overflow-x: hidden;
     overflow-y: hidden;
-    padding-right: v-bind('!commonStore.userCustom.sidebarLeft && commonStore.isMobile ? "20px" : "0px"');
-    padding-left: v-bind('commonStore.userCustom.sidebarLeft && commonStore.isMobile ? "20px" : "0px"');
 }
 
 .post-footer {

@@ -3,7 +3,7 @@
     <component :is="commonStore.userCustom.postLegacyMode ? 'div' : NCard" class="post-item" :id="'f_' + postData.floor"
         :floor="postData.floor" :style="postItemStyle" :content-style="postItemCardStyle">
         <!-- header -->
-        <n-flex size="small" :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
+        <n-flex size="small" :style="postHeaderStyle">
             <!-- 左边是头像和折叠提示 -->
             <div class="random-head-container" v-if="!noHeadMode">
                 <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
@@ -111,6 +111,7 @@ import { Delete } from '@vicons/carbon'
 import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
+import { pad } from 'crypto-js'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NDropdown, NFlex, NIcon, NCard, type DropdownOption } from 'naive-ui'
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
@@ -182,13 +183,41 @@ const postItemCardStyle = computed(() =>
         } : undefined
 )
 
+//回复header的style（主要是右侧padding配置）
+const postHeaderStyle = computed(() => {
+    // 这是给侧边栏的padding,避免阻挡文字内容。
+    let paddingRight = 0
+    if (commonStore.isMobile && !commonStore.userCustom.sidebarLeft) { //电脑版和侧边栏在左侧时候不需要padding
+        //传统模式要比卡片模式要多padding一些
+        paddingRight = commonStore.userCustom.postLegacyMode ? 20 : 20 - commonStore.userCustom.postCardPadding
+    }
+    return {
+        paddingRight: paddingRight + 'px',
+    }
+})
+
 
 //回复内容的style，用来折叠高度、自定义式样等
-const postContentContainerStyle = computed(() => ({
-    maxHeight: postContentContainerMaxHeight.value === undefined ? undefined : postContentContainerMaxHeight.value + 'px',
-    marginTop: commonStore.userCustom.postInnerMargin + 'px',
-    lineHeight: commonStore.userCustom.lineHeightPost + 'px'
-}))
+const postContentContainerStyle = computed(() => {
+    // 这是给侧边栏的padding,避免阻挡文字内容。
+    let paddingLeft = 0
+    let paddingRight = 0
+    if (commonStore.isMobile) { //电脑版不需要padding
+        if (commonStore.userCustom.sidebarLeft) {
+            //传统模式要比卡片模式要多padding一些
+            paddingLeft = commonStore.userCustom.postLegacyMode ? 20 : 20 - commonStore.userCustom.postCardPadding
+        } else {
+            paddingRight = commonStore.userCustom.postLegacyMode ? 20 : 20 - commonStore.userCustom.postCardPadding
+        }
+    }
+    return {
+        maxHeight: postContentContainerMaxHeight.value === undefined ? undefined : postContentContainerMaxHeight.value + 'px',
+        marginTop: commonStore.userCustom.postInnerMargin + 'px',
+        lineHeight: commonStore.userCustom.lineHeightPost + 'px',
+        paddingLeft: paddingLeft + 'px',
+        paddingRight: paddingRight + 'px',
+    }
+})
 const postContentStyle = computed(() => ({
     top: postContentTopOffset.value === undefined ? undefined : postContentTopOffset.value + 'px',
     fontSize: commonStore.userCustom.fontSizePost + 'px'
