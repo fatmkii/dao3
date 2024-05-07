@@ -126,6 +126,7 @@ interface getPostsListParams {
     binggan: string,
     page: number,
     searchContent?: string,
+    noMentionMode?: boolean,
 }
 
 const postsListGetter = (params: getPostsListParams) => commonAlova.Get<postsListData>(
@@ -136,6 +137,7 @@ const postsListGetter = (params: getPostsListParams) => commonAlova.Get<postsLis
             binggan: params.binggan,
             page: params.page,
             search_content: params.searchContent,
+            mention: !params.noMentionMode ? 1 : 0,
         },
         localCache: null,
     }

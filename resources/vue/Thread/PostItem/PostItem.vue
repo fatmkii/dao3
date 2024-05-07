@@ -146,6 +146,7 @@ interface Props {
     noCustomEmojiMode?: boolean,
     noHeadMode?: boolean,
     noVideoMode?: boolean,
+    noMentionMode?: boolean,
     useUrlMode?: boolean,
     previewMode?: boolean,
     superAdminMode?: boolean,
@@ -159,6 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
     noCustomEmojiMode: false,
     noHeadMode: false,
     noVideoMode: false,
+    noMentionMode: false,
     useUrlMode: false,
     previewMode: false,
     superAdminMode: false,
@@ -400,7 +402,7 @@ const postContent = computed(() => {//数据处理
     }
 
     //根据yourPostsList标注自己被引用的回复
-    if (props.yourPostsList) {
+    if (props.yourPostsList && !props.noMentionMode) {
         props.yourPostsList.forEach((floorNum) => {
             const str = `@№${floorNum}(?![0-9])`
             const reg = new RegExp(str, "g");

@@ -48,8 +48,9 @@
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
-                    @show-reward-modal="RewardModalCom?.show" @quote-click="postInputCom?.quoteHandle"
-                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show" />
+                    :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    @admin-handle="AdminActionModalCom?.show" />
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
@@ -66,9 +67,9 @@
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
-                    @show-reward-modal="RewardModalCom?.show" @quote-click="postInputCom?.quoteHandle"
-                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show"
-                    ref="PostItemComs" />
+                    :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -299,6 +300,7 @@ const nissinTTL = computed(() => {
 })
 
 //屏蔽选项下拉框
+const superAdminMode = ref<boolean>(false) //超级管理员模式
 const noVideoMode = useStorage<boolean>('no_video_mode', false) //音频视频
 const noImageMode = useStorage<boolean>('no_image_mode', false)//图片
 const noEmojiMode = useStorage<boolean>('no_emoji_mode', false)//一般表情包
@@ -308,7 +310,7 @@ const noBattleMode = useStorage<boolean>('no_battle_mode', false) //大乱斗
 const noRollMode = useStorage<boolean>('no_roll_mode', false) //roll点
 const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
-const superAdminMode = ref<boolean>(false) //超级管理员模式
+const noMentionMode = useStorage<boolean>('no_mention_mode', false) //@提醒功能
 const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
 
 const refList = computed(() => {
@@ -322,6 +324,7 @@ const refList = computed(() => {
         { ref: noRollMode, label: 'roll点' },
         { ref: noRewardMode, label: '打赏' },
         { ref: noHongbaoMode, label: '红包结果' },
+        { ref: noMentionMode, label: '关闭@标注' },
     ]
     if (userStore.admin.isSuperAdmin) {
         checkboxArray.unshift({ ref: superAdminMode, label: '超管模式启动！' })
@@ -410,6 +413,7 @@ const postsListParams = computed<getPostsListParams>(() => {
         binggan: userStore.binggan!,
         page: props.page,
         searchContent: props.search,
+        noMentionMode: noMentionMode.value,
     }
 })
 

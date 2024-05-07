@@ -326,6 +326,7 @@ class ThreadController extends Controller
             'binggan' => 'string|nullable',
             'page' => 'integer|nullable',
             'search_content' => 'string|max:100', //搜索内容
+            'mention' => 'boolean|nullable',
         ]);
 
         $CurrentThread = Thread::find($Thread_id);
@@ -498,8 +499,10 @@ class ThreadController extends Controller
         }
 
         //如果有提供binggan，生成一个该用户发言的floor楼号清单，使前端标记用户被回复的清空
-        if ($request->query('binggan')) {
+        if ($request->query('binggan') && $request->mention) {
             $your_post_floors = $CurrentThread->posts()->where('created_binggan', $user->binggan)->orderBy('id', 'desc')->limit(50)->pluck('floor');
+        } else {
+            $your_post_floors = [];
         }
 
         //为反精分帖子加上created_binggan_hash
