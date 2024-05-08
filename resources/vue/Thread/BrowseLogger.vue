@@ -85,6 +85,7 @@ onActivated(() => {
     window.addEventListener("scroll", scrollWatch)
 })
 onDeactivated(() => {
+    showThis.value = false
     window.removeEventListener("scroll", scrollWatch)
 })
 
