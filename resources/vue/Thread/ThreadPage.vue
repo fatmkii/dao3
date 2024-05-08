@@ -453,13 +453,16 @@ onDeactivated(() => {
 const remindFetch = ref<boolean>(false)//用来判断是否弹出提醒的
 const { fetching: postsListFetching, onSuccess: fetchPostsListOnSuccess, onError: fetchPostsListOnError, fetch: fetchPostsList } = useFetcher();
 function handleFetchPostsList(remind: boolean = false) {
+    if (postsListFetching.value === true) return //防止多次点击
     remindFetch.value = remind
     fetchPostsList(postsListGetter(postsListParams.value))//刷新回复列表数据
+}
+fetchPostsListOnSuccess(() => {
     PostItemComs.value.forEach((element: InstanceType<typeof PostItem>) => {
         element.refreshBattleData()
     });
-}
-fetchPostsListOnSuccess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+    if (remindFetch.value) { window.$message.success('已刷新数据') }
+})
 fetchPostsListOnError((event) => {
     showThis.value = false
     if (event.error.cause !== undefined) {
