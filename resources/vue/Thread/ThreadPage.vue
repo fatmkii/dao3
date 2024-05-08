@@ -74,7 +74,8 @@
 
             <!-- 自动涮锅和分页导航 -->
             <n-flex :align="'center'" style="margin-top: 8px;">
-                <f-button type="primary" :disabled="postsListFetching" @click="handleFetchPostsList(true)">刷新</f-button>
+                <f-button type="primary" :loading="postsListFetching" :disabled="postsListFetching"
+                    @click="handleFetchPostsList(true)">刷新</f-button>
                 <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
                     <template #checked>
                         涮锅中
