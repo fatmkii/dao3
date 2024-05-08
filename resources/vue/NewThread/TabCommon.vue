@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import randomHeadsData from '@/data/randomHeads'
-import { subtitles as subtitleRaw, type subtitlesType } from '@/data/subtitles'
+import { subtitles as subtitlesRaw, type subtitlesType } from '@/data/subtitles'
 import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
@@ -110,10 +110,10 @@ const tabNormalInput = ref<tabNormalInputType>({ ...tabNormalInputDefault })
 //副标题选项
 const subtitles = computed(() => {
     if (userStore.checkAdminForums(props.forumId)) {
-        return subtitleRaw
+        return subtitlesRaw.filter(subtitle => !['[私密]'].includes(subtitle));
     } else {
         //如果不是此版的管理员，则去掉“公告”
-        return subtitleRaw.filter(subtitle => !subtitle.includes("[公告]"));
+        return subtitlesRaw.filter(subtitle => !['[公告]', '[私密]'].includes(subtitle));
     }
 })
 const subtitleOptions = computed(() => {
