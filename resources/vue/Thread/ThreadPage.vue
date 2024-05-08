@@ -657,7 +657,6 @@ const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnS
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
 newPostOnSuccess(() => {
-    window.$message.error('newPostOnSuccess')
     resolveLastTime('success') //来自PostInput的Promise回调，让PostInput复位
     handleFetchPostsList(false)
 })
