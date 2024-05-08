@@ -1,6 +1,7 @@
 <template>
     <!-- 回复card -->
-    <component :is="commonStore.userCustom.postLegacyMode ? 'div' : NCard" class="post-item" :id="'f_' + postData.floor"
+    <component :is="commonStore.userCustom.postLegacyMode ? 'div' : NCard"
+        :class="{ card: !commonStore.userCustom.postLegacyMode }" class="post-item" :id="'f_' + postData.floor"
         :floor="postData.floor" :style="postItemStyle" :content-style="postItemCardStyle">
         <!-- header -->
         <n-flex size="small" :style="postHeaderStyle">

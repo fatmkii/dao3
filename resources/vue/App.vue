@@ -78,6 +78,12 @@ const commonStore = useCommonStore()
     }
 }
 
+.post-item.card {
+    &.on-focus {
+        border-color: v-bind('themeVars.primaryColor');
+    }
+}
+
 .unfold-height {
     cursor: pointer;
 }
