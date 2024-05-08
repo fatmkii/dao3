@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     defineModel: true
                 }
             }),
-            splitVendorChunkPlugin(),
+            // splitVendorChunkPlugin(),
         ],
         resolve: {
             alias: {
@@ -41,7 +41,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             },
         },
         build: {
-            target: "es2015",
+            // target: "es2015",
             rollupOptions: {
                 output: {
                     // 控制代码分割
