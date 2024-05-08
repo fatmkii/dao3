@@ -197,7 +197,6 @@ import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
 import getNewPostKey from '@/js/func/getNewPostKey'
 import { renderIcon } from '@/js/func/renderIcon'
-import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
@@ -218,7 +217,7 @@ import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
-import { computed, defineAsyncComponent, h, nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, h, nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
@@ -446,6 +445,7 @@ onActivated(() => {
     showThis.value = true
 })
 onDeactivated(() => {
+    postsListLoading.value = true //组件失活时，当做正在Loading，使页面隐藏直到新内容读取完成
     postInputCom.value?.resetInput()
 })
 
