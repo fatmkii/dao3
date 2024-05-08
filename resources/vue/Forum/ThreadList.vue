@@ -79,7 +79,7 @@ const router = useRouter()
 
 //组件props
 interface Props {
-    threadsListData: threadData[] | [],
+    threadsListData: threadData[],
     showThis: boolean
     newWindowToPost?: boolean
 }

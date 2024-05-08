@@ -138,7 +138,7 @@ const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
 interface Props {
     forumId: number,
     postData: postData,
-    yourPostsList?: number[] | [],
+    yourPostsList?: number[],
     randomHeadGroupIndex?: number,
     antiJingfen?: boolean,
     noImageMode?: boolean,
@@ -402,13 +402,16 @@ const postContent = computed(() => {//数据处理
     }
 
     //根据yourPostsList标注自己被引用的回复
-    if (props.yourPostsList && !props.noMentionMode) {
-        props.yourPostsList.forEach((floorNum) => {
-            const str = `@№${floorNum}(?![0-9])`
-            const reg = new RegExp(str, "g");
-            postContent = postContent.replace(reg, (match) => {
+    if (props.yourPostsList.length > 0 && !props.noMentionMode) {
+        const str = `@№[0-9]+`
+        const reg = new RegExp(str, "g");
+        postContent = postContent.replace(reg, (match) => {
+            const floorNum = Number(match.slice(2))
+            if (props.yourPostsList.includes(floorNum)) {
                 return `<span class="highlight">${match}</span>`
-            })
+            } else {
+                return match
+            }
         })
     }
 
