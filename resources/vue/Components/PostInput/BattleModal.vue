@@ -128,7 +128,8 @@ battleCreateOnSuccess(() => {
     showThis.value = false
 })
 battleCreateOnError((event) => {
-    if (event.error.cause.code === 244291) {
+    if (event.error.cause !== undefined &&
+        event.error.cause.code === 244291) {
         CaptchaModalCom.value?.show()
     }
 })

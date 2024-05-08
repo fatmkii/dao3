@@ -462,7 +462,9 @@ function handleFetchPostsList(remind: boolean = false) {
 fetchPostsListOnSuccess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
 fetchPostsListOnError((event) => {
     showThis.value = false
-    ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+    if (event.error.cause !== undefined) {
+        ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+    }
 })
 
 //从postsListData抽离出threadData和forumData方便使用
@@ -626,8 +628,8 @@ watch([() => props.threadId, () => props.page, () => props.search],//路由变�
 )
 
 //发送新回复
-let contentCommitTemp: contentCommit
-let resolveTemp: (value: any) => void
+let contentCommitLastTime: contentCommit
+let resolveLastTime: (value: any) => void
 function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
     const { timestamp, newPostKey } = getNewPostKey(content.ist, threadData.value.id, userStore.binggan!)
     const params: newPostParams = {
@@ -640,26 +642,28 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
         new_post_key: newPostKey,
         timestamp: timestamp,
     }
+    resolveLastTime = resolve
+    contentCommitLastTime = content
     sendNewPostHandle(params)
-    newPostOnSuccess(() => {
-        resolve('success') //来自PostInput的Promise回调，让PostInput复位
-        handleFetchPostsList(false)
-    })
-    newPostOnError((event) => {
-        if (event.error.cause.code === 244291) {
-            contentCommitTemp = content
-            resolveTemp = resolve
-            CaptchaModalCom.value?.show()
-        }
-    })
 }
 function newPostHandleAgain() {
-    newPostHandle(contentCommitTemp, resolveTemp)
+    newPostHandle(contentCommitLastTime, resolveLastTime)
 }
 
 const { loading: newPostHandling, send: sendNewPostHandle, onSuccess: newPostOnSuccess, onError: newPostOnError } = useRequest(
     (params: newPostParams) => newPostPoster(params), { immediate: false }
 )
+newPostOnSuccess(() => {
+    window.$message.error('newPostOnSuccess')
+    resolveLastTime('success') //来自PostInput的Promise回调，让PostInput复位
+    handleFetchPostsList(false)
+})
+newPostOnError((event) => {
+    if (event.error.cause !== undefined &&
+        event.error.cause.code === 244291) {
+        CaptchaModalCom.value?.show()
+    }
+})
 
 //Ctrl+X刷新功能
 function keyupListener(event: KeyboardEvent) {
