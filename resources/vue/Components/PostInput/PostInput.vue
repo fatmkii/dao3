@@ -104,7 +104,7 @@
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
-                        :disabled="userIsLocked">提交</f-button>
+                        :disabled="handling || userIsLocked">提交</f-button>
                 </template>
                 可以Ctrl+Enter
             </n-popover>

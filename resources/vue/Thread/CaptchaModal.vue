@@ -19,7 +19,8 @@
             </n-flex>
             <template #action>
                 <n-flex justify="end">
-                    <f-button type="primary" @click="waterUnlockHandle" :loading="waterUnlockLoading">提交</f-button>
+                    <f-button type="primary" @click="waterUnlockHandle" :loading="waterUnlockLoading"
+                        :disabled="waterUnlockLoading">提交</f-button>
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>

@@ -64,7 +64,7 @@
 
             <template #action>
                 <n-flex justify="end">
-                    <f-button type="primary" @click="hongbaoPostCreateHandle"
+                    <f-button type="primary" @click="hongbaoPostCreateHandle" :disabled="hongbaoPostCreateLoading"
                         :loading="hongbaoPostCreateLoading">提交</f-button>
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>

@@ -11,7 +11,8 @@
             </n-flex>
             <template #action>
                 <n-flex justify="end">
-                    <f-button type="primary" @click="changeColorHandle" :loading="changeColorLoading">提交</f-button>
+                    <f-button type="primary" @click="changeColorHandle" :disabled="changeColorLoading"
+                        :loading="changeColorLoading">提交</f-button>
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
