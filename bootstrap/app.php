@@ -17,11 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'CheckBinggan' => CheckBinggan::class
         ]);
-        $middleware->priority([
-            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class, //需要先执行过auth，才能在获得$request->user()
-            \Illuminate\Auth\Middleware\Authorize::class,
-            \App\Http\Middleware\CheckBinggan::class,
-        ]);
+        // $middleware->priority([
+        //     \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class, //需要先执行过auth，才能在获得$request->user()
+        //     \Illuminate\Auth\Middleware\Authorize::class,
+        //     \App\Http\Middleware\CheckBinggan::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
