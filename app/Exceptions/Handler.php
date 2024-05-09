@@ -13,6 +13,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 
 class Handler extends ExceptionHandler
@@ -45,6 +46,11 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        $this->renderable(function (RouteNotFoundException $e, $request) {
+            Log::error($e, ['request_url' => $request->url(), 'request_data' => $request->all(), 'request_ip' => $request->ip()]);
+        });
+
 
         $this->renderable(function (QueryException $e, $request) {
             $error_timestamp = Carbon::now()->toDateTimeString();
