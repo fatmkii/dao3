@@ -1,7 +1,5 @@
-import { defineAsyncComponent } from 'vue'
-
-export const TabBanners = defineAsyncComponent(() => import('./TabBanners.vue'))
-export const TabGlobal = defineAsyncComponent(() => import('./TabGlobal.vue'))
-export const TabMedal = defineAsyncComponent(() => import('./TabMedal.vue'))
-export const TabCoin = defineAsyncComponent(() => import('./TabCoin.vue'))
-export const AdminCard = defineAsyncComponent(() => import('./AdminCard.vue'))
+export { default as TabBanners } from './TabBanners.vue';
+export { default as TabGlobal } from './TabGlobal.vue';
+export { default as TabMedal } from './TabMedal.vue';
+export { default as TabCoin } from './TabCoin.vue';
+export { default as AdminCard } from './AdminCard.vue';

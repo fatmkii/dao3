@@ -112,18 +112,12 @@ import { Delete } from '@vicons/carbon'
 import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { Ban, EllipsisHorizontal as Dropdown, GiftOutline as Gift, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
-import { pad } from 'crypto-js'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NDropdown, NFlex, NIcon, NCard, type DropdownOption } from 'naive-ui'
-import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue'
+import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
+import { computed, h, onMounted, ref } from 'vue'
+import Battle from './Battle.vue'
+import HongbaoPost from './HongbaoPost.vue'
 
-//异步加载组件
-const Battle = defineAsyncComponent(() =>
-    import('./Battle.vue')
-)
-const HongbaoPost = defineAsyncComponent(() =>
-    import('./HongbaoPost.vue')
-)
 //延后加载Dropdown，提高显示速度（200个PostItem大约能改善120ms）
 const renderDropdown = ref<boolean>(false)
 

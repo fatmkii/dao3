@@ -32,12 +32,14 @@ import { renderIcon } from '@/js/func/renderIcon';
 import { useCommonStore } from '@/stores/common';
 import { useThemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
+import LoginModal from '@/vue/TopBar/LoginModal.vue';
+import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { FButton, FCheckbox } from '@custom';
 import { Circle, Cog as CogIcon } from '@vicons/fa';
+import { Shield24Regular as Admin } from '@vicons/fluent';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
-import { Shield24Regular as Admin } from '@vicons/fluent'
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
-import { defineAsyncComponent, h, onMounted, ref, computed } from 'vue';
+import { computed, h, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 //基础数据
@@ -45,6 +47,8 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const router = useRouter()
 const route = useRoute()
+const LoginModalCom = ref<InstanceType<typeof LoginModal> | null>(null)
+const registerHintModalCom = ref<InstanceType<typeof RegisterHintModal> | null>(null)
 
 //主题相关
 const themeStore = useThemeStore()
@@ -72,14 +76,6 @@ function renderOptions() {
         ]
     )
 }
-
-
-//登录modal
-const LoginModal = defineAsyncComponent(() =>
-    import('@/vue/TopBar/LoginModal.vue')
-)
-const LoginModalCom = ref<InstanceType<typeof LoginModal> | null>(null)
-
 
 //个人中心按钮相关
 function renderCustomHeader() {
@@ -195,10 +191,6 @@ function refreshUserData() {
 }
 
 //呼出申请饼干成功的提示modal
-const RegisterHintModal = defineAsyncComponent(() =>
-    import('@/vue/TopBar/RegisterHintModal.vue')
-)
-const registerHintModalCom = ref<InstanceType<typeof RegisterHintModal> | null>(null)
 function callRegisterHintModal() {
     registerHintModalCom.value?.show()
 }

@@ -125,17 +125,19 @@
 </template>
 
 <script setup lang="ts">
+import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import RollModal from '@/vue/Components/PostInput/RollModal.vue'
+import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { DiceOutline as Dice, GameControllerOutline as Game, ArrowUndoOutline as Undo, EllipsisHorizontal as Dropdown } from '@vicons/ionicons5'
+import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
-import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, type DropdownOption } from 'naive-ui'
-import { computed, h, ref, watch, defineAsyncComponent } from 'vue'
+import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
+import { computed, h, ref, watch } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
 import DrawerModal from './DrawerModal.vue'
@@ -143,12 +145,6 @@ import EmojiTab from './EmojiTab.vue'
 import HongbaoModal from './HongbaoModal.vue'
 import ImageUpload from './ImageUpload.vue'
 import PingbiciModal from './PingbiciModal.vue'
-import { renderIcon } from '@/js/func/renderIcon'
-
-//异步加载组件
-const PostItem = defineAsyncComponent(() =>
-    import('@/vue/Thread/PostItem/PostItem.vue')
-)
 
 //基础数据
 const userStore = useUserStore()

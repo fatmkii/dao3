@@ -199,6 +199,7 @@ import getNewPostKey from '@/js/func/getNewPostKey'
 import { renderIcon } from '@/js/func/renderIcon'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
+import ForbiddenModal from '@/vue/Components/ForbiddenModal.vue'
 import Pagination from '@/vue/Components/Pagination.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
@@ -217,27 +218,15 @@ import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
-import { computed, defineAsyncComponent, h, nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
+import { computed, h, nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
-
-//异步加载组件
-const VoteComponent = defineAsyncComponent(() =>
-    import('./VoteComponent.vue')
-)
-const GambleComponent = defineAsyncComponent(() =>
-    import('./GambleComponent.vue')
-)
-const CrowdComponent = defineAsyncComponent(() =>
-    import('./CrowdComponent.vue')
-)
-const HongbaoComponent = defineAsyncComponent(() =>
-    import('./HongbaoComponent.vue')
-)
-
-
+import CrowdComponent from './CrowdComponent.vue'
+import GambleComponent from './GambleComponent.vue'
+import HongbaoComponent from './HongbaoComponent.vue'
+import VoteComponent from './VoteComponent.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -258,11 +247,6 @@ onActivated(() => {
 onDeactivated(() => {
     commonStore.showTopbarNav = true//使Topbar的“小火锅”显示
 })
-
-//异步加载组件
-const ForbiddenModal = defineAsyncComponent(() =>
-    import('@/vue/Components/ForbiddenModal.vue')
-)
 
 //组件props
 interface Props {
