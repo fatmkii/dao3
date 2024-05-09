@@ -233,7 +233,7 @@ class HongbaoPostController extends Controller
         }
 
 
-        $hongbao = HongbaoPost::lockForUpdate()->find($request->hongbao_post_id);
+        $hongbao = HongbaoPost::find($request->hongbao_post_id);
         if (!$hongbao) {
             return response()->json(
                 [
@@ -321,6 +321,8 @@ class HongbaoPostController extends Controller
 
             try {
                 DB::beginTransaction();
+
+                $hongbao = HongbaoPost::lockForUpdate()->find($request->hongbao_post_id); //这里要lockForUpdate，重复赋值一次
 
                 $coin = 0; //红包金额
                 $post_content = ""; //红包回帖信息
