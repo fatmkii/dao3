@@ -420,7 +420,9 @@ postsListOnSuccess((event) => {
 })
 postsListOnError((event) => {
     showThis.value = false
-    ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+    if (event.error.cause !== undefined && event.error.cause.code !== 401) { //401错误的话，在全局拦截器已经弹出错误框了
+        ForbiddenModalCom.value?.show({ errorCode: event.error.cause.code, message: event.error.message })
+    }
 })
 
 //因为组件用了KeepAlive，当组件重新激活的时候，重新获取一次数据。并且退出时清空一次输入内容。
