@@ -272,7 +272,11 @@ function handleFetchThreadsList(remind: boolean = false) {
     fetchThreadsList(threadsListGetter(threadsDataRequestParams.value))
     ThreadListCom.value?.reloadBrowseLogger()
 }
-fetchThreadsListOnSucess(() => { if (remindFetch.value) { window.$message.success('已刷新数据') } })
+fetchThreadsListOnSucess(() => {
+    if (remindFetch.value && !commonStore.userCustom.lessToast) {
+        window.$message.success('已刷新数据')
+    }
+})
 
 //主题列表数据过滤（根据标题屏蔽词）
 const threadListData = computed(() => {

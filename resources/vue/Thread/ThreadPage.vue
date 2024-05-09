@@ -445,7 +445,9 @@ fetchPostsListOnSuccess(() => {
     PostItemComs.value.forEach((element: InstanceType<typeof PostItem>) => {
         element.refreshBattleData()
     });
-    if (remindFetch.value) { window.$message.success('已刷新数据') }
+    if (remindFetch.value && !commonStore.userCustom.lessToast) {
+        window.$message.success('已刷新数据')
+    }
 })
 fetchPostsListOnError((event) => {
     showThis.value = false
