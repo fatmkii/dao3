@@ -65,6 +65,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        //一般自己写的log
+        'common' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/common.log'),
+            'level' => 'debug',
+        ],
+
         //临时使用的log
         'temp_log' => [
             'driver' => 'single',

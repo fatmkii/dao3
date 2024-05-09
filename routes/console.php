@@ -19,7 +19,7 @@ Schedule::command('sanctum:prune-expired --hours=24')->daily(); //每天删除�
 //定时检查全局搜索的redis计时器失效
 Schedule::call(function () {
     if (Redis::TTL('search_record_global') == -1) {
-        Log::channel('my_log')->error('search_record_global expired failed');
+        Log::channel('common')->error('search_record_global expired failed');
         Redis::del('search_record_global');
     }
 })->everyMinute();
