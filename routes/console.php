@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Redis;
 //     $this->comment(Inspiring::quote());
 // })->purpose('Display an inspiring quote')->hourly();
 
-Schedule::command('sanctum:prune-expired --hours=24')->daily(); //每天删除一次过期token
+Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('4:00');; //每天删除一次过期token
 // Schedule::command('BattlePolling:run')->everyMinute(); //过期大乱斗处理
 // Schedule::command('DailyNissinHandle:run')->dailyAt('8:00'); //日清的处理
 // Schedule::command('DelayThreadHandle:run')->dailyAt('8:00'); //延迟主题的处理，务必要要在日清处理之后！
