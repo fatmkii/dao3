@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     defineModel: true
                 }
             }),
-            // splitVendorChunkPlugin(),
+            splitVendorChunkPlugin(),
         ],
         resolve: {
             alias: {
@@ -41,24 +41,24 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             },
         },
         build: {
-            // target: "es2015",
-            rollupOptions: {
-                output: {
-                    // 控制代码分割
-                    manualChunks(id) {
-                        if (id.includes('node_modules')) {
-                            // 依赖模块分包
-                            return 'vendor';
-                        } else {
-                            return 'app';
-                        }
-                    }
-                    // manualChunks: {
-                    //     vendor: ['vue', 'pinia', 'vue-router', 'naive-ui', 'alova', 'dayjs', 'crypto-js', 'pusher-js', 'sass', 'vue3-dnd', 'laravel-echo'],
-                    //     app: ['*']
-                    // }
-                }
-            }
+            target: "es2015",
+            // rollupOptions: {
+            //     output: {
+            //         // 控制代码分割
+            //         // manualChunks(id) {
+            //         //     if (id.includes('node_modules')) {
+            //         //         // 依赖模块分包
+            //         //         return 'vendor';
+            //         //     } else {
+            //         //         return 'app';
+            //         //     }
+            //         // }
+            //         // manualChunks: {
+            //         //     vendor: ['vue', 'pinia', 'vue-router', 'naive-ui', 'alova', 'dayjs', 'crypto-js', 'pusher-js', 'sass', 'vue3-dnd', 'laravel-echo'],
+            //         //     app: ['*']
+            //         // }
+            //     }
+            // }
         },
     }
 }
