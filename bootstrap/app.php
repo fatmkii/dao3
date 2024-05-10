@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
 
         $exceptions->render(function (RouteNotFoundException $e, $request) {
-            Log::error($e, ['request_url' => $request->url(), 'request_data' => $request->all(), 'request_ip' => $request->ip()]);
+            Log::error('request', ['request' => $request]);
         });
 
         $exceptions->render(function (QueryException $e, Request $request) {
