@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Redis;
 // })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('4:00');; //每天删除一次过期token
-// Schedule::command('BattlePolling:run')->everyMinute(); //过期大乱斗处理
-// Schedule::command('DailyNissinHandle:run')->dailyAt('8:00'); //日清的处理
-// Schedule::command('DelayThreadHandle:run')->dailyAt('8:00'); //延迟主题的处理，务必要要在日清处理之后！
+Schedule::command('BattlePolling:run')->everyMinute(); //过期大乱斗处理
+Schedule::command('DailyNissinHandle:run')->dailyAt('8:00'); //日清的处理
+Schedule::command('DelayThreadHandle:run')->dailyAt('8:00'); //延迟主题的处理，务必要要在日清处理之后！
 
 //定时检查全局搜索的redis计时器失效
 Schedule::call(function () {
@@ -25,6 +25,6 @@ Schedule::call(function () {
 })->everyMinute();
 
 //测试有效性
-Schedule::call(function () {
-    Log::channel('temp_log')->debug('任务调度执行成功');
-})->everyMinute();
+// Schedule::call(function () {
+//     Log::channel('temp_log')->debug('任务调度执行成功');
+// })->everyMinute();
