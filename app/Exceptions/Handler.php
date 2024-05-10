@@ -1,4 +1,5 @@
 <?php
+// 这个文件已经没有作用，laravel 11改在了bootstrap/app.php里面了
 
 namespace App\Exceptions;
 
