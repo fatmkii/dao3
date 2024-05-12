@@ -1,7 +1,7 @@
 <template>
     <n-flex vertical style="margin-top: 8px;">
         <PostInput ref="postInputCom" mode="thread" :forum-id="forumId" :disabled="false" :handling="newThreadHandling"
-            @content-commit="newThreadHandle" />
+            :random-heads-group="tabNormalInput?.randomHeadsGroup" @content-commit="newThreadHandle" />
 
         <n-tabs type="line" animated :size="commonStore.isMobile ? 'small' : 'medium'" v-model:value="tabValue">
             <n-tab-pane name="常规" tab="常规" display-directive="show">
