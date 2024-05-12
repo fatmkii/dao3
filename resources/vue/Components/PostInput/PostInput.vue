@@ -1,7 +1,14 @@
 <template>
     <n-flex vertical>
         <!-- 实时预览用组件 -->
-        <PostItem v-if="showPreview" :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
+        <template v-if="showPreview">
+            <n-card v-if="mode === 'thread'" class="thread-title-container" size="small" key="title-card">
+                <span class="thread-title" :style="{ fontSize: commonStore.userCustom.fontSizeThreadList + 'px' }">
+                    {{ titleInput || '标题预览' }} [0]
+                </span>
+            </n-card>
+            <PostItem :post-data="postDataForPreview" :forum-id="0" :preview-mode="true" />
+        </template>
         <!-- 昵称输入及功能 -->
         <n-flex size="small" :wrap="false" :align="'center'"
             :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
@@ -136,7 +143,7 @@ import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vi
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
-import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover } from 'naive-ui'
+import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'

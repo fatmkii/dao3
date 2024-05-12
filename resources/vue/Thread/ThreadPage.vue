@@ -672,15 +672,6 @@ onDeactivated(() => {
 </script>
 
 <style scoped lang="scss">
-.thread-title-container {
-    border-radius: 10px;
-}
-
-.thread-title-skeleton {
-    border-radius: 10px;
-    height: 48px;
-}
-
 .spin {
     position: fixed;
     left: calc(50% - 10px);

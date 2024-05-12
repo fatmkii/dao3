@@ -92,4 +92,14 @@ const commonStore = useCommonStore()
 .nickname-input.admin {
     color: v-bind('themeVars.errorColor')
 }
+
+.thread-title-container {
+    border-radius: 10px;
+}
+
+.thread-title-skeleton {
+    border-radius: 10px;
+    height: 48px;
+}
+
 </style>
