@@ -20,6 +20,6 @@ Schedule::call(function () {
 })->everyMinute();
 
 //每分钟检查过期大喇叭
-$schedule->call(function () {
+Schedule::call(function () {
     Loudspeaker::where('expire_date', "<", Carbon::now())->delete();
 })->everyMinute();
