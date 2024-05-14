@@ -117,7 +117,9 @@ function hongbaoStoreHandle(event: MouseEvent | KeyboardEvent) {
         hongbao_id: props.hongbaoId,
         hongbao_key_word: keywordInput.value!
     }
-    hongbaoStoreSend(params)
+    hongbaoStoreSend(params).then(() => {
+        getHongbaoData()
+    })
 }
 
 //各种emit

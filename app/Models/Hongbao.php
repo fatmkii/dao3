@@ -89,7 +89,7 @@ class Hongbao extends Model
             'hongbao_params.num' => 'required|integer|min:10|max:600',
             'hongbao_params.type' => 'required|integer',
             'hongbao_params.keyword' => 'required|string|max:255',
-            'hongbao_params.message' => 'required|array|max:255',
+            'hongbao_params.message' => 'nullable|array|max:255',
             'hongbao_params.olo_hide' => 'nullable|boolean',
             'hongbao_params.loudspeaker' => 'nullable|boolean',
         ]);
