@@ -1,15 +1,10 @@
 <?php
 
+use App\Models\Loudspeaker;
 use Carbon\Carbon;
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
-
-// Artisan::command('inspire', function () {
-//     $this->comment(Inspiring::quote());
-// })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('4:00');; //每天删除一次过期token
 Schedule::command('BattlePolling:run')->everyMinute(); //过期大乱斗处理
@@ -24,7 +19,7 @@ Schedule::call(function () {
     }
 })->everyMinute();
 
-//测试有效性
-// Schedule::call(function () {
-//     Log::channel('temp_log')->debug('任务调度执行成功');
-// })->everyMinute();
+//每分钟检查过期大喇叭
+$schedule->call(function () {
+    Loudspeaker::where('expire_date', "<", Carbon::now())->delete();
+})->everyMinute();
