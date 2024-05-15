@@ -6,11 +6,11 @@
         <div id="topbar-func"></div>
         <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions"
             @select="themeStore.themeChange">
-            <img src="https://ll4484.bvimg.com/21501/d9a590aef0560534.png" style="margin-left: auto;" class="img-icon">
+            <img src="https://www.freeimg.cn/i/2024/05/14/664358a7908fe.png" style="margin-left: auto;" class="img-icon">
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'"
             :options="userOptions">
-            <img src="https://ll4484.bvimg.com/21501/e0ccb7c5a30c3537.png" @mouseenter="refreshUserData"
+            <img src="https://www.freeimg.cn/i/2024/05/14/664358a78bca9.png" @mouseenter="refreshUserData"
                 class="img-icon">
         </n-dropdown>
         <f-button type="primary" v-if="!userStore.userDataLoading && !userStore.userLoginStatus"
@@ -89,7 +89,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://ll4484.bvimg.com/21501/6fe7ac5fa3fe2159.png'
+                        src: 'https://www.freeimg.cn/i/2024/05/14/664358a77ebfb.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '我的饼干' })]),
@@ -107,7 +107,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://ll4484.bvimg.com/21501/f411b2d1d632cf32.png'
+                        src: 'https://www.freeimg.cn/i/2024/05/14/664358a770549.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '奥利奥' })]),

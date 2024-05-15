@@ -130,7 +130,7 @@ const medalsDataNormal = computed<medalData[]>(() => {
                 ...medalsNormal[key],
                 id: Number(key),
                 hasMedal: hasMedal,
-                img: hasMedal ? medalsNormal[key].img : 'https://ll4484.bvimg.com/21501/0361c44f8eb757db.png',
+                img: hasMedal ? medalsNormal[key].img : 'https://www.freeimg.cn/i/2024/05/15/6644b5cfdc172.png',
             })
         }
     }

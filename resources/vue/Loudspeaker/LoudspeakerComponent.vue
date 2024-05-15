@@ -1,7 +1,7 @@
 <template>
     <n-flex :wrap="false" style="margin-top: 8px;">
         <!-- 题图 -->
-        <img style="height: 2.5rem;cursor: pointer;" src="https://ll4484.bvimg.com/21501/47292a78bd68f016.png"
+        <img style="height: 2.5rem;cursor: pointer;" src="https://www.freeimg.cn/i/2024/05/14/664358a781150.png"
             @click="LoudspeakerModalCom?.show()" />
         <div class="loudspeaker-container loudspeaker_container">
             <!-- 提示 -->

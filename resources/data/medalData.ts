@@ -16,25 +16,25 @@ export const medalsNormal: medalsData = {
         'name': '好的开始是成功的一半',
         'describe': '拥有10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/375ab2ed5cb4f270.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ada94cd95.png',
     },
     2: {
         'name': '千仓万箱',
         'describe': '拥有50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/3b0f00901650e2d3.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adad60630.png',
     },
     3: {
         'name': '财富自由',
         'describe': '拥有100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/84bb8e3e7a23d961.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adb17c34a.png',
     },
     4: {
         'name': '锅中首富',
         'describe': '拥有500w个olo',
         'threshold': 5000000,
-        'img': 'https://ll4484.bvimg.com/21501/b956a208b91668de.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adb592fc6.png',
     },
 
     //通过大乱斗获得的olo数量
@@ -42,31 +42,31 @@ export const medalsNormal: medalsData = {
         'name': '一鸣惊人',
         'describe': '通过大乱斗获得5w个olo',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/705cf2e9657bf6eb.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adb9b0c3d.png',
     },
     12: {
         'name': '常胜将军',
         'describe': '通过大乱斗获得10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/70b64dfe538c99be.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adbdc1a06.png',
     },
     13: {
         'name': '赌仙在世',
         'describe': '通过大乱斗获得50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/3223a53ff54427ce.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adc1e04dc.png',
     },
     14: {
         'name': '今夜做梦也会笑',
         'describe': '通过大乱斗获得100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/a267ec58f522ffa4.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adc607cec.png',
     },
     15: {
         'name': '赌场收割者',
         'describe': '通过大乱斗获得1000w个olo',
         'threshold': 10000000,
-        'img': 'https://ll4484.bvimg.com/21501/c2369d193018e2fa.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adca296cc.png',
     },
 
     //通过大乱斗失去的olo数量
@@ -74,31 +74,31 @@ export const medalsNormal: medalsData = {
         'name': '出师不利',
         'describe': '由于大乱斗失去5w个olo',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/88038aa134b857c0.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adce3ea77.png',
     },
     22: {
         'name': '一败涂地',
         'describe': '由于大乱斗失去10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/ea652c1ac709f5dc.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644add25f2a7.png',
     },
     23: {
         'name': '家徒四壁',
         'describe': '由于大乱斗失去50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/adebdd29d6b470f8.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644add678a1a.png',
     },
     24: {
         'name': '倾家荡产',
         'describe': '由于大乱斗失去100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/ebe85fb551a3b54b.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644addaa6317.png',
     },
     25: {
         'name': '空中飞人',
         'describe': '由于大乱斗失去1000w个olo',
         'threshold': 10000000,
-        'img': 'https://ll4484.bvimg.com/21501/6398df1a7d438def.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644addec9400.png',
     },
 
     //通过红包获得的olo数量 
@@ -106,31 +106,31 @@ export const medalsNormal: medalsData = {
         'name': '天降横财',
         'describe': '通过红包获得5w个olo',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/84f4d51a61cd895b.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ade2e69e8.png',
     },
     32: {
         'name': '时来运转',
         'describe': '通过红包获得10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/d704b066bcc891c0.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ade70bf9f.png',
     },
     33: {
         'name': '鸿运当头',
         'describe': '通过红包获得50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/61d18a6ef787e44d.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adeb2c375.png',
     },
     34: {
         'name': '天选之子',
         'describe': '通过红包获得100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/f8c6e0d75605020e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adef49b6d.png',
     },
     35: {
         'name': '金玉满堂',
         'describe': '通过红包获得500w个olo',
         'threshold': 5000000,
-        'img': 'https://ll4484.bvimg.com/21501/ecabdf6edae8a51f.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adf364751.png',
     },
 
     //通过红包失去的olo数量
@@ -138,31 +138,31 @@ export const medalsNormal: medalsData = {
         'name': '元元之民',
         'describe': '派发红包合计5w个olo',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/09dbeaa195fd3f2e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adf77dc8a.png',
     },
     42: {
         'name': '乐善好施',
         'describe': '派发红包合计10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/f251a828ff8a0039.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adfb9dd8b.png',
     },
     43: {
         'name': '行善积德',
         'describe': '派发红包合计50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/a6bb9b6effae4742.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644adffc8d16.png',
     },
     44: {
         'name': '有钱就是任性',
         'describe': '派发红包合计100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/6e7337a16755edd9.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae03eabae.png',
     },
     45: {
         'name': '普度众生',
         'describe': '派发红包合计500w个olo',
         'threshold': 5000000,
-        'img': 'https://ll4484.bvimg.com/21501/5888776d418b3fc0.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae080bd00.png',
     },
 
     //发起大乱斗没人接的次数 
@@ -170,7 +170,7 @@ export const medalsNormal: medalsData = {
         'name': '无人在意',
         'describe': '发起大乱斗没人接',
         'threshold': 1,
-        'img': 'https://ll4484.bvimg.com/21501/c0d9581932a5229c.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae0c320a1.png',
     },
 
 
@@ -179,7 +179,7 @@ export const medalsNormal: medalsData = {
         'name': '手滑了一下',
         'describe': '删了一个楼',
         'threshold': 1,
-        'img': 'https://ll4484.bvimg.com/21501/958f135fcc89d259.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae1045148.png',
     },
 
 
@@ -188,31 +188,31 @@ export const medalsNormal: medalsData = {
         'name': '轻轻松松',
         'describe': '发表了1000个回帖',
         'threshold': 1000,
-        'img': 'https://ll4484.bvimg.com/21501/a8a155f469514f9d.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae145fce7.png',
     },
     82: {
         'name': '小菜一碟',
         'describe': '发表了5000个回帖',
         'threshold': 5000,
-        'img': 'https://ll4484.bvimg.com/21501/1a061cc01cb8df3e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae1870687.png',
     },
     83: {
         'name': '火锅劳模',
         'describe': '发表了1w个回帖',
         'threshold': 10000,
-        'img': 'https://ll4484.bvimg.com/21501/a6c71f86c8b6d950.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae1c91e65.png',
     },
     84: {
         'name': '决战紫禁之巅',
         'describe': '发表了5w个回帖',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/6c27f20829a6a54e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae20a7c8d.png',
     },
     85: {
         'name': '火锅有你了不起',
         'describe': '发表了10w个回帖',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/c934f7ae33e499e1.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae24c583b.png',
     },
 
     //大乱斗平局次数
@@ -220,7 +220,7 @@ export const medalsNormal: medalsData = {
         'name': '双赢才是最好的',
         'describe': '大乱斗平局',
         'threshold': 1,
-        'img': 'https://ll4484.bvimg.com/21501/6c068e9fdc4eba5e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae28dbbe4.png',
     },
 
     //饼干等级
@@ -228,25 +228,25 @@ export const medalsNormal: medalsData = {
         'name': '我要变强',
         'describe': '饼干升到5级',
         'threshold': 5,
-        'img': 'https://ll4484.bvimg.com/21501/202be0d0f7582f01.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae2d090a3.png',
     },
     142: {
         'name': '潮到出水',
         'describe': '饼干升到10级',
         'threshold': 10,
-        'img': 'https://ll4484.bvimg.com/21501/ac8d5eaeed887042.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae31251b3.png',
     },
     143: {
         'name': '表情包大户',
         'describe': '饼干升到20级',
         'threshold': 20,
-        'img': 'https://ll4484.bvimg.com/21501/8a89113c9d7c2e18.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae35426dc.png',
     },
     144: {
         'name': '神仙饼干',
         'describe': '饼干升到40级',
         'threshold': 40,
-        'img': 'https://ll4484.bvimg.com/21501/45ab9e9e5f91faca.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae3955116.png',
     },
 
     //通过打赏获得的olo数量
@@ -254,25 +254,25 @@ export const medalsNormal: medalsData = {
         'name': '得来全不费功夫',
         'describe': '通过打赏获得10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/1c9c834f7e7faed7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae3d76a4c.png',
     },
     162: {
         'name': '得道多助',
         'describe': '通过打赏获得50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/cbfb811b56abdbfc.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae41966a1.png',
     },
     163: {
         'name': '全凭本事',
         'describe': '通过打赏获得100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/08c938045362eeb4.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae45b3bf4.png',
     },
     164: {
         'name': '嘀——全款已到账',
         'describe': '通过打赏获得200w个olo',
         'threshold': 2000000,
-        'img': 'https://ll4484.bvimg.com/21501/df7378fb10f091df.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae49d8568.png',
     },
 
     //通过打赏失去的olo数量
@@ -280,25 +280,25 @@ export const medalsNormal: medalsData = {
         'name': '种瓜得瓜',
         'describe': '打赏出去10w个olo',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/3f72b95dbfa0ab47.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae4df3cfd.png',
     },
     172: {
         'name': '手有余香',
         'describe': '打赏出去50w个olo',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/4987d2435831f69e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae52200bd.png',
     },
     173: {
         'name': '春蚕蜡炬',
         'describe': '打赏出去100w个olo',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/ba1e8f4a483375f6.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae5640cef.png',
     },
     174: {
         'name': '羽化飞升',
         'describe': '打赏出去200w个olo',
         'threshold': 2000000,
-        'img': 'https://ll4484.bvimg.com/21501/68869a72740db0a7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae5a6833d.png',
     },
 
     //连续赢得大乱斗
@@ -306,25 +306,25 @@ export const medalsNormal: medalsData = {
         'name': '喜鹊落枝头',
         'describe': '连续赢得3次大乱斗',
         'threshold': 3,
-        'img': 'https://ll4484.bvimg.com/21501/1f6a10dcc90a143a.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae5e8c198.png',
     },
     222: {
         'name': '春风得意马蹄疾',
         'describe': '连续赢得5次大乱斗',
         'threshold': 5,
-        'img': 'https://ll4484.bvimg.com/21501/411d03f5b9cc4848.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae62a46e7.png',
     },
     223: {
         'name': '福无双至今日至',
         'describe': '连续赢得8次大乱斗',
         'threshold': 8,
-        'img': 'https://ll4484.bvimg.com/21501/abb0cc49188fbcac.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae66c1639.png',
     },
     224: {
         'name': '紫气东来保你发财',
         'describe': '连续赢得10次大乱斗',
         'threshold': 10,
-        'img': 'https://ll4484.bvimg.com/21501/5a06207d2febecbb.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae6ae48f7.png',
     },
 
     //连续输掉大乱斗
@@ -332,25 +332,25 @@ export const medalsNormal: medalsData = {
         'name': '脚踩瓜皮',
         'describe': '连续输掉3次大乱斗',
         'threshold': 3,
-        'img': 'https://ll4484.bvimg.com/21501/71272c7043ebd5b3.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae6f162f4.png',
     },
     232: {
         'name': '凉水塞牙',
         'describe': '连续输掉5次大乱斗',
         'threshold': 5,
-        'img': 'https://ll4484.bvimg.com/21501/f4524544c123e5c2.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae732a108.png',
     },
     233: {
         'name': '点背不能怨社会',
         'describe': '连续输掉8次大乱斗',
         'threshold': 8,
-        'img': 'https://ll4484.bvimg.com/21501/e211e9f09ec5110b.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae774c3f2.png',
     },
     234: {
         'name': '人生不如意十有八九',
         'describe': '连续输掉10次大乱斗',
         'threshold': 10,
-        'img': 'https://ll4484.bvimg.com/21501/d4bc1004891bcb05.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae7b6bf39.png',
     },
 
     //粮仓存粮成就
@@ -358,56 +358,56 @@ export const medalsNormal: medalsData = {
         'name': '日进斗金',
         'describe': '粮仓存粮5w',
         'threshold': 50000,
-        'img': 'https://ll4484.bvimg.com/21501/a888805775018acf.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae7f8c476.png',
     },
     242: {
         'name': '堆金积玉',
         'describe': '粮仓存粮10w',
         'threshold': 100000,
-        'img': 'https://ll4484.bvimg.com/21501/ffbe0e90a7d07c6e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae83a73e7.png',
     },
     243: {
         'name': '富甲一方',
         'describe': '粮仓存粮30w',
         'threshold': 300000,
-        'img': 'https://ll4484.bvimg.com/21501/7bd42cda05bde0f7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae87c9ff8.png',
     },
     244: {
         'name': '腰缠万贯',
         'describe': '粮仓存粮50w',
         'threshold': 500000,
-        'img': 'https://ll4484.bvimg.com/21501/8a1122a79bb30c93.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae8be6576.png',
     },
     245: {
         'name': '富有四海',
         'describe': '粮仓存粮100w',
         'threshold': 1000000,
-        'img': 'https://ll4484.bvimg.com/21501/291440ca42ea6c7f.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae901dd0c.png',
     },
     //发大喇叭成就
     271: {
         'name': '锣鼓喧天',
         'describe': '发布1个大喇叭',
         'threshold': 1,
-        'img': 'https://ll4484.bvimg.com/21501/e73d4fc66ccc3d2a.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae9439ca1.png',
     },
     272: {
         'name': '鞭炮齐鸣',
         'describe': '发布10个大喇叭',
         'threshold': 10,
-        'img': 'https://ll4484.bvimg.com/21501/e84408bfbe1074e7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae98571dd.png',
     },
     273: {
         'name': '红旗招展',
         'describe': '发布50个大喇叭',
         'threshold': 50,
-        'img': 'https://ll4484.bvimg.com/21501/574224143f1996fb.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644ae9c771ad.png',
     },
     274: {
         'name': '人山人海',
         'describe': '发布100个大喇叭',
         'threshold': 100,
-        'img': 'https://ll4484.bvimg.com/21501/d444762d5804dcb6.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aea09e90f.png',
     },
 }
 
@@ -418,7 +418,7 @@ export const medalsHidden: medalsData = {
         'name': '透明人',
         'describe': '发起大乱斗100次没人接',
         'threshold': 100,
-        'img': 'https://ll4484.bvimg.com/21501/0ef683a643112912.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aea4c7392.png',
     },
 
     //删楼次数
@@ -426,7 +426,7 @@ export const medalsHidden: medalsData = {
         'name': '你是五嬷吗',
         'describe': '进行了100次删楼',
         'threshold': 100,
-        'img': 'https://ll4484.bvimg.com/21501/7b7fe8abfacebdb6.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aea8e8ab1.png',
     },
 
     //使olo数量达到0
@@ -434,7 +434,7 @@ export const medalsHidden: medalsData = {
         'name': '归零！',
         'describe': 'olo归零',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/4beb1314eabc90b7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aead0ef0a.png',
     },
 
     //抢到某楼的10000层
@@ -442,7 +442,7 @@ export const medalsHidden: medalsData = {
         'name': '万中有一',
         'describe': '抢到第10000楼',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/491d9a587a869ff3.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeb12d74a.png',
     },
 
     //大乱斗掷出101点
@@ -450,7 +450,7 @@ export const medalsHidden: medalsData = {
         'name': '元元的爱',
         'describe': '大乱斗掷出101点',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/ecd752e772088e90.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeb54f88c.png',
     },
 
 
@@ -459,7 +459,7 @@ export const medalsHidden: medalsData = {
         'name': '火锅之神也被你薅秃了',
         'describe': '大乱斗平局100次',
         'threshold': 100,
-        'img': 'https://ll4484.bvimg.com/21501/cbefc5c42f03c5aa.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeb973cee.png',
     },
 
     //红包抢到0个olo
@@ -467,7 +467,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅的负责人是个骗子',
         'describe': '红包抢到0个olo',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/4d4a7070baf1dc2c.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aebd9611c.png',
     },
 
 
@@ -476,7 +476,7 @@ export const medalsHidden: medalsData = {
         'name': '个人财产+1',
         'describe': '申请1个定制饼干',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/05bd642f080af452.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aec1b674a.png',
     },
 
     //小火锅周年徽章
@@ -484,7 +484,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅二周年',
         'describe': '我们要一直在一起 — 至少十年吧！',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/a587cbee37c720c4.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aec5e555c.png',
     },
 
     //23年国庆
@@ -492,28 +492,28 @@ export const medalsHidden: medalsData = {
         'name': '国庆节快乐',
         'describe': '伟大的祖国节日快乐',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/87ff48253c971c14.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeca09230.png',
     },
     //24年春节
     153: {
         'name': '龙年快乐',
         'describe': '2024年小火锅龙年祝福',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/6126f591197b14fc.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aece30c60.png',
     },
     //24年3周年
     154: {
         'name': '小火锅三周年快乐~！',
         'describe': '3.0也同时上线喔',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/b08141fb4d5daa6e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aed2679fa.png',
     },
     //24年3.0纪念
     155: {
         'name': '小火锅3.0',
         'describe': '诶？我来测试咒岛3.0？真的假的？！',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/929f251b010486b0.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aed695242.png',
     },
     
     //画师荣誉徽章
@@ -521,7 +521,7 @@ export const medalsHidden: medalsData = {
         'name': '皇家御用画宗',
         'describe': '大触快教教我画画',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/44e37a110cf56cc1.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aedac0d5f.png',
     },
 
 
@@ -530,7 +530,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅守护者',
         'describe': '我来组成小火锅锅底！',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/f332ae15bee8da0e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aedee642d.png',
     },
 
     //小火锅终末旅行
@@ -538,7 +538,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅终末旅行',
         'describe': '既有开始，必有终结',
         'threshold': 0,
-        'img': 'https://ll4484.bvimg.com/21501/72ba15246f410175.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aee30dca6.png',
     },
 
     //表情包萌
@@ -546,85 +546,85 @@ export const medalsHidden: medalsData = {
         'name': 'ac娘',
         'describe': '\\\\ ac娘，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/51987958973582bd.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aee73b2ac.png',
     },
     202: {
         'name': '鹦鹉鸡',
         'describe': '\\\\ 鹦鹉鸡，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/1f0aad269a130090.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeeb550ad.png',
     },
     203: {
         'name': '咪子鱼',
         'describe': '\\\\ 咪子鱼，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/ea12294bf6a058dc.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aeef7a533.png',
     },
     204: {
         'name': '小黑猫',
         'describe': '\\\\ 小黑猫，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/6100f1fdf762d593.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aef39c969.png',
     },
     205: {
         'name': '麻将脸',
         'describe': '\\\\ 麻将脸，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/9e11c77cd9f72258.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aef7bebd3.png',
     },
     206: {
         'name': '小恐龙',
         'describe': '\\\\ 小恐龙，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/ca31e1ddd934a0bd.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aefbe26c6.png',
     },
     207: {
         'name': 'TD猫',
         'describe': '\\\\ TD猫，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/67c4009db05e3004.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af000782f.png',
     },
     208: {
         'name': '小豆泥',
         'describe': '\\\\ 小豆泥，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/5d2b16a1735b04b3.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af04365c5.png',
     },
     209: {
         'name': '小企鹅',
         'describe': '\\\\ 小企鹅，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/62a714428c2a5730.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af0851a31.png',
     },
     210: {
         'name': '小黄脸',
         'describe': '\\\\ 小黄脸，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/b46413dadf7795a1.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af0c77015.png',
     },
     211: {
         'name': 'FUFU',
         'describe': '\\\\ FUFU，出道！//',
         'threshold': 500, //这里指500票，50000个olo
-        'img': 'https://ll4484.bvimg.com/21501/2ac7d7693e95d779.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af10b3984.png',
     },
     212: {
         'name': '小火锅第一届表情包萌',
         'describe': '全军出击！',
         'threshold': 100, //这里指100票，10000个olo
-        'img': 'https://ll4484.bvimg.com/21501/248ceb037a8afdd7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af14d9ea5.png',
     },
     213: {
         'name': '燃起来了！',
         'describe': '擦出爱的火花',
         'threshold': 1000, //这里指1000票，100000个olo
-        'img': 'https://ll4484.bvimg.com/21501/b3bab29c7ac2d4b8.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af191204b.png',
     },
     214: {
         'name': '为冠军的小豆泥献上喝彩',
         'describe': '尊贵的小豆泥陛下火遍全球天下第一帝锅',
         'threshold': 0, //本命是小豆泥的全部饼干
-        'img': 'https://ll4484.bvimg.com/21501/3e713357146f714e.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af1d34f03.png',
     },
 
     //银行提前支取累计
@@ -632,33 +632,33 @@ export const medalsHidden: medalsData = {
         'name': '今朝有米今朝吃',
         'describe': '明日无米啃枯枝（提前开仓累计30w）',
         'threshold': 300000,
-        'img': 'https://ll4484.bvimg.com/21501/ef265b195f6e46d2.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af215e26d.png',
     },
 
     261: {
         'name': '小火锅第一届出道萌',
         'describe': '出道萌投票100票',
         'threshold': 100, //这里指100票，10000个olo
-        'img': 'https://ll4484.bvimg.com/21501/7678c19451233589.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af257ee46.png',
     },
     262: {
         'name': '成为大家的爱豆',
         'describe': '出道萌投票1000票',
         'threshold': 1000, //这里指1000票，100000个olo
-        'img': 'https://ll4484.bvimg.com/21501/a6c2452bb00c3328.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af29a5f84.png',
     },
     263: {
         'name': '药药切克闹',
         'describe': '民推之光药水哥',
         'threshold': null,
-        'img': 'https://ll4484.bvimg.com/21501/f65f77d44b43c785.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af2dce45d.png',
     },
 
     270: {
         'name': '吼那么大声干嘛啦',
         'describe': '撤回一个大喇叭',
         'threshold': null,
-        'img': 'https://ll4484.bvimg.com/21501/8c79edeefd07bea7.png',
+        'img': 'https://www.freeimg.cn/i/2024/05/15/6644af31f3d2a.png',
     },
 
 }

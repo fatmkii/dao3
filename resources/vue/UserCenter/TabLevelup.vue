@@ -18,7 +18,7 @@
         <n-modal v-model:show="showMenuModal" display-directive="if">
             <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="升级饼干价目表" closable
                 @close="showMenuModal = false" size="small">
-                <img src="https://ll4484.bvimg.com/21501/26529351bdd69ac9.png" style="max-width: 100%;" />
+                <img src="https://www.freeimg.cn/i/2024/05/14/664358a78cfb8.png" style="max-width: 100%;" />
 
                 <template #action>
                     <n-flex justify="end">

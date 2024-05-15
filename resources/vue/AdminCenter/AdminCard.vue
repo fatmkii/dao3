@@ -2,7 +2,7 @@
     <n-card hoverable size="small">
         <n-flex :vertical="commonStore.isMobile">
             <n-flex size="small" :align="'center'">
-                <img src="https://ll4484.bvimg.com/21501/f332ae15bee8da0e.png"
+                <img src="https://www.freeimg.cn/i/2024/05/15/6644aedee642d.png"
                     style="max-width: 50px;max-height: 50px;">
                 <span>管理员中心</span>
             </n-flex>
