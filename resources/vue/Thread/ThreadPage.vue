@@ -471,7 +471,20 @@ const postsData = computed(() => {
     postsData = postsDataRaw.value.filter((post) => {
         if (noBattleMode.value === true && post.battle_id !== null) { return false }
         if (noRollMode.value === true && post.created_by_admin === 2 && post.nickname === 'Roll点系统') { return false }
-        if (noRewardMode.value === true && post.created_by_admin === 2 && post.nickname === '奥利奥打赏系统' && !post.is_your_post) { return false }
+        if (noRewardMode.value === true && post.created_by_admin === 2 && post.nickname === '奥利奥打赏系统' && !post.is_your_post) {
+            if (yourPostsList.value.length > 0) {
+                //如果有yourPostList数据，则检查是否打赏给自己的。
+                const matchStr = post.content.match(/@№[0-9]+/g)
+                if (matchStr === null) {
+                    return false
+                }
+                const floorNum = Number(matchStr[0].slice(2))
+                if (yourPostsList.value.includes(floorNum)) {
+                    return true
+                }
+            }
+            return false
+        }
         if (noHongbaoMode.value === true) {
             //红包结果屏蔽条件
             const condition1 =

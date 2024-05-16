@@ -399,9 +399,7 @@ const postContent = computed(() => {//数据处理
 
     //根据yourPostsList标注自己被引用的回复
     if (props.yourPostsList.length > 0 && !props.noMentionMode) {
-        const str = `@№[0-9]+`
-        const reg = new RegExp(str, "g");
-        postContent = postContent.replace(reg, (match) => {
+        postContent = postContent.replace(/@№[0-9]+/g, (match) => {
             const floorNum = Number(match.slice(2))
             if (props.yourPostsList.includes(floorNum)) {
                 return `<span class="highlight">${match}</span>`
