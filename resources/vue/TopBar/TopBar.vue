@@ -6,11 +6,11 @@
         <div id="topbar-func"></div>
         <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions"
             @select="themeStore.themeChange">
-            <img src="https://www.freeimg.cn/i/2024/05/14/664358a7908fe.png" style="margin-left: auto;" class="img-icon">
+            <img src="/ui/skin.png" style="margin-left: auto;" class="img-icon">
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'"
             :options="userOptions">
-            <img src="https://www.freeimg.cn/i/2024/05/14/664358a78bca9.png" @mouseenter="refreshUserData"
+            <img src="/ui/user-center.png" @mouseenter="refreshUserData"
                 class="img-icon">
         </n-dropdown>
         <f-button type="primary" v-if="!userStore.userDataLoading && !userStore.userLoginStatus"
@@ -89,7 +89,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://www.freeimg.cn/i/2024/05/14/664358a77ebfb.png'
+                        src: '/ui/my-binggan.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '我的饼干' })]),
@@ -107,7 +107,7 @@ function renderCustomHeader() {
                 [
                     h('img', {
                         style: 'max-height: 40px;',
-                        src: 'https://www.freeimg.cn/i/2024/05/14/664358a770549.png'
+                        src: '/ui/my-olo.png'
                     }),
                     h('div', null, [
                         h('div', null, [h(NText, { depth: 3 }, { default: () => '奥利奥' })]),
