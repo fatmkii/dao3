@@ -58,6 +58,14 @@
                                 </template>
                             </n-input-number>
                         </n-form-item>
+                        <n-form-item label="表情包白色背景" path="emojiWhiteBack">
+                            <n-popover trigger="hover">
+                                <template #trigger>
+                                    <n-switch v-model:value="userInput.emojiWhiteBack" />
+                                </template>
+                                <span>可以解决AC娘在芝麻锅中看不清的问题</span>
+                            </n-popover>
+                        </n-form-item>
                     </n-gi>
                     <n-gi style="max-width: 280px;">
                         <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
@@ -166,11 +174,10 @@ import { useCommonStore } from '@/stores/common';
 import ThreadList from '@/vue/Forum/ThreadList.vue';
 import PostItem from '@/vue/Thread/PostItem/PostItem.vue';
 import { FButton } from '@custom';
-import { NCard, NDivider, NFlex, NForm, NFormItem, NGi, NGrid, NInputNumber, NSelect, NSwitch, NText } from 'naive-ui';
+import { NCard, NDivider, NFlex, NForm, NFormItem, NGi, NGrid, NInputNumber, NPopover, NSelect, NSwitch, NText } from 'naive-ui';
 
 //基础数据
 const commonStore = useCommonStore()
-
 
 //收集表单的输入数据， 最后返回给父组件
 const userInput = commonStore.userCustom

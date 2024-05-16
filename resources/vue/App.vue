@@ -27,6 +27,7 @@ import MessageApi from '@/vue/Components/MessageApi.vue';
 import TopBar from '@/vue/TopBar/TopBar.vue';
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
 import UnauthModal from './Modals/UnauthModal.vue';
+import { computed } from 'vue';
 
 //加载主题相关的store
 const themeStore = useThemeStore()
@@ -37,6 +38,11 @@ const userStore = useUserStore()
 
 //一般设定的store
 const commonStore = useCommonStore()
+
+//表情包背景色
+const emojiBackGroundColor = computed(() =>
+    commonStore.userCustom.emojiWhiteBack ? '#FFFFFF' : undefined,
+)
 
 </script>
 
@@ -102,4 +108,30 @@ const commonStore = useCommonStore()
     height: 48px;
 }
 
+//emoji相关
+.emoji-box {
+    width: 48px;
+    height: 48px;
+}
+
+.emoji-in-box {
+    background-color: v-bind(emojiBackGroundColor);
+    max-width: 48px;
+    max-height: 48px;
+}
+
+.emoji-img,
+.emoji_img,
+.custom-emoji-img,
+.custom_emoji_img {
+    //旧2.0数据是下划线
+    background-color: v-bind(emojiBackGroundColor);
+    max-width: 60px;
+    max-height: 60px;
+}
+
+.emoji-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
 </style>

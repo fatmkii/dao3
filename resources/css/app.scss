@@ -55,28 +55,6 @@ a {
     border-radius: 17px;
 }
 
-//emoji相关
-.emoji-box {
-    width: 48px;
-    height: 48px;
-}
-.emoji-in-box {
-    max-width: 48px;
-    max-height: 48px;
-}
-.emoji-img,
-.emoji_img,
-.custom-emoji-img,
-.custom_emoji_img {
-    //旧2.0数据是下划线
-    max-width: 60px;
-    max-height: 60px;
-}
-.emoji-container {
-    max-height: 250px;
-    overflow-y: auto;
-}
-
 //tabs相关共同
 .n-tabs-tab-pad {
     // 覆盖原本的tab之间间距(32px)

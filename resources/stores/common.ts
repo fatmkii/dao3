@@ -59,6 +59,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         loudspeakerPosition: 'top' | 'center' | 'bottom', //大喇叭位置选择
         quoteMax: number,//最大引用层数
         foldMaxLine: number,//回复行数限高
+        emojiWhiteBack: boolean,//表情包背景色
         // fontRemSize: 16,//字体大小
         lineHeightPost: number, //回复内容行距
         fontSizePost: number, //回复主要内容字体大小
@@ -92,6 +93,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         loudspeakerPosition: 'bottom' as 'top' | 'center' | 'bottom', //大喇叭位置选择
         quoteMax: 3,//最大引用层数
         foldMaxLine: 16,//回复行数限高
+        emojiWhiteBack: false,//表情包背景色
         // fontRemSize: 16,//字体大小
         lineHeightPost: 28, //回复内容行距
         fontSizePost: 16, //回复主要内容字体大小
@@ -134,6 +136,7 @@ export const useCommonStore = defineStore('commonStore', () => {
                 userCustom.value.threadListInnerMargin = 6
                 userCustom.value.postCardPadding = 12
                 userCustom.value.postInnerMargin = 12
+                userCustom.value.emojiWhiteBack = false
             },
         }
         window.$dialog.warning(dialogArgs)
