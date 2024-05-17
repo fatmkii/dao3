@@ -24,8 +24,9 @@ const loudspeakerDataGetter = (params: loudspeakerDataParams) => {
             //第二个参数是config
             name: 'loudspeakerDataGetter',
             params: params,
-            localCache: { mode: 'restore', expire: 60 * 1000 },
-            hitSource: ['newLoudspeakerPoster', 'repealLoudspeakerPoster', 'deleteLoudspeakerPoster']
+            // localCache: { mode: 'restore', expire: 60 * 1000 },
+            // hitSource: ['newLoudspeakerPoster', 'repealLoudspeakerPoster', 'deleteLoudspeakerPoster']
+            localCache: null,
         }
     )
     methodInstance.meta = {
