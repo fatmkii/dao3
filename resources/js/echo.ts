@@ -12,7 +12,8 @@ class echoInstance {
 
     connect() {
         if (this._echoConnector === null) {
-            const wsHost = import.meta.env.VITE_REVERB_HOST_SUBDOMAIN + window.location.hostname;
+            // const wsHost = import.meta.env.VITE_REVERB_HOST_SUBDOMAIN + window.location.hostname;
+            const wsHost = window.location.hostname;
             this._echoConnector = new Echo({
                 broadcaster: 'reverb',
                 key: import.meta.env.VITE_REVERB_APP_KEY,
