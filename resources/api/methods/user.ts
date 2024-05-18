@@ -221,7 +221,8 @@ const incomeSumDataGetter = (params: incomeParams) => {
         {
             name: 'incomeSumDataGetter',
             params: params,
-            localCache: 60 * 1000,
+            // localCache: 60 * 1000,
+            localCache: null,
             hitSource: [],
         }
     )
