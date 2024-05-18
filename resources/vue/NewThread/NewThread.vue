@@ -38,7 +38,7 @@
         <!-- 发送到TopBar的版面标题 -->
         <Teleport to="#topbar-nav" v-if="isActive">
             <router-link :to="{ name: 'forum', params: { forumId: props.forumId } }" class="flex-item-center">
-                <n-ellipsis :style="{ maxWidth: commonStore.isMobile ? '120px' : '900px' }" :tooltip="false">
+                <n-ellipsis :tooltip="false">
                     {{ forumsStore.forumData(forumId)?.name }}
                 </n-ellipsis>
                 <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">{{ forumId }}</n-tag>

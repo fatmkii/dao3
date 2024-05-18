@@ -1,8 +1,8 @@
 <template>
-    <n-flex class="top-bar" :align="'center'">
+    <n-flex class="top-bar" :align="'center'" :wrap="false">
         <img src="/favicon.png" alt="" @click="$router.push('/')">
         <router-link to="/" v-show="commonStore.showTopbarNav"> 小火锅 </router-link>
-        <div id="topbar-nav"></div>
+        <div id="topbar-nav" style="flex-shrink: 1;overflow: hidden;"></div>
         <div id="topbar-func"></div>
         <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="themeOptions"
             @select="themeStore.themeChange">
@@ -10,8 +10,7 @@
         </n-dropdown>
         <n-dropdown v-if="userStore.userLoginStatus" :trigger="commonStore.isMobile ? 'click' : 'hover'"
             :options="userOptions">
-            <img src="/ui/user-center.png" @mouseenter="refreshUserData"
-                class="img-icon">
+            <img src="/ui/user-center.png" @mouseenter="refreshUserData" class="img-icon">
         </n-dropdown>
         <f-button type="primary" v-if="!userStore.userDataLoading && !userStore.userLoginStatus"
             @click="LoginModalCom?.show">
