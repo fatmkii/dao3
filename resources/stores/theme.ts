@@ -51,7 +51,7 @@ export const useThemeStore = defineStore('themeStore', () => {
         const themeColorsMap: { [key: string]: any } = {
             'light': lightThemeColors,
             'sfw': sfwThemeColors,
-            'dart': darkThemeColors,
+            'dark': darkThemeColors,
             'green': greenThemeColors,
         }
         return themeColorsMap[themeName.value] || lightThemeColors

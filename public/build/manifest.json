@@ -3,13 +3,13 @@
     "file": "assets/LoudspeakerComponent-DaF5ZPLb.css",
     "src": "_LoudspeakerComponent-!~{00e}~.js"
   },
-  "_LoudspeakerComponent-2gaVOeAQ.js": {
-    "file": "assets/LoudspeakerComponent-2gaVOeAQ.js",
+  "_LoudspeakerComponent-Cz-ZaPZd.js": {
+    "file": "assets/LoudspeakerComponent-Cz-ZaPZd.js",
     "name": "LoudspeakerComponent",
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_loudspeaker-wyYMIWev.js"
+      "_loudspeaker-MTGS0liw.js"
     ],
     "css": [
       "assets/LoudspeakerComponent-DaF5ZPLb.css"
@@ -19,14 +19,14 @@
     "file": "assets/PostInput-JCDAAN1b.css",
     "src": "_PostInput.vue_vue_type_script_setup_true_lang-!~{00j}~.js"
   },
-  "_PostInput.vue_vue_type_script_setup_true_lang-BryB5-B2.js": {
-    "file": "assets/PostInput.vue_vue_type_script_setup_true_lang-BryB5-B2.js",
+  "_PostInput.vue_vue_type_script_setup_true_lang-DcQzc1Gv.js": {
+    "file": "assets/PostInput.vue_vue_type_script_setup_true_lang-DcQzc1Gv.js",
     "name": "PostInput.vue_vue_type_script_setup_true_lang",
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_showDialog-B4BkV2V_.js",
-      "_emojiData-DIdgeEII.js",
+      "_showDialog-pTE77NUv.js",
+      "_emojiData-1-DAzIQ-.js",
       "_inputNumberFormat-DaYmlx6U.js"
     ],
     "css": [
@@ -37,12 +37,12 @@
     "file": "assets/ThreadList-BbkDJXRc.css",
     "src": "_ThreadList-!~{00f}~.js"
   },
-  "_ThreadList-CmPf_C2A.js": {
-    "file": "assets/ThreadList-CmPf_C2A.js",
+  "_ThreadList-BowyOCNu.js": {
+    "file": "assets/ThreadList-BowyOCNu.js",
     "name": "ThreadList",
     "imports": [
       "_vendor-B725aRmw.js",
-      "_showDialog-B4BkV2V_.js",
+      "_showDialog-pTE77NUv.js",
       "_browseLogger-CFnKZSj3.js",
       "resources/js/app.js"
     ],
@@ -50,8 +50,8 @@
       "assets/ThreadList-BbkDJXRc.css"
     ]
   },
-  "_admin-JrY2CGNx.js": {
-    "file": "assets/admin-JrY2CGNx.js",
+  "_admin-CIvrW7Qt.js": {
+    "file": "assets/admin-CIvrW7Qt.js",
     "name": "admin",
     "imports": [
       "resources/js/app.js"
@@ -75,22 +75,22 @@
     "file": "assets/emojiData-BaEGuFkb.css",
     "src": "_emojiData-!~{00i}~.js"
   },
-  "_emojiData-DIdgeEII.js": {
-    "file": "assets/emojiData-DIdgeEII.js",
+  "_emojiData-1-DAzIQ-.js": {
+    "file": "assets/emojiData-1-DAzIQ-.js",
     "name": "emojiData",
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_showDialog-B4BkV2V_.js",
-      "_forums-CE6IkpDQ.js",
+      "_showDialog-pTE77NUv.js",
+      "_forums-B0cMagvk.js",
       "_dayjs.min-DosdPJrz.js"
     ],
     "css": [
       "assets/emojiData-BaEGuFkb.css"
     ]
   },
-  "_forums-CE6IkpDQ.js": {
-    "file": "assets/forums-CE6IkpDQ.js",
+  "_forums-B0cMagvk.js": {
+    "file": "assets/forums-B0cMagvk.js",
     "name": "forums",
     "imports": [
       "_vendor-B725aRmw.js",
@@ -101,16 +101,16 @@
     "file": "assets/inputNumberFormat-DaYmlx6U.js",
     "name": "inputNumberFormat"
   },
-  "_loudspeaker-wyYMIWev.js": {
-    "file": "assets/loudspeaker-wyYMIWev.js",
+  "_loudspeaker-MTGS0liw.js": {
+    "file": "assets/loudspeaker-MTGS0liw.js",
     "name": "loudspeaker",
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js"
     ]
   },
-  "_showDialog-B4BkV2V_.js": {
-    "file": "assets/showDialog-B4BkV2V_.js",
+  "_showDialog-pTE77NUv.js": {
+    "file": "assets/showDialog-pTE77NUv.js",
     "name": "showDialog",
     "imports": [
       "resources/js/app.js"
@@ -125,7 +125,7 @@
     "name": "vendor"
   },
   "resources/js/app.js": {
-    "file": "assets/app-C2ACj1ug.js",
+    "file": "assets/app-CiuPLnar.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -147,15 +147,15 @@
     ]
   },
   "resources/vue/AdminCenter/AdminCenter.vue": {
-    "file": "assets/AdminCenter-D4CAXKLx.js",
+    "file": "assets/AdminCenter-B_3oh3-P.js",
     "name": "AdminCenter",
     "src": "resources/vue/AdminCenter/AdminCenter.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_admin-JrY2CGNx.js",
-      "_forums-CE6IkpDQ.js",
+      "_admin-CIvrW7Qt.js",
+      "_forums-B0cMagvk.js",
       "_inputNumberFormat-DaYmlx6U.js"
     ],
     "css": [
@@ -163,7 +163,7 @@
     ]
   },
   "resources/vue/Errors/404.vue": {
-    "file": "assets/404-CXGHcI42.js",
+    "file": "assets/404-CQ8xtUdo.js",
     "name": "404",
     "src": "resources/vue/Errors/404.vue",
     "isDynamicEntry": true,
@@ -173,19 +173,19 @@
     ]
   },
   "resources/vue/Forum/ForumPage.vue": {
-    "file": "assets/ForumPage-CS296WWw.js",
+    "file": "assets/ForumPage-B2YPdaft.js",
     "name": "ForumPage",
     "src": "resources/vue/Forum/ForumPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
-      "_forums-CE6IkpDQ.js",
+      "_forums-B0cMagvk.js",
       "_subtitles-DW7M559j.js",
       "resources/js/app.js",
-      "_loudspeaker-wyYMIWev.js",
-      "_LoudspeakerComponent-2gaVOeAQ.js",
-      "_ThreadList-CmPf_C2A.js",
-      "_showDialog-B4BkV2V_.js",
+      "_loudspeaker-MTGS0liw.js",
+      "_LoudspeakerComponent-Cz-ZaPZd.js",
+      "_ThreadList-BowyOCNu.js",
+      "_showDialog-pTE77NUv.js",
       "_browseLogger-CFnKZSj3.js"
     ],
     "css": [
@@ -193,29 +193,29 @@
     ]
   },
   "resources/vue/Home/Home.vue": {
-    "file": "assets/Home-DQEC2ygF.js",
+    "file": "assets/Home-DDkNisWW.js",
     "name": "Home",
     "src": "resources/vue/Home/Home.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_forums-CE6IkpDQ.js"
+      "_forums-B0cMagvk.js"
     ],
     "css": [
       "assets/Home-BzLLqj0W.css"
     ]
   },
   "resources/vue/Loudspeaker/LoudspeakerPage.vue": {
-    "file": "assets/LoudspeakerPage-BgKNRW_g.js",
+    "file": "assets/LoudspeakerPage-BIjKl17O.js",
     "name": "LoudspeakerPage",
     "src": "resources/vue/Loudspeaker/LoudspeakerPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
-      "_admin-JrY2CGNx.js",
+      "_admin-CIvrW7Qt.js",
       "resources/js/app.js",
-      "_loudspeaker-wyYMIWev.js",
+      "_loudspeaker-MTGS0liw.js",
       "_dayjs.min-DosdPJrz.js"
     ],
     "css": [
@@ -223,59 +223,59 @@
     ]
   },
   "resources/vue/NewThread/NewThread.vue": {
-    "file": "assets/NewThread-B5h8UYIv.js",
+    "file": "assets/NewThread-CiigI4OE.js",
     "name": "NewThread",
     "src": "resources/vue/NewThread/NewThread.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
-      "_showDialog-B4BkV2V_.js",
+      "_showDialog-pTE77NUv.js",
       "resources/js/app.js",
-      "_forums-CE6IkpDQ.js",
-      "_PostInput.vue_vue_type_script_setup_true_lang-BryB5-B2.js",
-      "_emojiData-DIdgeEII.js",
+      "_forums-B0cMagvk.js",
+      "_PostInput.vue_vue_type_script_setup_true_lang-DcQzc1Gv.js",
+      "_emojiData-1-DAzIQ-.js",
       "_subtitles-DW7M559j.js",
       "_inputNumberFormat-DaYmlx6U.js",
       "_dayjs.min-DosdPJrz.js"
     ]
   },
   "resources/vue/Thread/ThreadPage.vue": {
-    "file": "assets/ThreadPage-Aup_WkNt.js",
+    "file": "assets/ThreadPage-D3O4Gxdd.js",
     "name": "ThreadPage",
     "src": "resources/vue/Thread/ThreadPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
-      "_emojiData-DIdgeEII.js",
-      "_showDialog-B4BkV2V_.js",
+      "_emojiData-1-DAzIQ-.js",
+      "_showDialog-pTE77NUv.js",
       "resources/js/app.js",
-      "_loudspeaker-wyYMIWev.js",
-      "_PostInput.vue_vue_type_script_setup_true_lang-BryB5-B2.js",
-      "_LoudspeakerComponent-2gaVOeAQ.js",
-      "_admin-JrY2CGNx.js",
+      "_loudspeaker-MTGS0liw.js",
+      "_PostInput.vue_vue_type_script_setup_true_lang-DcQzc1Gv.js",
+      "_LoudspeakerComponent-Cz-ZaPZd.js",
+      "_admin-CIvrW7Qt.js",
       "_inputNumberFormat-DaYmlx6U.js",
       "_dayjs.min-DosdPJrz.js",
       "_browseLogger-CFnKZSj3.js",
-      "_forums-CE6IkpDQ.js"
+      "_forums-B0cMagvk.js"
     ],
     "css": [
       "assets/ThreadPage-Bousbgjt.css"
     ]
   },
   "resources/vue/UserCenter/UserCenter.vue": {
-    "file": "assets/UserCenter-QzDQgrIp.js",
+    "file": "assets/UserCenter-D_Q2d1oa.js",
     "name": "UserCenter",
     "src": "resources/vue/UserCenter/UserCenter.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-B725aRmw.js",
       "resources/js/app.js",
-      "_forums-CE6IkpDQ.js",
-      "_ThreadList-CmPf_C2A.js",
-      "_emojiData-DIdgeEII.js",
+      "_forums-B0cMagvk.js",
+      "_ThreadList-BowyOCNu.js",
+      "_emojiData-1-DAzIQ-.js",
       "_inputNumberFormat-DaYmlx6U.js",
       "_dayjs.min-DosdPJrz.js",
-      "_showDialog-B4BkV2V_.js",
+      "_showDialog-pTE77NUv.js",
       "_browseLogger-CFnKZSj3.js"
     ],
     "css": [
