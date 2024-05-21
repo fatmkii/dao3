@@ -19,7 +19,7 @@ const lightThemeOverrides: GlobalThemeOverrides = {
 const sfwThemeOverrides: GlobalThemeOverrides = {
     "common": {
         "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
-        "bodyColor": "rgba(249, 249, 249, 1)",
+        "bodyColor": "#f5f6f8",
         "primaryColor": "#333639FF",
     },
     "Button": {
