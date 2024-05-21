@@ -53,7 +53,8 @@ const registerHintModalCom = ref<InstanceType<typeof RegisterHintModal> | null>(
 const themeStore = useThemeStore()
 const themeVars = useThemeVars()
 const themeOptions = [
-    { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
+    { label: '魔芋锅', key: 'sfw', icon: renderIcon(Circle, { color: "#F9F9F9" }) },
+    { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#d9efd9" }) },
     { label: '芝麻锅', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
     { label: '青菜锅', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
     { type: 'render', key: 'monochrome', render: renderOptions },

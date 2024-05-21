@@ -16,6 +16,20 @@ const lightThemeOverrides: GlobalThemeOverrides = {
         "color": "#fafffa80" //透明背景
     }
 }
+const sfwThemeOverrides: GlobalThemeOverrides = {
+    "common": {
+        "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
+        "bodyColor": "rgba(249, 249, 249, 1)",
+        "primaryColor": "#333639FF",
+    },
+    "Button": {
+        "colorPrimary": "#333639FF"
+    },
+    "Card": {
+        "colorPrimary": "#32BA32FF",
+        "color": "#FFFFFF80" //透明背景
+    }
+}
 const darkThemeOverrides: GlobalThemeOverrides = {
     "common": {
         "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"', //加上微软雅黑
@@ -67,6 +81,12 @@ const lightThemeColors = {
     postItemBorderColor: "#111111",
     postFooterColor: "#767C82FF",
 }
+const sfwThemeColors = {
+    topBarBackgroudColor: "#FFF",
+    sidebarColor: "#aaaaaa",
+    postItemBorderColor: "#111111",
+    postFooterColor: "#767C82FF",
+}
 const darkThemeColors = {
     topBarBackgroudColor: "#18181CFF",
     sidebarColor: "#316c58",
@@ -81,4 +101,4 @@ const greenThemeColors = {
 }
 
 
-export { lightThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, darkThemeColors, greenThemeColors }
+export { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors }
