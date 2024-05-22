@@ -12,7 +12,7 @@ const lightThemeOverrides: GlobalThemeOverrides = {
         "colorPrimary": "#32BA32FF"
     },
     "Card": {
-        "colorPrimary": "#32BA32FF",
+        // "colorPrimary": "#32BA32FF",
         "color": "#fafffa80" //透明背景
     }
 }
@@ -26,8 +26,12 @@ const sfwThemeOverrides: GlobalThemeOverrides = {
         "colorPrimary": "#333639FF"
     },
     "Card": {
-        "colorPrimary": "#32BA32FF",
+        // "colorPrimary": "#32BA32FF",
         "color": "#FFFFFF80" //透明背景
+    },
+    "Tabs": {
+        "tabTextColorActiveLine": "#18A058FF",
+        "tabTextColorHoverLine": "#18A058FF",
     }
 }
 const darkThemeOverrides: GlobalThemeOverrides = {
