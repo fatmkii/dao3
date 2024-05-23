@@ -55,7 +55,7 @@ const commonStore = useCommonStore()
 const userStore = useUserStore()
 
 //输入数据
-const inputRewardCoin = ref<number>(1000)
+const inputRewardCoin = ref<number>(100)
 const inputRewardMessage = ref<string>()
 
 //来自父组件的唤醒emit和传递的payload
