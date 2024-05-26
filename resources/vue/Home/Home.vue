@@ -3,7 +3,8 @@
         <!-- 版头图片 -->
         <div class="carousel-box" v-if="!hideBanner">
             <n-skeleton class="carousel-skeleton" sharp v-if="homeBannersLoading" />
-            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay v-if="!homeBannersLoading" :interval="10000">
+            <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay
+                v-if="!homeBannersLoading" :interval="10000">
                 <img :src="banner" v-for="banner in homeBannersDataSorted" class="carousel-img">
             </n-carousel>
         </div>
@@ -36,6 +37,7 @@
 
 <script setup lang="ts">
 import { homeBannersGetter } from '@/api/methods/globalSetting';
+import { shuffleArray } from '@/js/func/shuffle';
 import { useCommonStore } from '@/stores/common';
 import { useForumsStore } from '@/stores/forums';
 import ForumsStar from '@/vue/Home/ForumsStar.vue';
@@ -54,7 +56,7 @@ const router = useRouter()
 
 //主页banner数据
 const { loading: homeBannersLoading, data: homeBannersData } = useRequest(homeBannersGetter)
-const homeBannersDataSorted = computed(() => homeBannersData.value.sort(() => 0.5 - Math.random()))
+const homeBannersDataSorted = computed(() => shuffleArray(homeBannersData.value))
 
 //设置浏览器标题
 document.title = '小火锅'

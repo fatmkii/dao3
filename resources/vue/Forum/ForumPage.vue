@@ -7,7 +7,7 @@
             </div>
             <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000"
                 v-if="!forumsStore.forumsDataLoading">
-                <img :src="banner" v-for="banner in forumsStore.forumData(forumId)?.banners" class="carousel-img">
+                <img :src="banner" v-for="banner in bannersShuffled" class="carousel-img">
             </n-carousel>
         </div>
         <!-- 各种按钮 -->
@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { threadsListGetter, type getThreadsListParams } from '@/api/methods/forums'
 import { subtitles } from '@/data/subtitles'
+import { shuffleArray } from '@/js/func/shuffle'
 import { useTopbarNavControl } from '@/js/func/topbarNav'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
@@ -110,6 +111,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 
 })
+
+//随机版头
+const bannersShuffled = computed(() => shuffleArray(forumsStore.forumData(props.forumId)?.banners))
 
 //设置浏览器标题
 document.title = forumsStore.forumData(props.forumId)?.name ?? '小火锅'
