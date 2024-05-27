@@ -315,6 +315,11 @@ function insertTextAtCursor(element: HTMLTextAreaElement, text: string): void {
     const newValue =
         currentValue.substring(0, caretPos) + text + currentValue.substring(caretPos);
     contentInput.value = newValue
+    setTimeout(() => {
+        // 移动光标到插入内容的后面
+        element.selectionStart = caretPos + text.length;
+        element.selectionEnd = caretPos + text.length;
+    }, 0);
 }
 function insertTextAtCursorAndLog(text: string) {
     const contentInputTextarea = document.getElementById('content-input') as HTMLTextAreaElement
