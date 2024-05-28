@@ -41,7 +41,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
             'hongbaoPostCreatePoster', 'hongbaoPostStorePoster', 'hongbaoStorePoster',
             'newLoudspeakerPoster',
             'deletePostDeleter', 'recoverPostPutter',
-            'newThreadPoster', 'threadChangeColorPoster',
+            'newThreadPoster', 'threadChangeColorPoster', 'delayThreadDeleter',
         ]
     }
 )

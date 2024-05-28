@@ -650,19 +650,19 @@ class ThreadController extends Controller
         }
 
         if ($CurrentThread->hongbao_id != null) {
-            // $hongbao = Hongbao::find($CurrentThread->hongbao_id);
-            // //需要获取发表主题当时的税率，以正确退回olo
-            // $tax_rate = GlobalSetting::get_tax('normal', Carbon::parse($CurrentThread->create_at));
-            // $user->coinChange(
-            //     'normal', //记录类型
-            //     [
-            //         'olo' => ceil($hongbao->olo_remains * $tax_rate),
-            //         'content' => '延时发送主题撤回后退回olo（红包）',
-            //     ]
-            // ); //通过统一接口、记录操作  
-            // $hongbao->olo_remains = 0;
-            // $hongbao->num_remains = 0;
-            // $hongbao->save();
+            $hongbao = Hongbao::find($CurrentThread->hongbao_id);
+            //需要获取发表主题当时的税率，以正确退回olo
+            $tax_rate = GlobalSetting::get_tax('normal', Carbon::parse($CurrentThread->create_at));
+            $user->coinChange(
+                'normal', //记录类型
+                [
+                    'olo' => ceil($hongbao->olo_remains * $tax_rate),
+                    'content' => '延时发送主题撤回后退回olo（红包）',
+                ]
+            ); //通过统一接口、记录操作  
+            $hongbao->olo_remains = 0;
+            $hongbao->num_remains = 0;
+            $hongbao->save();
         }
 
         return response()->json([

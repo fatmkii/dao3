@@ -107,7 +107,13 @@
         <n-flex justify="end" :align="'center'">
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
-            <f-checkbox v-if="mode === 'thread'" v-model:checked="isDelayInput">延时发送</f-checkbox>
+            <n-popover v-if="mode === 'thread'" placement="bottom-start" trigger="hover"
+                :disabled="commonStore.isMobile">
+                <template #trigger>
+                    <f-checkbox v-model:checked="isDelayInput">延时发送</f-checkbox>
+                </template>
+                第二天8点自动发出
+            </n-popover>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
