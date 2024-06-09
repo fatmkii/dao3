@@ -16,9 +16,9 @@
                 </n-flex>
                 <!-- 隐藏成就的徽章（手机版，grid布局，每行5个） -->
                 <n-grid x-gap="4" :cols="5" v-if="commonStore.isMobile && medalsDataHidden.length > 0">
-                    <n-gi v-for="medalData in medalsDataHidden" :align="'center'" class="medal-box"
+                    <n-gi v-for="medalData in medalsDataHidden" :align="'center'" class="medal-box-mobile"
                         @click="showModal(medalData)">
-                        <img :src="medalData.img" class="medal-img">
+                        <img :src="medalData.img" class="medal-img-mobile">
                         <n-text class="medal-text">
                             {{ medalData.name }}
                         </n-text>
@@ -37,9 +37,9 @@
                 </n-flex>
                 <!-- 一般成就的徽章（手机版，grid布局，每行5个） -->
                 <n-grid x-gap="4" :cols="5" v-if="commonStore.isMobile">
-                    <n-gi v-for="medalData in medalsDataNormal" :align="'center'" class="medal-box"
+                    <n-gi v-for="medalData in medalsDataNormal" :align="'center'" class="medal-box-mobile"
                         @click="showModal(medalData)">
-                        <img :src="medalData.img" class="medal-img">
+                        <img :src="medalData.img" class="medal-img-mobile">
                         <n-text class="medal-text">
                             {{ medalData.name }}
                         </n-text>
@@ -191,7 +191,7 @@ const { loading: getMedalProgressLoading,
 <style lang="scss">
 .medal-box {
     cursor: pointer;
-    max-width: 100px;
+    width: 100px;
 }
 
 .medal-box-modal {
@@ -199,8 +199,18 @@ const { loading: getMedalProgressLoading,
 }
 
 .medal-img {
-    width: 100%;
+    width: 100px;
+    height: 100px;
 }
+
+.medal-img-mobile {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* 宽高比为1:1，即高度等于宽度 */
+    object-fit: cover;
+    /* 确保图片覆盖整个容器 */
+}
+
 
 .medal-text {
     font-size: v-bind(medalTextSize);
