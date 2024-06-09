@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Log;
 
 class EmojiConstestController extends Controller
 {
-    private $start_time = '2023-11-11 20:00:00';
-    private $end_time = '2023-11-14 20:00:00';
-    protected $chara_name_list = ['领结猫', '小甲鱼', '小蓝龙', '咖波', '谷歌布丁', '药水哥', 'Loopy', '粉红兔', '猫猫', '迷宫饭', 'Boocha', 'chiikawa', '线条小狗'];
+    private $start_time = '2024-6-18 20:00:00';
+    private $end_time = '2024-6-21 20:00:00';
+    protected $chara_name_list = ['AC娘', '鹦鹉鸡', '咪子鱼', '小黑猫', '麻将脸', '小恐龙', 'TD猫', '小豆泥', '小企鹅', '小黄脸', 'FUFU', '药水哥'];
 
     public function show(Request $request, $emoji_group_id)
     {
@@ -26,15 +26,6 @@ class EmojiConstestController extends Controller
             ->orderBy('votes_num_total', 'desc')
             ->orderBy('emoji_id', 'asc')
             ->get();
-
-        // if (Carbon::now()->between(
-        //     Carbon::parse($this->end_time),
-        //     Carbon::parse($this->end_time)->addSeconds(-3600)
-        // )) {
-        //     $emoji_group_results = $emoji_group_results->get('emoji_id'); //最后一小时隐藏投票结果
-        // } else {
-        //     $emoji_group_results = $emoji_group_results->get();
-        // }
 
         return response()->json(
             [
@@ -51,7 +42,7 @@ class EmojiConstestController extends Controller
             'binggan' => 'required|string',
         ]);
 
-        $user = $request->user;
+        $user = $request->user();
         $user_vote_total = EmojiContestUserTotal::where('user_id', $user->id)
             ->orderBy('votes_num_total', 'desc')
             ->orderBy('updated_at', 'desc')
@@ -99,13 +90,13 @@ class EmojiConstestController extends Controller
             $votes_num = $request->olo / 100;
         }
 
-        $user = $request->user;
+        $user = $request->user();
 
-        $emoji_contest = EmojiContest::where('emoji_id', $request->emoji_id)->first();
-        if ($emoji_contest->emoji_group_id != $request->emoji_group_id) {
+        $emoji_contest = EmojiContest::where('emoji_group_id', $request->emoji_group_id)->where('emoji_id', $request->emoji_id)->first();
+        if (!$emoji_contest) {
             return response()->json([
                 'code' => ResponseCode::DEFAULT,
-                'message' => 'emoji_group_id错误',
+                'message' => '提交表情包ID有误',
             ]);
         }
 

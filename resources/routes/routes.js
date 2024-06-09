@@ -47,6 +47,11 @@ const routes = [
         component: () => import('@/vue/Loudspeaker/LoudspeakerPage.vue'),
         name: 'loudspeaker',
     },
+    {
+        path: '/emoji-moe',
+        component: () => import('@/vue/EmojiContest/EmojiContest.vue'),
+        name: 'emoji-moe',
+    },
 ]
 
 const router = createRouter({

@@ -166,8 +166,8 @@ Route::prefix('loudspeaker')->middleware('auth:sanctum')->group(function () {
 
 //EmojiContest系列
 Route::prefix('emoji_contest')->middleware('auth:sanctum')->group(function () {
-    Route::get('/{emoji_group_id}', [EmojiConstestController::class, 'show'])->middleware('CheckBinggan:show'); //查询某表情包投票结果
-    Route::post('/show_user_votes', [EmojiConstestController::class, 'show_user_votes'])->middleware('CheckBinggan:show'); //查询用户的投票结果
+    Route::get('/{emoji_group_id}', [EmojiConstestController::class, 'show'])->where('emoji_group_id', '[0-9]+')->middleware('CheckBinggan:show'); //查询某表情包投票结果
+    Route::get('/show_user_votes', [EmojiConstestController::class, 'show_user_votes'])->middleware('CheckBinggan:show'); //查询用户的投票结果
     Route::post('/user_vote', [EmojiConstestController::class, 'user_vote'])->middleware('CheckBinggan:create'); //用户投票
 });
 

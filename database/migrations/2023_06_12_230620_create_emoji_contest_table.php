@@ -15,7 +15,7 @@ class CreateEmojiContestTable extends Migration
     {
         Schema::create('emoji_contest', function (Blueprint $table) {
             $table->id();
-            $table->unsignedSmallInteger('emoji_id')->unique();
+            $table->unsignedSmallInteger('emoji_id')->index();
             $table->unsignedTinyInteger('emoji_group_id')->index();
             $table->unsignedInteger('votes_num_total');
             $table->timestamps();
