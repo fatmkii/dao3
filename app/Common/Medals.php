@@ -502,6 +502,42 @@ class Medals
             'threshold' => 0, //本命是小豆泥的全部饼干
             'varname' => null,
         ),
+        215 => array(
+            'name' => '第二届冠军徽章（预留）',
+            'describe' => '',
+            'threshold' => 0,
+            'varname' => null,
+        ),
+        216 => array(
+            'name' => '药水哥',
+            'describe' => '\\\\ 药水哥，出道！//',
+            'threshold' => 500, //这里指500票，50000个olo
+            'varname' => null,
+        ),
+        217 => array(
+            'name' => '第二届隐藏1（预留）',
+            'describe' => '',
+            'threshold' => 100, //这里指100票，10000个olo
+            'varname' => null,
+        ),
+        218 => array(
+            'name' => '第二届隐藏2（预留）',
+            'describe' => '',
+            'threshold' => 1000, //这里指1000票，100000个olo
+            'varname' => null,
+        ),
+        219 => array(
+            'name' => '第二届被淘汰1（预留）',
+            'describe' => '',
+            'threshold' => 0,
+            'varname' => null,
+        ),
+        220 => array(
+            'name' => '第二届被淘汰2（预留）',
+            'describe' => '',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //连续赢得大乱斗
         221 => array(

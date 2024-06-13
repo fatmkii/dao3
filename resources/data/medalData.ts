@@ -515,7 +515,7 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644aed695242.png',
     },
-    
+
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',
@@ -625,6 +625,42 @@ export const medalsHidden: medalsData = {
         'describe': '尊贵的小豆泥陛下火遍全球天下第一帝锅',
         'threshold': 0, //本命是小豆泥的全部饼干
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644af1d34f03.png',
+    },
+    215: {
+        'name': '第二届冠军徽章（预留）',
+        'describe': '',
+        'threshold': 0,
+        'img': '',
+    },
+    216: {
+        'name': '药水哥',
+        'describe': '\\\\ 药水哥，出道！//',
+        'threshold': 500, //这里指500票，10000个olo
+        'img': '',
+    },
+    217: {
+        'name': '第二届隐藏1（预留）',
+        'describe': '',
+        'threshold': 100, //这里指100票，10000个olo
+        'img': '',
+    },
+    218: {
+        'name': '第二届隐藏2（预留）',
+        'describe': '',
+        'threshold': 1000, //这里指1000票，10000个olo
+        'img': '',
+    },
+    219: {
+        'name': '第二届被淘汰1（预留）',
+        'describe': '',
+        'threshold': 0,
+        'img': '',
+    },
+    220: {
+        'name': '第二届被淘汰2（预留）',
+        'describe': '',
+        'threshold': 0,
+        'img': '',
     },
 
     //银行提前支取累计

@@ -18,7 +18,19 @@ class EmojiConstestController extends Controller
 {
     private $start_time = '2024-6-18 20:00:00';
     private $end_time = '2024-6-21 20:00:00';
-    protected $chara_name_list = ['AC娘', '鹦鹉鸡', '咪子鱼', '小黑猫', '麻将脸', '小恐龙', 'TD猫', '小豆泥', '小企鹅', '小黄脸', 'FUFU', '药水哥'];
+    protected $chara_name_list = [
+        1 => 'AC娘',
+        2 => '鹦鹉鸡',
+        3 => '咪子鱼',
+        4 => '小黑猫',
+        5 => '麻将脸',
+        6 => '小恐龙',
+        7 => 'TD猫',
+        9 => '小企鹅',
+        10 => '小黄脸',
+        11 => 'FUFU',
+        16 => '药水哥'
+    ];
 
     public function show(Request $request, $emoji_group_id)
     {
@@ -132,7 +144,7 @@ class EmojiConstestController extends Controller
                 'normal', //记录类型
                 [
                     'olo' => -$request->olo,
-                    'content' => sprintf('表情包萌投票：%s %d票', $this->chara_name_list[$request->emoji_group_id - 1], $votes_num),
+                    'content' => sprintf('表情包萌投票：%s %d票', $this->chara_name_list[$request->emoji_group_id], $votes_num),
                 ]
             ); //（通过统一接口、记录操作）
             $user->save();

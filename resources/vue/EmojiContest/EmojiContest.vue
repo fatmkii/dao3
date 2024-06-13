@@ -1,7 +1,7 @@
 <template>
     <n-flex vertical :size="[12, 12]">
         <!-- 版头图 -->
-        <img src="https://i.mji.rip/2024/05/04/1c8db8f920b7cd2bfa1e5a21611df31e.png" style="width: 100%;" />
+        <img src="https://www.freeimg.cn/i/2024/06/13/666af8740a938.png" style="width: 100%;" />
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
         <!-- 本体Tabs -->
@@ -15,8 +15,9 @@
                         <br>注：这里的表情包图片只是用来代表该角色，不是你投票最多的图片。
                     </n-alert>
                 </div>
+                <!-- 用户投票记录 -->
                 <n-spin :show="moeUserVoteDataLoading" style="height: 120px;">
-                    <n-flex v-if="!moeUserVoteDataLoading" :wrap="true" :size="[4, 4]" style="margin-top: 12px;">
+                    <n-flex :wrap="true" :size="[4, 4]" style="margin-top: 12px;">
                         <n-flex v-for="(voteData, key) in moeUserVoteData" :key="key" style="width:72px;height: 120px;"
                             vertical :align="'center'" :justify="'end'" :size="[0, 4]">
                             <img :src="emojiGroupIndex[voteData.emoji_group_id].emojiUrl" style="max-width: 100%;"
@@ -24,6 +25,7 @@
                             <span>{{ key == 0 ? '⭐' : '' }} {{ emojiGroupIndex[voteData.emoji_group_id].name }}</span>
                             <span> {{ voteData.votes_num_total || '' }}</span>
                         </n-flex>
+                        <span v-if="moeUserVoteData.length === 0">你的投票记录将会显示在这里。</span>
                     </n-flex>
                 </n-spin>
             </n-tab-pane>
@@ -54,7 +56,7 @@
 
             </n-tab-pane>
         </n-tabs>
-        <VoteModal ref="VoteModalCom" @refresh-moe-data="getMoeData; moeUserVoteDataSend;" />
+        <VoteModal ref="VoteModalCom" @refresh-moe-data="refreshMoeData" />
     </n-flex>
 </template>
 
@@ -74,7 +76,7 @@ import dayjs from 'dayjs'
 // 表情包萌活动的基础数据
 const startTime = dayjs('2024-06-18 20:00')
 const endTime = dayjs('2024-06-21 20:00')
-const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16] //活动的表情包组不包括咒岛专属等，16是药水哥
+const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 16] //活动的表情包组不包括咒岛专属等，不包括上次冠军8小豆泥，包括16是药水哥
 const emojiGroupIndex = {
     1: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/6643615d5fdc9.png', name: 'AC娘' },
     2: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664363e93d3cf.gif', name: '鹦鹉鸡' },
@@ -83,7 +85,6 @@ const emojiGroupIndex = {
     5: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664369af63190.png', name: '麻将脸' },
     6: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436b99dd1ea.jpg', name: '小恐龙' },
     7: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436cb41e3e3.gif', name: 'TD猫' },
-    8: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436ee568b88.gif', name: '小豆泥' },
     9: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436fa983d7f.jpg', name: '小企鹅' },
     10: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664371e81e84c.png', name: '小黄脸' },
     11: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66437362aba46.gif', name: 'FUFU' },
@@ -186,6 +187,12 @@ function showVoteModalCom(emojiGroupData: emojiGroupData, voteData: moeDataInter
         voteNum: voteData.votes_num_total,
         endFlag: endFlag,
     })
+}
+
+//投票后刷新数据
+function refreshMoeData(emojiGroupId: number) {
+    moeUserVoteDataSend()
+    getMoeData(emojiGroupId)
 }
 
 </script>
