@@ -45,8 +45,8 @@ class GlobalSettingClass
 
         $use_festival_check = false;//快速判断是否需要判断节日优惠税率的开关
         $is_festival = false; 
-        $start = '2023/11/11 00:00:00';
-        $end = '2023/11/12 00:00:00';
+        $start = '2024/6/18 00:00:00';
+        $end = '2024/6/19 00:00:00';
 
         if ($use_festival_check) {
             if ($time == null) {
