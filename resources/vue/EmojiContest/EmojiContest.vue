@@ -99,7 +99,7 @@ const emojiGroupIndex = {
 const bannerText = computed<string>(() => {
     const now = dayjs()
     if (now < startTime) {
-        return `活动将于 ${now.format('M月D日H点')} 开始`
+        return `活动将于 ${startTime.format('M月D日H点')} 开始`
     }
     if (now > endTime) {
         return `投票已经结束！`
