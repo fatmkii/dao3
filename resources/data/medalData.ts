@@ -636,7 +636,7 @@ export const medalsHidden: medalsData = {
         'name': '药水哥',
         'describe': '\\\\ 药水哥，出道！//',
         'threshold': 500, //这里指500票，10000个olo
-        'img': '',
+        'img': 'https://www.freeimg.cn/i/2024/06/14/666c4200e2f04.png',
     },
     217: {
         'name': '第二届隐藏1（预留）',
