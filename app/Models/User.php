@@ -151,8 +151,33 @@ class User extends Authenticatable
                 //如果olo不足，则报错
                 throw new CoinException();
             } else {
-                //假如忽略olo低于0的情况（用于罚款等情况），直接把剩余olo扣除到0为止
-                $income_statement['olo'] = -$this->coin;
+                //假如忽略olo低于0的情况（用于罚款等情况），检查粮仓是否足够罚款
+                $user_banks = UserBank::where('user_id', $this->id)->where('is_deleted', false)->orderBy('expire_date', 'asc')->get();
+
+                if ($user_banks) {
+                    //如果有粮仓存款，循环确认要取出多少个粮仓才够罚款
+                    $olo_sum = 0;
+                    $olo_enough = false;
+                    foreach ($user_banks as $key => $user_bank) {
+                        list($message, $olo_withdraw) = $user_bank->bank_withdraw($this, true, true); //参数User $user,  bool $confirm_penalty, bool $forced_by_admin = false
+                        $olo_sum += $olo_withdraw;
+                        if ($olo_sum >= -$income_statement['olo']) {
+                            //如果累计粮仓olo已经足够，则跳出循环
+                            $olo_enough = true;
+                            break;
+                        }
+                    }
+                    Log::debug('$olo_sum',[$olo_sum]);
+                    Log::debug('$olo_enough',[$olo_enough]);
+                    Log::debug('$$this->coin + $olo_sum',[$this->coin + $olo_sum]);
+                    if ($olo_enough == false) {
+                        //如果粮仓取完都不够，则把olo扣除到0为止（包括已取出的粮仓存款）
+                        $income_statement['olo'] = -$this->coin;
+                    }
+                } else {
+                    //如果连粮仓存款都没有，则直接把剩余olo扣除到0为止
+                    $income_statement['olo'] = -$this->coin;
+                }
             }
         }
 
@@ -170,7 +195,7 @@ class User extends Authenticatable
         //执行异步的队列，记录olo变动操作
         ProcessIncomeStatement::dispatch($action, $income_statement);
 
-        // $this->coin += $income_statement['olo'];
+        // 操作olo数据
         $this->increment('coin', $income_statement['olo']);
         $this->save();
 

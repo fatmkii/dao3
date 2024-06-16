@@ -1245,55 +1245,13 @@ class UserController extends Controller
             ]);
         }
 
-        if (Carbon::parse($user_bank->expire_date) > Carbon::now()) {
-            if ($request->confirm_penalty == true) {
-                $tax_rate = 0.88;
-            } else {
-                return response()->json([
-                    'code' => ResponseCode::USER_CANNOT,
-                    'message' => ResponseCode::$codeMap[ResponseCode::USER_CANNOT],
-                ]);
-            }
-        } else {
-            $tax_rate = 1;
-        }
-
         try {
-            DB::beginTransaction();
-
-            $olo_withdraw = floor($user_bank->olo * $tax_rate);
-
-            if ($tax_rate == 1) {
-                $message = sprintf('从粮仓取出:%d个olo', $olo_withdraw);
-            } else {
-                $message = sprintf('从粮仓取出:%d个olo（因提前支取扣除% d个olo）', $olo_withdraw, $user_bank->olo - $olo_withdraw);
-            }
-
-            $user->coinChange(
-                'normal', //记录类型
-                [
-                    'olo' =>  $olo_withdraw,
-                    'content' =>  $message,
-                ]
-            ); //扣除用户相应olo（通过统一接口、记录操作）
-
-            $user_bank->is_deleted = true;
-            $user_bank->withdraw_date = Carbon::now();
-            $user_bank->save();
-
-            $user_olo_in_bank = UserBank::where('user_id', $user->id)->where('is_deleted', false)->sum('olo');
-            $user->coin_in_bank = $user_olo_in_bank;
-            $user->save();
-            DB::commit();
+            list($message, $olo_withdraw) = $user_bank->bank_withdraw($user, $request->confirm_penalty); //取出并留下操作记录
         } catch (Exception $e) {
-            DB::rollback();
-            throw $e;
-        }
-
-        if ($tax_rate != 1) {
-            //提前支取，计入成就记录
-            $user_medal_record = $user->UserMedalRecord()->firstOrCreate();
-            $user_medal_record->push_withdraw_penalty($user_bank->olo);
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => ResponseCode::$codeMap[ResponseCode::USER_CANNOT],
+            ]);
         }
 
         return response()->json(

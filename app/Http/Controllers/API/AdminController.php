@@ -387,7 +387,7 @@ class AdminController extends Controller
                 $user_to_delete_all->coinChange(
                     'normal', //记录类型
                     [
-                        'olo' => -$olo,
+                        'olo' => -$olo, //注意这里要改为负数（扣olo）
                         'content' => '被管理员删除帖子并扣除olo',
                         'thread_id' => $post->thread_id,
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
