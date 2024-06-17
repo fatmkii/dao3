@@ -37,7 +37,7 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     //是否双十一的flag
     const isDouble11 = computed<boolean>(() => {
-        const double11 = new Date("2023-11-11");
+        const double11 = new Date("2024-06-18");
         const now = new Date(Date.now());
         return now.toLocaleDateString() === double11.toLocaleDateString();
     })

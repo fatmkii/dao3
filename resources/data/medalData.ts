@@ -639,16 +639,16 @@ export const medalsHidden: medalsData = {
         'img': 'https://www.freeimg.cn/i/2024/06/14/666c4200e2f04.png',
     },
     217: {
-        'name': '第二届隐藏1（预留）',
-        'describe': '',
+        'name': '小火锅第二届表情包萌',
+        'describe': '再来一次',
         'threshold': 100, //这里指100票，10000个olo
-        'img': '',
+        'img': 'https://www.freeimg.cn/i/2024/06/17/66704dddd5f0b.png',
     },
     218: {
-        'name': '第二届隐藏2（预留）',
-        'describe': '',
-        'threshold': 1000, //这里指1000票，10000个olo
-        'img': '',
+        'name': '勇夺第一！',
+        'describe': '至少不要被淘汰',
+        'threshold': 1000, //这里指1000票，100000个olo
+        'img': 'https://www.freeimg.cn/i/2024/06/17/66704dddd6505.png',
     },
     219: {
         'name': '第二届被淘汰1（预留）',
