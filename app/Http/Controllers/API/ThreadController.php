@@ -532,7 +532,7 @@ class ThreadController extends Controller
             //有正常看帖行为则清除redis灌水检查记录
             $user->waterClear('view_post', $request->ip());
             //检查成就（小火锅终末旅行）
-            // UserMedalRecord::check_end_travel($Thread_id, $user);
+            UserMedalRecord::check_end_travel($Thread_id, $user);
         }
         return response()->json([
             'code' => ResponseCode::SUCCESS,
