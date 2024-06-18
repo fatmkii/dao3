@@ -6,7 +6,7 @@
                 <span>当前票数：{{ modalParams.voteNum }}</span>
                 <n-input-group>
                     <f-input-group-label style="width: 4.2rem;">投票额</f-input-group-label>
-                    <n-input-number v-model:value="voteNum" :max="1000" :min="1" :step="1" @keyup.enter="voteHandle" />
+                    <n-input-number v-model:value="voteNum" :max="10000" :min="1" :step="1" @keyup.enter="voteHandle" />
                 </n-input-group>
             </n-flex>
             <template #action>
