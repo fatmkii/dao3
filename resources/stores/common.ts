@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 export type imgHostType = 'mjj' | 'imgbb' | 'freeimage'
 
@@ -36,11 +39,15 @@ export const useCommonStore = defineStore('commonStore', () => {
     window.addEventListener('resize', () => bannerHeight.value = getBannerHeight())
 
     //是否双十一的flag
+    dayjs.extend(utc)
+    dayjs.extend(timezone)
+    dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
     const isDouble11 = computed<boolean>(() => {
-        const double11 = new Date("2024-06-18");
-        const now = new Date(Date.now());
-        return now.toLocaleDateString() === double11.toLocaleDateString();
+        const now = dayjs.tz() //tz()才是获得UTC+8的时间
+        const double11 = dayjs.tz("2024-06-18")
+        return now.isSame(double11, 'day')
     })
+
 
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {

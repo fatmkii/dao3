@@ -72,10 +72,17 @@ import { type moeUserVoteData as moeUserVoteDataInterface, type moeData as moeDa
 import VoteModal from './VoteModal.vue'
 import { FButton } from '@custom';
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+//配置时区
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
 
 // 表情包萌活动的基础数据
-const startTime = dayjs('2024-06-18 20:00')
-const endTime = dayjs('2024-06-21 20:00')
+const startTime = dayjs.tz('2024-06-18 20:00')
+const endTime = dayjs.tz('2024-06-21 20:00')
 const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 16] //活动的表情包组不包括咒岛专属等，不包括上次冠军8小豆泥，包括16是药水哥
 const emojiGroupIndex = {
     1: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/6643615d5fdc9.png', name: 'AC娘' },
@@ -97,7 +104,7 @@ const emojiGroupIndex = {
 }
 //活动开始与结束文字
 const bannerText = computed<string>(() => {
-    const now = dayjs()
+    const now = dayjs.tz()
     if (now < startTime) {
         return `活动将于 ${startTime.format('M月D日H点')} 开始`
     }
@@ -111,7 +118,7 @@ const bannerText = computed<string>(() => {
 
 //显示剩余时间用
 const endText = computed<string>(() => {
-    const now = dayjs()
+    const now = dayjs.tz()
     const hoursDiff = endTime.diff(now, 'hour')
     const minutesDiff = endTime.diff(now, 'minute') - 60 * hoursDiff
     return `剩余${hoursDiff}小时${minutesDiff}分钟`
@@ -173,7 +180,7 @@ function getMoeDataSum(moeData: moeDataInterface[]) {
 // 打开投票框modal
 function showVoteModalCom(emojiGroupData: emojiGroupData, voteData: moeDataInterface) {
     let endFlag = 0
-    const now = dayjs()
+    const now = dayjs.tz()
     if (now > startTime) {
         endFlag = 1
     }
