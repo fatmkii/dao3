@@ -82,7 +82,7 @@ dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
 
 // 表情包萌活动的基础数据
 const startTime = dayjs.tz('2024-06-18 20:00')
-const endTime = dayjs.tz('2024-06-21 20:00')
+const endTime = dayjs.tz('2024-06-22 20:00')
 const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 16] //活动的表情包组不包括咒岛专属等，不包括上次冠军8小豆泥，包括16是药水哥
 const emojiGroupIndex = {
     1: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/6643615d5fdc9.png', name: 'AC娘' },
