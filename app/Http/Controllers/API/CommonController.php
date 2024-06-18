@@ -16,11 +16,21 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\Thread;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client;
 
 class CommonController extends Controller
 {
-    private function oss_upload(UploadedFile $file, string $dir = "xhg_upload/", string $binggan = "", string $IP = "")
+    // 图片上传到阿里云oss的接口
+    private function oss_upload(UploadedFile $file, string $mode)
     {
+
+        //不同的上传模式上传到不同的oss文件夹
+        $mode_dir_array = [
+            'img' => 'xhg_upload/',
+            'draw' => 'xhg_draw/',
+        ];
+        $dir =  $mode_dir_array[$mode];
 
         // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
         $accessKeyId = config('app.oss_key');
@@ -82,6 +92,75 @@ class CommonController extends Controller
         }
     }
 
+    // 将图片上传到freeimg.cn的接口
+    private function freeimg_upload(UploadedFile $file, string $mode)
+    {
+        //根据不同模式上传到不同文件夹
+        $mode_dir_array = [
+            'img' => 360,  //用户上传的图片
+            'draw' => 359,  //涂鸦板上传的图片
+        ];
+        $album_id = $mode_dir_array[$mode];
+
+
+        $token = config('app.freeimg_token'); //freeimg.cn上传token
+        $file_md5  = md5(file_get_contents($file));
+        $file_name = $file_md5 . '.' . $file->extension();
+
+        $client = new Client([
+            'base_uri' => "https://freeimg.cn/",
+            'timeout'  => 5.0,
+        ]);
+
+        $response = $client->request(
+            'POST',
+            'api/v1/upload',
+            [
+                'headers' => [
+                    // 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0',
+                    'Authorization' => $token,
+                    'Accept' => 'application/json',
+                    // "Content-Type" => 'multipart/form-data', //千万不要加这个。原本multipart/form-data后面会自动接boundary，如果加了这个配置会导致boundary消失，从而请求内容在服务器无法识别
+                ],
+                'multipart' => [
+                    [
+                        'name'     => 'file',
+                        'contents' => fopen($file->getRealPath(), 'rb'),
+                        'filename' => $file_name,
+                        'headers'  => ['Content-Type' => 'image']
+                    ],
+                    [
+                        'name'     => 'permission',
+                        'contents' => 0,
+                    ],
+                    [
+                        'name'     => 'album_id',
+                        'contents' => $album_id,
+                    ]
+                ]
+            ]
+        );
+
+        $response_json = json_decode($response->getBody(), true);
+        if ($response->getStatusCode() == 200 && $response_json['status']) {
+            return
+                [
+                    'code' => ResponseCode::SUCCESS,
+                    'message' => '上传成功！',
+                    'file_url' =>  $response_json['data']['links']['url'],
+                    'img_md5' => $file_md5,
+                ];
+        } else {
+            return
+                [
+                    'code' => 500,
+                    'message' => '上传文件失败：' . $response_json['message'],
+                    'file_url' => "",
+                    'img_md5' => $file_md5,
+                ];
+        }
+    }
+
     public function new_binggan_enable(Request $request)
     {
         return response()->json(
@@ -132,25 +211,12 @@ class CommonController extends Controller
             'file' => 'required|image|max:10240',
             'thread_id' => 'required|integer', //如果是在新建主题时候上传，应传入0
             'forum_id' => 'required|integer',
-            'mode' => 'required|string'
+            'mode' => 'required|string|in:img,draw'
         ]);
-
-        //不同的上传模式上传到不同的oss文件夹
-        $mode_dir_array = [
-            'img' => 'xhg_upload/',
-            'draw' => 'xhg_draw/',
-        ];
-        if (array_key_exists($request->mode, $mode_dir_array)) {
-            $upload_dir = $mode_dir_array[$request->mode];
-        } else {
-            $upload_dir = 'xhg_upload';
-        }
 
         $user = $request->user();
 
-
-        $upload_status = $this->oss_upload($request->file, $upload_dir);
-
+        $upload_status = $this->freeimg_upload($request->file, $request->mode);
 
         if ($upload_status['code'] != ResponseCode::SUCCESS) {
             return response()->json(
