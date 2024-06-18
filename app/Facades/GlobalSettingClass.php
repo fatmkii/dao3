@@ -43,18 +43,15 @@ class GlobalSettingClass
     {
         //各种税率整合
 
-        $use_festival_check = true;//快速判断是否需要判断节日优惠税率的开关
-        $is_festival = false; 
+        $is_festival = false;
         $start = '2024/6/18 00:00:00';
-        $end = '2024/6/19 00:00:00';
+        $end = '2024/6/20 00:00:00';
 
-        if ($use_festival_check) {
-            if ($time == null) {
-                $time = Carbon::now();
-            }
-            if ($time->between($start, $end)) {
-                $is_festival = true;
-            }
+        if ($time == null) {
+            $time = Carbon::now();
+        }
+        if ($time->between($start, $end)) {
+            $is_festival = true;
         }
 
         switch ($name) {
@@ -69,7 +66,6 @@ class GlobalSettingClass
                     break;
                 }
         }
-
 
         return $tax_rate;
     }

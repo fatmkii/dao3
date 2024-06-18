@@ -43,9 +43,17 @@ export const useCommonStore = defineStore('commonStore', () => {
     dayjs.extend(timezone)
     dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
     const isDouble11 = computed<boolean>(() => {
+        const festivalDays = ['2024-06-18', '2024-06-19'] //各个活动节日的时间（618和双十一）
         const now = dayjs.tz() //tz()才是获得UTC+8的时间
-        const double11 = dayjs.tz("2024-06-18")
-        return now.isSame(double11, 'day')
+        let isDouble11 = false
+
+        festivalDays.forEach(festivalDay => {
+            if (now.isSame(dayjs.tz(festivalDay), 'day')) {
+                isDouble11 = true
+            }
+        })
+
+        return isDouble11
     })
 
 
