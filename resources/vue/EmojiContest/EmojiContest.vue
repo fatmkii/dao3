@@ -1,7 +1,9 @@
 <template>
     <n-flex vertical :size="[12, 12]">
         <!-- 版头图 -->
-        <img src="https://www.freeimg.cn/i/2024/06/13/666af8740a938.png" style="width: 100%;" />
+        <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000">
+            <img :src="banner" v-for="banner in bannersShuffled" class="carousel-img">
+        </n-carousel>
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
         <!-- 本体Tabs -->
@@ -67,13 +69,14 @@ import { useCommonStore } from '@/stores/common'
 import emojiDataRaw from '@/data/emojiData'
 import { ref, computed } from 'vue';
 import { useRequest } from 'alova';
-import { NFlex, NTabs, NTabPane, NAlert, NSpin } from 'naive-ui';
+import { NFlex, NTabs, NTabPane, NAlert, NSpin, NCarousel } from 'naive-ui';
 import { type moeUserVoteData as moeUserVoteDataInterface, type moeData as moeDataInterface, type moeUserVoteParams, moeDataGetter, moeUserVoteDataGetter, moeUserVotePoster } from '@/api/methods/emojiContest';
 import VoteModal from './VoteModal.vue'
 import { FButton } from '@custom';
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { shuffleArray } from '@/js/func/shuffle'
 
 //配置时区
 dayjs.extend(utc)
@@ -102,6 +105,31 @@ const emojiGroupIndex = {
         name: string,
     }
 }
+//应援版头
+const bannersShuffled = computed(() => {
+    const banners = [
+        'https://www.freeimg.cn/i/2024/06/13/666af8740a938.png',
+        "https://i3.mjj.rip/2024/06/19/de56a8e0714f1a1706dbf5b93c9e2c54.png",
+        "https://i3.mjj.rip/2024/06/19/d95d48e3bf46cdd04e3801621728f4d8.png",
+        "https://i3.mjj.rip/2024/06/19/19c6c4bab33292f4455be14145dc0345.jpeg",
+        "https://i3.mjj.rip/2024/06/19/5ecb4a448ff9f548f4c5d9cd0f411457.png",
+        "https://i3.mjj.rip/2024/06/19/b937c6a09eb690b6677ad4ae5b5fffa6.png",
+        "https://iili.io/dHdzNFS.png",
+        "https://iili.io/dHJDZlI.png",
+        "https://i3.mjj.rip/2024/06/18/7d46966145c589020253e1cdf25f901f.png",
+        "https://iili.io/d9y7Af2.png",
+        "https://i3.mjj.rip/2024/06/18/dc63798aa13ae4180649f2364ea076c9.png",
+        "https://i3.mjj.rip/2024/06/18/3d7c6087726fbb1548b512c0fb3ac161.png",
+        "https://i3.mjj.rip/2024/06/17/349ccfc48428a1b09aa6355724fb2b93.png",
+        "https://i3.mjj.rip/2024/06/17/21402e49687631f174c892d35b60a8a3.png",
+        "https://i2.mjj.rip/2024/06/06/1d7f283697fc8e58c2ecefe9401f4d7e.png",
+        "https://i2.mjj.rip/2024/06/05/ce77023b4da545145ce833b677f56061.png",
+    ]
+
+    return shuffleArray(banners)
+})
+
+
 //活动开始与结束文字
 const bannerText = computed<string>(() => {
     const now = dayjs.tz()
@@ -221,5 +249,11 @@ function refreshMoeData(emojiGroupId: number) {
 .emoji-moe-img {
     background-color: v-bind(emojiBackGroundColor);
 
+}
+
+.carousel-img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
 }
 </style>
