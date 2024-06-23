@@ -59,7 +59,7 @@
             <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="showMedalModal = false"
                 size="small">
                 <n-flex vertical :align="'center'" class="medal-box-modal">
-                    <img :src="showMedalModalData?.img" class="medal-img">
+                    <img :src="showMedalModalData?.img" style="max-width: 100%;">
                     <n-text style="font-size: 1rem;">
                         {{ showMedalModalData?.name }}
                     </n-text>
