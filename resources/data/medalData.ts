@@ -627,10 +627,10 @@ export const medalsHidden: medalsData = {
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644af1d34f03.png',
     },
     215: {
-        'name': '第二届冠军徽章（预留）',
-        'describe': '',
+        'name': '当你凝视深渊时',
+        'describe': '深渊喵了一声',
         'threshold': 0,
-        'img': '',
+        'img': 'https://www.freeimg.cn/i/2024/06/23/6678101063c13.png',
     },
     216: {
         'name': '药水哥',
@@ -651,16 +651,10 @@ export const medalsHidden: medalsData = {
         'img': 'https://www.freeimg.cn/i/2024/06/17/66704dddd6505.png',
     },
     219: {
-        'name': '第二届被淘汰1（预留）',
-        'describe': '',
+        'name': '遗憾离场',
+        'describe': '希望还能回来',
         'threshold': 0,
-        'img': '',
-    },
-    220: {
-        'name': '第二届被淘汰2（预留）',
-        'describe': '',
-        'threshold': 0,
-        'img': '',
+        'img': 'https://www.freeimg.cn/i/2024/06/23/66781010639e5.png',
     },
 
     //银行提前支取累计
