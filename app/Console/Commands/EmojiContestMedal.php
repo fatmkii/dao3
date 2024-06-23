@@ -46,11 +46,11 @@ class EmojiContestMedal extends Command
             if ($user_vote_total->emoji_group_id == 4) { //本次冠军小黑猫是4号，这里记得每次改！！！ 
                 array_push($user_array, $user_id);
                 // 模拟发放，不正式执行
-                UserMedal::create([
-                    'user_id' => $user_id,
-                    'medal_id' => 215, //本次冠军徽章ID是215，这里记得每次改！！！ 
-                    'created_at' => Carbon::now(),
-                ]);
+                // UserMedal::create([
+                //     'user_id' => $user_id,
+                //     'medal_id' => 215, //本次冠军徽章ID是215，这里记得每次改！！！ 
+                //     'created_at' => Carbon::now(),
+                // ]);
             }
         }
         Log::channel('temp_log')->info('冠军徽章，发放user_id', [$user_array]);
@@ -69,11 +69,11 @@ class EmojiContestMedal extends Command
                 if ($value->votes_num_total >= 10) {
                     array_push($user_array, $user_id);
                     // 模拟发放，不正式执行
-                    UserMedal::create([
-                        'user_id' => $user_id,
-                        'medal_id' => 219, //本次淘汰徽章ID是219，这里记得每次改！！！ 
-                        'created_at' => Carbon::now(),
-                    ]);
+                    // UserMedal::create([
+                    //     'user_id' => $user_id,
+                    //     'medal_id' => 219, //本次淘汰徽章ID是219，这里记得每次改！！！ 
+                    //     'created_at' => Carbon::now(),
+                    // ]);
                 }
             }
         }
