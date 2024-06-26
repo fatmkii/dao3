@@ -837,11 +837,13 @@ class BattleChara
             $this->chara_id = $chara_id;
         }
 
-        if ($chara_id_opponent) {
-            //有给出对方角色时候，才初始化对方角色相关数据
-            if ($user_id_opponent == null) {
+        if ($chara_id_opponent !== null) {
+            //有给出对方角色时候（严格不为null），才初始化对方角色相关数据
+            if ($user_id_opponent === null) {
+                // 没有给出user_id时候（严格等于null），使用一般角色
                 $this->name_opponent = self::chara_index[$chara_id_opponent]['name'];
             } else {
+                // 有给出user_id时候，使用自定义角色
                 $this->name_opponent  = MyBattleChara::where('user_id', $user_id_opponent)->where('chara_id', $chara_id_opponent)->value('name');
             }
         }
