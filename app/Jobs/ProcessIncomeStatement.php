@@ -78,7 +78,8 @@ class ProcessIncomeStatement implements ShouldQueue
                     ->where('content', '回帖')
                     ->first();
                 if ($model) {
-                    $model->olo += 10;
+                    // $model->olo += 10; 多个操作并发时会不准确
+                    $model->increment('olo', 10);
                 } else {
                     $statement_temp = $this->IncomeStatement;
                     $statement_temp['created_at'] = $post_date;
