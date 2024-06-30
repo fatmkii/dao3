@@ -9,7 +9,7 @@
             <n-form ref="formRef" :model="userInput" label-placement="left" label-width="auto" :rules="inputRules"
                 :size="commonStore.isMobile ? 'small' : 'medium'" style="margin-top: 10px;">
 
-                <n-form-item label="生效日期" path="effectiveDate">
+                <n-form-item label="生效时间" path="effectiveDate">
                     <n-date-picker v-model:formatted-value="userInput.effectiveDate" value-format="yyyy-MM-dd HH:mm:ss"
                         type="datetime" :size="commonStore.isMobile ? 'small' : 'medium'" />
                 </n-form-item>
@@ -68,7 +68,7 @@ const userInput = ref({
     color: undefined as string | undefined,
     threadId: undefined as string | undefined,
     days: 1,
-    effectiveDate: dayjs().format('YYYY-MM-DD 00:00:00'),
+    effectiveDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
 })
 const useColor = ref<boolean>(false)
 
