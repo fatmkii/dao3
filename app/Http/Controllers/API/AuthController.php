@@ -70,14 +70,14 @@ class AuthController extends Controller
                 $token = $user->createToken($binggan, ['normal'])->plainTextToken;
         }
 
-        // ProcessUserActive::dispatch(
-        //     [
-        //         'binggan' => $user->binggan,
-        //         'user_id' => $user->id,
-        //         'active' => '用户导入了饼干',
-        //         'content' => $request->ip(),
-        //     ]
-        // );
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户导入了饼干',
+                'content' => $request->ip(),
+            ]
+        );
 
         return response()->json(
             [
@@ -129,6 +129,7 @@ class AuthController extends Controller
         }
     }
 
+    //3.0起已废弃
     public function admin_login(Request $request)
     {
         $request->validate([
@@ -199,14 +200,14 @@ class AuthController extends Controller
                 $token = $user->createToken($binggan, ['normal'])->plainTextToken;
         }
 
-        // ProcessUserActive::dispatch(
-        //     [
-        //         'binggan' => $user->binggan,
-        //         'user_id' => $user->id,
-        //         'active' => '管理员登录了饼干',
-        //         'content' => $request->ip(),
-        //     ]
-        // );
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '管理员登录了饼干',
+                'content' => $request->ip(),
+            ]
+        );
 
         return response()->json(
             [
@@ -253,14 +254,14 @@ class AuthController extends Controller
         $user->password = hash('sha256', $request->new_password . config('app.password_salt'));
         $user->save();
 
-        // ProcessUserActive::dispatch(
-        //     [
-        //         'binggan' => $user->binggan,
-        //         'user_id' => $user->id,
-        //         'active' => '用户更新了密码',
-        //         'content' => 'hash: ' . $user->password,
-        //     ]
-        // );
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user->binggan,
+                'user_id' => $user->id,
+                'active' => '用户更新了密码',
+                'content' => 'hash: ' . $user->password,
+            ]
+        );
 
         return response()->json(
             [
