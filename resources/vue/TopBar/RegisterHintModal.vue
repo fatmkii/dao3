@@ -6,7 +6,7 @@
                 <div>你的饼干是：<n-text strong type="info" style="font-size: 1.5rem;">{{ userStore.binggan
                         }}</n-text><br>（之后在个人中心也可以查看）</div>
                 <n-text depth="2">① 饼干就是你的小火锅账号。请保存好，不要泄露喔！</n-text>
-                <n-text depth="2">② 为了账号安全，建议尽快在个人中心设定密码。</n-text>
+                <n-text depth="2">② 为了账号安全，<n-text strong type="error">建议尽快在个人中心设定密码。</n-text></n-text>
                 <n-text depth="2">③ 请务必遵守<router-link :to="'/thread/13351'">小火锅版规</router-link>喔！</n-text>
             </n-flex>
             <template #action>
