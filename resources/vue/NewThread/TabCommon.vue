@@ -124,6 +124,8 @@ const subtitleOptions = computed(() => {
 watch(() => tabNormalInput.value.isPrivate, (newValue) => {
     if (newValue) {
         tabNormalInput.value.subtitle = '[私密]'
+    } else {
+        tabNormalInput.value.subtitle = '[闲聊]'
     }
 })
 
