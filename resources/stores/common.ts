@@ -62,7 +62,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         version: number, //版本号，方便日后做重置
 
         // 功能选项
-        imgHost: string,//图床选择
+        imgHost: imgHostType,//图床选择
         hongbaoThenStop: boolean, //自动涮锅时遇到红包停止
         holdPageWhenListening: boolean,//自动涮锅时页面保持不动
         lessToast: boolean,  //减少弹出提示
