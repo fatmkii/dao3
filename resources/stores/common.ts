@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-export type imgHostType = 'mjj' | 'imgbb' | 'freeimage'
+export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl'
 
 export const useCommonStore = defineStore('commonStore', () => {
 

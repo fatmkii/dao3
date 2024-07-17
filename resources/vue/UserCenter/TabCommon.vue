@@ -193,6 +193,9 @@ const imgHostOptions = [
     { value: 'mjj', label: 'mjj' },
     { value: 'imgbb', label: 'imgbb' },
     { value: 'freeimage', label: 'freeimage' },
+    { value: 'picgo', label: 'picgo' },
+    { value: 'imge', label: 'imge' },
+    { value: 'imgtbl', label: 'imgtbl' },
 ]
 
 //实时预览用的虚拟postData

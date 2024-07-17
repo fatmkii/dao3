@@ -80,6 +80,40 @@ export const commonAlova = createAlova({
     cacheLogger: process.env.NODE_ENV === 'development'
 });
 
+//发送到外部的api的实例，不使用通用拦截器
+export const externalAlova = createAlova({
+    statesHook: VueHook,
+    requestAdapter: GlobalFetch(),
+
+    responded: {
+        // 请求成功的拦截器
+        // 当使用GlobalFetch请求适配器时，第一个参数接收Response对象
+        // 第二个参数为当前请求的method实例，你可以用它同步请求前后的配置信息
+        onSuccess: async (response, method) => {
+            const json = await response.json();
+            return json;
+        },
+
+        // 请求失败的拦截器
+        // 请求错误时将会进入该拦截器。
+        // 第二个参数为当前请求的method实例，你可以用它同步请求前后的配置信息
+        onError: (error, method) => {
+            window.$message.error('嗷！好像网络出错了。')
+            throw error
+        },
+
+        // 请求完成的拦截器
+        // 当你需要在请求不论是成功、失败、还是命中缓存都需要执行的逻辑时，可以在创建alova实例时指定全局的`onComplete`拦截器，例如关闭请求 loading 状态。
+        // 接收当前请求的method实例
+        onComplete: async method => {
+            // 处理请求完成逻辑
+        }
+    },
+    errorLogger: process.env.NODE_ENV === 'development',
+    cacheLogger: process.env.NODE_ENV === 'development'
+});
+
+
 
 //非json数据的alova实例
 export const nonJsonAlova = createAlova({

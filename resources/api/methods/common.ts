@@ -1,4 +1,4 @@
-import { commonAlova } from '@/api/index';
+import { commonAlova, externalAlova } from '@/api/index';
 
 //获取验证码图
 interface captchaData {
@@ -22,7 +22,7 @@ const captchaGetter = () => {
     return methodInstance
 }
 
-//上传图片
+//上传图片到自有图床
 interface uploadImageParams {
     binggan: string,
     file: File | Blob,
@@ -54,5 +54,54 @@ const uploadImagePoster = (params: uploadImageParams) => {
     return methodInstance
 }
 
+//上传图片到免费图床（IMGE/FREEIMG等框架的）
+interface uploadImageToPublicParams {
+    file: File,
+    url: string,
+}
+interface uploadImageToPublicData {
+    status: number | boolean,
+    message: string,
+    data: {
+        key: string,
+        name: string,
+        pathname: string,
+        origin_name: string,
+        size: number,
+        mimetype: string,
+        extension: string,
+        md5: string,
+        sha1: string,
+        links: {
+            url: string,
+            html: string,
+            bbcode: string,
+            markdown: string,
+            markdown_with_link: string,
+            thumbnail_url: string,
+            delete_url: string,
+        }
+    }
+}
+const uploadImageToPublicPoster = (params: uploadImageToPublicParams) => {
+    const formData = new FormData
+    formData.append("file", params.file)
+    const methodInstance = externalAlova.Post<uploadImageToPublicData>(
+        params.url,
+        formData,
+        {
+            //第三个参数是config
+            name: 'uploadImageToPublicPoster',
+            params: {},
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
 
-export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams }
+
+export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams, uploadImageToPublicParams, uploadImageToPublicPoster }
