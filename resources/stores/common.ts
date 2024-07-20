@@ -96,7 +96,7 @@ export const useCommonStore = defineStore('commonStore', () => {
     const userCustom = useStorage<userCustomType>('user_custom', {
         version: 240505, //版本号，方便日后做重置
         // 功能选项
-        imgHost: 'imgbb',//图床选择
+        imgHost: 'picgo',//图床选择
         hongbaoThenStop: false, //自动涮锅时遇到红包停止
         holdPageWhenListening: false,//自动涮锅时页面保持不动
         lessToast: false,  //减少弹出提示

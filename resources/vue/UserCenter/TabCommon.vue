@@ -190,12 +190,12 @@ const loudspeakerPositionOptions = [
 ]
 //图床选项
 const imgHostOptions = [
-    { value: 'mjj', label: 'mjj' },
+    { value: 'picgo', label: '(推荐)picgo' },
+    { value: 'imgtbl', label: '(推荐)imgtbl' },
     { value: 'imgbb', label: 'imgbb' },
     { value: 'freeimage', label: 'freeimage' },
-    { value: 'picgo', label: 'picgo' },
     { value: 'imge', label: 'imge' },
-    { value: 'imgtbl', label: 'imgtbl' },
+    { value: 'mjj', label: '(不推荐)mjj' },
 ]
 
 //实时预览用的虚拟postData
