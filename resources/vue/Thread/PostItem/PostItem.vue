@@ -332,8 +332,8 @@ function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片�
         if (props.noImageMode) {
             //no_image_mode:无图模式
             return match
-                .replace(/src/, "origin-src")
-                .replace("<img ", '<img src="/img_svg.svg" class="img-svg"');
+                .replace(/src/i, "origin-src")
+                .replace(/<img /i, '<img src="/img_svg.svg" class="img-svg"');
         } else {
             return match;
         }
@@ -342,8 +342,8 @@ function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片�
 const postContent = computed(() => {//数据处理
     let postContent: string
     //第二种屏蔽类型：文本元素的替换（图片和表情包等）
-    postContent = props.postData.content.replace(/<img[^>]*>/g, imgReplacer)
-        .replace(/<script/g, "<**禁止使用script**")
+    postContent = props.postData.content.replace(/<img[^>]*>/gi, imgReplacer)
+        .replace(/<script/gi, "<**禁止使用script**")
         .replace(/\n/g, "<br>")
 
 
