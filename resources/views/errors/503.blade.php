@@ -15,7 +15,7 @@
         <div style="height: 200px; width:400px;">
             小火锅维护中……
             <br>
-            大约需要1小时，很快回来！
+            呜呜更新后有bug，正在回滚到更新前。请稍等10分钟。
         </div>
     </div>
 </body>
