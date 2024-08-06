@@ -344,6 +344,7 @@ const postContent = computed(() => {//数据处理
     //第二种屏蔽类型：文本元素的替换（图片和表情包等）
     postContent = props.postData.content.replace(/<img[^>]*>/gi, imgReplacer)
         .replace(/<script/gi, "<**禁止使用script**")
+        .replace(/<base/gi, "<**禁止使用base标签**")
         .replace(/\n/g, "<br>")
 
 
