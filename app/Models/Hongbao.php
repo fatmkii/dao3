@@ -71,17 +71,6 @@ class Hongbao extends Model
         }
     }
 
-
-    public function getOloTotalAttribute($olo_total)
-    {
-        if ($this->olo_hide) {
-            //隐藏olo总额
-            return null;
-        } else {
-            return $olo_total;
-        }
-    }
-
     public static function create(Request $request, $thread_id)
     {
         $request->validate([
