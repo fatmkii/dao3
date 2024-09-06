@@ -226,7 +226,7 @@ class HongbaoController extends Controller
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $post_content,
-                'nickname' => '红包系统',
+                'nickname' => '红包结果',
                 'created_by_admin' => 2,
                 'created_IP' => $request->ip(),
             ]);
