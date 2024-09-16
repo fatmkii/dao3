@@ -370,6 +370,48 @@ const setGlobalSettingPoster = (params: setGlobalSettingParams) => {
     return methodInstance
 }
 
+//查询管理员操作清单
+interface adminActivesData {
+    name: string,
+    admin_level: number,
+    active: string,
+    active_type: string,
+    content: string,
+    olo: number,
+    post_id: number,
+    thread_id: number,
+    thread_title: number,
+    floor: number,
+    is_rollbacked: boolean,
+    created_at: string,
+    updated_at: string,
+    post_content: string,
+}
+interface adminActivesListData {
+    data: adminActivesData[],
+    last_page: number,
+}
+interface adminActivesGetterParams {
+    binggan: string,
+    page: number | null,
+    date: string | null,
+}
+const adminActivesGetter = (params: adminActivesGetterParams) => {
+    const methodInstance = commonAlova.Get<adminActivesListData>(
+        'api/admin/actives',
+        {
+            name: 'adminActivesGetter',
+            params: params,
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -377,4 +419,5 @@ export {
     threadCancelTopParams, threadCancelTopPoster,
     setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
     globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
+    adminActivesData, adminActivesGetter, adminActivesGetterParams
 }

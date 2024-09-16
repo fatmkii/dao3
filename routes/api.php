@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AdminActivesController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CommonController;
 use Illuminate\Http\Request;
@@ -82,7 +83,9 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     // Route::delete('/annoucement/{annoucement_id}', [AdminController::class, 'del_annoucements']); //查看站内公告
     // Route::post('/check_jingfen', [AdminController::class, 'check_jingfen']); //查精分
     Route::post('/del_loudspeaker', [AdminController::class, 'del_loudspeaker']); //删除大喇叭
+    Route::get('/actives', [AdminActivesController::class, 'show']); //查询管理员操作记录
 });
+
 
 
 //Forum系列

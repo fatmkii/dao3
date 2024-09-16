@@ -7,7 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
-use App\Jobs\ProcessUserActive;
+use App\Jobs\ProcessAdminActive;
+// use App\Jobs\ProcessUserActive;
 use App\Models\AnnoucementMessages;
 use App\Models\Forum;
 use App\Models\HongbaoPost;
@@ -56,16 +57,35 @@ class AdminController extends Controller
         $thread->is_deleted = 2;
         $thread->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '删除了主题',
+        //         'thread_id' => $thread->id,
+        //         'content' => $request->content,
+        //     ]
+        // );
+        $user_target = User::where('binggan', $thread->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '删除了主题',
-                'thread_id' => $thread->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '删除主题',
+                'active_type' => 'thread_delete',
                 'content' => $request->content,
+                'olo' => null,
+                'post_id' => null,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => null,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -108,15 +128,34 @@ class AdminController extends Controller
         $thread->sub_id = 10;
         $thread->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '置顶了主题',
+        //         'thread_id' => $thread->id,
+        //     ]
+        // );
+        $user_target = User::where('binggan', $thread->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '置顶了主题',
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '置顶主题',
+                'active_type' => 'thread_set_top',
+                'content' => null,
+                'olo' => null,
+                'post_id' => null,
                 'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => null,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -158,15 +197,34 @@ class AdminController extends Controller
         $thread->sub_id = 0;
         $thread->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '取消了置顶主题',
+        //         'thread_id' => $thread->id,
+        //     ]
+        // );
+        $user_target = User::where('binggan', $thread->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '取消了置顶主题',
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '撤销置顶主题',
+                'active_type' => 'thread_cancel_top',
+                'content' => null,
+                'olo' => null,
+                'post_id' => null,
                 'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => null,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '该主题已经取消置顶',
@@ -225,14 +283,16 @@ class AdminController extends Controller
         $post->save();
 
 
+        $olo_penalty = null;
         if ($request->reduce_olo == True) {
             //扣除被删帖用户的olo 500个
+            $olo_penalty = 500; //注意这里是个正数
             $user_to_delete = User::where('binggan', $post->created_binggan)->first();
             if ($user_to_delete) {
                 $user_to_delete->coinChange(
                     'normal', //记录类型
                     [
-                        'olo' => -500,
+                        'olo' => -$olo_penalty, //注意这里要改为负数（扣olo）
                         'content' => '被管理员删除帖子并扣除olo',
                         'thread_id' => $post->thread_id,
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
@@ -244,17 +304,37 @@ class AdminController extends Controller
             }
         }
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '删除了帖子',
+        //         'thread_id' => $request->thread_id,
+        //         'post_id' => $post->id,
+        //         'content' => $request->content,
+        //     ]
+        // );
+        $thread = Thread::find($request->thread_id);
+        $user_target = User::where('binggan', $post->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '删除了帖子',
-                'thread_id' => $request->thread_id,
-                'post_id' => $post->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '删除回帖',
+                'active_type' => 'post_delete',
                 'content' => $request->content,
+                'olo' => -$olo_penalty, //注意这里要改为负数（扣olo）
+                'post_id' => $post->id,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => $post->floor,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -297,17 +377,38 @@ class AdminController extends Controller
         $post->is_deleted = 0;
         $post->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '恢复了已删除的帖子',
+        //         'thread_id' => $request->thread_id,
+        //         'post_id' => $post->id,
+        //         'content' => $request->content,
+        //     ]
+        // );
+
+        $thread = Thread::find($request->thread_id);
+        $user_target = User::where('binggan', $post->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '恢复了已删除的帖子',
-                'thread_id' => $request->thread_id,
-                'post_id' => $post->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '恢复已删除回帖',
+                'active_type' => 'post_recovery',
                 'content' => $request->content,
+                'olo' =>  null,
+                'post_id' => $post->id,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => $post->floor,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -379,15 +480,16 @@ class AdminController extends Controller
             ->where('is_deleted', 0)
             ->update(['is_deleted' => 2]);
 
+        $olo_penalty = null;
         if ($request->reduce_olo == True) {
             //扣除被删帖用户的olo 500个/每个帖子（上限5000）
-            $olo = $posts_num >= 10 ? 5000 : $posts_num * 500; //注意这里是个正数
+            $olo_penalty = $posts_num >= 10 ? 5000 : $posts_num * 500; //注意这里是个正数
             $user_to_delete_all = User::where('binggan', $post->created_binggan)->first();
             if ($user_to_delete_all) {
                 $user_to_delete_all->coinChange(
                     'normal', //记录类型
                     [
-                        'olo' => -$olo, //注意这里要改为负数（扣olo）
+                        'olo' => -$olo_penalty, //注意这里要改为负数（扣olo）
                         'content' => '被管理员删除帖子并扣除olo',
                         'thread_id' => $post->thread_id,
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
@@ -399,17 +501,38 @@ class AdminController extends Controller
             }
         }
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '删除该用户全部的回帖',
+        //         'thread_id' => $request->thread_id,
+        //         'binggan_target' => $post->created_binggan,
+        //         'content' => $request->content,
+        //     ]
+        // );
+
+        $thread = Thread::find($request->thread_id);
+        $user_target = User::where('binggan', $post->created_binggan)->first();
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '删除该用户全部的回帖',
-                'thread_id' => $request->thread_id,
-                'binggan_target' => $post->created_binggan,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '删除该用户全部回帖',
+                'active_type' => 'post_delete_all',
                 'content' => $request->content,
+                'olo' =>  -$olo_penalty, //注意这里要改为负数（扣olo）
+                'post_id' => $post->id,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => $post->floor,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -465,18 +588,40 @@ class AdminController extends Controller
         $user_to_ban->is_banned = true;
         $user_to_ban->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '碎了饼干',
+        //         'thread_id' => $request->thread_id,
+        //         'post_id' => $request->post_id,
+        //         'binggan_target' => $user_to_ban->binggan,
+        //         'content' => $request->content,
+        //     ]
+        // );
+
+        $thread = Thread::find($request->thread_id);
+        $user_target = $user_to_ban;
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '碎了饼干',
-                'thread_id' => $request->thread_id,
-                'post_id' => $request->post_id,
-                'binggan_target' => $user_to_ban->binggan,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '碎饼干',
+                'active_type' => 'user_ban',
                 'content' => $request->content,
+                'olo' =>  null,
+                'post_id' => $post->id,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => $post->floor,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '已碎饼干。阿弥陀佛，善哉善哉。',
@@ -547,18 +692,40 @@ class AdminController extends Controller
         }
         $user_to_lock->save();
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '封禁了饼干',
+        //         'thread_id' => $request->thread_id,
+        //         'post_id' => $request->post_id,
+        //         'binggan_target' => $user_to_lock->binggan,
+        //         'content' => $request->content,
+        //     ]
+        // );
+
+        $thread = Thread::find($request->thread_id);
+        $user_target = $user_to_lock;
+        ProcessAdminActive::dispatch((
             [
-                'binggan' => $user->binggan,
                 'user_id' => $user->id,
-                'active' => $admin_name . '封禁了饼干',
-                'thread_id' => $request->thread_id,
-                'post_id' => $request->post_id,
-                'binggan_target' => $user_to_lock->binggan,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '封禁饼干',
+                'active_type' => 'user_lock',
                 'content' => $request->content,
+                'olo' =>  null,
+                'post_id' => $post->id,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => $post->floor,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
             ]
-        );
+        ));
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => $msg,
@@ -607,16 +774,34 @@ class AdminController extends Controller
         //要清除板块的缓存
         Cache::forget('forums_cache');
 
-        $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
-        ProcessUserActive::dispatch(
-            [
-                'binggan' => $user->binggan,
-                'user_id' => $user->id,
-                'active' => $admin_name . '更新了版头。板块：' . $request->forum_id,
-                'content' => '版头字符串长度：' . mb_strlen(json_encode($request->banners)),
-            ]
-        );
+        // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
+        // ProcessUserActive::dispatch(
+        //     [
+        //         'binggan' => $user->binggan,
+        //         'user_id' => $user->id,
+        //         'active' => $admin_name . '更新了版头。板块：' . $request->forum_id,
+        //         'content' => '版头字符串长度：' . mb_strlen(json_encode($request->banners)),
+        //     ]
+        // );
 
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '更换版头：' . $forum->name,
+                'active_type' => 'set_banner',
+                'content' => '版头字符串长度：' . mb_strlen(json_encode($request->banners)),
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -685,7 +870,6 @@ class AdminController extends Controller
             ]
         ]);
     }
-
 
     public function create_medal(Request $request)
     {
@@ -1100,6 +1284,25 @@ class AdminController extends Controller
             DB::rollback();
             throw $e;
         }
+
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '删除大喇叭',
+                'active_type' => 'del_loudspeaker',
+                'content' => '大喇叭内容：' . $loudspeaker->content,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
 
         return response()->json(
             [

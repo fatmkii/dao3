@@ -18,7 +18,7 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { NFlex, NTabPane, NTabs } from 'naive-ui'
 import { computed, ref } from 'vue'
-import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal } from './index'
+import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal, TabActives } from './index'
 
 //基础数据
 const userStore = useUserStore()
@@ -31,7 +31,7 @@ document.title = '管理员中心'
 //生成tabs
 const tabsList = computed(() => {
     const arr = [
-        { name: 'actives', tab: '管理状况', component: null },
+        { name: 'actives', tab: '管理状况', component: TabActives },
         { name: 'banners', tab: '版头设定', component: TabBanners }
     ]
     if (userStore.admin.isSuperAdmin) {
