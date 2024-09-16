@@ -31,9 +31,13 @@ document.title = '管理员中心'
 //生成tabs
 const tabsList = computed(() => {
     const arr = [
-        { name: 'actives', tab: '管理状况', component: TabActives },
         { name: 'banners', tab: '版头设定', component: TabBanners }
     ]
+    if (userStore.admin.isNormalAdmin) {
+        arr.unshift(
+            { name: 'actives', tab: '管理状况', component: TabActives },
+        )
+    }
     if (userStore.admin.isSuperAdmin) {
         return arr.concat([
             { name: 'global', tab: '全局设置', component: TabGlobal },
