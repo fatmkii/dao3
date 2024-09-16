@@ -191,10 +191,10 @@ const loudspeakerPositionOptions = [
 //图床选项
 const imgHostOptions = [
     { value: 'picgo', label: '(推荐)picgo' },
-    { value: 'imgtbl', label: '(推荐)imgtbl' },
     { value: 'imgbb', label: 'imgbb' },
     { value: 'freeimage', label: 'freeimage' },
     { value: 'imge', label: 'imge' },
+    { value: 'imgtbl', label: '(已停用)imgtbl' },
     { value: 'mjj', label: '(不推荐)mjj' },
 ]
 
