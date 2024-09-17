@@ -22,12 +22,12 @@ class AdminActivesController extends Controller
             ->when($date !== null, function ($query) use ($date) {
                 return $query->whereDate('created_at', '=', $date);
             })
+            ->orderByDesc('id')
             ->offset($offset)->limit($limit);
 
         $data = AdminActive::joinSub($sql_child, 'sql_child', function ($join) use ($table) {
             $join->on($table . '.id', '=', 'sql_child.id');
         })
-            ->orderByDesc('admin_actives.id')
             ->get();
 
 
