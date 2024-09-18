@@ -94,4 +94,18 @@ class AdminActive extends Model
             get: fn() => $post_content,
         );
     }
+
+    //如果是碎饼干和封禁饼干，则往前端暴露饼干的前2位
+    protected function active(): Attribute
+    {
+        if ($this->active_type == 'user_ban' || $this->active_type == 'user_lock') {
+            return Attribute::make(
+                get: fn(string $value) => $value . substr($this->binggan_target, 0, 2) . '**',
+            );
+        } else {
+            return Attribute::make(
+                get: fn(string $value) => $value,
+            );
+        }
+    }
 }
