@@ -61,6 +61,8 @@
                 <HongbaoComponent ref="HongbaoComponentCom" v-if="threadData.hongbao_id !== null"
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
                     @refresh-posts-list="handleFetchPostsList(false)" />
+                <PoolComponent ref="PoolComponentCom" v-if="threadId === 88438" :thread-id="threadId"
+                    :forum-id="forumData?.id" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- 这是第1楼及之后 -->
                 <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
                     :your-posts-list="yourPostsList" :anti-jingfen="threadData?.anti_jingfen" :forum-id="forumData.id"
@@ -155,7 +157,7 @@
             <template v-if="isActive">
                 <Teleport to="#topbar-nav">
                     <router-link :to="{ name: 'forum', params: { forumId: forumData?.id } }" class="flex-item-center">
-                        <n-ellipsis :tooltip="false" >
+                        <n-ellipsis :tooltip="false">
                             {{ forumData?.name }}
                         </n-ellipsis>
                         <n-tag round class="forum-tag" :size="commonStore.isMobile ? 'small' : 'medium'">
@@ -227,6 +229,7 @@ import CrowdComponent from './CrowdComponent.vue'
 import GambleComponent from './GambleComponent.vue'
 import HongbaoComponent from './HongbaoComponent.vue'
 import VoteComponent from './VoteComponent.vue'
+import PoolComponent from './PoolComponent.vue'
 
 //基础数据
 const userStore = useUserStore()
@@ -239,6 +242,7 @@ const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//�
 const GambleComponentCom = ref<InstanceType<typeof GambleComponent> | null>(null)//输入框组件的ref
 const CrowdComponentCom = ref<InstanceType<typeof CrowdComponent> | null>(null)//输入框组件的ref
 const HongbaoComponentCom = ref<InstanceType<typeof HongbaoComponent> | null>(null)//输入框组件的ref
+const PoolComponentCom = ref<InstanceType<typeof PoolComponent> | null>(null)//输入框组件的ref
 
 //用teleport组件替代掉topbar的“小火锅”
 onActivated(() => {

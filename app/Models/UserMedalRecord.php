@@ -538,18 +538,18 @@ class UserMedalRecord extends Model
 
     public function check_anniversary()
     {
-        if (Carbon::now() < Carbon::create("2024-4-28 8:0:0")) {
+        if (Carbon::now() < Carbon::create("2024-10-1 8:0:0")) {
             //如果时间未到，就什么都不做
             return;
         }
 
-        if (Carbon::now() > Carbon::create("2024-5-12 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2024-10-8 0:0:0")) {
             //如果时间已经过期，就什么都不做
             return;
         }
 
-        // 3周年活动
-        $medals_id = array(154, 155); //3周年有2个徽章（3周年和3.0）
+        // 24年国庆活动
+        $medals_id = array(152); //这是国庆徽章（23年和24年一样）
 
         //纯粹行为型的徽章，直接查询
         //已经获得过的徽章（统一查询一次，用于后续判断）
