@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const startTime = dayjs.tz('2024-06-18 20:00')
+const startTime = dayjs.tz('2024-10-1 00:00')
 const endTime = dayjs.tz('2024-10-4 00:00')
 
 //判断是否在活动期间 （0=未开始，1=进行中，2=已结束）
