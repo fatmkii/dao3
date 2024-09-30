@@ -11,11 +11,13 @@
                     <n-text>{{ poolData.olo_total?.toLocaleString('en-us') }} olo </n-text>
                 </div>
                 <n-flex size="small" :wrap="false">
-                    <f-input v-model:value="messageInput" :maxlength="255" @keyup.enter="poolStoreHandle"
+                    <f-input v-model:value="messageInput" :maxlength="255" @keyup.enter="poolStoreHandle(1000)"
                         style="max-width: 328px;" :placeholder="poolData.user_pool === null ? '请留下祝福语' : '已经投过祝福啦'"
                         auto-size :disabled="poolData.user_pool !== null" />
-                    <f-button type="primary" @click="poolStoreHandle"
+                    <f-button type="primary" @click="poolStoreHandle(1000)"
                         :disabled="poolData.user_pool !== null || poolStoreLoading || endFlag !== 1">投入祝福</f-button>
+                    <f-button type="warning" @click="poolStoreHandle(30000)"
+                        v-if="userStore.admin.isSuperAdmin">投入30w</f-button>
                 </n-flex>
                 <n-flex :align="'center'" size="small">
                     <span>{{ bannerText }}</span>
@@ -102,7 +104,7 @@ const { loading: poolStoreLoading,
 } = useRequest((params: poolStoreParams) => poolStorePoster(params),
     { immediate: false }
 )
-function poolStoreHandle(event: MouseEvent | KeyboardEvent) {
+function poolStoreHandle(olo: number) {
     if (messageInput.value === undefined) {
         const dialogArgs = {
             title: '错误',
@@ -118,7 +120,7 @@ function poolStoreHandle(event: MouseEvent | KeyboardEvent) {
         forum_id: props.forumId,
         thread_id: props.threadId,
         message: messageInput.value,
-        olo: 1000,
+        olo: olo,
     }
     poolStoreSend(params).then(() => {
         getPoolData()

@@ -382,7 +382,7 @@ class CommonController extends Controller
         $olo = 1000;
         $message = "我投入了1000个olo！<br>" . $request->message; //祝福池留言
 
-        if (Carbon::now() < Carbon::create("2024-10-1 0:0:0")) {
+        if (Carbon::now() < Carbon::create("2024-10-1 0:0:0") && $user->admin != 99) {
             return response()->json([
                 'code' => ResponseCode::USER_CANNOT,
                 'message' => "本次活动尚未开始，请稍等喔",
