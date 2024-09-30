@@ -81,7 +81,7 @@
                     {{ '№' + postData.floor }}
                 </span>
                 <span class="post-nick-name" @click="quoteClick" style="cursor: pointer;">
-                    {{ postData.nickname }}
+                    {{ postData.nickname }}🇨🇳
                 </span>
                 <span class="post-created-at">{{ postData.created_at }}</span>
                 <span v-if="antiJingfen" class="post-anti-jingfen">
