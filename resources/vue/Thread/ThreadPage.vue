@@ -61,7 +61,7 @@
                 <HongbaoComponent ref="HongbaoComponentCom" v-if="threadData.hongbao_id !== null"
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
                     @refresh-posts-list="handleFetchPostsList(false)" />
-                <PoolComponent ref="PoolComponentCom" v-if="threadId === 88438" :thread-id="threadId"
+                <PoolComponent ref="PoolComponentCom" v-if="threadId === 125894" :thread-id="threadId"
                     :forum-id="forumData?.id" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- 这是第1楼及之后 -->
                 <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
