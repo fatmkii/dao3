@@ -112,6 +112,7 @@ interface poolStoreParams {
     message: string,
     thread_id: number,
     forum_id: number,
+    admin: boolean,
 }
 const poolStorePoster = (params: poolStoreParams) => {
     const methodInstance = commonAlova.Post(

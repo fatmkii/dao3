@@ -376,11 +376,19 @@ class CommonController extends Controller
             'message' => 'nullable|string|max:100',
             'thread_id' => 'required|integer',
             'forum_id' => 'required|integer',
+            'admin' => 'nullable|boolean',
         ]);
 
         $user = $request->user();
-        $olo = 1000;
-        $message = "我投入了1000个olo！<br>" . $request->message; //祝福池留言
+
+        if ($request->admin && $user->admin == 99) {
+            //管理员可以投入最初的30万
+            $olo = 300000;
+            $message = "我投入了300000个olo！<br>" . $request->message; //祝福池留言
+        } else {
+            $olo = 1000;
+            $message = "我投入了1000个olo！<br>" . $request->message; //祝福池留言
+        }
 
         if (Carbon::now() < Carbon::create("2024-10-1 0:0:0") && $user->admin != 99) {
             return response()->json([
