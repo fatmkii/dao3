@@ -50,7 +50,10 @@ class HongPoolResult extends Command
 
         $hongbao_pools = DB::table("hongbao_pool")->get(['id', 'user_id']);
         $olo_total = DB::table('hongbao_pool')->sum('olo');
-        $thread_id = 100658; //这里记得每次改！！
+        $thread_id = 125894; //这里记得每次改！！
+        if (!$this->confirm('每次主题id要手动输入，是否确认是本次id？id: ' . $thread_id)) {
+            return False;
+        }
 
         $this->info('投入用户共有：' . count($hongbao_pools));
         $this->info('olo总数' . $olo_total);
@@ -114,9 +117,9 @@ class HongPoolResult extends Command
                     'normal', //记录类型
                     [
                         'olo' => $olo,
-                        'content' => '新春祝福池',
+                        'content' => '国庆祝福池',
                         'thread_id' => $thread_id,
-                        'thread_title' => "新春祝福池活动",
+                        'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
                     ]
@@ -161,9 +164,9 @@ class HongPoolResult extends Command
                     'normal', //记录类型
                     [
                         'olo' => $olo,
-                        'content' => '新春祝福池',
+                        'content' => '国庆祝福池',
                         'thread_id' => $thread_id,
-                        'thread_title' => "新春祝福池活动",
+                        'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
                     ]
@@ -210,9 +213,9 @@ class HongPoolResult extends Command
                     'normal', //记录类型
                     [
                         'olo' => $olo,
-                        'content' => '新春祝福池',
+                        'content' => '国庆祝福池',
                         'thread_id' => $thread_id,
-                        'thread_title' => "新春祝福池活动",
+                        'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
                     ]
