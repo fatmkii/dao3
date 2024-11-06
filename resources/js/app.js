@@ -5,6 +5,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from '@/routes/routes.js';
 import root_component from '@/vue/App.vue'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault("Asia/Shanghai") //设置默认时区为UTC+8
 
 const pinia = createPinia()
 const app = createApp({})

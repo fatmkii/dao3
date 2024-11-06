@@ -76,7 +76,7 @@ const themeVars = useThemeVars()
 const pageSize = 30 //每页数量
 
 //选择日期输入
-const dateSelected = ref<string>(dayjs().format('YYYY-MM-DD'))
+const dateSelected = ref<string>(dayjs.tz().format('YYYY-MM-DD'))
 watch(dateSelected, () => getIncomeDataHandle('day'))
 onMounted(() => getIncomeDataHandle('day'))//不知道为什么上面设定immediate:true的话会报错
 

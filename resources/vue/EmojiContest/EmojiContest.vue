@@ -74,14 +74,7 @@ import { type moeUserVoteData as moeUserVoteDataInterface, type moeData as moeDa
 import VoteModal from './VoteModal.vue'
 import { FButton } from '@custom';
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import { shuffleArray } from '@/js/func/shuffle'
-
-//配置时区
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
 
 // 表情包萌活动的基础数据
 const startTime = dayjs.tz('2024-06-18 20:00')

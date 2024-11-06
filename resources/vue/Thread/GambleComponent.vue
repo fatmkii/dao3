@@ -125,7 +125,7 @@ const gambleBettingOlo = ref<number>(1000)
 
 //过期时间提示
 const outdateTTL = computed<string>(() => {
-    const outdate = dayjs(gambleQuestionData.value.end_date)
+    const outdate = dayjs.tz(gambleQuestionData.value.end_date)
     const now = dayjs()
     const hoursDiff = outdate.diff(now, 'hour')
     if (hoursDiff >= 1) {
@@ -137,10 +137,10 @@ const outdateTTL = computed<string>(() => {
 })
 //格式化日期显示
 const outdate = computed<string>(() => {
-    const outdate = dayjs(gambleQuestionData.value.end_date)
+    const outdate = dayjs.tz(gambleQuestionData.value.end_date)
     return outdate.format('YY年M月D日 HH:mm')
 })
-const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs(gambleQuestionData.value.end_date)))
+const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs.tz(gambleQuestionData.value.end_date)))
 
 //管理员按钮下拉框
 const funcOptions = [

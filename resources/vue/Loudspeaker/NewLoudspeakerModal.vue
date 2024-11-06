@@ -68,7 +68,7 @@ const userInput = ref({
     color: undefined as string | undefined,
     threadId: undefined as string | undefined,
     days: 1,
-    effectiveDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    effectiveDate: dayjs.tz().format('YYYY-MM-DD HH:mm:ss'),
 })
 const useColor = ref<boolean>(false)
 

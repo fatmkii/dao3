@@ -51,7 +51,7 @@ import { computed, ref } from 'vue'
 //输入数据
 const title = ref<string>()
 const options = ref<string[]>([])
-const endTime = ref<string>(dayjs().add(7, 'day').format('YYYY-MM-DD 00:00:00'))
+const endTime = ref<string>(dayjs.tz().add(7, 'day').format('YYYY-MM-DD 00:00:00'))
 
 //控制选项数量
 const messageNum = ref<number>(3)

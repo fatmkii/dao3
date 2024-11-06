@@ -121,7 +121,7 @@ const showDepositModal = ref<boolean>(false)
 //输入的数据
 const descriptionInput = ref<string>()
 const oloInput = ref<number>(10000)
-const expireDateTimeInput = ref<string>(dayjs().add(2, 'day').format('YYYY-MM-DD 00:00:00'))
+const expireDateTimeInput = ref<string>(dayjs.tz().add(2, 'day').format('YYYY-MM-DD 00:00:00'))
 
 //表格参数配置
 const pagination = ref({ pageSize: pageSize })

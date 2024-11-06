@@ -113,7 +113,7 @@ const loudspeakerData = computed(() => {
         if (onlyMyLoudspeaker.value && !item.is_your_loudspeaker) {
             return false
         }
-        if (dateSelected.value && !dayjs(dateSelected.value).isSame(item.effective_date, 'day')) {
+        if (dateSelected.value && !dayjs.tz(dateSelected.value).isSame(item.effective_date, 'day')) {
             return false
         }
         return true

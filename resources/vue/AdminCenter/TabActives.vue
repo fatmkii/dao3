@@ -79,7 +79,12 @@ import { useRequest } from 'alova'
 import { NCard, NFlex, NEmpty, NText, NDatePicker, NDataTable, NPagination, NEllipsis, useThemeVars } from 'naive-ui'
 import { computed, onMounted, ref, h, watch } from 'vue'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { RouterLink } from 'vue-router'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 //基础数据
 const userStore = useUserStore()
@@ -87,7 +92,7 @@ const commonStore = useCommonStore()
 const themeVars = useThemeVars()
 
 //选择日期输入
-const dateSelected = ref<string>(dayjs().format('YYYY-MM-DD'))
+const dateSelected = ref<string>(dayjs().tz('Asia/Shanghai').format('YYYY-MM-DD'))
 watch(dateSelected, () => getActivesDataHandle())
 const pageSelected = ref<number>(1)
 watch(pageSelected, () => getActivesDataHandle())

@@ -2,8 +2,6 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 
 export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl'
 
@@ -39,9 +37,6 @@ export const useCommonStore = defineStore('commonStore', () => {
     window.addEventListener('resize', () => bannerHeight.value = getBannerHeight())
 
     //是否双十一的flag
-    dayjs.extend(utc)
-    dayjs.extend(timezone)
-    dayjs.tz.setDefault("Asia/Shanghai") //设置为UTC+8
     const isDouble11 = computed<boolean>(() => {
         const festivalDays = ['2024-06-18', '2024-06-19'] //各个活动节日的时间（618和双十一）
         const now = dayjs.tz() //tz()才是获得UTC+8的时间

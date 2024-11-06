@@ -84,7 +84,7 @@ watch(voteOptionsSelected, (newValue, oldValue) => {
 
 //过期时间提示
 const outdateTTL = computed<string>(() => {
-    const outdate = dayjs(voteQuestionData.value.end_date)
+    const outdate = dayjs.tz(voteQuestionData.value.end_date)
     const now = dayjs()
     const hoursDiff = outdate.diff(now, 'hour')
     if (hoursDiff >= 1) {
@@ -96,10 +96,10 @@ const outdateTTL = computed<string>(() => {
 })
 //格式化日期显示
 const outdate = computed<string>(() => {
-    const outdate = dayjs(voteQuestionData.value.end_date)
+    const outdate = dayjs.tz(voteQuestionData.value.end_date)
     return outdate.format('YY年M月D日 HH:mm')
 })
-const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs(voteQuestionData.value.end_date)))
+const hasOutdate = computed<boolean>(() => dayjs().isAfter(dayjs.tz(voteQuestionData.value.end_date)))
 
 
 //获取投票数据

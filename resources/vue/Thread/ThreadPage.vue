@@ -280,7 +280,7 @@ onDeactivated(() => { isActive.value = false })
 
 //显示TTL用的
 const nissinTTL = computed(() => {
-    const nissinDate = dayjs(threadData.value.nissin_date)
+    const nissinDate = dayjs.tz(threadData.value.nissin_date)
     const now = dayjs()
     const hoursDiff = nissinDate.diff(now, 'hour')
     const minutesDiff = nissinDate.diff(now, 'minute') - 60 * hoursDiff

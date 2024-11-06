@@ -27,7 +27,7 @@ import { computed, ref } from 'vue'
 
 //输入数据
 const title = ref<string>()
-const endTime = ref<string>(dayjs().add(7, 'day').format('YYYY-MM-DD 00:00:00'))
+const endTime = ref<string>(dayjs.tz().add(7, 'day').format('YYYY-MM-DD 00:00:00'))
 const oloTarget = ref<number>(1000000)
 
 //控制日历的可选时间（1天到1个月）
