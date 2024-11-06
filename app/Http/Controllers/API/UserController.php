@@ -944,7 +944,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $effective_date = Carbon::parse($request->effective_date);
-        $expire_date = $effective_date->addDays($request->days);
+        $expire_date = $effective_date->copy()->addDays($request->days);
 
         if ($effective_date < Carbon::now()->addHours(-1)) { //减去1小时避免时间差
             return response()->json([
