@@ -1343,7 +1343,7 @@ class AdminController extends Controller
             DB::table('user_register')
                 ->where('created_UUID', $request->uuid)
                 ->update([
-                    'count' => 0,
+                    'count' => 3,
                     'is_banned' => false,
                 ]);
 
