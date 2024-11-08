@@ -176,7 +176,8 @@ Route::prefix('emoji_contest')->middleware('auth:sanctum')->group(function () {
 
 
 //各种杂项
-Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']);
+Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']); //已废弃
+Route::get('/new_binggan_check', [CommonController::class, 'new_binggan_enable_check']);
 Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
 Route::get('/captcha', [CommonController::class, 'get_captcha']);
 Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);

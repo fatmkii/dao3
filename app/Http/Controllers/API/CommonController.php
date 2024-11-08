@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
 use App\Common\Captcha;
+use App\Common\NewBingganChecker;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -161,6 +162,7 @@ class CommonController extends Controller
         }
     }
 
+    //已废弃
     public function new_binggan_enable(Request $request)
     {
         return response()->json(
@@ -168,6 +170,21 @@ class CommonController extends Controller
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已查询申请饼干开放状态',
                 'data' =>  GlobalSetting::get('new_binggan'),
+            ],
+        );
+    }
+
+    public function new_binggan_enable_check(Request $request)
+    {
+        list($enable, $next_date) = NewBingganChecker::check();
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已查询申请饼干开放状态',
+                'data' =>  [
+                    'enable' => $enable && GlobalSetting::get('new_binggan'), //全局变量中手动关闭时，仍然为false
+                    'next_date' => $next_date->getTimestamp(),
+                ],
             ],
         );
     }

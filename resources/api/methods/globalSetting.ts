@@ -1,14 +1,14 @@
 import { commonAlova } from '@/api/index';
 
-
-const newBingganEnableGetter = commonAlova.Get<boolean>(
-    '/api/new_binggan_enable/',
-    {
-        name: 'newBingganEnableGetter',
-        params: {},
-        localCache: null,
-    }
-)
+//这个接口已废弃
+// const newBingganEnableGetter = commonAlova.Get<boolean>(
+//     '/api/new_binggan_enable/',
+//     {
+//         name: 'newBingganEnableGetter',
+//         params: {},
+//         localCache: null,
+//     }
+// )
 const homeBannersGetter = commonAlova.Get<string[]>(
     '/api/home_banners/',
     {
@@ -29,4 +29,4 @@ const newLoudspeakerEnableGetter = commonAlova.Get<boolean>(
 )
 
 
-export { newBingganEnableGetter, homeBannersGetter, newLoudspeakerEnableGetter }
+export { homeBannersGetter, newLoudspeakerEnableGetter }

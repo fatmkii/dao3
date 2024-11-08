@@ -27,6 +27,7 @@ use App\Models\UserBank;
 use App\Models\UserLV;
 use App\Models\UserMedal;
 use App\Models\UserMedalRecord;
+use App\Common\NewBingganChecker;
 
 class UserController extends Controller
 {
@@ -191,7 +192,9 @@ class UserController extends Controller
             'register_key' => 'required|string',
         ]);
 
-        if (!GlobalSetting::get('new_binggan')) {
+
+        list($new_binggan_enable, $next_date) = NewBingganChecker::check();
+        if (!GlobalSetting::get('new_binggan') || !$new_binggan_enable) {
             return response()->json([
                 'code' => ResponseCode::USER_NEW_CLOSED,
                 'message' => ResponseCode::$codeMap[ResponseCode::USER_NEW_CLOSED],

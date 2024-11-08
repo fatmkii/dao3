@@ -1,6 +1,4 @@
 import { commonAlova, externalAlova } from '@/api/index';
-import { useUserStore } from '@/stores/user';
-const userStore = useUserStore()
 
 //获取验证码图
 interface captchaData {
@@ -105,55 +103,20 @@ const uploadImageToPublicPoster = (params: uploadImageToPublicParams) => {
     return methodInstance
 }
 
-//祝福池活动投入祝福
-interface poolStoreParams {
-    binggan: string,
-    olo: number,
-    message: string,
-    thread_id: number,
-    forum_id: number,
-    admin: boolean,
+//确认是否开放饼干和下次开放日期
+interface newBingganCheckData {
+    enable: boolean,
+    next_date: number, //是个timestamp
 }
-const poolStorePoster = (params: poolStoreParams) => {
-    const methodInstance = commonAlova.Post(
-        'api/store_pool',
-        params,
+const newBingganCheckGetter = () => {
+    const methodInstance = commonAlova.Get<newBingganCheckData>(
+        'api/new_binggan_check',
         {
             //第三个参数是config
-            name: 'poolStorePoster',
+            name: 'newBingganCheckGetter',
             params: {},
             localCache: null,
             hitSource: [],
-        }
-    )
-    methodInstance.meta = {
-        shouldRemind: true
-    };
-    return methodInstance
-}
-
-
-//祝福池活动获取数据
-interface getPoolData {
-    olo_total: number,
-    user_pool: {
-        olo: number,
-        floor: number,
-        result: number,
-        message: string,
-        created_at: string,
-    } | null
-}
-const poolDataGetter = () => {
-    const methodInstance = commonAlova.Get<getPoolData>(
-        'api/get_pool',
-        {
-            name: 'poolDataGetter',
-            params: {
-                binggan: userStore.binggan
-            },
-            localCache: null,
-            hitSource: []
         }
     )
     methodInstance.meta = {
@@ -163,5 +126,4 @@ const poolDataGetter = () => {
 }
 
 
-
-export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams, uploadImageToPublicParams, uploadImageToPublicPoster, poolStoreParams, poolStorePoster, getPoolData, poolDataGetter }
+export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams, uploadImageToPublicParams, uploadImageToPublicPoster, newBingganCheckData, newBingganCheckGetter }
