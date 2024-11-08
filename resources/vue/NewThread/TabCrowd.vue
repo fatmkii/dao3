@@ -32,7 +32,7 @@ const oloTarget = ref<number>(1000000)
 
 //控制日历的可选时间（1天到1个月）
 function dateDisabled(timestamp: number) {
-    return dayjs().isAfter(timestamp) || dayjs().add(1, 'month').isBefore(dayjs(timestamp))
+    return dayjs().subtract(1, 'day').isAfter(timestamp) || dayjs().add(1, 'month').isBefore(dayjs(timestamp))
 }
 
 //汇总输入数据返回给父组件

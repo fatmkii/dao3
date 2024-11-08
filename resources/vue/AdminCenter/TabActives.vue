@@ -101,7 +101,7 @@ onMounted(() => getActivesDataHandle())//不知道为什么上面设定immediate
 
 //控制日历的可选时间（今天往前）
 function dateDisabled(timestamp: number) {
-    return dayjs().isBefore(timestamp)
+    return dayjs().add(1, 'day').isBefore(timestamp)
 }
 
 

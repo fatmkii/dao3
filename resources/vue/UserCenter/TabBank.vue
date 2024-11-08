@@ -161,7 +161,7 @@ const pageOffset = computed(() => (pageSelected.value - 1) * pageSize)
 
 //控制日历的可选时间（1天到1年
 function dateDisabled(timestamp: number) {
-    return dayjs().isAfter(timestamp) || dayjs().add(1, 'year').isBefore(dayjs(timestamp))
+    return dayjs().subtract(1, 'day').isAfter(timestamp) || dayjs().add(1, 'year').isBefore(dayjs(timestamp))
 }
 
 //总计数据显示
