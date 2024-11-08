@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { poolDataGetter, poolStorePoster, type getPoolData, type poolStoreParams } from '@/api/methods/common';
+import { poolDataGetter, poolStorePoster, type getPoolData, type poolStoreParams } from '@/api/methods/pool';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
 import { FButton, FInput } from '@custom';
