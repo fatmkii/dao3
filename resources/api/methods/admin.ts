@@ -412,6 +412,29 @@ const adminActivesGetter = (params: adminActivesGetterParams) => {
     return methodInstance
 }
 
+//超级管理员解锁uuid
+interface unlockUuidParams {
+    binggan: string,
+    uuid: string,
+}
+const unlockUuidPoster = (params: unlockUuidParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/unlock_uuid',
+        params,
+        {
+            //第三个参数是config
+            name: 'unlockUuidPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -419,5 +442,5 @@ export {
     threadCancelTopParams, threadCancelTopPoster,
     setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
     globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
-    adminActivesData, adminActivesGetter, adminActivesGetterParams
+    adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster,
 }

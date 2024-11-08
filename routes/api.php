@@ -84,6 +84,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     // Route::post('/check_jingfen', [AdminController::class, 'check_jingfen']); //查精分
     Route::post('/del_loudspeaker', [AdminController::class, 'del_loudspeaker']); //删除大喇叭
     Route::get('/actives', [AdminActivesController::class, 'show']); //查询管理员操作记录
+    Route::post('/unlock_uuid', [AdminController::class, 'unlock_uuid']); //解锁一个用户注册的uuid限制
 });
 
 

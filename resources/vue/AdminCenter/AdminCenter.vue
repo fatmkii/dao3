@@ -18,7 +18,7 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { NFlex, NTabPane, NTabs } from 'naive-ui'
 import { computed, ref } from 'vue'
-import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal, TabActives } from './index'
+import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal, TabActives, TabUUID } from './index'
 
 //基础数据
 const userStore = useUserStore()
@@ -43,6 +43,7 @@ const tabsList = computed(() => {
             { name: 'global', tab: '全局设置', component: TabGlobal },
             { name: 'medals', tab: '发放成就', component: TabMedal },
             { name: 'olo', tab: '奖罚olo', component: TabCoin },
+            { name: 'uuid', tab: '解锁uuid', component: TabUUID },
         ])
     } else {
         return arr

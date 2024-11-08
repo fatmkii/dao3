@@ -1312,4 +1312,55 @@ class AdminController extends Controller
             ]
         );
     }
+
+    public function unlock_uuid(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'uuid' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        $uuid_exist = DB::table('user_register')->where('created_UUID', $request->uuid)->exists();
+        if (!$uuid_exist) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => '该UUID不存在',
+            ]);
+        }
+
+        if (!$user->tokenCan('super_admin')) {
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            DB::table('user_register')
+                ->where('created_UUID', $request->uuid)
+                ->update([
+                    'count' => 0,
+                    'is_banned' => false,
+                ]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已解锁该uuid',
+                'data' => [
+                    'uuid' => $request->uuid,
+                ],
+            ]
+        );
+    }
 }
