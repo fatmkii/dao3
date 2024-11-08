@@ -51,6 +51,12 @@ export const useCommonStore = defineStore('commonStore', () => {
         return isDouble11
     })
 
+    //计算是否需要小国旗的flag
+    const isOctober = computed<boolean>(() => {
+        const now = dayjs.tz() //tz()才是获得UTC+8的时间
+        return now.month() === 9 //0是一月，9是十月
+    })
+
 
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {
@@ -153,7 +159,7 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     }
 
-    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, userCustom, modalMaxWidth, userCustomReset }
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, userCustom, modalMaxWidth, userCustomReset }
 
 })
 
