@@ -651,6 +651,18 @@ class Medals
             'threshold' => 0, //本命是药水哥的全部饼干
             'varname' => null,
         ),
+        264 => array(
+            'name' => '小火锅第二届出道萌',
+            'describe' => '出道萌投票100票',
+            'threshold' => 100, //这里指100票，10000个olo
+            'varname' => 'emoji_contest_total',
+        ),
+        265 => array(
+            'name' => '我会回来的！',
+            'describe' => '出道萌投票1000票',
+            'threshold' => 1000, //这里指1000票，100000个olo
+            'varname' => 'emoji_contest_total',
+        ),
 
         //大喇叭相关
         270 => array(

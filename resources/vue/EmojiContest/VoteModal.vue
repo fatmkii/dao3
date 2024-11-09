@@ -2,7 +2,7 @@
     <n-modal v-model:show="showThis" display-directive="if">
         <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="showThis = false" size="small">
             <n-flex vertical :align="'center'" :size="[4, 4]">
-                <img :src="modalParams.emojiUrl">
+                <img style="max-width: 100%;" :src="modalParams.emojiUrl">
                 <span>当前票数：{{ modalParams.voteNum }}</span>
                 <n-input-group>
                     <f-input-group-label style="width: 4.2rem;">投票额</f-input-group-label>

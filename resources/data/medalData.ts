@@ -683,6 +683,18 @@ export const medalsHidden: medalsData = {
         'threshold': null,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644af2dce45d.png',
     },
+    264: {
+        'name': '小火锅第二届出道萌',
+        'describe': '出道萌投票100票',
+        'threshold': 100, //这里指100票，10000个olo
+        'img': 'https://www.freeimg.cn/i/2024/11/08/672e2f3be4ab3.webp',
+    },
+    265: {
+        'name': '我会回来的！',
+        'describe': '出道萌投票1000票',
+        'threshold': 1000, //这里指1000票，100000个olo
+        'img': 'https://www.freeimg.cn/i/2024/11/08/672e2f3bd9c7c.webp',
+    },
 
     270: {
         'name': '吼那么大声干嘛啦',
@@ -690,5 +702,6 @@ export const medalsHidden: medalsData = {
         'threshold': null,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644af31f3d2a.png',
     },
+    
 
 }

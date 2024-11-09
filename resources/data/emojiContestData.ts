@@ -1,4 +1,4 @@
-[
+const emojiContestData = [
     {
         "id": 1,
         "headsId": 0,
@@ -440,3 +440,5 @@
         ]
     }
 ]
+
+export default emojiContestData

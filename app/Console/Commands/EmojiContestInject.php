@@ -13,7 +13,7 @@ class EmojiContestInject extends Command
      *
      * @var string
      */
-    protected $signature = 'EmojiContestInject:run';
+    protected $signature = 'EmojiContest:inject';
 
     /**
      * The console command description.
@@ -39,6 +39,7 @@ class EmojiContestInject extends Command
      */
     public function handle()
     {
+        $this->info('正在注入表情包萌数据……');
         $file_path = app_path('Console/Commands/emojiContestData.json');
         $json_string = file_get_contents($file_path);
         $json_data = json_decode($json_string);
@@ -51,6 +52,7 @@ class EmojiContestInject extends Command
                 ]);
             }
         }
+        $this->info('已完成');
         return true;
     }
 }

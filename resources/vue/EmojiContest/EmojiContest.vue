@@ -1,7 +1,7 @@
 <template>
     <n-flex vertical :size="[12, 12]">
         <!-- 版头图 -->
-        <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval="10000">
+        <n-carousel show-arrow :trigger="commonStore.isMobile ? 'click' : 'hover'" autoplay :interval=10000>
             <img :src="banner" v-for="banner in bannersShuffled" class="carousel-img">
         </n-carousel>
         <!-- 提示 -->
@@ -10,7 +10,7 @@
         <n-tabs type="line" animated :placement="'left'" :size="commonStore.isMobile ? 'small' : 'large'"
             v-model:value="emojiGroupIdSelected" @update:value="getMoeData">
             <!-- 我的本命页 -->
-            <n-tab-pane :key="0" :name="0" tab="我的本命">
+            <n-tab-pane :key=0 :name=0 tab="我的本命">
                 <div>
                     <n-alert :show-icon="false" :type="'default'">
                         自己票数最多的“角色”为“⭐我的本命”，如该角色夺冠将获得特殊成就哦！
@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
-import emojiDataRaw from '@/data/emojiData'
+import emojiDataRaw from '@/data/emojiContestData' //这里根据需要换成出道萌或者表情包萌 
 import { ref, computed } from 'vue';
 import { useRequest } from 'alova';
 import { NFlex, NTabs, NTabPane, NAlert, NSpin, NCarousel } from 'naive-ui';
@@ -77,21 +77,21 @@ import dayjs from 'dayjs'
 import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
-const startTime = dayjs.tz('2024-06-18 20:00')
-const endTime = dayjs.tz('2024-06-22 20:00')
-const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 16] //活动的表情包组不包括咒岛专属等，不包括上次冠军8小豆泥，包括16是药水哥
+const startTime = dayjs.tz('2024-11-11 00:00')
+const endTime = dayjs.tz('2024-11-14 00:00')
+const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
-    1: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/6643615d5fdc9.png', name: 'AC娘' },
-    2: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664363e93d3cf.gif', name: '鹦鹉鸡' },
-    3: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664366659ab29.gif', name: '咪子鱼' },
-    4: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664368477446c.gif', name: '小黑猫' },
-    5: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664369af63190.png', name: '麻将脸' },
-    6: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436b99dd1ea.jpg', name: '小恐龙' },
-    7: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436cb41e3e3.gif', name: 'TD猫' },
-    9: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66436fa983d7f.jpg', name: '小企鹅' },
-    10: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/664371e81e84c.png', name: '小黄脸' },
-    11: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66437362aba46.gif', name: 'FUFU' },
-    16: { emojiUrl: 'https://www.freeimg.cn/i/2024/05/14/66437b01d45b7.gif', name: '药水哥' },
+    1: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2abb91131.gif", "name": "假飞鼠" },
+    2: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2b9c24b37.gif", "name": "吉伊卡哇" },
+    3: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2cd927f20.webp", "name": "团团" },
+    4: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2d58e7769.gif", "name": "姆明" },
+    5: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2db51ffcc.gif", "name": "小甲鱼" },
+    6: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2e49735ba.gif", "name": "猫猫虫" },
+    7: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2ec86f214.gif", "name": "线条小狗" },
+    8: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/06/672b7d1875bb6.webp", "name": "芥宝" },
+    9: { "emojiUrl": "https://www.freeimg.cn/i/2024/05/14/66437b01d45b7.gif", "name": "药水哥" },
+    10: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f308c9da65.webp", "name": "谷歌布丁" },
+    11: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f31346214c.gif", "name": "领结猫" }
 } as {
     [key: number]: {
         emojiUrl: string
@@ -101,24 +101,8 @@ const emojiGroupIndex = {
 //应援版头
 const bannersShuffled = computed(() => {
     const banners = [
-        'https://www.freeimg.cn/i/2024/06/13/666af8740a938.png',
-        "https://i3.mjj.rip/2024/06/19/de56a8e0714f1a1706dbf5b93c9e2c54.png",
-        "https://i3.mjj.rip/2024/06/19/d95d48e3bf46cdd04e3801621728f4d8.png",
-        "https://i3.mjj.rip/2024/06/19/19c6c4bab33292f4455be14145dc0345.jpeg",
-        "https://i3.mjj.rip/2024/06/19/5ecb4a448ff9f548f4c5d9cd0f411457.png",
-        "https://i3.mjj.rip/2024/06/19/b937c6a09eb690b6677ad4ae5b5fffa6.png",
-        "https://iili.io/dHdzNFS.png",
-        "https://iili.io/dHJDZlI.png",
-        "https://i3.mjj.rip/2024/06/18/7d46966145c589020253e1cdf25f901f.png",
-        "https://iili.io/d9y7Af2.png",
-        "https://i3.mjj.rip/2024/06/18/dc63798aa13ae4180649f2364ea076c9.png",
-        "https://i3.mjj.rip/2024/06/18/3d7c6087726fbb1548b512c0fb3ac161.png",
-        "https://i3.mjj.rip/2024/06/17/349ccfc48428a1b09aa6355724fb2b93.png",
-        "https://i3.mjj.rip/2024/06/17/21402e49687631f174c892d35b60a8a3.png",
-        "https://i2.mjj.rip/2024/06/06/1d7f283697fc8e58c2ecefe9401f4d7e.png",
-        "https://i2.mjj.rip/2024/06/05/ce77023b4da545145ce833b677f56061.png",
+        'https://www.freeimg.cn/i/2024/11/08/672e2df57ce84.webp'
     ]
-
     return shuffleArray(banners)
 })
 
