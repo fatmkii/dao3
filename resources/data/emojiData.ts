@@ -679,7 +679,17 @@ const emojiData = [
             "https://www.freeimg.cn/i/2024/05/14/66436b4685f01.png",
             "https://www.freeimg.cn/i/2024/05/14/66436b4a7c490.png",
             "https://www.freeimg.cn/i/2024/05/14/66436b4e76928.png",
-            "https://www.freeimg.cn/i/2024/05/14/66436b5269d72.gif"
+            "https://www.freeimg.cn/i/2024/05/14/66436b5269d72.gif",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280f16aa.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280f1ff8.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280e5dea.gif",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280e9e92.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280ed0ab.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280e9a18.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280f0e8e.webp",
+            "https://www.freeimg.cn/i/2024/05/14/66436b12dd786.gif",
+            "https://www.freeimg.cn/i/2024/11/09/672f428102304.webp",
+            "https://www.freeimg.cn/i/2024/11/09/672f4280edff9.gif",
         ],
     },
     {
