@@ -38,16 +38,19 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     //是否双十一的flag
     const isDouble11 = computed<boolean>(() => {
-        const festivalDays = ['2024-06-18', '2024-06-19'] //各个活动节日的时间（618和双十一）
+        const festivalDays = [ //各个活动节日的时间（618和双十一）
+            { month: 6, date: 18 },
+            { month: 11, date: 11 },
+        ]
         const now = dayjs.tz() //tz()才是获得UTC+8的时间
         let isDouble11 = false
 
         festivalDays.forEach(festivalDay => {
-            if (now.isSame(dayjs.tz(festivalDay), 'day')) {
+            if (now.month() + 1 === festivalDay.month && now.date() === festivalDay.date) {
+                // 留意month是从0开始的，所以要+1
                 isDouble11 = true
             }
-        })
-
+        });
         return isDouble11
     })
 

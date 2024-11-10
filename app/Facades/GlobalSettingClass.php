@@ -44,16 +44,21 @@ class GlobalSettingClass
         //各种税率整合
 
         $is_festival = false;
-        $start = '2024/6/18 00:00:00';
-        $end = '2024/6/20 00:00:00';
+        $festival_days = [
+            ['month' => 6, 'day' => 18],
+            ['month' => 11, 'day' => 11],
+        ];
 
         if ($time == null) {
             $time = Carbon::now();
         }
-        if ($time->between($start, $end)) {
-            $is_festival = true;
-        }
 
+        foreach ($festival_days as $date) {
+            if ($time->month == $date['month'] && $time->day == $date['day']) {
+                $is_festival = true;
+            }
+        }
+        
         switch ($name) {
             case 'normal': {
                     //一般税率1.07（打赏、红包等），活动时候1.02
