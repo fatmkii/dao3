@@ -35,6 +35,7 @@ class AdminActive extends Model
 
     protected $hidden = [
         'id',
+        'admin_level',
         'user_id',
         'binggan',
         'user_id_target',

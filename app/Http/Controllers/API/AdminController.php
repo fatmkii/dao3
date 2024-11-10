@@ -871,6 +871,7 @@ class AdminController extends Controller
         ]);
     }
 
+    //超管发放成就
     public function create_medal(Request $request)
     {
         // 手动给用户发送成就（超管功能）
@@ -923,12 +924,32 @@ class AdminController extends Controller
         $user_medal->created_at = Carbon::now();
         $user_medal->save();
 
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '发放成就',
+                'active_type' => 'del_loudspeaker',
+                'content' => '成就ID:' . $request->medal_id,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
+            ]
+        ));
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '已为用户追加此成就',
         ]);
     }
 
+    //超管奖罚olo
     public function set_user_olo(Request $request)
     {
         // 手动给用户发送成就（超管功能）
@@ -968,12 +989,32 @@ class AdminController extends Controller
         ); //扣除奥利奥（通过统一接口、记录操作）
         $user->save();
 
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '奖罚olo',
+                'active_type' => 'set_user_olo',
+                'content' => $request->olo_message,
+                'olo' =>  $request->olo_num,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => $user_target->id,
+                'binggan_target' => $user_target->binggan,
+            ]
+        ));
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => sprintf("已%s该饼干%d个olo", $request->olo_num > 0 ? '奖励' : '扣除', $request->olo_num),
         ]);
     }
 
+    //获取全局变量
     public function get_global_setting(Request $request, $key = null)
     {
         $request->validate([
@@ -1005,6 +1046,7 @@ class AdminController extends Controller
         ]);
     }
 
+    //超管设置全局变量
     public function set_global_setting(Request $request)
     {
         // 手动给用户发送成就（超管功能）
@@ -1027,10 +1069,165 @@ class AdminController extends Controller
 
         GlobalSetting::set($request->key, $request->value);
 
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '设置全局变量',
+                'active_type' => 'set_global_setting',
+                'content' =>  $request->key . ' -> ' . $request->value,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '已成功设定全局变量',
         ]);
+    }
+
+    //管理员删除大喇叭
+    public function del_loudspeaker(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'loudspeaker_id' => 'required|integer',
+        ]);
+
+
+        $user = $request->user();
+        $loudspeaker = Loudspeaker::find($request->loudspeaker_id);
+
+        if (!$loudspeaker) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => '大喇叭不存在或已失效',
+            ]);
+        }
+
+        if (!$user->tokenCan('admin')) {
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $loudspeaker->delete();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '删除大喇叭',
+                'active_type' => 'del_loudspeaker',
+                'content' => '大喇叭内容：' . $loudspeaker->content,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已强制删除该大喇叭',
+                'data' => $loudspeaker,
+            ]
+        );
+    }
+
+    //超管解锁UUID
+    public function unlock_uuid(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'uuid' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        $uuid_exist = DB::table('user_register')->where('created_UUID', $request->uuid)->exists();
+        if (!$uuid_exist) {
+            return response()->json([
+                'code' => ResponseCode::USER_NOT_FOUND,
+                'message' => '该UUID不存在',
+            ]);
+        }
+
+        if (!$user->tokenCan('super_admin')) {
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            DB::table('user_register')
+                ->where('created_UUID', $request->uuid)
+                ->update([
+                    'count' => 3,
+                    'is_banned' => false,
+                ]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '解锁uuid',
+                'active_type' => 'unlock_uuid',
+                'content' => 'uuid: ' . $request->uuid,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => null,
+                'thread_title' => null,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已解锁该uuid',
+                'data' => [
+                    'uuid' => $request->uuid,
+                ],
+            ]
+        );
     }
 
     //已废弃
@@ -1248,119 +1445,4 @@ class AdminController extends Controller
     //     ]);
     // }
 
-    //管理员删除大喇叭
-    public function del_loudspeaker(Request $request)
-    {
-        $request->validate([
-            'binggan' => 'required|string',
-            'loudspeaker_id' => 'required|integer',
-        ]);
-
-
-        $user = $request->user();
-        $loudspeaker = Loudspeaker::find($request->loudspeaker_id);
-
-        if (!$loudspeaker) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => '大喇叭不存在或已失效',
-            ]);
-        }
-
-        if (!$user->tokenCan('admin')) {
-            return response()->json([
-                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
-                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
-            ]);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $loudspeaker->delete();
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            throw $e;
-        }
-
-        ProcessAdminActive::dispatch((
-            [
-                'user_id' => $user->id,
-                'binggan' => $user->binggan,
-                'name' => null, //ProcessAdminActive中会查询并填入
-                'admin_level' => $user->admin,
-                'active' => '删除大喇叭',
-                'active_type' => 'del_loudspeaker',
-                'content' => '大喇叭内容：' . $loudspeaker->content,
-                'olo' =>  null,
-                'post_id' => null,
-                'thread_id' => null,
-                'thread_title' => null,
-                'floor' => null,
-                'user_id_target' => null,
-                'binggan_target' => null,
-            ]
-        ));
-
-        return response()->json(
-            [
-                'code' => ResponseCode::SUCCESS,
-                'message' => '已强制删除该大喇叭',
-                'data' => $loudspeaker,
-            ]
-        );
-    }
-
-    public function unlock_uuid(Request $request)
-    {
-        $request->validate([
-            'binggan' => 'required|string',
-            'uuid' => 'required|string',
-        ]);
-
-        $user = $request->user();
-
-        $uuid_exist = DB::table('user_register')->where('created_UUID', $request->uuid)->exists();
-        if (!$uuid_exist) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => '该UUID不存在',
-            ]);
-        }
-
-        if (!$user->tokenCan('super_admin')) {
-            return response()->json([
-                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
-                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
-            ]);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            DB::table('user_register')
-                ->where('created_UUID', $request->uuid)
-                ->update([
-                    'count' => 3,
-                    'is_banned' => false,
-                ]);
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            throw $e;
-        }
-
-        return response()->json(
-            [
-                'code' => ResponseCode::SUCCESS,
-                'message' => '已解锁该uuid',
-                'data' => [
-                    'uuid' => $request->uuid,
-                ],
-            ]
-        );
-    }
 }

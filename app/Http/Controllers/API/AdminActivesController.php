@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminActivesController extends Controller
 {
-    private function getAdminActivesData($date = null, $page = 1)
+    private function getAdminActivesData($date = null, $page = 1, $is_super_admin = false)
     {
         $limit = 30; //每页30;
         $offset = $page * $limit - $limit;
@@ -29,7 +29,9 @@ class AdminActivesController extends Controller
             $join->on($table . '.id', '=', 'sql_child.id');
         })
             ->get();
-
+        if ($is_super_admin) {
+            $data->makeVisible('binggan_target');
+        }
 
         //查询最大页数
         $data_num = AdminActive::when($date !== null, function ($query) use ($date) {
@@ -45,6 +47,7 @@ class AdminActivesController extends Controller
         $request->validate([
             'page' => 'integer|nullable',
             'date' => 'nullable|date|after_or_equal:2024-09-14',
+            'show_super' => 'nullable|boolean',
         ]);
 
         $user = $request->user();
@@ -57,8 +60,19 @@ class AdminActivesController extends Controller
             );
         };
 
+        if ($request->show_super && !$user->tokenCan('super_admin')) {
+            // 超管查询权限
+            return response()->json(
+                [
+                    'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                    'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+                ],
+            );
+        };
+
+
         //查询数据
-        list($actives_data, $lastPage) = $this->getAdminActivesData($request->date, $request->page); //更好的分页sql语句
+        list($actives_data, $lastPage) = $this->getAdminActivesData($request->date, $request->page, $request->show_super); //更好的分页sql语句
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,

@@ -386,6 +386,7 @@ interface adminActivesData {
     created_at: string,
     updated_at: string,
     post_content: string,
+    binggan_target?: string,
 }
 interface adminActivesListData {
     data: adminActivesData[],
@@ -395,13 +396,17 @@ interface adminActivesGetterParams {
     binggan: string,
     page: number | null,
     date: string | null,
+    show_super?: boolean,//好像get
 }
 const adminActivesGetter = (params: adminActivesGetterParams) => {
     const methodInstance = commonAlova.Get<adminActivesListData>(
         'api/admin/actives',
         {
             name: 'adminActivesGetter',
-            params: params,
+            params: {
+                ...params,
+                show_super: params.show_super ? 1 : 0, //get方法要转换为0和1
+            },
             localCache: null,
             hitSource: [],
         }
