@@ -931,7 +931,7 @@ class AdminController extends Controller
                 'name' => null, //ProcessAdminActive中会查询并填入
                 'admin_level' => $user->admin,
                 'active' => '发放成就',
-                'active_type' => 'del_loudspeaker',
+                'active_type' => 'create_medal',
                 'content' => '成就ID:' . $request->medal_id,
                 'olo' =>  null,
                 'post_id' => null,

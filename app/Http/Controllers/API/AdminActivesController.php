@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class AdminActivesController extends Controller
 {
+    const SUPER_ACTIVE_TYPE = ['set_user_olo', 'create_medal', 'unlock_uuid']; //定义属于超管动作的active_type
+
     private function getAdminActivesData($date = null, $page = 1, $is_super_admin = false)
     {
         $limit = 30; //每页30;
@@ -24,6 +26,14 @@ class AdminActivesController extends Controller
             })
             ->orderByDesc('id')
             ->offset($offset)->limit($limit);
+
+        if ($is_super_admin) {
+            //超管状况页面，仅查询这几个动作
+            $sql_child->whereIn('active_type', self::SUPER_ACTIVE_TYPE);
+        } else {
+            //一般管理状况页面，查询除此之外的动作
+            $sql_child->whereNotIn('active_type', self::SUPER_ACTIVE_TYPE);
+        }
 
         $data = AdminActive::joinSub($sql_child, 'sql_child', function ($join) use ($table) {
             $join->on($table . '.id', '=', 'sql_child.id');
