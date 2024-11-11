@@ -101,7 +101,10 @@ const emojiGroupIndex = {
 //应援版头
 const bannersShuffled = computed(() => {
     const banners = [
-        'https://www.freeimg.cn/i/2024/11/08/672e2df57ce84.webp'
+        'https://www.freeimg.cn/i/2024/11/08/672e2df57ce84.webp',
+        'https://img.picgo.net/2024/11/10/IMG_4355c81dd3c9271e66d5.gif',
+        'https://iili.io/2I44YHF.png',
+        'https://iili.io/2IZuQ71.png',
     ]
     return shuffleArray(banners)
 })
