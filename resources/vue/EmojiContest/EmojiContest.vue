@@ -105,6 +105,7 @@ const bannersShuffled = computed(() => {
         'https://img.picgo.net/2024/11/10/IMG_4355c81dd3c9271e66d5.gif',
         'https://iili.io/2I44YHF.png',
         'https://iili.io/2IZuQ71.png',
+        'https://img.picgo.net/2024/11/12/0ae7348add6f52dbf.png',
     ]
     return shuffleArray(banners)
 })
