@@ -106,6 +106,9 @@ const bannersShuffled = computed(() => {
         'https://iili.io/2I44YHF.png',
         'https://iili.io/2IZuQ71.png',
         'https://img.picgo.net/2024/11/12/0ae7348add6f52dbf.png',
+        'https://img.picgo.net/2024/11/13/MEITU_20241113_002333696effb12921c389f5d.jpg',
+        'https://img.picgo.net/2024/11/12/retouch_2024111223305208a4a554b309a4bf58.jpg',
+        'https://img.picgo.net/2024/11/12/1731425680045dcbcf509406bae60.gif',
     ]
     return shuffleArray(banners)
 })
