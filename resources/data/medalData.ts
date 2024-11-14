@@ -695,6 +695,13 @@ export const medalsHidden: medalsData = {
         'threshold': 1000, //这里指1000票，100000个olo
         'img': 'https://www.freeimg.cn/i/2024/11/08/672e2f3bd9c7c.webp',
     },
+    266: {
+        'name': '他如闪电般归来',
+        'describe': '药水哥回到他忠诚的小火锅',
+        'threshold': null,
+        'img': 'https://www.freeimg.cn/i/2024/11/14/6735e1e30ed25.webp',
+    },
+
 
     270: {
         'name': '吼那么大声干嘛啦',

@@ -663,6 +663,12 @@ class Medals
             'threshold' => 1000, //这里指1000票，100000个olo
             'varname' => 'emoji_contest_total',
         ),
+        266 => array(
+            'name' => '他如闪电般归来',
+            'describe' => '药水哥回到他忠诚的小火锅',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //大喇叭相关
         270 => array(
