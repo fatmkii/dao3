@@ -35,7 +35,7 @@
                         style="font-size: 0.875rem;">以下选项每个500olo </n-text>
                 </n-divider>
                 <n-form-item label="看帖权限" path="lockedByCoin">
-                    <n-input-number v-model:value="tabNormalInput.lockedByCoin" placeholder="需要多少olo才能看" :max="25000"
+                    <n-input-number v-model:value="tabNormalInput.lockedByCoin" placeholder="需要多少olo才能看" :max="50000"
                         :parse="inputNumberParse" :format="inputNumberFormat" :min="0" :step="5000" clearable
                         style="border-radius: 17px;" />
                 </n-form-item>

@@ -102,7 +102,7 @@ class ThreadController extends Controller
             'title_color' => 'string|nullable',
             'random_heads_group' => 'required|integer',
             'post_with_admin' => 'required|boolean',
-            'locked_by_coin' => 'nullable|integer|max:25000|min:0',
+            'locked_by_coin' => 'nullable|integer|max:50000|min:0',
             'thread_type' => 'required|string',
             'is_delay' => 'boolean|required',
             'is_private' => 'boolean|required',
