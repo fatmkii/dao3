@@ -1825,6 +1825,7 @@ const emojiData = [
             "https://www.freeimg.cn/i/2024/11/26/6745b28798f29.gif",
             "https://www.freeimg.cn/i/2024/11/26/6745b287a6113.webp",
             "https://www.freeimg.cn/i/2024/11/26/6745b2877f25c.gif",
+            "https://www.freeimg.cn/i/2024/11/27/67471dac19d07.gif",
             "https://www.freeimg.cn/i/2024/11/09/672f2c549735c.gif",
             "https://www.freeimg.cn/i/2024/11/26/6745b287a5d64.webp",
             "https://www.freeimg.cn/i/2024/11/26/6745b287cdf77.gif",
