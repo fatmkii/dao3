@@ -35,7 +35,7 @@
         <n-form ref="transferFormRef" :model="transferFormInput" label-placement="left" label-width="auto"
             :rules="transferInputRules" :size="commonStore.isMobile ? 'small' : 'medium'" style="max-width: 450px;">
             <n-form-item label="主题ID" path="thread_id">
-                <n-input-number :show-button='false' v-model:value="transferFormInput.thread_id" :max='100000'
+                <n-input-number :show-button='false' v-model:value="transferFormInput.thread_id" :max='1000000'
                     :min="1" />
             </n-form-item>
             <n-form-item label="目标小岛" path="forum_id">
