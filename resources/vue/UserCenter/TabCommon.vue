@@ -190,12 +190,12 @@ const loudspeakerPositionOptions = [
 ]
 //图床选项
 const imgHostOptions = [
-    { value: 'picgo', label: '(推荐)picgo' },
-    { value: 'imgbb', label: 'imgbb' },
+    // { value: 'picgo', label: '(推荐)picgo' }, 要注册
+    { value: 'imgbb', label: '(推荐)imgbb' },
     { value: 'freeimage', label: 'freeimage' },
-    { value: 'imge', label: 'imge' },
-    { value: 'imgtbl', label: '(已停用)imgtbl' },
-    { value: 'mjj', label: '(不推荐)mjj' },
+    // { value: 'imge', label: 'imge' },   “没有可用储存”
+    // { value: 'imgtbl', label: '(已停用)imgtbl' }, 关闭了游客上传
+    // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好
 ]
 
 //实时预览用的虚拟postData
