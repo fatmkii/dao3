@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "vite --host 192.168.1.210",
+        "dev": "vite --host localhost",
         "build": "vite build",
         "staging": "vite build --mode staging"
     },

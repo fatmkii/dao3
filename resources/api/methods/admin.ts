@@ -440,6 +440,31 @@ const unlockUuidPoster = (params: unlockUuidParams) => {
     return methodInstance
 }
 
+//超级管理员将主题转区
+interface transferThreadParams {
+    binggan: string,
+    thread_id: number,
+    forum_id: number,
+    nissin_clear: boolean,
+}
+const transferThreadPoster = (params: transferThreadParams) => {
+    const methodInstance = commonAlova.Post(
+        'api/admin/transfer_thread',
+        params,
+        {
+            //第三个参数是config
+            name: 'transferThreadPoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -447,5 +472,5 @@ export {
     threadCancelTopParams, threadCancelTopPoster,
     setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
     globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
-    adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster,
+    adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster, transferThreadParams, transferThreadPoster
 }

@@ -1230,6 +1230,87 @@ class AdminController extends Controller
         );
     }
 
+    //帖子转区
+    public function transfer_thread(Request $request)
+    {
+        $request->validate([
+            'binggan' => 'required|string',
+            'thread_id' => 'required|integer',
+            'forum_id' => 'required|integer',
+            'nissin_clear' => 'required|boolean',
+        ]);
+
+        $user = $request->user();
+
+        if (!$user->tokenCan('super_admin')) {
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        $thread = Thread::find($request->thread_id);
+        if (!$thread) {
+            return response()->json([
+                'code' => ResponseCode::THREAD_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::THREAD_NOT_FOUND],
+            ]);
+        }
+
+        $forum = Forum::find($request->forum_id);
+        if (!$forum) {
+            return response()->json([
+                'code' => ResponseCode::FORUM_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::FORUM_NOT_FOUND],
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $thread->forum_id = $request->forum_id;
+            if ($request->nissin_clear) {
+                $thread->has_nissined = false;
+            }
+            $thread->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        ProcessAdminActive::dispatch((
+            [
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null, //ProcessAdminActive中会查询并填入
+                'admin_level' => $user->admin,
+                'active' => '主题转区',
+                'active_type' => 'transfer_thread',
+                'content' => null,
+                'olo' =>  null,
+                'post_id' => null,
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'floor' => null,
+                'user_id_target' => null,
+                'binggan_target' => null,
+            ]
+        ));
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已将该主题转区',
+                'data' => [
+                    'thread_id' => $request->thread_id,
+                ],
+            ]
+        );
+    }
+
+
     //已废弃
     // public function check_user_post(Request $request)
     // {

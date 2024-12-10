@@ -18,7 +18,7 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { NFlex, NTabPane, NTabs } from 'naive-ui'
 import { computed, ref } from 'vue'
-import { AdminCard, TabBanners, TabCoin, TabGlobal, TabMedal, TabActives, TabActivesSuper, TabUUID } from './index'
+import { AdminCard, TabActives, TabActivesSuper, TabBanners, TabGlobal, TabSuperAdmin } from './index'
 
 //基础数据
 const userStore = useUserStore()
@@ -40,11 +40,9 @@ const tabsList = computed(() => {
     }
     if (userStore.admin.isSuperAdmin) {
         return arr.concat([
-            { name: 'super', tab: '超管状况', component: TabActivesSuper },
             { name: 'global', tab: '全局设置', component: TabGlobal },
-            { name: 'medals', tab: '发放成就', component: TabMedal },
-            { name: 'olo', tab: '奖罚olo', component: TabCoin },
-            { name: 'uuid', tab: '解锁uuid', component: TabUUID },
+            { name: 'super_actives', tab: '超管状况', component: TabActivesSuper },
+            { name: 'super_admin', tab: '超管操作', component: TabSuperAdmin },
         ])
     } else {
         return arr
