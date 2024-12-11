@@ -198,6 +198,7 @@ const imgHostOptions = [
     // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好
     { value: 'imgimg', label: 'imgimg' },
     { value: 'helloimg', label: 'helloimg' },
+    { value: 'picui', label: 'picui' },
 ]
 
 //实时预览用的虚拟postData
