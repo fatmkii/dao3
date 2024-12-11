@@ -1450,13 +1450,14 @@ class UserController extends Controller
         );
     }
 
-    //新建自定义饼干
+    //新建自定义饼干（包含转移饼干）
     public function create_custom(Request $request)
     {
         $request->validate([
             'binggan' => 'required|string',
             'binggan_apply' => 'required|string|alpha_dash|max:16|min:7',
             'password' => 'required|string|alpha_dash|max:20|min:7',
+            'transfer_binggan' => 'required|boolean',
         ]);
 
         $user_origin = $request->user();
@@ -1470,13 +1471,13 @@ class UserController extends Controller
 
         try {
             DB::beginTransaction();
-            $user = new User;
-            $user->binggan = $request->binggan_apply;
-            $user->created_ip = $request->ip();
-            $user->is_custom = true;
-            $user->coin = 300;
-            $user->password = hash('sha256', $request->password . config('app.password_salt'));
-            $user->save();
+            $user_new = new User;
+            $user_new->binggan = $request->binggan_apply;
+            $user_new->created_ip = $request->ip();
+            $user_new->is_custom = true;
+            $user_new->coin = 300;
+            $user_new->password = hash('sha256', $request->password . config('app.password_salt'));
+            $user_new->save();
 
             $user_origin->coinChange(
                 'normal', //记录类型
@@ -1488,11 +1489,111 @@ class UserController extends Controller
             $user_origin->save();
 
             DB::table('user_custom')->insert([
-                'user_id' => $user->id,
-                'binggan' => $user->binggan,
+                'user_id' => $user_new->id,
+                'binggan' => $user_new->binggan,
                 'from_binggan' => $user_origin->binggan,
+                'is_transfered' => $request->transfer_binggan,
                 'created_at' => Carbon::now(),
             ]);
+
+            //执行转移饼干程序
+            if ($request->transfer_binggan) {
+                //转移users表
+                $user_new->nickname = $user_origin->nickname;
+                $user_new->locked_until = $user_origin->locked_until;
+                $user_new->locked_count = $user_origin->locked_count;
+                // $user_new->admin = $user_origin->admin; admin不跟随,需要的时候手动处理
+                // $user_new->coin = $user_origin->coin;在下面通过coinchange操作,留下记录
+                $user_new->coin_in_bank = $user_origin->coin_in_bank;
+                $user_new->last_login = $user_origin->last_login;
+                $user_new->use_pingbici = $user_origin->use_pingbici;
+                $user_new->new_msg = $user_origin->new_msg;
+                $user_new->user_lv = $user_origin->user_lv;
+                $user_new->save();
+
+                //记录incomestatement
+                $user_new->coinChange(
+                    'normal', //记录类型
+                    [
+                        'olo' => $user_origin->coin,
+                        'content' => '从旧饼干转移过来',
+                    ]
+                );
+                $user_new->save();
+
+                //转移user_lv表
+                $user_lv_origin = $user_origin->UserLV;
+                if ($user_lv_origin) {
+                    $user_lv = $user_lv_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $user_lv->save();
+                }
+
+                //转移my_emoji表
+                $my_emoji_origin = $user_origin->MyEmoji;
+                if ($my_emoji_origin) {
+                    $my_emoji = $my_emoji_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $my_emoji->save();
+                }
+
+                //转移my_battle_chara表
+                $my_battle_charas_origin = $user_origin->MyBattleChara ?? [];
+                foreach ($my_battle_charas_origin as $chara_origin) {
+                    $chara_new = $chara_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $chara_new->save();
+                }
+
+                //转移user_bank表
+                $user_banks_origin = $user_origin->UserBank()->where('is_deleted', false)->get() ?? [];
+                foreach ($user_banks_origin as $bank_origin) {
+                    $bank_new = $bank_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $bank_new->save();
+                    $bank_origin->is_deleted = true;
+                    $bank_origin->save(); //删除原有的存粮
+                }
+                //理论上,所有存粮都应当被取出,这里剩余存粮应该为0.
+                $user_olo_in_bank = UserBank::where('user_id', $user_origin->id)->where('is_deleted', false)->sum('olo');
+                $user_origin->coin_in_bank = $user_olo_in_bank;
+                $user_origin->save();
+
+                //转移user_medals表
+                $user_medals_origin = $user_origin->UserMedal ?? [];
+                foreach ($user_medals_origin as $medal_origin) {
+                    $medal_new = $medal_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                        'created_at' => $medal_origin->created_at, //因为UserMedal模型设置了$timestamps = false,这里要手动
+                    ]);
+                    $medal_new->save();
+                }
+
+                //转移user_medal_record表
+                $medal_record_origin = $user_origin->UserMedalRecord;
+                if ($medal_record_origin) {
+                    $medal_record = $medal_record_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $medal_record->save();
+                }
+
+                //转移pingbicis表
+                $pingbici_origin = $user_origin->Pingbici;
+                if ($pingbici_origin) {
+                    $pingbici = $pingbici_origin->replicate()->fill([
+                        'user_id' => $user_new->id,
+                    ]);
+                    $pingbici->save();
+                }
+                //最后碎掉原有饼干
+                $user_origin->is_banned = true;
+                $user_origin->save();
+            }
 
             DB::commit();
         } catch (Exception $e) {
@@ -1508,14 +1609,14 @@ class UserController extends Controller
         ProcessUserCreatedLocation::dispatch(
             [
                 'IP' => $request->ip(),
-                'user_id' => $user->id,
+                'user_id' => $user_new->id,
             ]
         );
 
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,
-                'message' => '新建定制饼干成功！',
+                'message' => '定制饼干成功！',
                 'data' => [
                     'binggan' => $request->binggan_apply,
                 ],

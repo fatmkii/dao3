@@ -4,7 +4,7 @@
             <!-- 说明 -->
             <div>
                 <n-text :depth="3">说明：</n-text>
-                <span>可自由输入名称的定制饼干</span>
+                <span>可自由输入名称的定制饼干，并可选择魂穿到新饼干</span>
             </div>
             <div>
                 <n-text :depth="3">价格：</n-text>
@@ -24,8 +24,19 @@
                 </n-form-item>
                 <n-form-item label="重复密码" path="passwordRepeat">
                     <f-input v-model:value="userInput.passwordRepeat" placeholder="再次输入密码" type="password"
-                        :maxlength="20" :minlength="7" :show-password-on="'click'" @keyup.enter="newCustomBingganHandle" />
+                        :maxlength="20" :minlength="7" :show-password-on="'click'"
+                        @keyup.enter="newCustomBingganHandle" />
                 </n-form-item>
+                <n-form-item label="魂穿新饼干" path="transferBinggan">
+                    <n-switch v-model:value="userInput.transferBinggan" />
+                </n-form-item>
+                <div v-if="userInput.transferBinggan" style="line-height:1.5rem">
+                    <n-text :depth="3">魂穿说明：</n-text>
+                    <span>将原有饼干的所有数据都转移到定制饼干</span><br>
+                    <span>包括：olo、粮仓、饼干等级、表情包、屏蔽词、成就和成就进度</span><br>
+                    <span>不包括：回帖主题等（也就是不能操作原有饼干的回帖）</span><br>
+                    <n-text type="error" style="font-size:1.125rem">现有饼干会被碎掉</n-text><br>
+                </div>
             </n-form>
 
             <!-- 提交按钮 -->
@@ -46,8 +57,10 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { FButton, FInput } from '@custom'
 import { useRequest } from 'alova'
-import { NCard, NFlex, NForm, NFormItem, NText, type FormInst, type FormItemRule, type FormRules } from 'naive-ui'
+import { NCard, NFlex, NForm, NFormItem, NSwitch, NText, type FormInst, type FormItemRule, type FormRules } from 'naive-ui'
 import { ref } from 'vue'
+import { userLogoutPoster } from '@/api/methods/auth';
+import { userLogout } from '@/js/func/logout';
 
 //基础数据
 const userStore = useUserStore()
@@ -60,11 +73,13 @@ interface userInputInterface {
     bingganApply: string | null,
     password: string | null,
     passwordRepeat: string | null,
+    transferBinggan: boolean,
 }
 const userInput = ref<userInputInterface>({
     bingganApply: null,
     password: null,
     passwordRepeat: null,
+    transferBinggan: false,
 })
 
 //数据验证规则
@@ -117,9 +132,26 @@ const { loading: newCustomBingganLoading, send: newCustomBingganSend, onSuccess:
     { immediate: false }
 );
 newCustomBingganOnSuccess(() => {
-    userStore.refreshUserData() //刷新用户数据
-    userInput.value.password = null
-    userInput.value.passwordRepeat = null
+    if (userInput.value.transferBinggan) {
+        const dialogArgs = {
+            title: '将退出原有饼干',
+            closable: false,
+            content: `已经魂穿，原有饼干已碎。请以重新导入新饼干。`,
+            positiveText: '确定',
+            // negativeText: '取消',
+            onPositiveClick: () => {
+                userLogoutPoster(userStore.binggan!).then(() => {
+                    userLogout()
+                    window.location.href = "/"; //因为希望重头刷新整个程序状态，所以用js原生的重定向，而不是Vuerouter的push
+                })
+            },
+        }
+        window.$dialog.warning(dialogArgs)
+    } else {
+        userStore.refreshUserData() //刷新用户数据
+        userInput.value.password = null
+        userInput.value.passwordRepeat = null
+    }
 })
 function newCustomBingganHandle() {
     formRef.value?.validate((errors) => {
@@ -137,6 +169,7 @@ function newCustomBingganHandle() {
                         binggan: userStore.binggan!,
                         binggan_apply: userInput.value.bingganApply!,
                         password: userInput.value.password!,
+                        transfer_binggan: userInput.value.transferBinggan,
                     }
                     newCustomBingganSend(params)
                 },

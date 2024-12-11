@@ -457,11 +457,6 @@ class User extends Authenticatable
         return $this->hasMany(UserBank::class);
     }
 
-    public function getMyBattleCharaAttribute()
-    {
-        // return MyBattleChara::where('user_id', $this->id)->pluck('name');
-    }
-
     protected function serializeDate($date)
     {
         return $date->format('Y-m-d H:i');

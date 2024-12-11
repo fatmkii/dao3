@@ -18,6 +18,7 @@ class CreateUserCustomTable extends Migration
             $table->unsignedInteger('user_id');
             $table->string('binggan');
             $table->string('from_binggan');
+            $table->boolean('is_transfered');
             $table->timestamp('created_at');
         });
     }

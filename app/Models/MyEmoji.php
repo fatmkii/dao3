@@ -13,6 +13,10 @@ class MyEmoji extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'user_id',
+    ];
+
     protected $hidden = [
         'id',
         'user_id',

@@ -468,6 +468,7 @@ interface newCustomBingganParams {
     binggan: string,
     binggan_apply: string,
     password: string,
+    transfer_binggan: boolean,
 }
 const newCustomBingganPoster = (params: newCustomBingganParams) => {
     const methodInstance = commonAlova.Post<{ binggan: string }>(

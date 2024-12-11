@@ -12,6 +12,10 @@ class UserLV extends Model
 
     protected $table = 'users_LV';
 
+    protected $fillable = [
+        'user_id',
+    ];
+
     public $hidden = [
         'id',
         'user_id',

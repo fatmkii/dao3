@@ -11,6 +11,10 @@ class Pingbici extends Model
     use HasFactory;
 
     public $timestamps = false;
+    
+    protected $fillable = [
+        'user_id',
+    ];
 
     protected $hidden = [
         'id',
