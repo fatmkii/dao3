@@ -1613,6 +1613,27 @@ class UserController extends Controller
             ]
         );
 
+        //操作记录（原饼干）
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user_origin->binggan,
+                'user_id' => $user_origin->id,
+                'active' => '用户新建了定制饼干',
+                'binggan_target' => $user_new->binggan,
+                'content' => $request->transfer_binggan ? '并且转移了饼干，原饼干已碎。' : '没有转移饼干',
+            ]
+        );
+
+        //操作记录（新饼干）
+        ProcessUserActive::dispatch(
+            [
+                'binggan' => $user_new->binggan,
+                'user_id' => $user_new->id,
+                'active' => '新建的定制饼干',
+                'content' => $request->transfer_binggan ? '并且转移了饼干，原饼干已碎。' : '没有转移饼干',
+            ]
+        );
+
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,
