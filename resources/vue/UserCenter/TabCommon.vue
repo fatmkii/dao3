@@ -197,6 +197,7 @@ const imgHostOptions = [
     // { value: 'imgtbl', label: '(已停用)imgtbl' }, 关闭了游客上传
     // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好
     { value: 'imgimg', label: 'imgimg' },
+    { value: 'helloimg', label: 'helloimg' },
 ]
 
 //实时预览用的虚拟postData

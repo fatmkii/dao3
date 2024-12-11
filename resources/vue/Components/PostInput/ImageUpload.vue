@@ -43,7 +43,7 @@ const emit = defineEmits<{
 
 //根据不同图床选择不同的配置方法
 const imgHostList1 = ['mjj', 'imgbb', 'freeimage', 'picgo', 'tutu']
-const imgHostList2 = ['imge', 'imgtbl', 'imgimg']
+const imgHostList2 = ['imge', 'imgtbl', 'imgimg', 'helloimg']
 const hostType = computed<number>(() => {
     if (props.forumId === 419) {
         return 0
@@ -154,6 +154,7 @@ const imgHostType2Url = computed<string>(() => {
         'imge': 'https://imge.cc/api/v1/upload',
         'imgtbl': 'https://imgtbl.com/api/v1/upload',
         'imgimg': 'https://imgimg.cc/api/v1/upload',
+        'helloimg': 'https://www.helloimg.com/api/v1/upload',
     }
     return urlMap[commonStore.userCustom.imgHost] || ""
 

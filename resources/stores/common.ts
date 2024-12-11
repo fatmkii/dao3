@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 
-export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg'
+export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg'
 
 export const useCommonStore = defineStore('commonStore', () => {
 
