@@ -1,15 +1,15 @@
 <template>
     <!-- 咒岛专用上传图片 -->
-    <n-upload v-if="hostType === 0" accept="image/*" action="/api/img_upload" :custom-request="selfBuildImgHostRequest"
-        :show-file-list="false" :max="1" ref="NUploadCom">
+    <n-upload v-if="hostType === 0" accept="image/*" :custom-request="selfBuildImgHostRequest" :show-file-list="false"
+        :max="1" ref="NUploadCom">
         <f-button style="margin-right: auto;" :disabled="userIsLocked" :loading="uploading">上传图片</f-button>
     </n-upload>
     <!-- 一般上传图片（chevereto框架的） -->
     <f-button v-if="hostType === 1" style="margin-right: auto;" :disabled="userIsLocked" data-target="#content-input"
         id="upload-button">上传图片</f-button>
     <!-- 一般上传图片（另一个框架的） -->
-    <n-upload v-if="hostType === 2" accept="image/*" action="imgHostType2Url" :custom-request="imgHostType2Request"
-        :show-file-list="false" :max="1" ref="NUploadCom">
+    <n-upload v-if="hostType === 2" accept="image/*" :custom-request="imgHostType2Request" :show-file-list="false"
+        :max="1" ref="NUploadCom">
         <f-button style="margin-right: auto;" :disabled="userIsLocked" :loading="uploading">上传图片</f-button>
     </n-upload>
 </template>
