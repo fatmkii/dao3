@@ -190,7 +190,6 @@ const loudspeakerPositionOptions = [
 ]
 //图床选项
 const imgHostOptions = [
-    // { value: 'picgo', label: '(推荐)picgo' }, 要注册
     { value: 'imgbb', label: '(推荐)imgbb' },
     { value: 'freeimage', label: 'freeimage' },
     // { value: 'imge', label: 'imge' },   “没有可用储存”
@@ -199,6 +198,7 @@ const imgHostOptions = [
     { value: 'imgimg', label: 'imgimg' },
     { value: 'helloimg', label: 'helloimg' },
     { value: 'picui', label: 'picui' },
+    { value: 'picgo', label: '(要注册)picgo' }, //要注册
 ]
 
 //实时预览用的虚拟postData
