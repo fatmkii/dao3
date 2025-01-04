@@ -293,7 +293,7 @@ class AdminController extends Controller
                     'normal', //记录类型
                     [
                         'olo' => -$olo_penalty, //注意这里要改为负数（扣olo）
-                        'content' => '被管理员删除帖子并扣除olo',
+                        'content' => '被管理员删除1个回复并扣除olo',
                         'thread_id' => $post->thread_id,
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
                         'post_id' => $post->id,
@@ -490,7 +490,7 @@ class AdminController extends Controller
                     'normal', //记录类型
                     [
                         'olo' => -$olo_penalty, //注意这里要改为负数（扣olo）
-                        'content' => '被管理员删除帖子并扣除olo',
+                        'content' => sprintf('被管理员删除%d个回复并扣除olo', $posts_num),
                         'thread_id' => $post->thread_id,
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
                         'post_id' => $post->id,
@@ -521,7 +521,7 @@ class AdminController extends Controller
                 'binggan' => $user->binggan,
                 'name' => null, //ProcessAdminActive中会查询并填入
                 'admin_level' => $user->admin,
-                'active' => '删除该用户全部回帖',
+                'active' => sprintf('删除该用户全部回帖(%d个)', $posts_num),
                 'active_type' => 'post_delete_all',
                 'content' => $request->content,
                 'olo' =>  -$olo_penalty, //注意这里要改为负数（扣olo）
