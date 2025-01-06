@@ -300,6 +300,7 @@ const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
 const noMentionMode = useStorage<boolean>('no_mention_mode', false) //@提醒功能
 const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
+const noPailouMode = useStorage<boolean>('no_pailou_mode', false) //无内容排楼
 
 const refList = computed(() => {
     const checkboxArray = [//用于批量生成checkbox
@@ -313,6 +314,7 @@ const refList = computed(() => {
         { ref: noRewardMode, label: '打赏' },
         { ref: noHongbaoMode, label: '红包结果' },
         { ref: noMentionMode, label: '关闭@标注' },
+        { ref: noPailouMode, label: '无内容排楼' },
     ]
     if (userStore.admin.isSuperAdmin) {
         checkboxArray.unshift({ ref: superAdminMode, label: '超管模式启动！' })
@@ -500,6 +502,11 @@ const postsData = computed(() => {
             if (condition1 || condition2) {
                 return false;
             }
+        }
+        if (noPailouMode.value === true) {
+            //无内容排楼的屏蔽条件
+            const reg = /^<span(.*?)<\/span>$/s
+            if (reg.test(post.content)) return false
         }
         if (userStore.userData?.binggan.use_pingbici
             && commonStore.userCustom.hidePingbiciFloor //如果选择了“完全隐藏楼层”，则这里直接过滤回复数据
