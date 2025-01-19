@@ -34,6 +34,10 @@
                         unchecked-value="1" />
                 </n-form-item>
             </n-form>
+            <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
+                :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
+                {{ loudspeaker.content }}
+            </component>
             <template #action>
                 <n-flex justify="end">
                     <f-button type="primary" :disable="newLoudspeakerLoading" :loading="newLoudspeakerLoading"
@@ -47,14 +51,14 @@
 
 
 <script setup lang="ts">
-import { newLoudspeakerPoster, type newLoudspeakerParams } from '@/api/methods/loudspeaker';
+import { newLoudspeakerPoster, type newLoudspeakerParams, type loudspeakerData } from '@/api/methods/loudspeaker';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
 import { FButton, FInput } from '@custom';
 import { useRequest } from 'alova';
 import dayjs from 'dayjs';
 import { NCard, NColorPicker, NDatePicker, NFlex, NForm, NFormItem, NInputNumber, NModal, NSwitch, type FormInst, type FormRules } from 'naive-ui';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 //基础数据
 const commonStore = useCommonStore()
@@ -71,6 +75,21 @@ const userInput = ref({
     effectiveDate: dayjs.tz().format('YYYY-MM-DD HH:mm:ss'),
 })
 const useColor = ref<boolean>(false)
+
+//预览用的数据整合
+const loudspeaker = computed<loudspeakerData>(() => {
+    return {
+        id: 1,
+        sub_id: 1,
+        content: userInput.value.content ?? "",
+        color: userInput.value.color ?? null,
+        thread_id: null,
+        effective_date: userInput.value.effectiveDate,
+        expire_date: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代
+        created_at: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代,
+        is_your_loudspeaker: true,
+    }
+})
 
 //数据验证规则
 const inputRules: FormRules = {
