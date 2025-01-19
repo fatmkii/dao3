@@ -77,19 +77,17 @@ const userInput = ref({
 const useColor = ref<boolean>(false)
 
 //预览用的数据整合
-const loudspeaker = computed<loudspeakerData>(() => {
-    return {
-        id: 1,
-        sub_id: 1,
-        content: userInput.value.content ?? "",
-        color: userInput.value.color ?? null,
-        thread_id: null,
-        effective_date: userInput.value.effectiveDate,
-        expire_date: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代
-        created_at: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代,
-        is_your_loudspeaker: true,
-    }
-})
+const loudspeaker = computed<loudspeakerData>(() => ({
+    id: 1,
+    sub_id: 1,
+    content: userInput.value.content ?? "",
+    color: userInput.value.color ?? null,
+    thread_id: null,
+    effective_date: userInput.value.effectiveDate,
+    expire_date: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代
+    created_at: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代,
+    is_your_loudspeaker: true,
+}))
 
 //数据验证规则
 const inputRules: FormRules = {
