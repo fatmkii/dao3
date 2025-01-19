@@ -80,8 +80,8 @@ const useColor = ref<boolean>(false)
 const loudspeaker = computed<loudspeakerData>(() => ({
     id: 1,
     sub_id: 1,
-    content: userInput.value.content ?? "",
-    color: userInput.value.color ?? null,
+    content: userInput.value.content || "（这里是预览）",
+    color: userInput.value.color || null,
     thread_id: null,
     effective_date: userInput.value.effectiveDate,
     expire_date: userInput.value.effectiveDate,//实际上没有用到这个变量，随便找个替代
