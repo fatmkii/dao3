@@ -35,6 +35,7 @@
                 </n-form-item>
             </n-form>
             <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
+                style="white-space: pre-wrap;"
                 :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                 {{ loudspeaker.content }}
             </component>

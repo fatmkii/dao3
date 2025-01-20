@@ -7,6 +7,7 @@
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="loudspeaker.id"
                     :is="loudspeaker.thread_id ? 'router-link' : 'span'"
                     :style="{ color: commonStore.userCustom.monochromeMode ? themeVars.textColor1 : loudspeaker.color }"
+                    style="white-space: pre-wrap;"
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ index }}. {{ loudspeaker.content }}
                 </component>

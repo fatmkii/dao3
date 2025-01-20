@@ -16,6 +16,7 @@
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="index"
                     :is="loudspeaker.thread_id ? 'router-link' : 'span'"
                     :style="{ color: commonStore.userCustom.monochromeMode ? themeVars.textColor1 : loudspeaker.color }"
+                    style="white-space: pre-wrap;"
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ loudspeaker.content }}
                 </component>
@@ -23,6 +24,7 @@
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="index + loudspeakerData.length"
                     :is="loudspeaker.thread_id ? 'router-link' : 'span'"
                     :style="{ color: commonStore.userCustom.monochromeMode ? themeVars.textColor1 : loudspeaker.color }"
+                    style="white-space: pre-wrap;"
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ loudspeaker.content }}
                 </component>

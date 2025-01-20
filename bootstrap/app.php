@@ -29,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //     \Illuminate\Auth\Middleware\Authorize::class,
         //     \App\Http\Middleware\CheckBinggan::class,
         // ]);
+        $middleware->trimStrings(except: [
+            //对于创建大喇叭，此处关闭laravel的内置中间件。它会自动trim字符串
+            fn (Request $request) => $request->is('api/loudspeaker/create'),
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
 

@@ -2,8 +2,7 @@
     <n-flex vertical style="margin-top: 8px;">
         <!-- 题图和发布按钮 -->
         <n-flex size="small" :align="'center'">
-            <img :style="{ height: commonStore.isMobile ? '48px' : '64px' }"
-                src="/ui/miku-loudspeaker.png" />
+            <img :style="{ height: commonStore.isMobile ? '48px' : '64px' }" src="/ui/miku-loudspeaker.png" />
             <n-gradient-text :style="{ fontSize: commonStore.isMobile ? '16px' : '20px' }"
                 :gradient="{ from: '#7fcab9', to: '#99b1c5' }">
                 爱乃是盲目～🎵
@@ -36,6 +35,7 @@
             <n-card v-for="loudspeaker in loudspeakerData.slice(offset, offset + pageSize)" :key="loudspeaker.id"
                 size="small" :bordered="true" class="loudspeaker-card">
                 <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
+                    style="white-space: pre-wrap;"
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ loudspeaker.content }}
                 </component>
