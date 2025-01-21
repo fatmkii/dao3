@@ -1,0 +1,1 @@
+import{g as e}from"./app-Cb4C_MW4.js";const n=e.Get("/api/home_banners/",{name:"homeBannersGetter",params:{},localCache:null}),o=e.Get("/api/new_loudspeaker_enable",{name:"newLoudspeakerEnableGetter",params:{},localCache:null});export{n as h,o as n};
