@@ -69,7 +69,7 @@
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
-                    :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
+                    :admin-mode="adminMode" :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
                     @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
@@ -289,6 +289,7 @@ const nissinTTL = computed(() => {
 
 //屏蔽选项下拉框
 const superAdminMode = ref<boolean>(false) //超级管理员模式
+const adminMode = ref<boolean>(false) //管理员模式（暂时只有屏蔽代码功能）
 const noVideoMode = useStorage<boolean>('no_video_mode', false) //音频视频
 const noImageMode = useStorage<boolean>('no_image_mode', false)//图片
 const noEmojiMode = useStorage<boolean>('no_emoji_mode', false)//一般表情包
@@ -318,6 +319,8 @@ const refList = computed(() => {
     ]
     if (userStore.admin.isSuperAdmin) {
         checkboxArray.unshift({ ref: superAdminMode, label: '超管模式启动！' })
+    } else if (userStore.admin.isNormalAdmin) {
+        checkboxArray.unshift({ ref: adminMode, label: '让代码失效' })
     }
     return checkboxArray
 })
