@@ -19,6 +19,7 @@ class ResponseCode
     const USER_PASSWORD_ERROR = 21001;
     const USER_NEW_CLOSED = 21406;
     const CANNOTLOGIN = 21401;
+    const USER_SHOULD_CONFIRM = 21430;
 
     const ADMIN_UNAUTHORIZED = 29401;
 
@@ -97,6 +98,7 @@ class ResponseCode
         self::USER_PASSWORD_ERROR => '密码输入错误',
         self::ADMIN_UNAUTHORIZED => '管理员权限不足',
         self::CANNOTLOGIN => '用户登录失败',
+        self::USER_SHOULD_CONFIRM => '需要确认',
         self::FORUM_NOT_FOUND => '此小岛不存在',
         self::FORUM_UNAUTHORIZED => '无法访问该小岛',
         self::THREAD_NOT_FOUND => '主题贴不存在',

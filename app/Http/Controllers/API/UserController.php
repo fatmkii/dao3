@@ -986,6 +986,7 @@ class UserController extends Controller
                 'thread_id' => $request->thread_id,
                 'effective_date' => $request->effective_date,
                 'expire_date' => $expire_date,
+                'days' => $request->days,
             ]);
 
 
@@ -1016,6 +1017,7 @@ class UserController extends Controller
         $request->validate([
             'binggan' => 'required|string',
             'loudspeaker_id' => 'required|integer',
+            'confirm_penalty' => 'nullable|boolean', //前端确认是否接受撤回的惩罚
         ]);
 
 
@@ -1036,10 +1038,38 @@ class UserController extends Controller
             ]);
         }
 
+        if ($loudspeaker->created_at < Carbon::now()->addMinutes(-5)) {
+            if ($request->confirm_penalty) {
+                //如果超过5分钟撤回，必须接受不退款
+                $should_refund = false;
+            } else {
+                //否则返回错误，让前端再次确认
+                return response()->json([
+                    'code' => ResponseCode::USER_SHOULD_CONFIRM,
+                    'message' => '时间已超过5分钟',
+                ]);
+            }
+        } else {
+            //满足5分钟内条件，可以退款
+            $should_refund = true;
+        }
+
         try {
             DB::beginTransaction();
 
             $loudspeaker->delete();
+            if ($should_refund) {
+                //退回olo
+                $olo = ($loudspeaker->days ?? 0) * 5000; //根据时长每天5000
+                $user->coinChange(
+                    'normal', //记录类型
+                    [
+                        'olo' => $olo,
+                        'content' => '撤回大喇叭退款'
+                    ]
+                ); //扣除用户相应olo（通过统一接口、记录操作）
+
+            }
 
             DB::commit();
         } catch (Exception $e) {
