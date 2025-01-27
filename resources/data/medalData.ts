@@ -37,6 +37,14 @@ export const medalsNormal: medalsData = {
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644adb592fc6.png',
     },
 
+    //获得全部大乱斗成就
+    10: {
+        'name': '你的赌技从914到419，无人不知无人不晓',
+        'describe': '获得全部大乱斗成就',
+        'threshold': 0,
+        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30a1ae9bb.webp',
+    },
+
     //通过大乱斗获得的olo数量
     11: {
         'name': '一鸣惊人',
@@ -67,6 +75,12 @@ export const medalsNormal: medalsData = {
         'describe': '通过大乱斗获得1000w个olo',
         'threshold': 10000000,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644adca296cc.png',
+    },
+    16: {
+        'name': '没能让大人玩得尽兴真是抱歉',
+        'describe': '通过大乱斗获得1亿个olo（哇）',
+        'threshold': 100000000,
+        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30f08411a.webp',
     },
 
     //通过大乱斗失去的olo数量
@@ -99,6 +113,12 @@ export const medalsNormal: medalsData = {
         'describe': '由于大乱斗失去1000w个olo',
         'threshold': 10000000,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644addec9400.png',
+    },
+    26: {
+        'name': '进数码缅北，割赛博腰子',
+        'describe': '由于大乱斗失去1亿个olo（嗷..）',
+        'threshold': 100000000,
+        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30f0857f8.webp',
     },
 
     //通过红包获得的olo数量 
@@ -515,6 +535,13 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644aed695242.png',
     },
+    //25年春节
+    156: {
+        'name': '蛇年快乐',
+        'describe': '2025年小火锅蛇年祝福',
+        'threshold': 0,
+        'img': 'https://www.freeimg.cn/i/2025/01/20/678e300886aaa.webp',
+    },
 
     //画师荣誉徽章
     181: {
@@ -709,6 +736,5 @@ export const medalsHidden: medalsData = {
         'threshold': null,
         'img': 'https://www.freeimg.cn/i/2024/05/15/6644af31f3d2a.png',
     },
-    
 
 }

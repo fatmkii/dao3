@@ -169,7 +169,7 @@ class UserController extends Controller
 
         //检查成就（小火锅周年活动）
         $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
-        $user_medal_record->check_anniversary();
+        $user_medal_record->check_national_day();
 
         return response()->json(
             [

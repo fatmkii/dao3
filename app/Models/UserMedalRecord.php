@@ -57,25 +57,25 @@ class UserMedalRecord extends Model
         $this->save();
 
         //本次处理的同一系列的成就id
-        $medals_id = array(11, 12, 13, 14, 15);
+        $medals_id = array(11, 12, 13, 14, 15, 16);
 
         //已经获得过的徽章（统一查询一次，用于后续判断）
         // $medals_id_retain = $this->UserMedal()->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();
         $medals_id_retain = UserMedal::where('user_id', $this->user_id)->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();
         if (count($medals_id) == count($medals_id_retain)) {
-            //如果数量一样，说明整个系列都已经获得，不需要再判断了
-            return;
-        }
-
-        foreach ($medals_id as $medal_id) {
-            //循环判断此系列的成就id是否满足阈值threshold条件
-            $varname = Medals::DATA[$medal_id]['varname'];
-            if (!in_array($medal_id, $medals_id_retain) && $this->$varname >= Medals::DATA[$medal_id]['threshold']) {
-                $user_medal = new UserMedal;
-                $user_medal->user_id = $this->user_id;
-                $user_medal->medal_id = $medal_id;
-                $user_medal->created_at = Carbon::now();
-                $user_medal->save();
+            //如果数量一样，说明整个系列都已经获得，则进一步判断是否满足全成就的条件
+            $this->check_all_battle();
+        } else {
+            foreach ($medals_id as $medal_id) {
+                //循环判断此系列的成就id是否满足阈值threshold条件
+                $varname = Medals::DATA[$medal_id]['varname'];
+                if (!in_array($medal_id, $medals_id_retain) && $this->$varname >= Medals::DATA[$medal_id]['threshold']) {
+                    $user_medal = new UserMedal;
+                    $user_medal->user_id = $this->user_id;
+                    $user_medal->medal_id = $medal_id;
+                    $user_medal->created_at = Carbon::now();
+                    $user_medal->save();
+                }
             }
         }
     }
@@ -86,26 +86,49 @@ class UserMedalRecord extends Model
         $this->save();
 
         //本次处理的同一系列的成就id
-        $medals_id = array(21, 22, 23, 24, 25);
+        $medals_id = array(21, 22, 23, 24, 25, 26);
 
         //已经获得过的徽章（统一查询一次，用于后续判断）
         // $medals_id_retain = $this->UserMedal()->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();
         $medals_id_retain = UserMedal::where('user_id', $this->user_id)->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();
         if (count($medals_id) == count($medals_id_retain)) {
-            //如果数量一样，说明整个系列都已经获得，不需要再判断了
+            //如果数量一样，说明整个系列都已经获得，则进一步判断是否满足全成就的条件
+            $this->check_all_battle();
+        } else {
+            foreach ($medals_id as $medal_id) {
+                //循环判断此系列的成就id是否满足阈值threshold条件
+                $varname = Medals::DATA[$medal_id]['varname'];
+                if (!in_array($medal_id, $medals_id_retain) && $this->$varname >= Medals::DATA[$medal_id]['threshold']) {
+                    $user_medal = new UserMedal;
+                    $user_medal->user_id = $this->user_id;
+                    $user_medal->medal_id = $medal_id;
+                    $user_medal->created_at = Carbon::now();
+                    $user_medal->save();
+                }
+            }
+        }
+    }
+
+    private  function check_all_battle()
+    {
+        //上述大乱斗相关成就的id，目前一共12个
+        $medals_id = array(11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26);
+        $medal_id = 10; //获得全部大乱斗成就的进阶成就，#10号
+
+        $medal_has_retain = UserMedal::where('user_id', $this->user_id)->where('medal_id', $medal_id)->exists();
+        if ($medal_has_retain) {
+            //如果已经拥有此徽章，则不需要下一步判断
             return;
         }
 
-        foreach ($medals_id as $medal_id) {
-            //循环判断此系列的成就id是否满足阈值threshold条件
-            $varname = Medals::DATA[$medal_id]['varname'];
-            if (!in_array($medal_id, $medals_id_retain) && $this->$varname >= Medals::DATA[$medal_id]['threshold']) {
-                $user_medal = new UserMedal;
-                $user_medal->user_id = $this->user_id;
-                $user_medal->medal_id = $medal_id;
-                $user_medal->created_at = Carbon::now();
-                $user_medal->save();
-            }
+        $medals_id_retain_count = UserMedal::where('user_id', $this->user_id)->whereIn('medal_id', $medals_id)->count();
+        if ($medals_id_retain_count == count($medals_id)) {
+            //如果已经获得所有成就，则发放#10号成就
+            $user_medal = new UserMedal;
+            $user_medal->user_id = $this->user_id;
+            $user_medal->medal_id = $medal_id;
+            $user_medal->created_at = Carbon::now();
+            $user_medal->save();
         }
     }
 
@@ -574,17 +597,17 @@ class UserMedalRecord extends Model
 
     public function check_national_day()
     {
-        if (Carbon::now() < Carbon::create("2024-2-10 0:0:0")) {
+        if (Carbon::now() < Carbon::create("2025-1-29 0:0:0")) {
             //如果时间未到，就什么都不做
             return;
         }
 
-        if (Carbon::now() > Carbon::create("2024-2-13 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2025-1-31 0:0:0")) {
             //如果时间已经过期，就什么都不做
             return;
         }
 
-        $medal_id = 153;
+        $medal_id = 156;
 
         //纯粹行为型的徽章，直接查询
         // $medals_code_exists = $this->UserMedal()->where('medal_id', 131)->exists();

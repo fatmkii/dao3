@@ -32,6 +32,14 @@ class Medals
             'varname' => 'olo',
         ),
 
+        //获得全部大乱斗成就
+        10 => array(
+            'name' => '你的赌技从914到419，无人不知无人不晓',
+            'describe' => '获得全部大乱斗成就',
+            'threshold' => null,
+            'varname' => null,
+        ),
+
         //通过大乱斗获得的olo数量
         11 => array(
             'name' => '一鸣惊人',
@@ -61,6 +69,12 @@ class Medals
             'name' => '赌场收割者',
             'describe' => '通过大乱斗获得1000w个olo',
             'threshold' => 10000000,
+            'varname' => 'battle_olo_in',
+        ),
+        16 => array(
+            'name' => '没能让大人玩得尽兴真是抱歉',
+            'describe' => '通过大乱斗获得1亿个olo（哇）',
+            'threshold' => 100000000,
             'varname' => 'battle_olo_in',
         ),
 
@@ -93,6 +107,12 @@ class Medals
             'name' => '空中飞人',
             'describe' => '由于大乱斗失去1000w个olo',
             'threshold' => 10000000,
+            'varname' => 'battle_olo_out',
+        ),
+        26 => array(
+            'name' => '进数码缅北，割赛博腰子',
+            'describe' => '由于大乱斗失去1亿个olo（嗷..）',
+            'threshold' => 100000000,
             'varname' => 'battle_olo_out',
         ),
 
@@ -335,6 +355,13 @@ class Medals
         155 => array(
             'name' => '小火锅3.0',
             'describe' => '诶？我来测试咒岛3.0？真的假的？！',
+            'threshold' => null,
+            'varname' => null,
+        ),
+        //24年春节
+        156 => array(
+            'name' => '蛇年快乐',
+            'describe' => '2025年小火锅蛇年祝福',
             'threshold' => null,
             'varname' => null,
         ),
