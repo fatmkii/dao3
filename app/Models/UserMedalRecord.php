@@ -602,7 +602,7 @@ class UserMedalRecord extends Model
             return;
         }
 
-        if (Carbon::now() > Carbon::create("2025-1-31 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2025-2-1 0:0:0")) {
             //如果时间已经过期，就什么都不做
             return;
         }
