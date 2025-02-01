@@ -507,7 +507,7 @@ const postsData = computed(() => {
                 return false;
             }
         }
-        if (noPailouMode.value === true) {
+        if (noPailouMode.value === true && !post.is_your_post) {
             //无内容排楼的屏蔽条件
             const reg = /^<span(.*?)<\/span>$/s
             if (reg.test(post.content)) return false
