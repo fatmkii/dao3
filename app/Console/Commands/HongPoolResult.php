@@ -43,17 +43,17 @@ class HongPoolResult extends Command
      */
     public function handle()
     {
-        if (!$this->confirm('是否开始发放奖励？')) {
+        $this->info("准备发放本次祝福池奖励");
+
+        do {
+            $thread_id = $this->ask('请输入本次祝福池thread_id:');
+        } while (!ctype_digit($thread_id));
+        if (!$this->confirm('是否确认thread_id: ' . $thread_id)) {
             return False;
         }
-        $this->info("开始运行");
 
         $hongbao_pools = DB::table("hongbao_pool")->get(['id', 'user_id']);
         $olo_total = DB::table('hongbao_pool')->sum('olo');
-        $thread_id = 125894; //这里记得每次改！！
-        if (!$this->confirm('每次主题id要手动输入，是否确认是本次id？id: ' . $thread_id)) {
-            return False;
-        }
 
         $this->info('投入用户共有：' . count($hongbao_pools));
         $this->info('olo总数' . $olo_total);
