@@ -84,7 +84,7 @@ return [
         'database_log' => [
             'driver' => 'single',
             'path' => storage_path('logs/database_log.log'),
-            'level' => 'info',
+            'level' => 'debug',
         ],
 
         'daily' => [
