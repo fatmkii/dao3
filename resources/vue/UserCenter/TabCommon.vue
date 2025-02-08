@@ -198,6 +198,7 @@ const imgHostOptions = [
     { value: 'imgimg', label: 'imgimg' },
     { value: 'helloimg', label: 'helloimg' },
     { value: 'picui', label: 'picui' },
+    { value: 'imgwang', label: 'ImgWang' },
     { value: 'picgo', label: '(要注册)picgo' }, //要注册
 ]
 
