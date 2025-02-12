@@ -79,6 +79,14 @@ return [
             'level' => 'debug',
         ],
 
+        
+        //数据库处理结果等
+        'database_log' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/database_log.log'),
+            'level' => 'debug',
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

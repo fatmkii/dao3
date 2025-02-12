@@ -21,6 +21,7 @@ class Loudspeaker extends Model
         'color',
         'effective_date',
         'expire_date',
+        'days'
     ];
 
     protected $hidden = [

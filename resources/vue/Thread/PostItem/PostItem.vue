@@ -146,6 +146,7 @@ interface Props {
     useUrlMode?: boolean,
     previewMode?: boolean,
     superAdminMode?: boolean,
+    adminMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
     yourPostsList: () => [],
@@ -160,6 +161,7 @@ const props = withDefaults(defineProps<Props>(), {
     useUrlMode: false,
     previewMode: false,
     superAdminMode: false,
+    adminMode: false,
 })
 
 //回复框本体的style(传统模式时)
@@ -347,6 +349,9 @@ const postContent = computed(() => {//数据处理
         .replace(/<base/gi, "<**禁止使用base标签**")
         .replace(/\n/g, "<br>")
 
+    if (props.superAdminMode || props.adminMode) {
+        postContent = postContent.replace(/<style/gi, "<**停止解析style")
+    }
 
     //第三种屏蔽类型：不变更postData，仅进行折叠
     if (userStore.userData?.binggan.use_pingbici) {

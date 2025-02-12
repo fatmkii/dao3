@@ -2,8 +2,7 @@
     <n-flex vertical style="margin-top: 8px;">
         <!-- 题图和发布按钮 -->
         <n-flex size="small" :align="'center'">
-            <img :style="{ height: commonStore.isMobile ? '48px' : '64px' }"
-                src="/ui/miku-loudspeaker.png" />
+            <img :style="{ height: commonStore.isMobile ? '48px' : '64px' }" src="/ui/miku-loudspeaker.png" />
             <n-gradient-text :style="{ fontSize: commonStore.isMobile ? '16px' : '20px' }"
                 :gradient="{ from: '#7fcab9', to: '#99b1c5' }">
                 爱乃是盲目～🎵
@@ -36,6 +35,7 @@
             <n-card v-for="loudspeaker in loudspeakerData.slice(offset, offset + pageSize)" :key="loudspeaker.id"
                 size="small" :bordered="true" class="loudspeaker-card">
                 <component :is="loudspeaker.thread_id ? 'router-link' : 'span'" :style="{ color: loudspeaker.color }"
+                    style="white-space: pre-wrap;"
                     :to="loudspeaker.thread_id !== null ? `/thread/${loudspeaker.thread_id}/1` : undefined">
                     {{ loudspeaker.content }}
                 </component>
@@ -50,7 +50,7 @@
                     </span>
                     <div style="margin-left: auto;"></div>
                     <n-icon v-if="loudspeaker.is_your_loudspeaker" :size="commonStore.isMobile ? 20 : 24"
-                        style="cursor: pointer;" @click="repealLoudspeakerHandle(loudspeaker.id)">
+                        style="cursor: pointer;" @click="repealLoudspeakerHandle(loudspeaker.id, false)">
                         <Delete />
                     </n-icon>
                     <f-button v-if="userStore.admin.isNormalAdmin" size="tiny" type="warning"
@@ -145,23 +145,35 @@ function adminDeleteLoudspeakerHandle(id: number) {
 }
 
 //用户撤回大喇叭
-function repealLoudspeakerHandle(id: number) {
+function repealLoudspeakerHandle(id: number, should_confirm: boolean = false) {
     const dialogArgs = {
         title: '撤回大喇叭',
         closable: false,
-        content: `要撤回这个大喇叭吗？花费的奥利奥不会退回喔`,
+        content: should_confirm ? `由于已超过5分钟，olo将不会退回，是否接受？` : `要撤回这个大喇叭吗？如果是5分钟内撤回将退回olo`,
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: () => {
             repealLoudspeakerPoster({
                 binggan: userStore.binggan!,
                 loudspeaker_id: id,
+                confirm_penalty: should_confirm,
             }).then(
                 () => loudspeakerDataSend(params)
+            ).catch(
+                (error) => {
+                    if (error.cause !== undefined && error.cause.code == 21430) {
+                        //如果是21430，说明已经超过5分钟，用户必须确认接受不退回olo
+                        repealLoudspeakerHandle(id, true)
+                    }
+                }
             )
         },
     }
-    window.$dialog.warning(dialogArgs)
+    if (should_confirm) {
+        window.$dialog.warning(dialogArgs)
+    } else {
+        window.$dialog.success(dialogArgs)
+    }
 }
 </script>
 

@@ -47,6 +47,8 @@ class GlobalSettingClass
         $festival_days = [
             ['month' => 6, 'day' => 18],
             ['month' => 11, 'day' => 11],
+            ['month' => 1, 'day' => 28], //临时的，春节用
+            ['month' => 1, 'day' => 29], //临时的，春节用
         ];
 
         if ($time == null) {
@@ -58,7 +60,7 @@ class GlobalSettingClass
                 $is_festival = true;
             }
         }
-        
+
         switch ($name) {
             case 'normal': {
                     //一般税率1.07（打赏、红包等），活动时候1.02

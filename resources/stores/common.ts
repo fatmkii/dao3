@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 
-export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg' | 'picui'
+export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg' | 'picui' | 'imgwang'
 
 export const useCommonStore = defineStore('commonStore', () => {
 
@@ -41,6 +41,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         const festivalDays = [ //各个活动节日的时间（618和双十一）
             { month: 6, date: 18 },
             { month: 11, date: 11 },
+            { month: 1, date: 28 },//临时的，春节用
+            { month: 1, date: 29 },//临时的，春节用
         ]
         const now = dayjs.tz() //tz()才是获得UTC+8的时间
         let isDouble11 = false

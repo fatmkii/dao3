@@ -61,7 +61,8 @@
                 <HongbaoComponent ref="HongbaoComponentCom" v-if="threadData.hongbao_id !== null"
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
                     @refresh-posts-list="handleFetchPostsList(false)" />
-                <PoolComponent ref="PoolComponentCom" v-if="threadId === 125894" :thread-id="threadId"
+                <!-- TODO 这里每次活动要改threadID -->
+                <PoolComponent ref="PoolComponentCom" v-if="threadId === 138549" :thread-id="threadId"
                     :forum-id="forumData?.id" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- 这是第1楼及之后 -->
                 <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
@@ -69,7 +70,7 @@
                     :no-custom-emoji-mode="noCustomEmojiMode" :no-emoji-mode="noEmojiMode" :no-head-mode="noHeadMode"
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
-                    :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
+                    :admin-mode="adminMode" :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
                     @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
@@ -289,6 +290,7 @@ const nissinTTL = computed(() => {
 
 //屏蔽选项下拉框
 const superAdminMode = ref<boolean>(false) //超级管理员模式
+const adminMode = ref<boolean>(false) //管理员模式（暂时只有屏蔽代码功能）
 const noVideoMode = useStorage<boolean>('no_video_mode', false) //音频视频
 const noImageMode = useStorage<boolean>('no_image_mode', false)//图片
 const noEmojiMode = useStorage<boolean>('no_emoji_mode', false)//一般表情包
@@ -300,6 +302,7 @@ const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
 const noMentionMode = useStorage<boolean>('no_mention_mode', false) //@提醒功能
 const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
+const noPailouMode = useStorage<boolean>('no_pailou_mode', false) //无内容排楼
 
 const refList = computed(() => {
     const checkboxArray = [//用于批量生成checkbox
@@ -313,9 +316,12 @@ const refList = computed(() => {
         { ref: noRewardMode, label: '打赏' },
         { ref: noHongbaoMode, label: '红包结果' },
         { ref: noMentionMode, label: '关闭@标注' },
+        { ref: noPailouMode, label: '无内容排楼' },
     ]
     if (userStore.admin.isSuperAdmin) {
         checkboxArray.unshift({ ref: superAdminMode, label: '超管模式启动！' })
+    } else if (userStore.admin.isNormalAdmin) {
+        checkboxArray.unshift({ ref: adminMode, label: '让代码失效' })
     }
     return checkboxArray
 })
@@ -500,6 +506,11 @@ const postsData = computed(() => {
             if (condition1 || condition2) {
                 return false;
             }
+        }
+        if (noPailouMode.value === true && !post.is_your_post) {
+            //无内容排楼的屏蔽条件
+            const reg = /^<span(.*?)<\/span>$/s
+            if (reg.test(post.content)) return false
         }
         if (userStore.userData?.binggan.use_pingbici
             && commonStore.userCustom.hidePingbiciFloor //如果选择了“完全隐藏楼层”，则这里直接过滤回复数据

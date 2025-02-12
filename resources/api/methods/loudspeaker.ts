@@ -67,9 +67,14 @@ const newLoudspeakerPoster = (params: newLoudspeakerParams) => {
 interface repealLoudspeakerParams {
     binggan: string,
     loudspeaker_id: number
+    confirm_penalty?: boolean
+}
+interface repealLoudspeakerData {
+    code: number,
+    message: string,
 }
 const repealLoudspeakerPoster = (params: repealLoudspeakerParams) => {
-    const methodInstance = commonAlova.Post(
+    const methodInstance = commonAlova.Post<repealLoudspeakerData>(
         'api/loudspeaker/repeal',
         params,
         {
