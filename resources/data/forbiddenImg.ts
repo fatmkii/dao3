@@ -13,22 +13,22 @@ export const forbiddenImg: forbiddenImg = {
     },
     23410: {
         name: "已日清",
-        ImgSrc: "https://www.freeimg.cn/i/2024/05/14/664358a7a2f38.png",
+        ImgSrc: "https://wmimg.com/i/1547/2025/02/67adef97cf647.png",
     },
     23401: {
         name: "olo不足",
-        ImgSrc: "https://www.freeimg.cn/i/2024/05/14/664358a7c0196.png",
+        ImgSrc: "https://wmimg.com/i/1547/2025/02/67adef9811f04.png",
     },
     234011: {
         name: "私密主题",
-        ImgSrc: "https://www.freeimg.cn/i/2024/05/14/664358a793fb1.png",
+        ImgSrc: "https://wmimg.com/i/1547/2025/02/67adef97ce810.png",
     },
     23404: {
         name: "板块or主题不存在",
-        ImgSrc: "https://www.freeimg.cn/i/2024/05/14/664358a7db594.png",
+        ImgSrc: "https://wmimg.com/i/1547/2025/02/67adef9818836.png",
     },
     21404: {
         name: "需要饼干",
-        ImgSrc: "https://www.freeimg.cn/i/2024/05/14/664358a7b1035.png",
+        ImgSrc: "https://wmimg.com/i/1547/2025/02/67adef97e42d8.png",
     },
 }

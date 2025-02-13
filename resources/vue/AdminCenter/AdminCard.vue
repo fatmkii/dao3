@@ -2,7 +2,7 @@
     <n-card hoverable size="small">
         <n-flex :vertical="commonStore.isMobile">
             <n-flex size="small" :align="'center'">
-                <img src="https://www.freeimg.cn/i/2024/05/15/6644aedee642d.png"
+                <img src="/ui/my-binggan.png"
                     style="max-width: 50px;max-height: 50px;">
                 <span>管理员中心</span>
             </n-flex>

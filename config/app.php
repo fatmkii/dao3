@@ -37,7 +37,7 @@ return [
     'oss_key' => env('OSS_KEY', ''),
     'oss_secret' => env('OSS_SECRET', ''),
 
-    //freeimg.cn上传图片接口的token
+    //freeimg.cn（现在是wming.com了）上传图片接口的token
     'freeimg_token' => env('FREEIMG_TOKEN', ''),
 
 

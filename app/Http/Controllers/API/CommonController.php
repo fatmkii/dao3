@@ -98,8 +98,8 @@ class CommonController extends Controller
     {
         //根据不同模式上传到不同文件夹
         $mode_dir_array = [
-            'img' => 360,  //用户上传的图片
-            'draw' => 359,  //涂鸦板上传的图片
+            'img' => 439,  //用户上传的图片
+            'draw' => 440,  //涂鸦板上传的图片
         ];
         $album_id = $mode_dir_array[$mode];
 
@@ -109,7 +109,7 @@ class CommonController extends Controller
         $file_name = $file_md5 . '.' . $file->extension();
 
         $client = new Client([
-            'base_uri' => "https://freeimg.cn/",
+            'base_uri' => "https://wmimg.com/",
             'timeout'  => 5.0,
         ]);
 
