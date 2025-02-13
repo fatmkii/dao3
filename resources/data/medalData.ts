@@ -42,7 +42,7 @@ export const medalsNormal: medalsData = {
         'name': '你的赌技从914到419，无人不知无人不晓',
         'describe': '获得全部大乱斗成就',
         'threshold': 0,
-        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30a1ae9bb.webp',
+        'img': 'https://wmimg.com/i/1547/2025/02/67adf165b1c74.png',
     },
 
     //通过大乱斗获得的olo数量
@@ -80,7 +80,7 @@ export const medalsNormal: medalsData = {
         'name': '没能让大人玩得尽兴真是抱歉',
         'describe': '通过大乱斗获得1亿个olo（哇）',
         'threshold': 100000000,
-        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30f08411a.webp',
+        'img': 'https://wmimg.com/i/1547/2025/02/67adf207457de.png',
     },
 
     //通过大乱斗失去的olo数量
@@ -118,7 +118,7 @@ export const medalsNormal: medalsData = {
         'name': '进数码缅北，割赛博腰子',
         'describe': '由于大乱斗失去1亿个olo（嗷..）',
         'threshold': 100000000,
-        'img': 'https://www.freeimg.cn/i/2025/01/20/678e30f0857f8.webp',
+        'img': 'https://wmimg.com/i/1547/2025/02/67adf2074feb7.png',
     },
 
     //通过红包获得的olo数量 
@@ -526,7 +526,7 @@ export const medalsHidden: medalsData = {
         'name': '小火锅三周年快乐~！',
         'describe': '3.0也同时上线喔',
         'threshold': 0,
-        'img': 'https://www.freeimg.cn/i/2024/05/15/6644aed2679fa.png',
+        'img': 'https://wmimg.com/i/1547/2025/02/67ac5e623e456.png',
     },
     //24年3.0纪念
     155: {
@@ -540,7 +540,7 @@ export const medalsHidden: medalsData = {
         'name': '蛇年快乐',
         'describe': '2025年小火锅蛇年祝福',
         'threshold': 0,
-        'img': 'https://www.freeimg.cn/i/2025/01/20/678e300886aaa.webp',
+        'img': 'https://wmimg.com/i/1547/2025/02/67adf2702ea00.png',
     },
 
     //画师荣誉徽章
