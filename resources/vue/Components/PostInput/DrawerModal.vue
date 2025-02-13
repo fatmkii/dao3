@@ -456,7 +456,7 @@ function uploadImageHandle() {
         const params: uploadImageParams = {
             binggan: userStore.binggan!,
             file: blob,
-            mode: 'img',
+            mode: 'draw',
             thread_id: props.threadId,
             forum_id: props.forumId
         }
