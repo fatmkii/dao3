@@ -1230,7 +1230,7 @@ class AdminController extends Controller
         );
     }
 
-    //帖子转区
+    //超管帖子转区
     public function transfer_thread(Request $request)
     {
         $request->validate([

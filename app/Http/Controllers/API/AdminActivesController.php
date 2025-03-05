@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminActivesController extends Controller
 {
-    const SUPER_ACTIVE_TYPE = ['set_user_olo', 'create_medal', 'unlock_uuid']; //定义属于超管动作的active_type
+    const SUPER_ACTIVE_TYPE = ['set_user_olo', 'create_medal', 'unlock_uuid', 'transfer_thread']; //定义属于超管动作的active_type
 
     private function getAdminActivesData($date = null, $page = 1, $is_super_admin = false)
     {
