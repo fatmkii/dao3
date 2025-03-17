@@ -37,17 +37,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //一般API速率限制480次每分钟（根据IP）
+        //一般API速率限制480次每分钟（根据IP）  这个疑似没有在使用？？
         RateLimiter::for('api', function (Request $request) {
             // return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
             return Limit::perMinute(480)->by($request->ip());
+        });
+        //发帖的API速率限制2次1秒（根据IP）
+        RateLimiter::for('new_post', function (Request $request) {
+            return Limit::perSecond(2)->by($request->ip());
         });
         //登录密码尝试速率限制3次每分钟（根据IP）
         RateLimiter::for('login', function (Request $request) {
             // return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
             return Limit::perMinute(3)->by($request->ip());
         });
-
-
     }
 }
