@@ -42,9 +42,9 @@ class AppServiceProvider extends ServiceProvider
             // return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
             return Limit::perMinute(480)->by($request->ip());
         });
-        //发帖的API速率限制2次1秒（根据IP）
+        //发帖的API速率限制1秒4次（根据IP）
         RateLimiter::for('new_post', function (Request $request) {
-            return Limit::perSecond(2)->by($request->ip());
+            return Limit::perSecond(4)->by($request->ip());
         });
         //登录密码尝试速率限制3次每分钟（根据IP）
         RateLimiter::for('login', function (Request $request) {
