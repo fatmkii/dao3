@@ -3,19 +3,18 @@
         <n-spin :show="battleDataLoading || battleDataFetching">
             <n-flex vertical size="small" v-if="battleData !== undefined">
                 <!-- 大乱斗的语句 -->
-                <n-flex v-for="battleMessage in battleData.battle_messages" :align="'center'" :wrap="false"
+                <n-flex v-for="battleMessage in battleMessageStyled" :align="'center'" :wrap="false"
                     :style="messageStyle[battleMessage.message_type]">
                     <img class="emoji-img" :src="battleMessage.chara_url">
-                    <n-text v-if="battleMessage.message_type !== 0">
-                        {{ battleMessage.message }}
-                    </n-text>
+                    <span v-html="battleMessage.message" v-if="battleMessage.message_type !== 0">
+                    </span>
                     <n-tag v-else round> {{ battleMessage.message }}</n-tag>
                 </n-flex>
                 <!-- 提示信息 -->
                 <n-flex :style="messageStyle[0]">
                     <n-tag v-if="battleData.battle.progress === 0" round>正在等待挑战者</n-tag>
                     <n-tag v-if="battleData.battle.progress === 2 && isRelative" round>{{ battleResultMessage
-                        }}</n-tag>
+                    }}</n-tag>
                 </n-flex>
                 <!-- 下方挑战按钮 -->
                 <n-flex v-if="battleData.battle.progress === 0 && battleData.battle.is_your_battle === false"
@@ -40,6 +39,7 @@ import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { FButton, FInputGroupLabel } from '@/vue/Custom'
 import { invalidateCache, useFetcher, useRequest } from 'alova'
+import { match } from 'assert'
 import { NCard, NFlex, NInputGroup, NSelect, NSpin, NTag, NText, useThemeVars } from 'naive-ui'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -65,6 +65,35 @@ const messageStyle = [
     { 'flex-direction': 'row', 'justify-content': 'start' },
     { 'flex-direction': 'row-reverse', 'justify-content': 'end' },
 ]
+
+//处理一下BattleMessage，为数字加上颜色
+const battleMessageStyled = computed(() => {
+    return battleData.value.battle_messages.map((item, index) => {
+        //仅对第一条信息进行操作(这里仍然用map，方便日后其他处理)
+        if (index === 0) {
+            return {
+                ...item,
+                message: item.message.replace(/\d+(,\d+)*/g,
+                    (match) => {
+                        const num = +match.replace(/,/g, ''); //转化为数值
+                        if (num >= 10000) {
+                            //大于等于10000设置为红色（主题皮肤中的错误色）
+                            return `<span class="big-number-2">${match}</span>`
+                        }
+                        if (num >= 1000) {
+                            //大于等于1000设置为黄色（主题皮肤中的警告色）
+                            return `<span class="big-number-1">${match}</span>`
+                        }
+                        //其余直接返回
+                        return match
+                    }
+                )
+            }
+        } else {
+            return item
+        }
+    })
+})
 
 //Nselect选项
 const charaOptions = computed(() => {
@@ -171,8 +200,18 @@ function battleRollHandle() {
 
 </script>
 
-<style scoped>
+<style>
 .battle-card {
     max-width: 600px;
+}
+
+.big-number-1 {
+    color: v-bind("themeVars.warningColor");
+    font-size: 1rem;
+}
+
+.big-number-2 {
+    color: v-bind("themeVars.errorColor");
+    font-size: 1.125rem;
 }
 </style>
