@@ -52,6 +52,7 @@ const codeTypeOptions = [
     { value: 0, label: "折叠内容" },
     { value: 1, label: "超链接" },
     { value: 2, label: "图片" },
+    { value: 3, label: "删除线" },
 ]
 const codeTypeMap = computed(() => [
     {
@@ -80,6 +81,15 @@ const codeTypeMap = computed(() => [
         inputDefault_1: "",
         inputDefault_2: "",
         insertText: `<img src="${textInput1.value}">`,
+    },
+    {
+        prepend_1: "删除线",
+        prepend_2: "",
+        inputEnable_1: true,
+        inputEnable_2: false,
+        inputDefault_1: "",
+        inputDefault_2: "",
+        insertText: `<del>${textInput1.value}</del>`,
     },
 ])
 
