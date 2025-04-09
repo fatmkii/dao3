@@ -426,7 +426,7 @@ const postContent = computed(() => {//数据处理
                 return `<a href="${match}" target="_blank">${match}</a>`
             }
         }
-        const reg = new RegExp(/(https?:\/\/|www\.)[a-zA-Z_0-9\-@]+(\.\w[a-zA-Z_0-9\-:]+)+(\/[\(\)~#&\-=?\+\%/\.\w]+)?/, 'gi')
+        const reg = new RegExp(/(https?:\/\/|www\.)[a-zA-Z_0-9\-@]+(\.\w[a-zA-Z_0-9\-:]+)+(\/[\(\)~#&\-=?\+\%/\:.\w]+)?/, 'gi')
         postContent = postContent.replace(reg, urlReplacer)
     }
 
