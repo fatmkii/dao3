@@ -137,6 +137,24 @@ const { loading: hongbaoPostCreateLoading, send: hongbaoPostCreateSend, onSucces
     { immediate: false }
 )
 function hongbaoPostCreateHandle() {
+
+    function exec() {
+        const params: hongbaoPostCreateParams = {
+            binggan: userStore.binggan!,
+            forum_id: props.forumId,
+            thread_id: props.threadId,
+            hongbao_olo: olo.value,
+            hongbao_num: num.value,
+            type: hongbaoType.value,
+            key_word_type: keywordType.value,
+            hongbao_key_word: keyword.value!, //注意是否已经处理为undefined的情况
+            hongbao_question: question.value,
+            hongbao_message_json: hongbaoMessage.value,
+            hongbao_olo_hide: hideOlo.value,
+        }
+        hongbaoPostCreateSend(params)
+    }
+
     if (keyword.value === undefined) {
         window.$message.error('必须填写“红包口令”喔')
         return
@@ -146,23 +164,21 @@ function hongbaoPostCreateHandle() {
         return
     }
     if (hongbaoType.value === 2 && olo.value % num.value !== 0) {
-        window.$message.error("选择定额红包时，总额要是红包数量的整倍数喔");
+        // window.$message.error("选择定额红包时，总额要是红包数量的整倍数喔");
+        const dialogArgs = {
+            title: '提醒',
+            closable: false,
+            content: `olo总额不是红包个数的整倍数，多出的余数olo将在最后一个红包发出。`,
+            positiveText: '确定',
+            negativeText: '取消',
+            onPositiveClick: () => {
+                exec()
+            },
+        }
+        window.$dialog.warning(dialogArgs)
         return;
     }
-    const params: hongbaoPostCreateParams = {
-        binggan: userStore.binggan!,
-        forum_id: props.forumId,
-        thread_id: props.threadId,
-        hongbao_olo: olo.value,
-        hongbao_num: num.value,
-        type: hongbaoType.value,
-        key_word_type: keywordType.value,
-        hongbao_key_word: keyword.value,
-        hongbao_question: question.value,
-        hongbao_message_json: hongbaoMessage.value,
-        hongbao_olo_hide: hideOlo.value,
-    }
-    hongbaoPostCreateSend(params)
+    exec()
 }
 hongbaoPostCreateOnsuccess(() => {
     emit('refreshPostsList')
