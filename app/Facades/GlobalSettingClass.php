@@ -47,8 +47,8 @@ class GlobalSettingClass
         $festival_days = [
             ['month' => 6, 'day' => 18],
             ['month' => 11, 'day' => 11],
-            ['month' => 1, 'day' => 28], //临时的，春节用
-            ['month' => 1, 'day' => 29], //临时的，春节用
+            ['month' => 1, 'day' => 28], //TODO，春节用每次都要改
+            ['month' => 1, 'day' => 29], //TODO，春节用每次都要改
         ];
 
         if ($time == null) {

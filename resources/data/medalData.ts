@@ -542,7 +542,13 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/02/67adf2702ea00.png',
     },
-
+    //25年4周年
+    157: {
+        'name': '小火锅四周年！',
+        'describe': '要和我们玩一辈子nmq吗？',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2025/04/680e1e444e060.png',
+    },
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',

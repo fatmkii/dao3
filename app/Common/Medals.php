@@ -365,6 +365,13 @@ class Medals
             'threshold' => null,
             'varname' => null,
         ),
+        //25年4周年
+        157 => array(
+            'name' => '小火锅四周年',
+            'describe' => '要和我们玩一辈子nmq吗？',
+            'threshold' => null,
+            'varname' => null,
+        ),
 
         //通过打赏获得的olo数量 
         161 => array(
