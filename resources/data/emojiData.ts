@@ -357,7 +357,8 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/02/67ab7bcbacf54.gif",
             "https://wmimg.com/i/1547/2025/02/67ad31db6af46.gif",
             "https://wmimg.com/i/1547/2025/02/67ad31e012ac3.webp",
-            "https://wmimg.com/i/1547/2025/02/67ad31e4a5775.jpg"
+            "https://wmimg.com/i/1547/2025/02/67ad31e4a5775.jpg",
+            "https://wmimg.com/i/1547/2025/04/681204f609f76.jpeg"
         ]
     },
     {
