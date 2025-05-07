@@ -122,6 +122,7 @@ class HongbaoPostController extends Controller
                     'post_id' => $post->id,
                     'floor' => $post->floor,
                     'thread_title' => $request->title,
+                    'type' => 'hongbao_out',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 
@@ -294,6 +295,7 @@ class HongbaoPostController extends Controller
                 [
                     'olo' => 10,
                     'content' => '回帖',
+                    'type' => 'post',
                 ]
             ); //回复+10奥利奥（通过统一接口、记录操作）
 
@@ -391,6 +393,7 @@ class HongbaoPostController extends Controller
                         'thread_title' => $thread->title,
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'hongbao_in',
                     ]
                 ); //（通过统一接口、记录操作）
                 $user->save();

@@ -298,6 +298,7 @@ class AdminController extends Controller
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'penalty',
                     ],
                     true //$ignore_olo_0 = true，即使用户olo不足也强制扣除
                 ); //扣除奥利奥（通过统一接口、记录操作）
@@ -495,6 +496,7 @@ class AdminController extends Controller
                         'thread_title' => Thread::where('id', $post->thread_id)->value('title'),
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'penalty',
                     ],
                     true //$ignore_olo_0 = true，即使用户olo不足也强制扣除
                 ); //扣除奥利奥（通过统一接口、记录操作）
@@ -984,6 +986,7 @@ class AdminController extends Controller
             [
                 'olo' => $request->olo_num,
                 'content' => $request->olo_message,
+                'type' => $request->olo_num > 0 ? 'default_in' : 'default_out',
             ],
             true //$ignore_olo_0 = true，即使用户olo不足也强制扣除
         ); //扣除奥利奥（通过统一接口、记录操作）

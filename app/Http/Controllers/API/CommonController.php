@@ -467,6 +467,7 @@ class CommonController extends Controller
                     'thread_title' => "祝福池活动",
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'default_in',
                 ]
             );
             $user->save();

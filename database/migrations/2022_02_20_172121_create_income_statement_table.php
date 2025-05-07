@@ -23,6 +23,7 @@ class CreateIncomeStatementTable extends Migration
                 $table->unsignedInteger('user_id_target')->nullable();
                 $table->string('binggan_target')->nullable();
                 $table->string('content')->nullable();
+                $table->string('type')->nullable();
                 $table->unsignedInteger('thread_id')->nullable();
                 $table->string('thread_title')->nullable();
                 $table->unsignedInteger('post_id')->nullable();

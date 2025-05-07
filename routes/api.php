@@ -137,7 +137,7 @@ Route::prefix('crowds')->middleware('auth:sanctum')->group(function () {
 
 //IncomeStatement系列
 Route::prefix('income')->middleware('auth:sanctum')->group(function () {
-    Route::get('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
+    Route::post('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
     Route::get('/show_sum', [UserController::class, 'income_show_sum'])->middleware('CheckBinggan:show'); //查看olo收益表（合计）
 });
 

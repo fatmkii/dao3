@@ -122,6 +122,7 @@ class HongPoolResult extends Command
                         'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'hongbao_in',
                     ]
                 );
                 $user->save();
@@ -169,6 +170,7 @@ class HongPoolResult extends Command
                         'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'hongbao_int',
                     ]
                 );
                 $user->save();
@@ -218,6 +220,7 @@ class HongPoolResult extends Command
                         'thread_title' => "国庆祝福池活动",
                         'post_id' => $post->id,
                         'floor' => $post->floor,
+                        'type' => 'hongbao_in',
                     ]
                 );
                 $user->save();

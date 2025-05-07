@@ -128,6 +128,7 @@ class PostController extends Controller
                 [
                     'olo' => 10,
                     'content' => '回帖',
+                    'type' => 'post',
                 ]
             ); //回复+10奥利奥（通过统一接口、记录操作）
             if ($request->nickname != '管理员') { //昵称是管理员的话不记录
@@ -427,6 +428,7 @@ class PostController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'default_out',
                 ]
             ); //删除帖子扣除300奥利奥（通过统一接口、记录操作）
 
@@ -523,6 +525,7 @@ class PostController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'default_out',
                 ]
             ); //恢复帖子扣除300奥利奥（通过统一接口、记录操作）
 

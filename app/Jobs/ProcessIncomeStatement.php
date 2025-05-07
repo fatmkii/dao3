@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ProcessIncomeStatement implements ShouldQueue
 {
@@ -18,6 +19,7 @@ class ProcessIncomeStatement implements ShouldQueue
 
     protected $action = 'normal'; //一般记录'normal'，回帖记录'post'(因为要聚合)
     protected $IncomeStatement;
+    //  $IncomeStatement有以下字段
     // [
     //     'created_at' => ,
     //     'olo'=> ,
@@ -26,6 +28,7 @@ class ProcessIncomeStatement implements ShouldQueue
     //     'user_id_target'=>,
     //     'binggan_target'=>,
     //     'content'=>,
+    //     'type' => 枚举['default_in','default_out','battle_in', 'battle_out','post','hongbao_in','hongbao_out','penalty','reward_out','reward_in','gamble_out','gamble_in','bank_in','bank_out',],
     //     'thread_id'=>,
     //     'thread_title'=>,
     //     'post_id'=>,
@@ -40,6 +43,7 @@ class ProcessIncomeStatement implements ShouldQueue
     public function __construct(string $action, array $IncomeStatement)
     {
         $this->IncomeStatement = $IncomeStatement;
+        Log::debug('$IncomeStatement',[$IncomeStatement]);
         $this->action = $action;
         if (array_key_exists('content', $this->IncomeStatement) && strlen($this->IncomeStatement['content']) > 255) {
             //数据库最长记录255

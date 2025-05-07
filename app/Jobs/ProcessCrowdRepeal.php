@@ -50,6 +50,7 @@ class ProcessCrowdRepeal implements ShouldQueue
                             'content' => '众筹中止退回olo',
                             'thread_id' => $thread->id,
                             'thread_title' => $thread->title,
+                            'type' => 'default_in',
                         ]
                     ); //扣除用户相应olo（通过统一接口、记录操作）
                 }

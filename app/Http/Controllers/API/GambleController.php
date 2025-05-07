@@ -164,6 +164,7 @@ class GambleController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'gamble_out',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 

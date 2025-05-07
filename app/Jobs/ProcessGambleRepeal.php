@@ -50,6 +50,7 @@ class ProcessGambleRepeal implements ShouldQueue
                             'content' => '菠菜中止退回olo',
                             'thread_id' => $thread->id,
                             'thread_title' => $thread->title,
+                            'type' => 'default_in',
                         ]
                     ); //通过统一接口、记录操作  
                 }

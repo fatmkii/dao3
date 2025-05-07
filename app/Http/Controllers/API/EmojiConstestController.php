@@ -145,6 +145,7 @@ class EmojiConstestController extends Controller
                 [
                     'olo' => -$request->olo,
                     'content' => sprintf('表情包萌投票：%s %d票', $this->chara_name_list[$request->emoji_group_id], $votes_num),
+                    'type' => 'default_out',
                 ]
             ); //（通过统一接口、记录操作）
             $user->save();

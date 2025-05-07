@@ -155,6 +155,7 @@ class ThreadController extends Controller
                     [
                         'olo' => -500,
                         'content' => '发布主题设置标题颜色',
+                        'type' => 'default_out',
                     ]
                 ); //通过统一接口、记录操作  
                 $thread->title_color = $request->title_color;
@@ -166,6 +167,7 @@ class ThreadController extends Controller
                     [
                         'olo' => -500,
                         'content' => '发布olo权限主题',
+                        'type' => 'default_out',
                     ]
                 ); //通过统一接口、记录操作
                 $thread->locked_by_coin = $request->locked_by_coin;
@@ -176,6 +178,7 @@ class ThreadController extends Controller
                     [
                         'olo' => -500,
                         'content' => '发布私密主题',
+                        'type' => 'default_out',
                     ]
                 ); //通过统一接口、记录操作
                 $thread->is_private = $request->is_private;
@@ -229,6 +232,7 @@ class ThreadController extends Controller
                         'content' => '发布投票主题',
                         'thread_id' => $thread->id,
                         'thread_title' => $thread->title,
+                        'type' => 'default_out',
                     ]
                 ); //通过统一接口、记录操作  
                 $vote_question = VoteQuestion::create($request, $thread->id);
@@ -246,6 +250,7 @@ class ThreadController extends Controller
                         'content' => '发布菠菜主题',
                         'thread_id' => $thread->id,
                         'thread_title' => $thread->title,
+                        'type' => 'default_out',
                     ]
                 ); //通过统一接口、记录操作  
                 $gamble_question = GambleQuestion::create($request, $thread->id);
@@ -645,7 +650,8 @@ class ThreadController extends Controller
                 [
                     'olo' => $olo,
                     'content' => '延时发送主题撤回后退回olo（收费功能）',
-                ]
+                    'type' => 'default_in',
+                    ]
             ); //通过统一接口、记录操作  
         }
 
@@ -658,7 +664,8 @@ class ThreadController extends Controller
                 [
                     'olo' => ceil($hongbao->olo_remains * $tax_rate),
                     'content' => '延时发送主题撤回后退回olo（红包）',
-                ]
+                    'type' => 'default_in',
+                    ]
             ); //通过统一接口、记录操作  
             $hongbao->olo_remains = 0;
             $hongbao->num_remains = 0;
@@ -719,7 +726,8 @@ class ThreadController extends Controller
                     'content' => '标题改色',
                     'thread_id' => $CurrentThread->id,
                     'thread_title' => $CurrentThread->title,
-                ]
+                    'type' => 'default_out',
+                    ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
             DB::commit();
         } catch (Exception $e) {

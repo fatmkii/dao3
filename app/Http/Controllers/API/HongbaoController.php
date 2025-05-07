@@ -150,6 +150,7 @@ class HongbaoController extends Controller
                 [
                     'olo' => 10,
                     'content' => '回帖',
+                    'type' => 'post',
                 ]
             ); //回复+10奥利奥（通过统一接口、记录操作）
 
@@ -241,6 +242,7 @@ class HongbaoController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'hongbao_in',
                 ]
             ); //（通过统一接口、记录操作）
             $user->save();

@@ -76,6 +76,7 @@ class UserBank extends Model
                 [
                     'olo' =>  $olo_withdraw,
                     'content' =>  $message,
+                    'type' => 'bank_in',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 

@@ -199,13 +199,15 @@ interface incomeSumData {
 }
 interface incomeParams {
     income_date: string, //required|date|after_or_equal:2022-01-01
+    type: (string | number)[] | null,
 }
 const incomeDataGetter = (params: incomeParams) => {
-    const methodInstance = commonAlova.Get<incomeData[]>(
+    const methodInstance = commonAlova.Post<incomeData[]>(
         'api/income/show_day',
+        params,
         {
             name: 'incomeDataGetter',
-            params: params,
+            params: {},
             localCache: null,
             hitSource: [],
         }

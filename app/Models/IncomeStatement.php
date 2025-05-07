@@ -26,6 +26,7 @@ class IncomeStatement extends ModelWithSuffix
         'user_id_target',
         'binggan_target',
         'content',
+        'type',
         'thread_id',
         'thread_title',
         'post_id',
@@ -57,7 +58,7 @@ class IncomeStatement extends ModelWithSuffix
     }
 
     //查询收支表
-    public static function incomeData($user_id, $date)
+    public static function incomeData($user_id, $date, ?array $type = null)
     {
         $date = Carbon::parse($date);
         $income_table = 'income_statement_' . $date->year;
@@ -68,13 +69,18 @@ class IncomeStatement extends ModelWithSuffix
             ->where('user_id', $user_id)
             ->whereDate('created_at', '=', $date->toDateString());
 
+        if ($type) {
+            //如果有传入type，则筛选符合类型的type
+            $sql_child->whereIn('type', $type);
+        }
+
         $income = IncomeStatement::suffix($date->year)
             ->joinSub($sql_child, 'sql_child', function ($join) use ($income_table) {
                 $join->on($income_table . '.id', '=', 'sql_child.id');
             })
             ->orderByDesc('created_at')
             ->get();
-            
+
         return $income;
     }
 }

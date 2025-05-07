@@ -54,6 +54,7 @@ class ProcessGambleClose implements ShouldQueue
                                 'content' => '菠菜奖金',
                                 'thread_id' => $thread->id,
                                 'thread_title' => $thread->title,
+                                'type' => 'gamble_in',
                             ]
                         ); //通过统一接口、记录操作  
                     } else {

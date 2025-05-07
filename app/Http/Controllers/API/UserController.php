@@ -415,6 +415,7 @@ class UserController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'reward_out',
                 ]
             ); //通过统一接口、记录操作  
 
@@ -431,6 +432,7 @@ class UserController extends Controller
                     'thread_title' => $thread->title,
                     'post_id' => $post->id,
                     'floor' => $post->floor,
+                    'type' => 'reward_in',
                 ]
             ); //通过统一接口、记录操作  
 
@@ -842,12 +844,13 @@ class UserController extends Controller
     {
         $request->validate([
             'income_date' => 'required|date|after_or_equal:2022-01-01',
+            'type' => 'nullable|array',
         ]);
 
         $user = $request->user();
 
         //获得查询当天的全部数据
-        $income_data = IncomeStatement::incomeData($user->id, $request->income_date); //更好的分页sql语句
+        $income_data = IncomeStatement::incomeData($user->id, $request->income_date, $request->type); //更好的分页sql语句
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,
@@ -972,7 +975,8 @@ class UserController extends Controller
                 'normal', //记录类型
                 [
                     'olo' => -$olo,
-                    'content' => '发布了大喇叭'
+                    'content' => '发布了大喇叭',
+                    'type' => 'louder_speaker',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 
@@ -1065,7 +1069,8 @@ class UserController extends Controller
                     'normal', //记录类型
                     [
                         'olo' => $olo,
-                        'content' => '撤回大喇叭退款'
+                        'content' => '撤回大喇叭退款',
+                        'type' => 'default_in',
                     ]
                 ); //扣除用户相应olo（通过统一接口、记录操作）
 
@@ -1226,6 +1231,7 @@ class UserController extends Controller
                 [
                     'olo' => -$request->olo,
                     'content' => sprintf('存入粮仓:%d个olo  到期时间:%s', $request->olo, $request->expire_date),
+                    'type' => 'bank_out',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 
@@ -1349,6 +1355,7 @@ class UserController extends Controller
                         [
                             'olo' => self::TITLE_PINGBICI_OLO,
                             'content' => '升级饼干（标题屏蔽词）',
+                            'type' => 'default_out',
                         ]
                     ); //扣除奥利奥（通过统一接口、记录操作）
                     break;
@@ -1362,6 +1369,7 @@ class UserController extends Controller
                         [
                             'olo' => self::CONTENT_PINGBICI_OLO,
                             'content' => '升级饼干（内容屏蔽词）',
+                            'type' => 'default_out',
                         ]
                     ); //扣除奥利奥（通过统一接口、记录操作）
                     break;
@@ -1375,6 +1383,7 @@ class UserController extends Controller
                         [
                             'olo' => self::FJF_PINGBICI_OLO,
                             'content' => '升级饼干（反精分屏蔽词）',
+                            'type' => 'default_out',
                         ]
                     ); //扣除奥利奥（通过统一接口、记录操作）
                     break;
@@ -1388,6 +1397,7 @@ class UserController extends Controller
                         [
                             'olo' => self::MYEMOJI_OLO,
                             'content' => '升级饼干（我的表情包）',
+                            'type' => 'default_out',
                         ]
                     ); //扣除奥利奥（通过统一接口、记录操作）
                     break;
@@ -1416,6 +1426,7 @@ class UserController extends Controller
                             [
                                 'olo' => self::MYBATTLECHARA,
                                 'content' => '升级饼干（自定义大乱斗角色+1）',
+                                'type' => 'default_out',
                             ]
                         ); //扣除奥利奥（通过统一接口、记录操作）
                         DB::commit();
@@ -1514,6 +1525,7 @@ class UserController extends Controller
                 [
                     'olo' => -100000, //定制饼干花费100000
                     'content' => '申请了定制饼干',
+                    'type' => 'default_out',
                 ]
             ); //通过统一接口、记录操作
             $user_origin->save();
@@ -1547,6 +1559,7 @@ class UserController extends Controller
                     [
                         'olo' => $user_origin->coin,
                         'content' => '从旧饼干转移过来',
+                        'type' => 'default_in',
                     ]
                 );
                 $user_new->save();

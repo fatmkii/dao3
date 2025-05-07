@@ -94,7 +94,8 @@ class Hongbao extends Model
                 'content' => '发起红包主题',
                 'thread_id' => $thread_id,
                 'thread_title' => $request->title,
-            ]
+                'type' => 'hongbao_out',
+                ]
         ); //扣除用户相应olo（通过统一接口、记录操作）
 
         $hongbao = new Hongbao();
