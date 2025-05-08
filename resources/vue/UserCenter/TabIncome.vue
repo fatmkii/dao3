@@ -1,8 +1,9 @@
 <template>
     <n-flex size="small">
-        <!-- 日期选择和查询按钮 -->
+        <!-- 日期选择和筛选、查询按钮 -->
         <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date"
-            :size="commonStore.isMobile ? 'small' : 'medium'" :is-date-disabled="dateDisabled" />
+            :size="commonStore.isMobile ? 'small' : 'medium'" :is-date-disabled="dateDisabled"
+            style="max-width: 200px;" />
         <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="filterOptions"
             placement="bottom-start">
             <f-button>筛选</f-button>
@@ -138,22 +139,22 @@ const typesMapAll = [
     { label: '全部', value: 'all' },
 ] as typesMap[]
 const typesMapIn = [
-    { label: '📈回帖', value: 'post' },
-    { label: '📈乱斗', value: 'battle_in' },
-    { label: '📈红包', value: 'hongbao_in' },
-    { label: '📈打赏', value: 'reward_in' },
-    { label: '📈菠菜', value: 'gamble_in' },
-    { label: '📈粮仓', value: 'bank_in' },
-    { label: '📈其他', value: 'default_in' },
+    { label: '回帖', value: 'post' },
+    { label: '乱斗', value: 'battle_in' },
+    { label: '红包', value: 'hongbao_in' },
+    { label: '打赏', value: 'reward_in' },
+    { label: '菠菜', value: 'gamble_in' },
+    { label: '粮仓', value: 'bank_in' },
+    { label: '其他', value: 'default_in' },
 ] as typesMap[]
 const typesMapOut = [
-    { label: '📉乱斗', value: 'battle_out' },
-    { label: '📉红包', value: 'hongbao_out' },
-    { label: '📉打赏', value: 'reward_out' },
-    { label: '📉菠菜', value: 'gamble_out' },
-    { label: '📉粮仓', value: 'bank_out' },
-    { label: '📉罚款', value: 'penalty' },
-    { label: '📉其他', value: 'default_out' },
+    { label: '乱斗', value: 'battle_out' },
+    { label: '红包', value: 'hongbao_out' },
+    { label: '打赏', value: 'reward_out' },
+    { label: '菠菜', value: 'gamble_out' },
+    { label: '粮仓', value: 'bank_out' },
+    { label: '罚款', value: 'penalty' },
+    { label: '其他', value: 'default_out' },
 ] as typesMap[]
 const typesIncluded = ref<(string | number)[]>(['all'])
 
@@ -207,24 +208,26 @@ const filterOptions = [
         render: () => renderFilterOptions(typesMapAll),
     },
     {
-        type: 'group',
-        key: 'header',
-        label: '收入',
+        label: '📈收入',
+        key: 'in',
+        children: [
+            {
+                key: 'filterOptionsIn',
+                type: 'render',
+                render: () => renderFilterOptions(typesMapIn),
+            },
+        ]
     },
     {
-        key: 'filterOptions',
-        type: 'render',
-        render: () => renderFilterOptions(typesMapIn),
-    },
-    {
-        type: 'group',
-        key: 'header',
-        label: '支出',
-    },
-    {
-        key: 'filterOptions',
-        type: 'render',
-        render: () => renderFilterOptions(typesMapOut),
+        label: '📉支出',
+        key: 'out',
+        children: [
+            {
+                key: 'filterOptionsOut',
+                type: 'render',
+                render: () => renderFilterOptions(typesMapOut),
+            },
+        ]
     },
 ]
 
