@@ -976,7 +976,7 @@ class UserController extends Controller
                 [
                     'olo' => -$olo,
                     'content' => '发布了大喇叭',
-                    'type' => 'louder_speaker',
+                    'type' => 'defaut_out',
                 ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
 
