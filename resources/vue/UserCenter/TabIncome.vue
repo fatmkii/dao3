@@ -1,21 +1,21 @@
 <template>
     <n-flex size="small">
         <!-- 日期选择和筛选、查询按钮 -->
-        <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date"
+        <n-date-picker v-model:value="dateRangeSelected" type="daterange" update-value-on-close
             :size="commonStore.isMobile ? 'small' : 'medium'" :is-date-disabled="dateDisabled"
-            style="max-width: 200px;" />
+            style="max-width: 300px;" />
         <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="filterOptions"
             placement="bottom-start">
             <f-button>筛选</f-button>
         </n-dropdown>
-        <f-button type="primary" @click="getIncomeDataHandle('day')">
+        <f-button type="primary" @click="getIncomeDataHandle('day')" :loading="incomeDataLoading">
             查询
         </f-button>
         <n-card title="收支记录" size="small">
             <!-- 卡片头，显示总计 -->
             <template #header-extra>
                 <n-flex size="small" :align="'center'">
-                    当日小计：{{ incomeDaySum }}
+                    区间小计：{{ incomeDaySum }}
                     <n-dropdown trigger="click" placement="bottom-end" :options="sumOptions">
                         <f-button size="small" @click="getIncomeDataHandle('sum')">月年总计</f-button>
                     </n-dropdown>
@@ -81,7 +81,7 @@ const themeVars = useThemeVars()
 const pageSize = 30 //每页数量
 
 //选择日期输入
-const dateSelected = ref<string>(dayjs.tz().format('YYYY-MM-DD'))
+const dateRangeSelected = ref<[number, number]>([dayjs.tz().valueOf(), dayjs.tz().valueOf()])
 //表格参数配置
 const pagination = ref({ pageSize: pageSize })
 const columns = [
@@ -234,7 +234,8 @@ const filterOptions = [
 
 //控制日历的可选时间（今天往前）
 function dateDisabled(timestamp: number) {
-    return dayjs().add(1, 'day').isBefore(timestamp)
+    //2022年1月1日 - 当前时间+1天期间为可以选择
+    return dayjs().add(1, 'day').isBefore(timestamp) || dayjs(1640966400000).isAfter(timestamp)
 }
 
 
@@ -259,15 +260,16 @@ const incomeDaySum = computed(() => incomeData.value
 )
 
 //启动就查询数据并且侦听
-watch([dateSelected, typesIncluded], () => getIncomeDataHandle('day'))
+watch([dateRangeSelected, typesIncluded], () => getIncomeDataHandle('day'))
 onMounted(() => getIncomeDataHandle('day'))//不知道为什么上面设定immediate:true的话会报错
 //查询数据
 function getIncomeDataHandle(mode: 'day' | 'sum') {
-    if (dateSelected.value === null) {
+    if (dateRangeSelected.value === null) {
         window.$message.error('需要选择日期')
     } else {
         const params: incomeParams = {
-            income_date: dateSelected.value,
+            start_ts: dateRangeSelected.value[0],
+            end_ts: dateRangeSelected.value[1],
             type: typesIncluded.value.includes('all') ? null : typesIncluded.value //如果选择了all，则传送null，后端会按all处理
         }
         if (mode === 'day') getIncomeData(params)

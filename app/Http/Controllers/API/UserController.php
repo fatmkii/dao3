@@ -888,6 +888,66 @@ class UserController extends Controller
             ]
         );
     }
+
+    //查询收益表（新版V2，改为可以期间查询。日期查询参数改为int）
+    public function income_show_day_v2(Request $request)
+    {
+        $request->validate([
+            'start_ts' => 'required|integer|min:1640966400000', //日期大于2022年1月1日，下同
+            'end_ts' => 'required|integer|min:1640966400000',
+            'type' => 'nullable|array',
+        ]);
+
+        if (($request->end_ts - $request->start_ts)  > 31536000000) {
+            return response()->json([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => '为避免服务器压力过大，最多可以查询连续365天的数据喔',
+            ]);
+        }
+
+        $user = $request->user();
+
+        //获得查询当天的全部数据
+        $income_data = IncomeStatement::incomeData_v2($user->id, $request->start_ts, $request->end_ts, $request->type); //更好的分页sql语句
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获得收支数据',
+                'data' => $income_data
+            ]
+        );
+    }
+
+    //查询收益表（当年和当月的合计。新版V2，日期查询参数改为int）
+    public function income_show_sum_v2(Request $request)
+    {
+        $request->validate([
+            'start_ts' => 'required|integer|min:1640966400', //日期大于2022年1月1日，
+        ]);
+
+        $user = $request->user();
+
+        //获得查询当年和当月的合计
+        $date = Carbon::createFromTimestamp($request->start_ts / 1000)->startOfDay(); //凑整为当日的0分0秒。
+        $sum_year = IncomeStatement::suffix($date->year)->where('user_id', $user->id)->sum('olo');
+
+        $from_date = $date->copy()->firstOfMonth();
+        $to_date = $date->copy()->addMonthNoOverflow()->firstOfMonth();
+
+        $sum_month = IncomeStatement::suffix($date->year)->where('user_id', $user->id)->whereBetween('created_at', [$from_date, $to_date])->sum('olo');
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已获得收支数据',
+                'data' => array(
+                    "sum_year" => $sum_year,
+                    "sum_month" => $sum_month,
+                )
+            ]
+        );
+    }
+
+
     //获取所有大喇叭
     public function show_loudspeaker(Request $request)
     {

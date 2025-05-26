@@ -198,12 +198,13 @@ interface incomeSumData {
     sum_month: number,
 }
 interface incomeParams {
-    income_date: string, //required|date|after_or_equal:2022-01-01
+    start_ts: number, //required|integer|min:1640966400
+    end_ts: number, //required|integer|min:1640966400
     type: (string | number)[] | null,
 }
 const incomeDataGetter = (params: incomeParams) => {
     const methodInstance = commonAlova.Post<incomeData[]>(
-        'api/income/show_day',
+        'api/income/show_day_v2',
         params,
         {
             name: 'incomeDataGetter',
@@ -219,7 +220,7 @@ const incomeDataGetter = (params: incomeParams) => {
 }
 const incomeSumDataGetter = (params: incomeParams) => {
     const methodInstance = commonAlova.Get<incomeSumData>(
-        'api/income/show_sum',
+        'api/income/show_sum_v2',
         {
             name: 'incomeSumDataGetter',
             params: params,
