@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Thread;
@@ -111,8 +110,8 @@ class IncomeStatement extends ModelWithSuffix
             return $income;
         }
 
-        $from_date = Carbon::createFromTimestamp($start_ts / 1000)->startOfDay(); //凑整为当日的0分0秒。
-        $to_date = Carbon::createFromTimestamp($end_ts / 1000)->addDay()->startOfDay();    //凑整为第二天的0分0秒。也就是查询是闭区间[]
+        $from_date = Carbon::createFromTimestamp($start_ts / 1000)->tz('Asia/Shanghai')->startOfDay(); //凑整为当日的0分0秒。
+        $to_date = Carbon::createFromTimestamp($end_ts / 1000)->tz('Asia/Shanghai')->addDay()->startOfDay();    //凑整为第二天的0分0秒。也就是查询是闭区间[]
 
         //如果是跨年的话，需要两个表分别查询然后合并
         if ($from_date->year === $to_date->year) {
