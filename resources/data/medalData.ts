@@ -702,8 +702,8 @@ export const medalsHidden: medalsData = {
         'img': 'https://wmimg.com/i/1547/2025/06/6846d2b7dad3c.png',
     },
     282: {
-        'name': '勇夺第一！',
-        'describe': '至少不要被淘汰',
+        'name': '雄心壮志get',
+        'describe': '在可能获胜的道路上一路狂奔',
         'threshold': 1000, //这里指1000票，100000个olo
         'img': 'https://wmimg.com/i/1547/2025/06/6846d2b7c9d00.png',
     },
