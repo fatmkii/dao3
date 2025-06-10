@@ -671,6 +671,12 @@ export const medalsHidden: medalsData = {
         'threshold': 500, //这里指500票，10000个olo
         'img': 'https://wmimg.com/i/1547/2025/02/67ac5fcde50c6.png',
     },
+    280: {
+        'name': '吉伊卡哇',
+        'describe': '\\\\ 吉伊卡哇，出道！//',
+        'threshold': 500, //这里指500票，10000个olo
+        'img': 'https://wmimg.com/i/1547/2025/06/68482bec31bc2.png',
+    },
     217: {
         'name': '小火锅第二届表情包萌',
         'describe': '再来一次',
@@ -689,8 +695,20 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/02/67ac5fcde1447.png',
     },
+    281: {
+        'name': '小火锅第三届表情包萌',
+        'describe': '第三次也该老练起来了吧',
+        'threshold': 100, //这里指100票，10000个olo
+        'img': 'https://wmimg.com/i/1547/2025/06/6846d2b7dad3c.png',
+    },
+    282: {
+        'name': '勇夺第一！',
+        'describe': '至少不要被淘汰',
+        'threshold': 1000, //这里指1000票，100000个olo
+        'img': 'https://wmimg.com/i/1547/2025/06/6846d2b7c9d00.png',
+    },
 
-    //银行提前支取累计
+    //银行提前支取累计 
     251: {
         'name': '今朝有米今朝吃',
         'describe': '明日无米啃枯枝（提前开仓累计30w）',

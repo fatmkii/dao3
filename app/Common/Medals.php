@@ -548,6 +548,12 @@ class Medals
             'threshold' => 500, //这里指500票，50000个olo
             'varname' => null,
         ),
+        280 => array(
+            'name' => '吉伊卡哇',
+            'describe' => '\\\\ 吉伊卡哇，出道！//',
+            'threshold' => 500, //这里指500票，50000个olo
+            'varname' => null,
+        ),
         217 => array(
             'name' => '第二届隐藏1（预留）',
             'describe' => '',
@@ -566,10 +572,16 @@ class Medals
             'threshold' => 0,
             'varname' => null,
         ),
-        220 => array(
-            'name' => '第二届被淘汰2（预留）',
+        281 => array(
+            'name' => '第三届隐藏1',
             'describe' => '',
-            'threshold' => 0,
+            'threshold' => 100, //这里指100票，10000个olo
+            'varname' => null,
+        ),
+        282 => array(
+            'name' => '第三届隐藏2',
+            'describe' => '',
+            'threshold' => 1000, //这里指1000票，100000个olo
             'varname' => null,
         ),
 

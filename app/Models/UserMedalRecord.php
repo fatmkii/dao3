@@ -624,8 +624,24 @@ class UserMedalRecord extends Model
 
     public static function check_emoji_contest_group(int $group_id, int $votes_num_total, User $user)
     {
+        $medal_id_map = [
+            // 表情包ID => 成就ID
+            1 => 201,
+            2 => 202,
+            3 => 203,
+            4 => 204,
+            5 => 205,
+            6 => 206,
+            7 => 207,
+            8 => 208,
+            9 => 209,
+            10 => 210,
+            11 => 211,
+            16 => 216,
+            17 => 280,
+        ];
         //表情包萌成就判断（每个角色的成就）
-        $medal_id = $group_id + 200; //emoji_group_id从1开始，相应medal_id是201，差额200
+        $medal_id = $medal_id_map[$group_id]; 
 
         $medals_code_exists = UserMedal::where('user_id', $user->id)->where('medal_id', $medal_id)->exists();
         $votes_num_total = EmojiContestUserTotal::where('user_id', $user->id)->where('emoji_group_id', $group_id)->sum('votes_num_total');
@@ -646,7 +662,9 @@ class UserMedalRecord extends Model
         // $medals_id = array(212, 213);//212和213是第一届表情包萌
         // $medals_id = array(261, 262); //261和262是第一届表情包出道
         // $medals_id = array(217, 218); //217和218是第二届表情包萌
-        $medals_id = array(264, 265); //217和218是第二届表情包出道
+        // $medals_id = array(264, 265); //217和218是第二届表情包出道
+        $medals_id = array(281, 282); //281和282是第三届表情包萌
+
 
         //已经获得过的徽章（统一查询一次，用于后续判断）
         $medals_id_retain = UserMedal::where('user_id', $user->id)->whereIn('medal_id', $medals_id)->pluck('medal_id')->toArray();

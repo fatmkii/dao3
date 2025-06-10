@@ -5,6 +5,11 @@
             <img :src="banner" v-for="banner in bannersShuffled" class="carousel-img">
         </n-carousel>
         <!-- 提示 -->
+        <n-alert :show-icon="false" :type="'warning'">
+            <span>（new!）本次活动新增版头应援活动喔！</span>
+            <router-link :to="'/thread/153992'">点击这里参与</router-link>
+        </n-alert>
+        <!-- 提示 -->
         <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
         <!-- 本体Tabs -->
         <n-tabs type="line" animated :placement="'left'" :size="commonStore.isMobile ? 'small' : 'large'"
@@ -32,7 +37,7 @@
                 </n-spin>
             </n-tab-pane>
             <!-- 各个表情包组 -->
-            <n-tab-pane v-for="(emojiGroupData, key, index) in emojiGroupsData" :key="key + 1" :name="emojiGroupData.id"
+            <n-tab-pane v-for="(emojiGroupData, key) in emojiGroupsData" :key="key + 1" :name="emojiGroupData.id"
                 :tab="emojiGroupData.name">
                 <n-spin :show="moeDataLoading" style="height: 400px;">
                     <!-- 票数总计和刷新按钮 -->
@@ -77,21 +82,20 @@ import dayjs from 'dayjs'
 import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
-const startTime = dayjs.tz('2024-11-11 00:00')
-const endTime = dayjs.tz('2024-11-14 00:00')
-const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
+const startTime = dayjs.tz('2025-6-18 20:00')
+const endTime = dayjs.tz('2025-6-22 20:00')
+const emojiGroupIdList = [1, 2, 3, 5, 6, 9, 10, 11, 16, 17] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
-    1: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2abb91131.gif", "name": "假飞鼠" },
-    2: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2b9c24b37.gif", "name": "吉伊卡哇" },
-    3: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2cd927f20.webp", "name": "团团" },
-    4: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2d58e7769.gif", "name": "姆明" },
-    5: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2db51ffcc.gif", "name": "小甲鱼" },
-    6: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2e49735ba.gif", "name": "猫猫虫" },
-    7: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f2ec86f214.gif", "name": "线条小狗" },
-    8: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/06/672b7d1875bb6.webp", "name": "芥宝" },
-    9: { "emojiUrl": "https://www.freeimg.cn/i/2024/05/14/66437b01d45b7.gif", "name": "药水哥" },
-    10: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f308c9da65.webp", "name": "谷歌布丁" },
-    11: { "emojiUrl": "https://www.freeimg.cn/i/2024/11/09/672f31346214c.gif", "name": "领结猫" }
+    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2bca02d05.png", "name": "AC娘" },
+    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab7d8f0753f.gif", "name": "鹦鹉鸡" },
+    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "咪子鱼" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "麻将脸" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad38710da48.jpg", "name": "小恐龙" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3dc22bbe8.png", "name": "小企鹅" },
+    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3e55cf286.png", "name": "小黄脸" },
+    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4141eae00.gif", "name": "FUFU" },
+    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4a651928d.gif", "name": "药水哥" },
+    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "吉伊卡哇" },
 } as {
     [key: number]: {
         emojiUrl: string
@@ -101,14 +105,7 @@ const emojiGroupIndex = {
 //应援版头
 const bannersShuffled = computed(() => {
     const banners = [
-        'https://www.freeimg.cn/i/2024/11/08/672e2df57ce84.webp',
-        'https://img.picgo.net/2024/11/10/IMG_4355c81dd3c9271e66d5.gif',
-        'https://iili.io/2I44YHF.png',
-        'https://iili.io/2IZuQ71.png',
-        'https://img.picgo.net/2024/11/12/0ae7348add6f52dbf.png',
-        'https://img.picgo.net/2024/11/13/MEITU_20241113_002333696effb12921c389f5d.jpg',
-        'https://img.picgo.net/2024/11/12/retouch_2024111223305208a4a554b309a4bf58.jpg',
-        'https://img.picgo.net/2024/11/12/1731425680045dcbcf509406bae60.gif',
+        'https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png',
     ]
     return shuffleArray(banners)
 })
