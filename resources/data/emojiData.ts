@@ -1690,7 +1690,15 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/02/67ad494f5cb03.png",
             "https://wmimg.com/i/1547/2025/02/67ad4953e30f8.jpg",
             "https://wmimg.com/i/1547/2025/02/67ad49587e52a.jpg",
-            "https://wmimg.com/i/1547/2025/02/67ad495d27702.png"
+            "https://wmimg.com/i/1547/2025/02/67ad495d27702.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac38c045.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac38a040.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac38cadf.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac388c15.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac358d8f.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac3881c3.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac389439.png",
+            "https://wmimg.com/i/1547/2025/06/684bfac389b28.png"
         ]
     },
     {
