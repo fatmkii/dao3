@@ -106,6 +106,27 @@ const emojiGroupIndex = {
 const bannersShuffled = computed(() => {
     const banners = [
         'https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png',
+        "https://wmimg.com/i/1547/2025/06/684bfbe7b431e.png",
+        "https://wmimg.com/i/1547/2025/06/684bfbe7b7345.png",
+        "https://wmimg.com/i/1547/2025/06/684bfbe7b63bd.png",
+        "https://wmimg.com/i/1547/2025/06/684bfbe7b7345.png",
+        "https://wmimg.com/i/1547/2025/06/684ed1e7bb22c.png",
+        "https://wmimg.com/i/1547/2025/06/684ed1e80632a.png",
+        "https://wmimg.com/i/1547/2025/06/684ed1e836f2a.png",
+        "https://wmimg.com/i/1547/2025/06/684ed1e84c426.png",
+        "https://wmimg.com/i/1547/2025/06/684ed1e8b0e52.png",
+        "https://wmimg.com/i/1547/2025/06/6851648dcb6d2.png",
+        "https://wmimg.com/i/1547/2025/06/6851648e13773.png",
+        "https://wmimg.com/i/1547/2025/06/6851648e3bcbc.png",
+        "https://wmimg.com/i/1547/2025/06/6851648e625d2.png",
+        "https://wmimg.com/i/1547/2025/06/6851648eb0d26.png",
+        "https://wmimg.com/i/1547/2025/06/6851648e8dc8a.png",
+        "https://wmimg.com/i/1547/2025/06/6851648f30ffd.png",
+        "https://wmimg.com/i/1547/2025/06/6851648f7d3e4.png",
+        "https://wmimg.com/i/1547/2025/06/6851648fc2c42.png",
+        "https://wmimg.com/i/1547/2025/06/685164901f2e1.png",
+        "https://wmimg.com/i/1547/2025/06/685164908d7c0.png",
+        "https://wmimg.com/i/1547/2025/06/6851649219afa.png",
     ]
     return shuffleArray(banners)
 })
