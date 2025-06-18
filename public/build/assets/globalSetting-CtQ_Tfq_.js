@@ -1,0 +1,1 @@
+import{g as e}from"./app-BW89FPS2.js";const n=e.Get("/api/home_banners/",{name:"homeBannersGetter",params:{},localCache:null}),o=e.Get("/api/new_loudspeaker_enable",{name:"newLoudspeakerEnableGetter",params:{},localCache:null});export{n as h,o as n};

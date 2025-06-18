@@ -127,6 +127,10 @@ const bannersShuffled = computed(() => {
         "https://wmimg.com/i/1547/2025/06/685164901f2e1.png",
         "https://wmimg.com/i/1547/2025/06/685164908d7c0.png",
         "https://wmimg.com/i/1547/2025/06/6851649219afa.png",
+        "https://wmimg.com/i/1547/2025/06/68529871267f8.png",
+        "https://wmimg.com/i/1547/2025/06/68529871e2f82.png",
+        "https://wmimg.com/i/1547/2025/06/68529872d9dfe.png",
+        "https://wmimg.com/i/1547/2025/06/68529874985d7.png",
     ]
     return shuffleArray(banners)
 })
