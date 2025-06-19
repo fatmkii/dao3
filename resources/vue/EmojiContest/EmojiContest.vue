@@ -131,6 +131,23 @@ const bannersShuffled = computed(() => {
         "https://wmimg.com/i/1547/2025/06/68529871e2f82.png",
         "https://wmimg.com/i/1547/2025/06/68529872d9dfe.png",
         "https://wmimg.com/i/1547/2025/06/68529874985d7.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c7241a9.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c7398bf.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c58943d.jpg",
+        "https://wmimg.com/i/1547/2025/06/6853f4c879f68.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c8a79e7.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c8a1cff.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c90044e.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c922153.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c9554d3.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c980080.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c9915bc.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4c9a9560.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4ca6a226.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4cac866b.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4cba2151.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4cca2d7b.png",
+        "https://wmimg.com/i/1547/2025/06/6853f4cd69b2a.png",
     ]
     return shuffleArray(banners)
 })
