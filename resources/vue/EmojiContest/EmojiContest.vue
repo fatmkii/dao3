@@ -133,7 +133,6 @@ const bannersShuffled = computed(() => {
         "https://wmimg.com/i/1547/2025/06/68529874985d7.png",
         "https://wmimg.com/i/1547/2025/06/6853f4c7241a9.png",
         "https://wmimg.com/i/1547/2025/06/6853f4c7398bf.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c58943d.jpg",
         "https://wmimg.com/i/1547/2025/06/6853f4c879f68.png",
         "https://wmimg.com/i/1547/2025/06/6853f4c8a79e7.png",
         "https://wmimg.com/i/1547/2025/06/6853f4c8a1cff.png",
