@@ -707,6 +707,19 @@ export const medalsHidden: medalsData = {
         'threshold': 1000, //这里指1000票，100000个olo
         'img': 'https://wmimg.com/i/1547/2025/06/6846d2b7c9d00.png',
     },
+    283: {
+        'name': '并非离开',
+        'describe': '我们WB再见',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2025/06/685823283f71c.png',
+    },
+    284: {
+        'name': '世界第一的公主殿下',
+        'describe': '那我的一切，就都有了意义',
+        'threshold': 0, 
+        'img': 'https://wmimg.com/i/1547/2025/06/685807cd2008d.png',
+    },
+
 
     //银行提前支取累计 
     251: {

@@ -584,6 +584,18 @@ class Medals
             'threshold' => 1000, //这里指1000票，100000个olo
             'varname' => null,
         ),
+        283 => array(
+            'name' => '被淘汰徽章（第三届）',
+            'describe' => '我们WB再见',
+            'threshold' => 0,
+            'varname' => null,
+        ),
+        284 => array(
+            'name' => '冠军徽章（第三届）',
+            'describe' => '那我的一切，就都有了意义',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //连续赢得大乱斗
         221 => array(

@@ -43,11 +43,11 @@ class EmojiContestMedal extends Command
                 ->orderBy('votes_num_total', 'desc')
                 ->orderBy('updated_at', 'desc')
                 ->first();
-            if ($user_vote_total->emoji_group_id == 9) { //本次冠军药水哥是9号，这里记得每次改！！！ 
+            if ($user_vote_total->emoji_group_id == 11) { //本次冠军FUFU是11号，这里记得每次改！！！ 
                 array_push($user_array, $user_id);
                 UserMedal::create([
                     'user_id' => $user_id,
-                    'medal_id' => 266, //本次冠军徽章ID是266，这里记得每次改！！！ 
+                    'medal_id' => 284, //本次冠军徽章ID是284，这里记得每次改！！！ 
                     'created_at' => Carbon::now(),
                 ]);
             }
@@ -58,27 +58,26 @@ class EmojiContestMedal extends Command
 
 
         // 发放淘汰徽章
-        // $user_array = [];
-        // foreach ($user_ids as $key => $user_id) {
-        //     $user_vote_total = EmojiContestUserTotal::where('user_id', $user_id)
-        //         ->whereIn('emoji_group_id', [7, 16]) //本次被淘汰的是TD猫和药水哥，分别是7和16，这里记得每次改！！！ 
-        //         ->get();
+        $user_array = [];
+        foreach ($user_ids as $key => $user_id) {
+            $user_vote_total = EmojiContestUserTotal::where('user_id', $user_id)
+                ->where('emoji_group_id', 10) //本次被淘汰的是小黄脸10号，这里记得每次改！！！ 
+                ->get();
 
-        //     foreach ($user_vote_total as $key => $value) {
-        //         if ($value->votes_num_total >= 10) {
-        //             array_push($user_array, $user_id);
-        //             // 模拟发放，不正式执行
-        //             UserMedal::create([
-        //                 'user_id' => $user_id,
-        //                 'medal_id' => 219, //本次淘汰徽章ID是219，这里记得每次改！！！ 
-        //                 'created_at' => Carbon::now(),
-        //             ]);
-        //         }
-        //     }
-        // }
-        // Log::channel('temp_log')->info('淘汰徽章，发放user_id', [$user_array]);
-        // Log::channel('temp_log')->info('淘汰徽章，合计发放个数：', [count($user_array)]);
-        // $this->info('淘汰徽章，合计发放个数：' . count($user_array));
+            foreach ($user_vote_total as $key => $value) {
+                if ($value->votes_num_total >= 10) {
+                    array_push($user_array, $user_id);
+                    UserMedal::create([
+                        'user_id' => $user_id,
+                        'medal_id' => 283, //本次淘汰徽章ID是283，这里记得每次改！！！ 
+                        'created_at' => Carbon::now(),
+                    ]);
+                }
+            }
+        }
+        Log::channel('temp_log')->info('淘汰徽章，发放user_id', [$user_array]);
+        Log::channel('temp_log')->info('淘汰徽章，合计发放个数：', [count($user_array)]);
+        $this->info('淘汰徽章，合计发放个数：' . count($user_array));
 
         return true;
     }
