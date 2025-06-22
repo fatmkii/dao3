@@ -113,7 +113,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 //随机版头
-const bannersShuffled = computed(() => shuffleArray(forumsStore.forumData(props.forumId)?.banners.slice(0, 5)))  //只保留前6个，避免一下子加载太多图片
+const bannersShuffled = computed(() => shuffleArray(forumsStore.forumData(props.forumId)?.banners).slice(0, 5))  //只保留前6个，避免一下子加载太多图片
 
 //设置浏览器标题
 document.title = forumsStore.forumData(props.forumId)?.name ?? '小火锅'
