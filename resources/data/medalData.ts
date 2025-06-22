@@ -715,7 +715,7 @@ export const medalsHidden: medalsData = {
     },
     284: {
         'name': '世界第一的公主殿下',
-        'describe': '那我的一切，就都有了意义',
+        'describe': '我的全部都将因此有了意义',
         'threshold': 0, 
         'img': 'https://wmimg.com/i/1547/2025/06/685807cd2008d.png',
     },
