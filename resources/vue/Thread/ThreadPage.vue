@@ -49,8 +49,8 @@
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
                     :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
-                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" />
+                    :no-hongbao-pic-mode="noHongbaoPicMode" @quote-click="postInputCom?.quoteHandle"
+                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show" />
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
@@ -60,6 +60,7 @@
                     :crowd-id="threadData.crowd_id" :forum-id="forumData?.id" />
                 <HongbaoComponent ref="HongbaoComponentCom" v-if="threadData.hongbao_id !== null"
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
+                    :no-hongbao-pic-mode="noHongbaoPicMode"
                     @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- TODO 这里每次活动要改threadID -->
                 <PoolComponent ref="PoolComponentCom" v-if="threadId === 138549" :thread-id="threadId"
@@ -71,8 +72,9 @@
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
                     :admin-mode="adminMode" :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
-                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
+                    :no-hongbao-pic-mode="noHongbaoPicMode" @quote-click="postInputCom?.quoteHandle"
+                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show"
+                    ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -114,7 +116,7 @@
             <LoudspeakerComponent v-if="commonStore.userCustom.loudspeakerPosition === 'center'" />
         </template>
         <n-flex vertical :size="2" v-else>
-            <div :bordered="true" class="post-item-skeleton" v-for="  n in 200  " />
+            <div :bordered="true" class="post-item-skeleton" v-for="n in 200" />
         </n-flex>
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
@@ -300,6 +302,7 @@ const noBattleMode = useStorage<boolean>('no_battle_mode', false) //大乱斗
 const noRollMode = useStorage<boolean>('no_roll_mode', false) //roll点
 const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
 const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
+const noHongbaoPicMode = useStorage<boolean>('no_hongbao_pic_mode', false) //红包封面
 const noMentionMode = useStorage<boolean>('no_mention_mode', false) //@提醒功能
 const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
 const noPailouMode = useStorage<boolean>('no_pailou_mode', false) //无内容排楼
@@ -315,6 +318,7 @@ const refList = computed(() => {
         { ref: noRollMode, label: 'roll点' },
         { ref: noRewardMode, label: '打赏' },
         { ref: noHongbaoMode, label: '红包结果' },
+        { ref: noHongbaoPicMode, label: '红包封面' },
         { ref: noMentionMode, label: '关闭@标注' },
         { ref: noPailouMode, label: '无内容排楼' },
     ]
@@ -392,7 +396,7 @@ function dropdownSelect(key: 'deleteThread' | 'setTop' | 'cancelTop') {
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
-function pageUpdate(toPage: number) {
+function pageUpdate(toPage: number | undefined) {
     router.push({ name: "thread", params: { threadId: props.threadId, page: toPage }, query: { search: props.search } })
 }
 watch(() => props.page,

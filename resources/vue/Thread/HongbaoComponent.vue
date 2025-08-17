@@ -5,7 +5,7 @@
                 <n-flex :align="'center'" size="small">
                     <n-text style="font-size: 1rem;">口令红包</n-text>
                     <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }"
-                        v-if="!hongbaoData.pic_url" />
+                        v-if="!useHongbaoPic" />
                 </n-flex>
                 <div>
                     <n-text :depth="3" v-if="hongbaoData.key_word">口令：</n-text>
@@ -53,13 +53,17 @@ interface Props {
     hongbaoId: number,
     threadId: number,
     forumId: number,
+    noHongbaoPicMode: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
 })
 
+const useHongbaoPic = computed(() => hongbaoData.value.pic_url && !props.noHongbaoPicMode)
+
+
 // 红包封面作为背景
 const backgroundImgStyle = computed(() => {
-    if (hongbaoData.value.pic_url) {
+    if (useHongbaoPic.value) {
         return {
             backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url(${hongbaoData.value.pic_url})`,
             backgroundSize: 'cover',

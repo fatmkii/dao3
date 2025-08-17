@@ -5,7 +5,7 @@
                 <n-flex :align="'center'" size="small">
                     <n-text style="font-size: 1rem;">{{ keywordTypeName }}</n-text>
                     <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }"
-                        v-if="!hongbaoData.pic_url" />
+                        v-if="!useHongbaoPic" />
                 </n-flex>
                 <div>
                     <n-text :depth="3" v-if="hongbaoData.question">提示：</n-text>
@@ -59,6 +59,7 @@ interface Props {
     hongbaoData: hongbaoPostData,
     threadId: number,
     forumId: number,
+    noHongbaoPicMode: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
 })
@@ -80,10 +81,12 @@ const keywordTypeName = computed(() => {
     };
     return keywordTypeMap[props.hongbaoData.key_word_type]
 })
+const useHongbaoPic = computed(() => props.hongbaoData.pic_url && !props.noHongbaoPicMode)
+
 
 // 红包封面作为背景
 const backgroundImgStyle = computed(() => {
-    if (props.hongbaoData.pic_url) {
+    if (useHongbaoPic.value) {
         return {
             backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url(${props.hongbaoData.pic_url})`,
             backgroundSize: 'cover',
