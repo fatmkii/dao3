@@ -1,10 +1,11 @@
 <template>
-    <n-card size="small" :bordered="true">
+    <n-card size="small" :bordered="true" class="hongbao-card" :style="backgroundImgStyle">
         <n-spin :show="hongbaoDataLoading">
             <n-flex vertical :align="'center'">
                 <n-flex :align="'center'" size="small">
                     <n-text style="font-size: 1rem;">口令红包</n-text>
-                    <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }" />
+                    <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }"
+                        v-if="!hongbaoData.pic_url" />
                 </n-flex>
                 <div>
                     <n-text :depth="3" v-if="hongbaoData.key_word">口令：</n-text>
@@ -55,6 +56,20 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
 })
+
+// 红包封面作为背景
+const backgroundImgStyle = computed(() => {
+    if (hongbaoData.value.pic_url) {
+        return {
+            backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url(${hongbaoData.value.pic_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+        }
+    }
+    return {}
+})
+
 
 //用户输入 
 const keywordInput = ref<string>()
@@ -138,6 +153,18 @@ const emit = defineEmits<{
     @media not all and (min-width: 1200px) {
         font-size: 1rem;
 
+    }
+}
+
+.hongbao-card {
+    height: 202px;
+
+    :deep(.n-text) {
+        text-shadow:
+            -1px -1px 0 white,
+            1px -1px 0 white,
+            -1px 1px 0 white,
+            1px 1px 0 white;
     }
 }
 </style>

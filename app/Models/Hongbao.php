@@ -81,6 +81,7 @@ class Hongbao extends Model
             'hongbao_params.message' => 'nullable|array|max:255',
             'hongbao_params.olo_hide' => 'nullable|boolean',
             'hongbao_params.loudspeaker' => 'nullable|boolean',
+            'hongbao_params.pic_url' => 'nullable|string|max:255',
         ]);
 
         $user = $request->user();
@@ -110,6 +111,7 @@ class Hongbao extends Model
         $hongbao->message = null; //3.0后改成直接使用使用下面message_json，前端提交的是string[]
         $hongbao->message_json = $request->hongbao_params['message'];
         $hongbao->olo_hide = $request->hongbao_params['olo_hide'];
+        $hongbao->pic_url = $request->hongbao_params['pic_url'];
         $hongbao->save();
 
         if ($request->hongbao_params['loudspeaker']) {

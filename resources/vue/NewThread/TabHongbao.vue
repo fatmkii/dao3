@@ -26,6 +26,10 @@
             <f-input-group-label style="width: 5.2rem;">红包口令</f-input-group-label>
             <f-input v-model:value="keyword" placeholder="必填" />
         </n-input-group>
+        <n-input-group>
+            <f-input-group-label style="width: 5.2rem;">红包封面</f-input-group-label>
+            <f-input v-model:value="picUrl" placeholder="（可选）填写图片的完整网址" />
+        </n-input-group>
         <n-input-group v-for="n in messageNum">
             <f-input-group-label style="width: 5.2rem;">回复留言</f-input-group-label>
             <f-input v-model:value="hongbaoMessage[n - 1]" :placeholder="`#${n}（可选） 多个留言时随机抽取一个`" :maxlength="255" />
@@ -76,6 +80,7 @@ const keyword = ref<string>()
 const hongbaoMessage = ref<string[]>([])
 const hideOlo = ref<boolean>(false)
 const withLoudspeaker = ref<boolean>(false)
+const picUrl = ref<string>()
 
 //控制留言数量
 const messageNum = ref<number>(1)
@@ -104,6 +109,7 @@ const hongbaoParams = computed(() => ({
     message: hongbaoMessage.value,
     olo_hide: hideOlo.value,
     loudspeaker: withLoudspeaker.value,
+    pic_url: picUrl.value,
 }))
 defineExpose({ hongbaoParams })
 

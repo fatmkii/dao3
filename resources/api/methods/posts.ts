@@ -16,6 +16,7 @@ interface hongbaoPostData {
         olo: number,
         floor: number
     } | null
+    pic_url: string | null,
 }
 
 interface postData {

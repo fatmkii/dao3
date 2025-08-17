@@ -16,6 +16,7 @@ interface hongbaoPostCreateParams {
     // hongbao_message: string,//3.0代码直接使用下面的hongbao_message_json
     hongbao_message_json: string[],
     hongbao_olo_hide: boolean,
+    pic_url?: string
 }
 const hongbaoPostCreatePoster = (params: hongbaoPostCreateParams) => {
     const methodInstance = commonAlova.Post(
@@ -80,6 +81,7 @@ interface hongbaoData {
         olo: number,
         created_at: string,
     }
+    pic_url: string | null,
 }
 const hongbaoDataGetter = (hongbao_id: number) => {
     const methodInstance = commonAlova.Get<hongbaoData>(

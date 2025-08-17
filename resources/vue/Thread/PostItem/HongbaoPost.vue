@@ -1,10 +1,11 @@
 <template>
     <n-flex size="small" vertical>
-        <n-card size="small" :bordered="true" embedded class="hongbao-post-card">
+        <n-card size="small" :bordered="true" embedded class="hongbao-post-card" :style="backgroundImgStyle">
             <n-flex vertical :align="'center'">
                 <n-flex :align="'center'" size="small">
                     <n-text style="font-size: 1rem;">{{ keywordTypeName }}</n-text>
-                    <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }" />
+                    <img src="/hongbao.svg" :style="{ height: commonStore.isMobile ? '30px' : '36px' }"
+                        v-if="!hongbaoData.pic_url" />
                 </n-flex>
                 <div>
                     <n-text :depth="3" v-if="hongbaoData.question">提示：</n-text>
@@ -80,6 +81,20 @@ const keywordTypeName = computed(() => {
     return keywordTypeMap[props.hongbaoData.key_word_type]
 })
 
+// 红包封面作为背景
+const backgroundImgStyle = computed(() => {
+    if (props.hongbaoData.pic_url) {
+        return {
+            backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url(${props.hongbaoData.pic_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+        }
+    }
+    return {}
+})
+
+
 //用户输入 
 const keywordInput = ref<string>(props.hongbaoData.key_word_type === 1 ? props.hongbaoData.key_word! : '')
 
@@ -132,6 +147,15 @@ hongbaoPostStoreOnError(() => {
 
 <style scoped>
 .hongbao-post-card {
-    max-width: 400px;
+    max-width: 402px;
+    height: 202px;
+
+    :deep(.n-text) {
+        text-shadow:
+            -1px -1px 0 white,
+            1px -1px 0 white,
+            -1px 1px 0 white,
+            1px 1px 0 white;
+    }
 }
 </style>

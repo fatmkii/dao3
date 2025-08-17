@@ -32,6 +32,10 @@
                     <f-input v-model:value="keyword" placeholder="必填" />
                 </n-input-group>
                 <n-input-group>
+                    <f-input-group-label style="width: 5.2rem;">红包封面</f-input-group-label>
+                    <f-input v-model:value="picUrl" placeholder="（可选）填写图片的完整网址" />
+                </n-input-group>
+                <n-input-group>
                     <f-input-group-label style="width: 5.2rem;">口令提示</f-input-group-label>
                     <f-input v-model:value="question" placeholder="抢答红包或者暗号红包时，必填" />
                 </n-input-group>
@@ -118,6 +122,7 @@ const keyword = ref<string>()
 const question = ref<string>()
 const hongbaoMessage = ref<string[]>([])
 const hideOlo = ref<boolean>(false)
+const picUrl = ref<string>()
 
 //控制留言数量
 const messageNum = ref<number>(1)
@@ -151,6 +156,7 @@ function hongbaoPostCreateHandle() {
             hongbao_question: question.value,
             hongbao_message_json: hongbaoMessage.value,
             hongbao_olo_hide: hideOlo.value,
+            pic_url: picUrl.value,
         }
         hongbaoPostCreateSend(params)
     }

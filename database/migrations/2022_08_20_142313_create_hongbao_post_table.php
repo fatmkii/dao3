@@ -29,6 +29,7 @@ class CreateHongbaoPostTable extends Migration
             $table->string('question')->nullable(); //红包问题
             $table->string('message')->nullable(); //回复留言
             $table->json('message_json')->nullable(); //回复留言（多选一版本）
+            $table->string('pic_ulr')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

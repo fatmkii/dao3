@@ -51,6 +51,7 @@ class HongbaoPost extends Model
         'message_json',
         'question',
         'olo_hide',
+        'pic_url',
     ];
 
     protected $casts = [

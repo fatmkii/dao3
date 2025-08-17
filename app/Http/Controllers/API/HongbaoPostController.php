@@ -45,6 +45,7 @@ class HongbaoPostController extends Controller
             // 'hongbao_message' => 'nullable|string|max:255',//3.0代码直接使用下面的hongbao_message_json
             'hongbao_message_json' => 'nullable|array|max:5',
             'hongbao_olo_hide' => 'nullable|boolean',
+            'pic_url' => 'nullable|string|max:255',
         ]);
 
         $user = $request->user();
@@ -142,6 +143,7 @@ class HongbaoPostController extends Controller
                 'message_json' => $request->hongbao_message_json,
                 'question' => $request->hongbao_question,
                 'olo_hide' => $request->hongbao_olo_hide,
+                'pic_url' => $request->pic_url,
             ]);
 
             //将hongbao->id返回给post表记录
