@@ -14,7 +14,7 @@
             <div>QQ小火锅避难群：<n-text type="info">156840110</n-text></div>
             <div>目前小火锅有5个网址：<n-text type="info">cpttmm.com, www.cpttmm.com, cpttmm.love, www.cpttmm.love,
                     v2.cpttmm.com</n-text>(v2尽量不要用)</div>
-            <div><n-text>请务必遵守<router-link :to="'/thread/13351'"
+            <div><n-text>请务必遵守<router-link :to="'/thread/143750'"
                         style="text-decoration: underline;">小火锅版规</router-link>喔！</n-text></div>
         </n-card>
         <!-- 板块列表 -->
