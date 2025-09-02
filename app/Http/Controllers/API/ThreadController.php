@@ -539,6 +539,13 @@ class ThreadController extends Controller
             //检查成就（小火锅终末旅行）
             UserMedalRecord::check_end_travel($Thread_id, $user);
         }
+
+        if ($user && $CurrentThread->id == 163158) {
+            //25年9月 阅兵纪念成就
+            $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+            $user_medal_record->check_national_day_just_read();
+        }
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
@@ -651,7 +658,7 @@ class ThreadController extends Controller
                     'olo' => $olo,
                     'content' => '延时发送主题撤回后退回olo（收费功能）',
                     'type' => 'default_in',
-                    ]
+                ]
             ); //通过统一接口、记录操作  
         }
 
@@ -665,7 +672,7 @@ class ThreadController extends Controller
                     'olo' => ceil($hongbao->olo_remains * $tax_rate),
                     'content' => '延时发送主题撤回后退回olo（红包）',
                     'type' => 'default_in',
-                    ]
+                ]
             ); //通过统一接口、记录操作  
             $hongbao->olo_remains = 0;
             $hongbao->num_remains = 0;
@@ -727,7 +734,7 @@ class ThreadController extends Controller
                     'thread_id' => $CurrentThread->id,
                     'thread_title' => $CurrentThread->title,
                     'type' => 'default_out',
-                    ]
+                ]
             ); //扣除用户相应olo（通过统一接口、记录操作）
             DB::commit();
         } catch (Exception $e) {

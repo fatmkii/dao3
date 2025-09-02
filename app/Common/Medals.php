@@ -372,6 +372,13 @@ class Medals
             'threshold' => null,
             'varname' => null,
         ),
+        //25年9月阅兵
+        158 => array(
+            'name' => '八十周年阅兵纪念',
+            'describe' => '中华民族万岁！',
+            'threshold' => null,
+            'varname' => null,
+        ),
 
         //通过打赏获得的olo数量 
         161 => array(

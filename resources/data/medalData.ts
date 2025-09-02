@@ -549,6 +549,13 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/04/680e1e444e060.png',
     },
+    //25年9月阅兵
+    158: {
+        'name': '八十周年阅兵纪念',
+        'describe': '中华民族万岁！',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2025/09/68b6dec371427.png',
+    },
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',
@@ -716,7 +723,7 @@ export const medalsHidden: medalsData = {
     284: {
         'name': '世界第一的公主殿下',
         'describe': '那我的一切，就都有了意义',
-        'threshold': 0, 
+        'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/06/685807cd2008d.png',
     },
 

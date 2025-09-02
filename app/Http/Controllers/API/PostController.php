@@ -146,13 +146,13 @@ class PostController extends Controller
             throw $e;
         }
 
-        if (
-            //25年4周年活动
-            $request->thread_id == 149156  //TODO 这里每次活动要改
-            // && strpos($request->content, '新春快乐') !== false
-        ) {
-            CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
-        }
+        // if (
+        //     //25年4周年活动
+        //     $request->thread_id == 149156  //TODO 这里每次活动要改
+        //     // && strpos($request->content, '新春快乐') !== false
+        // ) {
+        //     CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
+        // }
 
         //用redis记录回频率。
         $user->waterRecord('new_post', $request->ip());

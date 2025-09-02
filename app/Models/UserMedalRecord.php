@@ -559,6 +559,7 @@ class UserMedalRecord extends Model
     }
 
 
+    //这个已经没在使用了，可以用下面的check_national_day
     public function check_anniversary()
     {
         if (Carbon::now() < Carbon::create("2024-10-1 8:0:0")) {
@@ -621,6 +622,21 @@ class UserMedalRecord extends Model
         }
     }
 
+    public function check_national_day_just_read()
+    {
+        $medal_id = 158; //这是25年9月 阅兵徽章。不需要判断日期等，只要查看了那个主题就可以了。
+
+        //纯粹行为型的徽章，直接查询
+        $medals_code_exists = UserMedal::where('user_id', $this->user_id)->where('medal_id', $medal_id)->exists();
+        if (!$medals_code_exists) {
+            $user_medal = new UserMedal;
+            $user_medal->user_id = $this->user_id;
+            $user_medal->medal_id = $medal_id;
+            $user_medal->created_at = Carbon::now();
+            $user_medal->save();
+        }
+    }
+
 
     public static function check_emoji_contest_group(int $group_id, int $votes_num_total, User $user)
     {
@@ -641,7 +657,7 @@ class UserMedalRecord extends Model
             17 => 280,
         ];
         //表情包萌成就判断（每个角色的成就）
-        $medal_id = $medal_id_map[$group_id]; 
+        $medal_id = $medal_id_map[$group_id];
 
         $medals_code_exists = UserMedal::where('user_id', $user->id)->where('medal_id', $medal_id)->exists();
         $votes_num_total = EmojiContestUserTotal::where('user_id', $user->id)->where('emoji_group_id', $group_id)->sum('votes_num_total');
