@@ -326,6 +326,7 @@ const setUserOloPoster = (params: setUserOloParams) => {
 interface globalSettingData {
     new_binggan: boolean,
     new_loudspeaker: boolean,
+    new_binggan_force: boolean,
     home_banners: string[]
 }
 const globalSettingDataGetter = (key: string = '') => {

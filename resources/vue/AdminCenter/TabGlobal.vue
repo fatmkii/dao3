@@ -12,6 +12,12 @@
                 @update-value="(value) => setGlobalSettingHandle('new_loudspeaker', value)" />
             <n-text :depth="3" v-show="!globalSettingDataLoaded">读取中</n-text>
         </n-flex>
+        <n-flex size="small">
+            <n-text style="width: 6.2rem;">强制打开饼干（慎用）</n-text>
+            <n-switch v-model:value="newBingganForceEnable" :disabled="!globalSettingDataLoaded"
+                @update-value="(value) => setGlobalSettingHandle('new_binggan_force', value)" />
+            <n-text :depth="3" v-show="!globalSettingDataLoaded">读取中</n-text>
+        </n-flex>
     </n-flex>
 </template>
 
@@ -35,6 +41,7 @@ const themeVars = useThemeVars()
 //输入的数据
 const newBingganEnable = ref<boolean>(false)
 const loudspeakerEnable = ref<boolean>(false)
+const newBingganForceEnable = ref<boolean>(false)
 const globalSettingDataLoaded = ref<boolean>(false)
 
 // 获取全局变量
@@ -42,6 +49,7 @@ if (userStore.admin.isSuperAdmin === true) {
     globalSettingDataGetter().then((data) => {
         newBingganEnable.value = data.new_binggan
         loudspeakerEnable.value = data.new_loudspeaker
+        newBingganForceEnable.value = data.new_binggan_force
         globalSettingDataLoaded.value = true
     })
 }

@@ -2,6 +2,7 @@
 
 namespace App\Common;
 
+use App\Facades\GlobalSetting;
 use Illuminate\Support\Carbon;
 
 class NewBingganChecker
@@ -26,7 +27,7 @@ class NewBingganChecker
         '2025-10-2',
         '2025-10-3',
         '2025-10-6', //中秋1天
-        '2025-11-1', 
+        '2025-11-1',
         '2025-11-11',
         '2025-12-1',
         '2026-1-1',
@@ -37,6 +38,11 @@ class NewBingganChecker
 
     public static function check()
     {
+        if (GlobalSetting::get('new_binggan_force')) {
+            //如果强制打开饼干，则直接返回
+            return [true, Carbon::now()];
+        }
+
         $now = Carbon::now();
         $flag = false;
         $next_date = Carbon::parse(self::DATE_MAP[0]);
