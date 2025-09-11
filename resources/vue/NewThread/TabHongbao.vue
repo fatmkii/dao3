@@ -80,7 +80,7 @@ const keyword = ref<string>()
 const hongbaoMessage = ref<string[]>([])
 const hideOlo = ref<boolean>(false)
 const withLoudspeaker = ref<boolean>(false)
-const picUrl = ref<string>()
+const picUrl = ref<string | null>(null)
 
 //控制留言数量
 const messageNum = ref<number>(1)

@@ -59,7 +59,7 @@ interface newThreadParams {
         message: string[],
         olo_hide: boolean,
         loudspeaker: boolean,
-        pic_url?: string,
+        pic_url: string | null,
     },
 
     vote_params?: {
