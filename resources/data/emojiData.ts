@@ -1149,7 +1149,7 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/02/67ad42959fc72.webp",
             "https://wmimg.com/i/1547/2025/02/67ad429a4584f.webp",
             "https://wmimg.com/i/1547/2025/02/67ad429eda653.webp",
-            "https://wmimg.com/i/1547/2025/02/67ab60b9ef2eb.gif"
+            "https://wmimg.com/i/1547/2025/09/68cbee51915b2.gif"
         ]
     },
     {
