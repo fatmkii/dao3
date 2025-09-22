@@ -2,7 +2,7 @@
     <n-flex vertical>
         <!-- 标题屏蔽词 -->
         <n-card title="标题屏蔽词" size="small">
-            <n-dynamic-tags v-model:value="pingbiciListInput.title_pingbici" />
+            <n-dynamic-tags v-model:value="pingbiciListInput.title_pingbici" :input-props="{ maxlength: 20 }" />
             <template #header-extra>
                 <f-button @click="removeDuplicate('title_pingbici')">去重</f-button>
             </template>
@@ -10,7 +10,7 @@
 
         <!-- 内容屏蔽词 -->
         <n-card title="内容屏蔽词" size="small">
-            <n-dynamic-tags v-model:value="pingbiciListInput.content_pingbici" />
+            <n-dynamic-tags v-model:value="pingbiciListInput.content_pingbici" :input-props="{ maxlength: 20 }" />
             <template #header-extra>
 
                 <f-button @click="removeDuplicate('content_pingbici')">去重</f-button>
@@ -19,7 +19,7 @@
 
         <!-- FJF小尾巴和固马屏蔽词 -->
         <n-card title="FJF小尾巴和固马屏蔽词" size="small">
-            <n-dynamic-tags v-model:value="pingbiciListInput.fjf_pingbici" />
+            <n-dynamic-tags v-model:value="pingbiciListInput.fjf_pingbici" :input-props="{ maxlength: 10 }" />
             <n-text :depth="3" style="font-size: 0.875rem;">注意：同一个饼干在不同FJF主题中，小尾巴会改变</n-text>
             <template #header-extra>
                 <f-button @click="removeDuplicate('fjf_pingbici')">去重</f-button>

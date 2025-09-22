@@ -6,7 +6,7 @@
                 <n-text>暂时只做了“内容屏蔽词”的追加</n-text>
                 <n-input-group>
                     <f-input-group-label style="width: 4.2rem;">屏蔽词</f-input-group-label>
-                    <f-input v-model:value="pingbiciInput" :max="255" @keyup.enter="pingbiciAddHandle" />
+                    <f-input v-model:value="pingbiciInput" :maxlength="20" show-count @keyup.enter="pingbiciAddHandle" />
                 </n-input-group>
             </n-flex>
             <template #action>
