@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import { splitVendorChunkPlugin } from 'vite'
+// import { splitVendorChunkPlugin } from 'vite' //vite v7中被移除了
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
 
@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     defineModel: true
                 }
             }),
-            splitVendorChunkPlugin(),
+            // splitVendorChunkPlugin(),
         ],
         resolve: {
             alias: {
@@ -42,6 +42,13 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         },
         build: {
             target: "es2015",
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
+                    }
+                }
+            }
             // rollupOptions: {
             //     output: {
             //         // 控制代码分割
