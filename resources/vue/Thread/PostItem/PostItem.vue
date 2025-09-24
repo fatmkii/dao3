@@ -147,7 +147,7 @@ interface Props {
     previewMode?: boolean,
     superAdminMode?: boolean,
     adminMode?: boolean,
-    noHongbaoPicMode: boolean,
+    noHongbaoPicMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
     yourPostsList: () => [],

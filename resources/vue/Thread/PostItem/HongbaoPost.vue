@@ -59,9 +59,10 @@ interface Props {
     hongbaoData: hongbaoPostData,
     threadId: number,
     forumId: number,
-    noHongbaoPicMode: boolean,
+    noHongbaoPicMode?: boolean,
 }
 const props = withDefaults(defineProps<Props>(), {
+    noHongbaoPicMode: false,
 })
 
 
