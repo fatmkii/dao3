@@ -44,9 +44,15 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             // target: "es2015",
             rollupOptions: {
                 output: {
-                    manualChunks: {
-                        vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
-                    }
+                    // manualChunks: {
+                    //     vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
+                    // }
+                    manualChunks: function manualChunks(id) {
+                        if (id.includes('node_modules')) {
+                            return 'vendor';
+                        }
+                        return 'app';
+                    },
                 }
             }
             // rollupOptions: {
