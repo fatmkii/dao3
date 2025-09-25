@@ -1,22 +1,86 @@
 {
-  "_vendor-BS_-onrR.js": {
-    "file": "assets/vendor-BS_-onrR.js",
-    "name": "vendor",
+  "_api-BmrQciZx.js": {
+    "file": "assets/api-BmrQciZx.js",
+    "name": "api",
     "imports": [
-      "resources/js/app.js"
+      "_stores-BaTD8Svh.js",
+      "_vendor-B6OyIHrq.js"
     ]
   },
+  "_css-B3cGGxkf.css": {
+    "file": "assets/css-B3cGGxkf.css",
+    "src": "_css-B3cGGxkf.css"
+  },
+  "_data-Chqh2Qd2.js": {
+    "file": "assets/data-Chqh2Qd2.js",
+    "name": "data"
+  },
+  "_routes-DKii-mr5.js": {
+    "file": "assets/routes-DKii-mr5.js",
+    "name": "routes",
+    "imports": [
+      "_vendor-B6OyIHrq.js"
+    ],
+    "dynamicImports": [
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js",
+      "_vue-B4bM84dw.js"
+    ]
+  },
+  "_stores-BaTD8Svh.js": {
+    "file": "assets/stores-BaTD8Svh.js",
+    "name": "stores",
+    "imports": [
+      "_vendor-B6OyIHrq.js",
+      "_data-Chqh2Qd2.js",
+      "_api-BmrQciZx.js"
+    ]
+  },
+  "_vendor-B6OyIHrq.js": {
+    "file": "assets/vendor-B6OyIHrq.js",
+    "name": "vendor"
+  },
+  "_vue-B4bM84dw.js": {
+    "file": "assets/vue-B4bM84dw.js",
+    "name": "vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-B6OyIHrq.js",
+      "_stores-BaTD8Svh.js",
+      "_api-BmrQciZx.js",
+      "resources/js/app.js",
+      "_data-Chqh2Qd2.js"
+    ],
+    "css": [
+      "assets/vue-BtQG_xSZ.css"
+    ]
+  },
+  "_vue-BtQG_xSZ.css": {
+    "file": "assets/vue-BtQG_xSZ.css",
+    "src": "_vue-BtQG_xSZ.css"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CPGhcEML.js",
+    "file": "assets/app-D04zqvBp.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_vendor-BS_-onrR.js",
-      "resources/js/app.js"
+      "_vendor-B6OyIHrq.js",
+      "_routes-DKii-mr5.js",
+      "_vue-B4bM84dw.js",
+      "_stores-BaTD8Svh.js",
+      "_api-BmrQciZx.js",
+      "resources/js/app.js",
+      "_data-Chqh2Qd2.js"
     ],
     "css": [
-      "assets/app-1YEMopA6.css"
+      "assets/css-B3cGGxkf.css"
     ]
   }
 }

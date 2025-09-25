@@ -47,11 +47,39 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     // manualChunks: {
                     //     vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
                     // }
-                    manualChunks: function manualChunks(id) {
+                    manualChunks: (id) => {
+                        // 将 node_modules 中的依赖打包到 vendor
                         if (id.includes('node_modules')) {
                             return 'vendor';
                         }
-                        return 'app';
+
+                        if (id.includes('/resources/vue/')) {
+                            return 'vue';
+                        }
+
+                        if (id.includes('/resources/api/')) {
+                            return 'api';
+                        }
+
+                        if (id.includes('/resources/css/')) {
+                            return 'css';
+                        }
+
+                        if (id.includes('/resources/data/')) {
+                            return 'data';
+                        }
+
+                        if (id.includes('/resources/js/')) {
+                            return 'app';
+                        }
+
+                        if (id.includes('/resources/routes/')) {
+                            return 'routes';
+                        }
+
+                        if (id.includes('/resources/stores/')) {
+                            return 'stores';
+                        }
                     },
                 }
             }
