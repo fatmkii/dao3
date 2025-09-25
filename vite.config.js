@@ -52,34 +52,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                         if (id.includes('node_modules')) {
                             return 'vendor';
                         }
-
-                        if (id.includes('/resources/vue/')) {
-                            return 'vue';
-                        }
-
-                        if (id.includes('/resources/api/')) {
-                            return 'api';
-                        }
-
-                        if (id.includes('/resources/css/')) {
-                            return 'css';
-                        }
-
-                        if (id.includes('/resources/data/')) {
-                            return 'data';
-                        }
-
-                        if (id.includes('/resources/js/')) {
-                            return 'app';
-                        }
-
-                        if (id.includes('/resources/routes/')) {
-                            return 'routes';
-                        }
-
-                        if (id.includes('/resources/stores/')) {
-                            return 'stores';
-                        }
+                        return null
                     },
                 }
             }
