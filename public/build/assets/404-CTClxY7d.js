@@ -1,0 +1,1 @@
+import{z as o,A as s,X as n,V as t}from"./vendor-DamaS_bj.js";import{_ as l}from"./app-CRZ7Digb.js";const _={};function a(e,r){return s(),o("div",null,[...r[0]||(r[0]=[n("嗷……页面被吃掉了！",-1),t("br",null,null,-1),n(" 404 Not Found.",-1)])])}const u=l(_,[["render",a]]);export{u as default};

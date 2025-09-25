@@ -41,7 +41,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             },
         },
         build: {
-            target: "es2015",
+            // target: "es2015",
             rollupOptions: {
                 output: {
                     manualChunks: {
