@@ -56,6 +56,23 @@ export const useCommonStore = defineStore('commonStore', () => {
         return isDouble11
     })
 
+    //是否国庆节的flag
+    const isOctober1st = computed<boolean>(() => {
+        const festivalDays = [
+            { month: 10, date: 1 }, //25年做国庆节0税率用
+        ]
+        const now = dayjs.tz() //tz()才是获得UTC+8的时间
+        let isOctober1st = false
+
+        festivalDays.forEach(festivalDay => {
+            if (now.month() + 1 === festivalDay.month && now.date() === festivalDay.date) {
+                // 留意month是从0开始的，所以要+1
+                isOctober1st = true
+            }
+        });
+        return isOctober1st
+    })
+
     //计算是否需要小国旗的flag
     const isOctober = computed<boolean>(() => {
         const now = dayjs.tz() //tz()才是获得UTC+8的时间
@@ -164,7 +181,7 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     }
 
-    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, userCustom, modalMaxWidth, userCustomReset }
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, isOctober1st, userCustom, modalMaxWidth, userCustomReset }
 
 })
 

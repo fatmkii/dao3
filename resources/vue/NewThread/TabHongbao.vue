@@ -2,11 +2,18 @@
     <n-flex vertical style="max-width: 450px; margin-top: 8px;">
         <!-- 提示 -->
         <div>
-            <n-text :depth="3">温馨提示：</n-text>在红包总额以外，会追加扣除7%手续费。
+            <n-text :depth="3">温馨提示：</n-text>
+            <n-text v-if="!commonStore.isOctober1st">
+                在红包总额以外，会追加扣除7%手续费。</n-text>
+            <n-text v-else>
+                <del>在红包总额以外，会追加扣除7%手续费。</del>
+                <br />
+                10月1日“红包个数”在20个及以上时，手续费<n-text type="error">0%!!</n-text>
+            </n-text>
         </div>
         <div>
             <n-text :depth="3">总共扣除：</n-text>
-            <n-text type="warning">{{ Math.ceil(olo * (commonStore.isDouble11 ? 1.02 : 1.07)) }}</n-text>个奥利奥
+            <n-text type="warning">{{ olo_total }}</n-text>个奥利奥
         </div>
         <!-- 各种输入数据 -->
         <n-input-group>
@@ -81,6 +88,25 @@ const hongbaoMessage = ref<string[]>([])
 const hideOlo = ref<boolean>(false)
 const withLoudspeaker = ref<boolean>(false)
 const picUrl = ref<string | null>(null)
+
+//加上手续费之后的所需olo数值显示
+const olo_total = computed<number>(() => {
+    if (commonStore.isDouble11) {
+        //双十一是2%税率
+        return Math.ceil(olo.value * 1.02)
+    }
+    if (commonStore.isOctober1st) {
+        //国庆0税率（红包个数20及以上时候）
+        if (num.value >= 20) {
+            return olo.value
+        }
+        else {
+            return Math.ceil(olo.value * 1.07)
+        }
+    }
+    //一般情况7%税率
+    return Math.ceil(olo.value * 1.07)
+})
 
 //控制留言数量
 const messageNum = ref<number>(1)

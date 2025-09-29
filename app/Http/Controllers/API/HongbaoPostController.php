@@ -112,7 +112,7 @@ class HongbaoPostController extends Controller
                 'created_IP' => $request->ip(),
             ]);
 
-            $tax_rate = GlobalSetting::get_tax('normal');
+            $tax_rate = GlobalSetting::get_tax('hongbao', null, $request->hongbao_num);
             $coin_pay = ceil($request->hongbao_olo * $tax_rate);
             $user->coinChange(
                 'normal', //记录类型

@@ -5,9 +5,9 @@
             <n-flex vertical>
                 <div>
                     <n-text v-if="!commonStore.isDouble11">
-                        友情提示：在打赏额以外，会追加扣除7%手续费。</n-text>
+                        温馨提示：在打赏额以外，会追加扣除7%手续费。</n-text>
                     <n-text v-else>
-                        <del>友情提示：在打赏额以外，会追加扣除7%手续费。</del>
+                        <del>温馨提示：在打赏额以外，会追加扣除7%手续费。</del>
                         <br />
                         活动期间限时手续费2%！
                     </n-text>

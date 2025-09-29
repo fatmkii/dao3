@@ -1,0 +1,1 @@
+import{i as o,j as s,L as n,J as t}from"./vendor-TKhEiLHF.js";import{_ as l}from"./app-DAtwFFf0.js";const i={};function _(a,r){return s(),o("div",null,[...r[0]||(r[0]=[n("嗷……页面被吃掉了！",-1),t("br",null,null,-1),n(" 404 Not Found.",-1)])])}const u=l(i,[["render",_]]);export{u as default};

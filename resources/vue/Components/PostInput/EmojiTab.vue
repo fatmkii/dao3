@@ -1,10 +1,10 @@
 <template>
     <n-tabs type="line" :bar-width="0" animated @before-leave="tabOnBeforeLeave"
         :size="commonStore.isMobile ? 'small' : 'medium'" :default-value="-1" v-model:value="tabValue">
-        <n-tab-pane v-for="( emojiGroup, key, index ) in emojiData " :name="emojiGroup.id"
-            :tab="tabRender(emojiGroup.name, emojiGroup.id)" >
+        <n-tab-pane v-for="(emojiGroup, key) in emojiData" :name="emojiGroup.id"
+            :tab="tabRender(emojiGroup.name, emojiGroup.id)">
             <n-flex size="small" class="emoji-container" :style="tabPaneStyle">
-                <div class="emoji-box" v-for="( emojiSrc, key, index ) in emojiGroup.emojis "
+                <div class="emoji-box" v-for="(emojiSrc, key) in emojiGroup.emojis"
                     @click="emojiClick(emojiSrc, emojiGroup.name)">
                     <img :src="emojiSrc" class="emoji-in-box">
                 </div>
@@ -19,7 +19,7 @@ import emojiDataRaw from '@/data/emojiData';
 import { useUserStore } from '@/stores/user';
 import { useCommonStore } from '@/stores/common';
 import { NFlex, NTabPane, NTabs } from 'naive-ui';
-import { computed, defineEmits, ref, h } from 'vue';
+import { computed, ref, h } from 'vue';
 
 
 //基础数据

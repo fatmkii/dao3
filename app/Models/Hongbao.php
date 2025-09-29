@@ -86,7 +86,8 @@ class Hongbao extends Model
 
         $user = $request->user();
 
-        $tax_rate = GlobalSetting::get_tax('normal');
+        $tax_rate = GlobalSetting::get_tax('hongbao', null, $request->hongbao_params['num']);
+
         $coin_pay = ceil($request->hongbao_params['olo'] * $tax_rate);
         $user->coinChange(
             'normal', //记录类型
@@ -96,7 +97,7 @@ class Hongbao extends Model
                 'thread_id' => $thread_id,
                 'thread_title' => $request->title,
                 'type' => 'hongbao_out',
-                ]
+            ]
         ); //扣除用户相应olo（通过统一接口、记录操作）
 
         $hongbao = new Hongbao();
