@@ -50,8 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 //TODO 这里每次活动都要改
-const startTime = dayjs.tz('2025-1-29 00:00')
-const endTime = dayjs.tz('2025-2-1 00:00')
+const startTime = dayjs.tz('2025-10-1 00:00')
+const endTime = dayjs.tz('2025-10-4 00:00')
 
 //判断是否在活动期间 （0=未开始，1=进行中，2=已结束）
 const endFlag = computed<0 | 1 | 2>(() => {
