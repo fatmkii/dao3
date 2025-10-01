@@ -598,6 +598,7 @@ class UserMedalRecord extends Model
 
     public function check_national_day()
     {
+        //TODO 这里每次都要改日期
         if (Carbon::now() < Carbon::create("2025-10-1 0:0:0")) {
             //如果时间未到，就什么都不做
             return;

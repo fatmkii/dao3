@@ -540,11 +540,11 @@ class ThreadController extends Controller
             UserMedalRecord::check_end_travel($Thread_id, $user);
         }
 
-        if ($user && $CurrentThread->id == 163158) {
-            //25年9月 阅兵纪念成就
-            $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
-            $user_medal_record->check_national_day_just_read();
-        }
+        // if ($user && $CurrentThread->id == 163158) {
+        //     //25年9月 阅兵纪念成就
+        //     $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
+        //     $user_medal_record->check_national_day_just_read();
+        // }
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
