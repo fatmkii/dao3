@@ -54,14 +54,14 @@
 
                 <n-flex size="small" :align="'center'">
                     <n-text :depth="3">留言数量</n-text>
-                    <n-button size="tiny" circle :disabled="messageNum === 5" @click="messageNumChange(1)">
+                    <n-button size="tiny" circle :disabled="messageNum >= messageMaxNum" @click="messageNumChange(1)">
                         <template #icon>
                             <n-icon>
                                 <Plus />
                             </n-icon>
                         </template>
                     </n-button>
-                    <n-button size="tiny" circle :disabled="messageNum === 1" @click="messageNumChange(-1);">
+                    <n-button size="tiny" circle :disabled="messageNum <= 1" @click="messageNumChange(-1);">
 
                         <template #icon>
                             <n-icon>
@@ -99,6 +99,7 @@ import { computed, ref } from 'vue';
 //基础数据
 const commonStore = useCommonStore()
 const userStore = useUserStore()
+const messageMaxNum = 10 //红包留言最大数量
 
 //组件props
 interface Props {
@@ -153,7 +154,7 @@ const olo_total = computed<number>(() => {
 //控制留言数量
 const messageNum = ref<number>(1)
 function messageNumChange(value: 1 | -1) {
-    if (value === 1 && messageNum.value < 5) {
+    if (value === 1 && messageNum.value < messageMaxNum) {
         messageNum.value += 1;
     }
     if (value === -1 && messageNum.value > 1) {

@@ -43,7 +43,7 @@ class HongbaoPostController extends Controller
             'hongbao_key_word' => 'required|string|max:255',
             'hongbao_question' => 'nullable|string|max:255',
             // 'hongbao_message' => 'nullable|string|max:255',//3.0代码直接使用下面的hongbao_message_json
-            'hongbao_message_json' => 'nullable|array|max:5',
+            'hongbao_message_json' => 'nullable|array|max:10',
             'hongbao_olo_hide' => 'nullable|boolean',
             'pic_url' => 'nullable|string|max:255',
         ]);
