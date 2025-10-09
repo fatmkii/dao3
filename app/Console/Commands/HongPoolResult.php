@@ -66,17 +66,17 @@ class HongPoolResult extends Command
 
         foreach ($rank_0 as $key => $pool_id) {
             $hongbao_pool = DB::table('hongbao_pool')->find($pool_id->id);
-            $this->info('特等奖用户:' . $key);
+            $this->info('特等奖用户:' . $pool_id->user_id);
             $this->info($hongbao_pool->message);
         }
         foreach ($rank_1 as $key => $pool_id) {
             $hongbao_pool = DB::table('hongbao_pool')->find($pool_id->id);
-            $this->info('一等奖用户:' . $key);
+            $this->info('一等奖用户:' . $pool_id->user_id);
             $this->info($hongbao_pool->message);
         }
         foreach ($rank_2 as $key => $pool_id) {
             $hongbao_pool = DB::table('hongbao_pool')->find($pool_id->id);
-            $this->info('二等奖用户:' . $key);
+            $this->info('二等奖用户:' . $pool_id->user_id);
             $this->info($hongbao_pool->message);
         }
 
