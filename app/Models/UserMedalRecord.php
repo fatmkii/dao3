@@ -486,16 +486,25 @@ class UserMedalRecord extends Model
 
     public static function check_floor(int $floor, User $user)
     {
-        //单个数字确定型的徽章，则先判断数字，以减少查询量
-        if ($floor == 10000) {
-            // $medals_code_exists = $user->UserMedal()->where('medal_id', 91)->exists();
-            $medals_code_exists = UserMedal::where('user_id', $user->id)->where('medal_id', 91)->exists();
-            if (!$medals_code_exists) {
-                $user_medal = new UserMedal;
-                $user_medal->user_id = $user->id;
-                $user_medal->medal_id = 91;
-                $user_medal->created_at = Carbon::now();
-                $user_medal->save();
+        $medal_id_map = [
+            // 楼层数 => 成就ID
+            10000 => 91,
+            20000 => 92,
+        ];
+
+        // 循环检查各个楼层数
+        foreach ($medal_id_map as $medal_floor => $medal_id) {
+            //单个数字确定型的徽章，则先判断数字，以减少查询量
+            if ($floor == $medal_floor) {
+                // $medals_code_exists = $user->UserMedal()->where('medal_id', 91)->exists();
+                $medals_code_exists = UserMedal::where('user_id', $user->id)->where('medal_id', $medal_id)->exists();
+                if (!$medals_code_exists) {
+                    $user_medal = new UserMedal;
+                    $user_medal->user_id = $user->id;
+                    $user_medal->medal_id = $medal_id;
+                    $user_medal->created_at = Carbon::now();
+                    $user_medal->save();
+                }
             }
         }
     }

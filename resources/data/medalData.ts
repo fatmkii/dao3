@@ -464,6 +464,13 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/02/67ac5cf92298c.png',
     },
+    92: {
+        'name': '锅上两万层',
+        'describe': '抢到第20000楼',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2025/10/68ee42795b868.png',
+    },
+
 
     //大乱斗掷出101点
     101: {

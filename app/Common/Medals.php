@@ -256,6 +256,12 @@ class Medals
             'threshold' => 0,
             'varname' => null,
         ),
+        92 => array(
+            'name' => '锅上两万层',
+            'describe' => '抢到第20000楼',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //大乱斗掷出101点
         101 => array(
