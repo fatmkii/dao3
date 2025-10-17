@@ -468,7 +468,7 @@ export const medalsHidden: medalsData = {
         'name': '锅上两万层',
         'describe': '抢到第20000楼',
         'threshold': 0,
-        'img': 'https://wmimg.com/i/1547/2025/10/68ee42795b868.png',
+        'img': 'https://wmimg.com/i/1547/2025/10/68f239875a370.png',
     },
 
 
