@@ -740,6 +740,18 @@ class Medals
             'threshold' => 0,
             'varname' => null,
         ),
+        267 => array(
+            'name' => '小火锅第三届出道萌',
+            'describe' => '出道萌投票100票',
+            'threshold' => 100, //这里指100票，10000个olo
+            'varname' => 'emoji_contest_total',
+        ),
+        268 => array(
+            'name' => '登上最闪亮的舞台',
+            'describe' => '出道萌投票1000票',
+            'threshold' => 1000, //这里指1000票，100000个olo
+            'varname' => 'emoji_contest_total',
+        ),
 
         //大喇叭相关
         270 => array(

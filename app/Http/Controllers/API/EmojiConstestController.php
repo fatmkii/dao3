@@ -16,19 +16,19 @@ use Illuminate\Support\Facades\Log;
 
 class EmojiConstestController extends Controller
 {
-    private $start_time = '2025-6-18 20:00:00';
-    private $end_time = '2025-6-22 20:00:00';
+    private $start_time = '2025-11-11 20:00:00';
+    private $end_time = '2025-11-14 20:00:00';
     protected $chara_name_list = [
-        1 => 'AC娘',
-        2 => '鹦鹉鸡',
-        3 => '咪子鱼',
-        5 => '麻将脸',
-        6 => '小恐龙',
-        9 => '小企鹅',
-        10 => '小黄脸',
-        11 => 'FUFU',
-        16 => '药水哥',
-        17 => '吉伊卡哇',
+        1 => '领结猫',
+        2 => '宝可梦',
+        3 => '假飞鼠',
+        4 => '猫猫虫',
+        5 => '小甲鱼',
+        6 => '奶龙',
+        7 => '姆明',
+        8 => '青蛙波仔',
+        9 => '四荤一素',
+        10 => '谷歌布丁',
     ];
 
     public function show(Request $request, $emoji_group_id)
@@ -150,11 +150,12 @@ class EmojiConstestController extends Controller
             $user->save();
 
             //确认成就进度（不同表情包有不同成就，仅在618的表情包萌有用）
-            UserMedalRecord::check_emoji_contest_group(
-                $request->emoji_group_id,
-                $user_vote_total->votes_num_total,
-                $user
-            );
+            // TODO这里618要打开，1111要关闭
+            // UserMedalRecord::check_emoji_contest_group(
+            //     $request->emoji_group_id,
+            //     $user_vote_total->votes_num_total,
+            //     $user
+            // );
             //确认成就进度（统计总数。在出道萌和表情包萌都有用）
             UserMedalRecord::check_emoji_contest_total($user);
 

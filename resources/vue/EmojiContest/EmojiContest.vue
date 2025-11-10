@@ -6,8 +6,8 @@
         </n-carousel>
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'warning'">
-            <span>（new!）本次活动新增版头应援活动喔！</span>
-            <router-link :to="'/thread/153992'">点击这里参与</router-link>
+            <span>（new!）本次活动同样有版头应援活动喔！</span>
+            <router-link :to="'/thread/10054'">点击这里投稿</router-link>
         </n-alert>
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
@@ -82,20 +82,20 @@ import dayjs from 'dayjs'
 import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
-const startTime = dayjs.tz('2025-6-18 20:00')
-const endTime = dayjs.tz('2025-6-22 20:00')
-const emojiGroupIdList = [1, 2, 3, 5, 6, 9, 10, 11, 16, 17] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
+const startTime = dayjs.tz('2025-11-11 20:00')
+const endTime = dayjs.tz('2025-11-11 20:00')
+const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
-    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2bca02d05.png", "name": "AC娘" },
-    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab7d8f0753f.gif", "name": "鹦鹉鸡" },
-    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "咪子鱼" },
-    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "麻将脸" },
-    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad38710da48.jpg", "name": "小恐龙" },
-    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3dc22bbe8.png", "name": "小企鹅" },
-    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3e55cf286.png", "name": "小黄脸" },
-    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4141eae00.gif", "name": "FUFU" },
-    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4a651928d.gif", "name": "药水哥" },
-    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "吉伊卡哇" },
+    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2bca02d05.png", "name": "领结猫" },
+    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab7d8f0753f.gif", "name": "宝可梦" },
+    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "假飞鼠" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "猫猫虫" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad38710da48.jpg", "name": "小甲鱼" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3dc22bbe8.png", "name": "奶龙" },
+    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3e55cf286.png", "name": "姆明" },
+    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4141eae00.gif", "name": "青蛙波仔" },
+    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4a651928d.gif", "name": "四荤一素" },
+    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "谷歌布丁" },
 } as {
     [key: number]: {
         emojiUrl: string
@@ -105,110 +105,7 @@ const emojiGroupIndex = {
 //应援版头
 const bannersShuffled = computed(() => {
     const banners = [
-        'https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png',
-        "https://wmimg.com/i/1547/2025/06/684bfbe7b431e.png",
-        "https://wmimg.com/i/1547/2025/06/684bfbe7b7345.png",
-        "https://wmimg.com/i/1547/2025/06/684bfbe7b63bd.png",
-        "https://wmimg.com/i/1547/2025/06/684bfbe7b7345.png",
-        "https://wmimg.com/i/1547/2025/06/684ed1e7bb22c.png",
-        "https://wmimg.com/i/1547/2025/06/684ed1e80632a.png",
-        "https://wmimg.com/i/1547/2025/06/684ed1e836f2a.png",
-        "https://wmimg.com/i/1547/2025/06/684ed1e84c426.png",
-        "https://wmimg.com/i/1547/2025/06/684ed1e8b0e52.png",
-        "https://wmimg.com/i/1547/2025/06/6851648dcb6d2.png",
-        "https://wmimg.com/i/1547/2025/06/6851648e13773.png",
-        "https://wmimg.com/i/1547/2025/06/6851648e3bcbc.png",
-        "https://wmimg.com/i/1547/2025/06/6851648e625d2.png",
-        "https://wmimg.com/i/1547/2025/06/6851648eb0d26.png",
-        "https://wmimg.com/i/1547/2025/06/6851648e8dc8a.png",
-        "https://wmimg.com/i/1547/2025/06/6851648f30ffd.png",
-        "https://wmimg.com/i/1547/2025/06/6851648f7d3e4.png",
-        "https://wmimg.com/i/1547/2025/06/6851648fc2c42.png",
-        "https://wmimg.com/i/1547/2025/06/685164901f2e1.png",
-        "https://wmimg.com/i/1547/2025/06/685164908d7c0.png",
-        "https://wmimg.com/i/1547/2025/06/6851649219afa.png",
-        "https://wmimg.com/i/1547/2025/06/68529871267f8.png",
-        "https://wmimg.com/i/1547/2025/06/68529871e2f82.png",
-        "https://wmimg.com/i/1547/2025/06/68529872d9dfe.png",
-        "https://wmimg.com/i/1547/2025/06/68529874985d7.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c7241a9.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c7398bf.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c879f68.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c8a79e7.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c8a1cff.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c90044e.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c922153.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c9554d3.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c980080.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c9915bc.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4c9a9560.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4ca6a226.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4cac866b.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4cba2151.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4cca2d7b.png",
-        "https://wmimg.com/i/1547/2025/06/6853f4cd69b2a.png",
-        "https://wmimg.com/i/1547/2025/06/68553c704951c.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c705161e.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c707937a.png",
-        "https://wmimg.com/i/1547/2025/06/68553c707ccc9.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c706d0f2.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c7074599.png",
-        "https://wmimg.com/i/1547/2025/06/68553c708ac17.png",
-        "https://wmimg.com/i/1547/2025/06/68553c70c30b6.png",
-        "https://wmimg.com/i/1547/2025/06/68553c70882ce.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c708b3da.png",
-        "https://wmimg.com/i/1547/2025/06/68553c7108d3f.png",
-        "https://wmimg.com/i/1547/2025/06/68553c70dd7e9.png",
-        "https://wmimg.com/i/1547/2025/06/68553c70b8e98.png",
-        "https://wmimg.com/i/1547/2025/06/68553c70d740c.png",
-        "https://wmimg.com/i/1547/2025/06/68553c709272c.jpg",
-        "https://wmimg.com/i/1547/2025/06/68553c706a0ae.jpg",
-        "https://wmimg.com/i/1547/2025/06/68568a002d152.png",
-        "https://wmimg.com/i/1547/2025/06/68568a002dc09.png",
-        "https://wmimg.com/i/1547/2025/06/68568a03dde5b.png",
-        "https://wmimg.com/i/1547/2025/06/68568a03d96e6.png",
-        "https://wmimg.com/i/1547/2025/06/68568a03dfcfd.png",
-        "https://wmimg.com/i/1547/2025/06/68568a03df4e2.jpg",
-        "https://wmimg.com/i/1547/2025/06/68568a03e3aa3.png",
-        "https://wmimg.com/i/1547/2025/06/68568a0415e61.png",
-        "https://wmimg.com/i/1547/2025/06/68568a064ffce.png",
-        "https://wmimg.com/i/1547/2025/06/68568a06818b2.png",
-        "https://wmimg.com/i/1547/2025/06/68568a0a1b3d0.png",
-        "https://wmimg.com/i/1547/2025/06/6857e51383c97.png",
-        "https://wmimg.com/i/1547/2025/06/6857e515e5f30.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5175a23e.png",
-        "https://wmimg.com/i/1547/2025/06/6857e51838c8c.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5190dcba.png",
-        "https://wmimg.com/i/1547/2025/06/6857e51b9c559.png",
-        "https://wmimg.com/i/1547/2025/06/6857e51bdb484.png",
-        "https://wmimg.com/i/1547/2025/06/6857e520ba724.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5219c037.jpg",
-        "https://wmimg.com/i/1547/2025/06/6857e5220e7cc.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52267cb2.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5229b3fb.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5238c110.png",
-        "https://wmimg.com/i/1547/2025/06/6857e523cf940.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5248d188.jpg",
-        "https://wmimg.com/i/1547/2025/06/6857e5268484a.png",
-        "https://wmimg.com/i/1547/2025/06/6857e526ea309.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52a27843.png",
-        "https://wmimg.com/i/1547/2025/06/6857e529e5b1b.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52ab95b7.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52b62ed1.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52c467fb.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52d63ae9.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52de6146.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52dc60be.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52ede6ff.png",
-        "https://wmimg.com/i/1547/2025/06/6857e52fd3c59.png",
-        "https://wmimg.com/i/1547/2025/06/6857e53037102.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5307699f.jpg",
-        "https://wmimg.com/i/1547/2025/06/6857e5314b1e3.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5330f863.png",
-        "https://wmimg.com/i/1547/2025/06/6857e533614a2.png",
-        "https://wmimg.com/i/1547/2025/06/6857e533d3a3b.png",
-        "https://wmimg.com/i/1547/2025/06/6857e534cb9ef.png",
-        "https://wmimg.com/i/1547/2025/06/6857e5741af04.png",
+        'https://wmimg.com/i/1547/2025/11/691097b73d035.png',
     ]
     return shuffleArray(banners).slice(0, 5)
 })
