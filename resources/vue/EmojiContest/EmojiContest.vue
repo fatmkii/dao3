@@ -83,19 +83,20 @@ import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
 const startTime = dayjs.tz('2025-11-11 20:00')
-const endTime = dayjs.tz('2025-11-11 20:00')
+const endTime = dayjs.tz('2025-11-14 20:00')
 const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
+    // 这里的序号记得也要改
     1: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf6742408.webp", "name": "领结猫" },
     2: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c019b2a92.gif", "name": "宝可梦" },
     3: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c11e4aaed.gif", "name": "假飞鼠" },
-    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c1a7bad16.gif", "name": "猫猫虫" },
-    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c29cbda8f.gif", "name": "小甲鱼" },
-    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c2d3e4ff1.gif", "name": "奶龙" },
-    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6911cf46a80a4.gif", "name": "姆明" },
-    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c44cb2227.gif", "name": "青蛙波仔" },
-    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c48d98a26.jpg", "name": "四荤一素" },
-    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c559db1b4.gif", "name": "谷歌布丁" },
+    4: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c1a7bad16.gif", "name": "猫猫虫" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c29cbda8f.gif", "name": "小甲鱼" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c2d3e4ff1.gif", "name": "奶龙" },
+    7: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6911cf46a80a4.gif", "name": "姆明" },
+    8: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c44cb2227.gif", "name": "青蛙波仔" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c48d98a26.jpg", "name": "四荤一素" },
+    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c559db1b4.gif", "name": "谷歌布丁" },
 } as {
     [key: number]: {
         emojiUrl: string
