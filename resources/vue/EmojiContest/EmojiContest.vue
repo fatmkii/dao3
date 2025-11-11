@@ -86,16 +86,16 @@ const startTime = dayjs.tz('2025-11-11 20:00')
 const endTime = dayjs.tz('2025-11-11 20:00')
 const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
-    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2bca02d05.png", "name": "领结猫" },
-    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab7d8f0753f.gif", "name": "宝可梦" },
-    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "假飞鼠" },
-    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "猫猫虫" },
-    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad38710da48.jpg", "name": "小甲鱼" },
-    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3dc22bbe8.png", "name": "奶龙" },
-    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3e55cf286.png", "name": "姆明" },
-    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4141eae00.gif", "name": "青蛙波仔" },
-    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4a651928d.gif", "name": "四荤一素" },
-    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "谷歌布丁" },
+    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf6742408.webp", "name": "领结猫" },
+    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c019b2a92.gif", "name": "宝可梦" },
+    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c11e4aaed.gif", "name": "假飞鼠" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c1a7bad16.gif", "name": "猫猫虫" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c29cbda8f.gif", "name": "小甲鱼" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c2d3e4ff1.gif", "name": "奶龙" },
+    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6911cf46a80a4.gif", "name": "姆明" },
+    11: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c44cb2227.gif", "name": "青蛙波仔" },
+    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c48d98a26.jpg", "name": "四荤一素" },
+    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c559db1b4.gif", "name": "谷歌布丁" },
 } as {
     [key: number]: {
         emojiUrl: string
