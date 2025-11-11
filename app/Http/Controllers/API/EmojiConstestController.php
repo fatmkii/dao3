@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 class EmojiConstestController extends Controller
 {
     private $start_time = '2025-11-11 20:00:00';
-    private $end_time = '2025-11-14 20:00:00';
+    private $end_time = '2025-11-11 20:00:00';
     protected $chara_name_list = [
         1 => '领结猫',
         2 => '宝可梦',
