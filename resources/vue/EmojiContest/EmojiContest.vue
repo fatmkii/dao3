@@ -83,7 +83,7 @@ import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
 const startTime = dayjs.tz('2025-11-11 20:00')
-const endTime = dayjs.tz('2025-11-11 20:00')
+const endTime = dayjs.tz('2025-11-14 20:00')
 const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
     1: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf6742408.webp", "name": "领结猫" },
