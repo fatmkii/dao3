@@ -60,8 +60,7 @@
                     :crowd-id="threadData.crowd_id" :forum-id="forumData?.id" />
                 <HongbaoComponent ref="HongbaoComponentCom" v-if="threadData.hongbao_id !== null"
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
-                    :no-hongbao-pic-mode="noHongbaoPicMode"
-                    @refresh-posts-list="handleFetchPostsList(false)" />
+                    :no-hongbao-pic-mode="noHongbaoPicMode" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- TODO 这里每次活动要改threadID -->
                 <PoolComponent ref="PoolComponentCom" v-if="threadId === 166424" :thread-id="threadId"
                     :forum-id="forumData?.id" @refresh-posts-list="handleFetchPostsList(false)" />
@@ -179,7 +178,7 @@
 
             <!-- 各种弹出modal -->
             <ChangeColorModal ref="ChangeColorModalCom" :thread-id="threadId" />
-            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" />
+            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="newPostHandleAgain" type="new_post" />
             <JumpModal ref="JumpModalCom" :thread-id="threadId" :posts-num="threadData.posts_num" :page="page" />
             <RewardModal ref="RewardModalCom" @refresh-posts-list="handleFetchPostsList" />
         </template>

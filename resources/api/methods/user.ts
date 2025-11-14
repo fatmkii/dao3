@@ -98,6 +98,7 @@ interface waterUnlockParams {
     binggan: string,
     captcha_key: string,
     captcha_code: string,
+    type: string,
 }
 const waterUnlockPoster = (params: waterUnlockParams) => {
     const methodInstance = commonAlova.Post(

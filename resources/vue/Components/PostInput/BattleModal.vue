@@ -24,7 +24,7 @@
                     <f-button @click="showThis = false">关闭</f-button>
                 </n-flex>
             </template>
-            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="battleCreateHandle" />
+            <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="battleCreateHandle" type="new_post" />
         </n-card>
     </n-modal>
 </template>
@@ -104,7 +104,7 @@ const { loading: battleCreateLoading, send: battleCreateSend, onSuccess: battleC
     { immediate: false }
 )
 
-function battleCreateHandle(event: MouseEvent | KeyboardEvent | undefined) {
+function battleCreateHandle(event?: MouseEvent | KeyboardEvent) {
     const { timestamp, newPostKey } = getNewPostKey(
         event?.isTrusted ?? true,  //如果是从CaptchaModal调用的，则event是undefine，此时强制给isTrust以true代替
         props.threadId,

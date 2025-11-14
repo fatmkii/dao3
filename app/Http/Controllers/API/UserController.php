@@ -480,6 +480,7 @@ class UserController extends Controller
             'binggan' => 'required|string',
             'captcha_key' => 'required|string',
             'captcha_code' => 'required|string',
+            'type' => 'required|string',
         ]);
 
         $user = $request->user();
@@ -487,7 +488,12 @@ class UserController extends Controller
         if (Redis::exists("captcha_key_" . $request->captcha_key)) {
             $captcha_code = Redis::get("captcha_key_" . $request->captcha_key);
             if ($captcha_code == strtolower($request->captcha_code)) {
-                Redis::del('new_post_record_IP_' . $request->ip());
+                if ($request->type == 'new_post') {
+                    Redis::del('new_post_record_IP_' . $request->ip());
+                }
+                if($request->type =='hongbao_store'){
+                    Redis::del('hongbao_record_IP_' . $request->ip());
+                }
                 return response()->json([
                     'code' => ResponseCode::SUCCESS,
                     'message' => '已解除限制。',

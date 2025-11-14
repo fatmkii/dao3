@@ -80,24 +80,27 @@ class User extends Authenticatable
     //防灌水相关
     const NEW_THREAD_INTERVAL = 300; //发新主题频率
     const NEW_POST_NUMBER = 10; //饼干回帖次数（也就是60秒10次）
-    const NEW_POST_INTERVAL = 60; //饼干回帖频率（含大乱斗）
+    const NEW_POST_INTERVAL = 60; //饼干回帖检查周期（含大乱斗）
     const NEW_POST_NUMBER_IP = 100; //IP回帖次数（也就是1小时100次）
     const NEW_POST_NUMBER_IP2 = 5; //IP回帖不看帖次数（第3类）
     const NEW_POST_NUMBER_IP3 = 70; //IP回帖方差（第4类）
     const NEW_POST_NUMBER_IP4 = 20; //IP回帖前端的特征码（第5类），每20贴检查1次
-    const NEW_POST_INTERVAL_IP = 3600; //IP回帖频率（含大乱斗）
 
+    const NEW_POST_INTERVAL_IP = 3600; //IP回帖检查周期（含大乱斗）
+
+    const HONGBAO_INTERVAL = 3600; //IP抢红包的检查周期
+    const HONGBAO_NUMBER_IP = 2; //IP抢到红包的次数（也就是1小时2次）
 
     public function lockedTtl(): Attribute
     {
         if ($this->locked_until != null && Carbon::parse($this->locked_until)->gt(Carbon::now())) {
 
             $result = Attribute::make(
-                get: fn () => Carbon::parse($this->locked_until)->diffInSeconds(Carbon::now(), true),
+                get: fn() => Carbon::parse($this->locked_until)->diffInSeconds(Carbon::now(), true),
             );
         } else {
             $result = Attribute::make(
-                get: fn () => 0,
+                get: fn() => 0,
             );
         }
         return $result;
@@ -105,7 +108,7 @@ class User extends Authenticatable
 
     public function adminForums(): Attribute
     {
-        return Attribute::make(get: fn () => $this->AdminPermissions->forums);
+        return Attribute::make(get: fn() => $this->AdminPermissions->forums);
     }
 
     //计算平均值和方差
@@ -167,9 +170,9 @@ class User extends Authenticatable
                             break;
                         }
                     }
-                    Log::debug('$olo_sum',[$olo_sum]);
-                    Log::debug('$olo_enough',[$olo_enough]);
-                    Log::debug('$$this->coin + $olo_sum',[$this->coin + $olo_sum]);
+                    Log::debug('$olo_sum', [$olo_sum]);
+                    Log::debug('$olo_enough', [$olo_enough]);
+                    Log::debug('$$this->coin + $olo_sum', [$this->coin + $olo_sum]);
                     if ($olo_enough == false) {
                         //如果粮仓取完都不够，则把olo扣除到0为止（包括已取出的粮仓存款）
                         $income_statement['olo'] = -$this->coin;
@@ -209,8 +212,44 @@ class User extends Authenticatable
         }
     }
 
+    //newPostKey的检查，下面的waterCheck以及hongbaoRobotCheck检查共用
+    private function newPostKeyCheck(Request $request)
+    {
+        //确认是否脚本机器人发帖（JS脚本类型）
+        $key_1 = md5($request->thread_id . $request->binggan . $request->timestamp . "true"); //浏览器的isTrusted为true时候;
+        if ($request->new_post_key != $key_1) {
+            $key_2 = md5($request->thread_id . $request->binggan . $request->timestamp . "false"); //浏览器的isTrusted为false时候;
+            if ($request->new_post_key == $key_2) {
+                ProcessUserActive::dispatch(
+                    [
+                        'binggan' => $this->binggan,
+                        'user_id' => $this->id,
+                        'active' => '怀疑用户用脚本刷帖(JS脚本类型)',
+                        'thread_id' => $request->thread_id,
+                        'content' => 'ip:' . $request->ip(),
+                    ]
+                );
+                //暂时不返回错误，钓鱼
+                // return response()->json([
+                //     'code' => ResponseCode::POST_ROBOT,
+                //     'message' => ResponseCode::$codeMap[ResponseCode::POST_ROBOT],
+                // ]);
+            } else {
+                ProcessUserActive::dispatch(
+                    [
+                        'binggan' => $this->binggan,
+                        'user_id' => $this->id,
+                        'active' => '怀疑用户用脚本刷帖(key不正确)',
+                        'thread_id' => $request->thread_id,
+                        'content' => 'ip:' . $request->ip(),
+                    ]
+                );
+            }
+        }
+    }
+
     //发帖、回帖频率检查
-    public function waterCheck(string $action, string $ip, int $thread_id = null, Request $request = null)
+    public function waterCheck(string $action, string $ip, ?int $thread_id = null, ?Request $request = null)
     {
         switch ($action) {
             case 'new_post': {
@@ -305,36 +344,7 @@ class User extends Authenticatable
                     //第5类检查：
                     if ($new_post_record_IP % self::NEW_POST_NUMBER_IP4 == 0 && $this->admin < 10) {
                         //确认是否脚本机器人发帖（JS脚本类型）
-                        $key_1 = md5($request->thread_id . $request->binggan . $request->timestamp . "true"); //浏览器的isTrusted为true时候;
-                        if ($request->new_post_key != $key_1) {
-                            $key_2 = md5($request->thread_id . $request->binggan . $request->timestamp . "false"); //浏览器的isTrusted为false时候;
-                            if ($request->new_post_key == $key_2) {
-                                ProcessUserActive::dispatch(
-                                    [
-                                        'binggan' => $this->binggan,
-                                        'user_id' => $this->id,
-                                        'active' => '怀疑用户用脚本刷帖(JS脚本类型)',
-                                        'thread_id' => $request->thread_id,
-                                        'content' => 'ip:' . $request->ip(),
-                                    ]
-                                );
-                                //暂时不返回错误，钓鱼
-                                // return response()->json([
-                                //     'code' => ResponseCode::POST_ROBOT,
-                                //     'message' => ResponseCode::$codeMap[ResponseCode::POST_ROBOT],
-                                // ]);
-                            } else {
-                                ProcessUserActive::dispatch(
-                                    [
-                                        'binggan' => $this->binggan,
-                                        'user_id' => $this->id,
-                                        'active' => '怀疑用户用脚本刷帖(key不正确)',
-                                        'thread_id' => $request->thread_id,
-                                        'content' => 'ip:' . $request->ip(),
-                                    ]
-                                );
-                            }
-                        }
+                        $this->newPostKeyCheck($request);
                     }
 
                     break;
@@ -348,6 +358,59 @@ class User extends Authenticatable
                                 . $limted_minutes . '分钟后再发新主题。',
                         ]);
                     }
+                    break;
+                }
+        }
+        return 'ok';
+    }
+
+    //抢红包检查
+    public function hongbaoRobotCheck(string $action, string $ip, ?int $thread_id = null, ?Request $request = null)
+    {
+        switch ($action) {
+            case 'hongbao_store': {
+                    //抢红包
+                    $records =
+                        [
+                            'hongbao_record_IP' => 'hongbao_record_IP_' . $ip, //不输入验证码就不消除的
+                        ];
+
+
+                    foreach ($records as $name => $redis_key) {
+                        if (Redis::TTL($redis_key) == -1) {
+                            //偶然会出现TTL失效，此时redis的key
+                            Redis::del($redis_key);
+                            Log::channel('common')->error('hongbao_record_IP expired failed', ['key' => $redis_key]);
+                        };
+                        //批量查询和赋值
+                        $$name = Redis::GET($redis_key);
+                    }
+
+                    //第2类检查：IP记录，3600秒内抢到2次红包，就弹出验证码
+                    if ($hongbao_record_IP >= self::HONGBAO_NUMBER_IP && $this->admin < 100) {
+
+                        ProcessUserActive::dispatch(
+                            [
+                                'binggan' => $this->binggan,
+                                'user_id' => $this->id,
+                                'thread_id' => $thread_id,
+                                'active' => '用户触发了抢红包警报',
+                                'content' => 'ip:' . $ip . ' record:' . $hongbao_record_IP,
+                            ]
+                        );
+
+                        return response()->json([
+                            'code' => ResponseCode::POST_TOO_MANY_MAYBE_ROBOT,
+                            'message' => ResponseCode::$codeMap[ResponseCode::POST_TOO_MANY_MAYBE_ROBOT],
+                        ]);
+                    }
+
+                    //第5类检查：
+                    if ($this->admin < 10) {
+                        //确认是否脚本机器人发帖（JS脚本类型）
+                        $this->newPostKeyCheck($request);
+                    }
+
                     break;
                 }
         }
@@ -385,6 +448,21 @@ class User extends Authenticatable
                 }
             case 'new_thread': {
                     Redis::setex('new_thread_record_' . $this->binggan, self::NEW_THREAD_INTERVAL, 1);
+                    break;
+                }
+        }
+    }
+
+    //抢红包频率写入Redis（只计算成功抢到红包的）
+    public function hongbaoRobotRecord(string $action, string $ip)
+    {
+        switch ($action) {
+            case 'hongbao_store': {
+                    if (Redis::exists('hongbao_record_IP_' . $ip)) {
+                        Redis::incr('hongbao_record_IP_' . $ip);
+                    } else {
+                        Redis::setex('hongbao_record_IP_' . $ip,  self::HONGBAO_INTERVAL, 1);
+                    }
                     break;
                 }
         }

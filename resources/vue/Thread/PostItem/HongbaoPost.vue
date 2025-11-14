@@ -35,6 +35,8 @@
             <f-button type="primary" @click="hongbaoStoreHandle"
                 :disabled="hongbaoData.hongbao_user !== null || hongbaoPostStoreLoading || hongbaoData.num_remains === 0">抢！</f-button>
         </n-flex>
+        <!-- 验证码弹窗 -->
+        <CaptchaModal ref="CaptchaModalCom" @water-unlock-on-success="hongbaoStoreHandle" type="hongbao_store" />
     </n-flex>
 </template>
 
@@ -48,10 +50,12 @@ import { FButton, FInput } from '@/vue/Custom'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NText } from 'naive-ui'
 import { computed, ref } from 'vue'
+import CaptchaModal from '@/vue/Thread/CaptchaModal.vue'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 
 
 //组件props
@@ -112,8 +116,9 @@ const { loading: hongbaoPostStoreLoading, send: hongbaoPostStoreSend, onSuccess:
     (params: hongbaoPostStoreParams) => hongbaoPostStorePoster(params),
     { immediate: false }
 )
-function hongbaoStoreHandle(event: MouseEvent | KeyboardEvent) {
-    if (!event.isTrusted) {
+function hongbaoStoreHandle(event?: MouseEvent | KeyboardEvent) {
+    let isTrusted = event?.isTrusted ?? true  //如果是从CaptchaModal调用的，则event是undefine，此时强制给isTrust以true代替
+    if (!isTrusted) {
         const dialogArgs = {
             title: '错误',
             closable: false,
@@ -123,7 +128,12 @@ function hongbaoStoreHandle(event: MouseEvent | KeyboardEvent) {
         window.$dialog.warning(dialogArgs)
         return
     }
-    const { timestamp, newPostKey } = getNewPostKey(event.isTrusted, props.threadId, userStore.binggan!)
+    const { timestamp, newPostKey } =
+        getNewPostKey(
+            event?.isTrusted ?? true,  //如果是从CaptchaModal调用的，则event是undefine，此时强制给isTrust以true代替
+            props.threadId,
+            userStore.binggan!
+        )
     const params: hongbaoPostStoreParams = {
         binggan: userStore.binggan!,
         forum_id: props.forumId,
@@ -142,9 +152,14 @@ hongbaoPostStoreOnSuccess(() => {
     keywordInput.value = ''
     emit('refreshPostsList')
 })
-hongbaoPostStoreOnError(() => {
-    keywordInput.value = ''
-    emit('refreshPostsList')
+hongbaoPostStoreOnError((event) => {
+    if (event.error.cause !== undefined &&
+        event.error.cause.code === 244291) {
+        CaptchaModalCom.value?.show()
+    } else {
+        keywordInput.value = ''
+        emit('refreshPostsList')
+    }
 })
 
 </script>

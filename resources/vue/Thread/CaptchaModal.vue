@@ -43,6 +43,14 @@ import { computed, ref } from 'vue';
 const commonStore = useCommonStore()
 const userStore = useUserStore()
 
+//组件props
+interface Props {
+    type: string,
+}
+const props = withDefaults(defineProps<Props>(), {
+})
+
+
 //输入数据
 const captchaInput = ref<string>()
 const captchaKey = computed(() => captchaData.value.captcha_key)
@@ -77,7 +85,8 @@ function waterUnlockHandle() {
     const params: waterUnlockParams = {
         binggan: userStore.binggan!,
         captcha_code: captchaInput.value,
-        captcha_key: captchaKey.value
+        captcha_key: captchaKey.value,
+        type: props.type,
     }
     waterUnlockSend(params)
     waterUnlockOnSuccess(() => {
