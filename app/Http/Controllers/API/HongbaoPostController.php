@@ -129,6 +129,7 @@ class HongbaoPostController extends Controller
 
             //追加红包贴
             $hongbao = HongbaoPost::create([
+                'user_id' => $user->id,
                 'thread_id' => $request->thread_id,
                 'post_id' => $post->id,
                 'floor' => $post->floor,

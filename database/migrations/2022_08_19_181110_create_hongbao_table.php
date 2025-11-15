@@ -16,6 +16,7 @@ class CreateHongbaoTable extends Migration
         Schema::create('hongbao', function (Blueprint $table) {
             $table->id()->from(10001);
             $table->foreignId('thread_id')->constrained();
+            $table->unsignedInteger('user_id');
             $table->unsignedSmallInteger('num_total');
             $table->unsignedInteger('olo_total');
             $table->unsignedSmallInteger('num_remains');

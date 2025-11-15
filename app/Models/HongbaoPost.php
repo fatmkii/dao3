@@ -37,6 +37,7 @@ class HongbaoPost extends Model
     ];
 
     public $fillable = [
+        'user_id',
         'thread_id',
         'post_id',
         'floor',

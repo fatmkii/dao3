@@ -101,6 +101,7 @@ class Hongbao extends Model
         ); //扣除用户相应olo（通过统一接口、记录操作）
 
         $hongbao = new Hongbao();
+        $hongbao->user_id = $user->id;
         $hongbao->thread_id = $thread_id;
         $hongbao->olo_total = $request->hongbao_params['olo'];
         $hongbao->num_total = $request->hongbao_params['num'];
