@@ -1776,6 +1776,8 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/11/6910bf5dd1602.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf62b2eb0.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf6742408.webp",
+            "https://wmimg.com/i/1547/2025/11/6918859fbb765.gif",
+            "https://wmimg.com/i/1547/2025/11/691885a007ecb.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf6bbfb82.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf70537e7.jpg",
             "https://wmimg.com/i/1547/2025/11/6910bf74ecdb3.gif",
