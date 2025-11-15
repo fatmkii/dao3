@@ -88,8 +88,8 @@ class User extends Authenticatable
 
     const NEW_POST_INTERVAL_IP = 3600; //IP回帖检查周期（含大乱斗）
 
-    const HONGBAO_INTERVAL = 3600; //IP抢红包的检查周期
-    const HONGBAO_NUMBER_IP = 2; //IP抢到红包的次数（也就是1小时2次）
+    const HONGBAO_INTERVAL = 300; //IP抢红包的检查周期
+    const HONGBAO_NUMBER_IP = 5; //IP抢到红包的次数（也就是5分钟5次）
 
     public function lockedTtl(): Attribute
     {
