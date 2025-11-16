@@ -34,7 +34,7 @@
                     <n-text :depth="3">魂穿说明：</n-text>
                     <span>将原有饼干的所有数据都转移到定制饼干</span><br>
                     <span>包括：olo、粮仓、饼干等级、表情包、屏蔽词、成就和成就进度</span><br>
-                    <span>不包括：回帖主题等（也就是不能操作原有饼干的回帖）</span><br>
+                    <span>不包括：回帖主题（也就是不能操作原有饼干的回帖）、菠菜（所以最好等原有菠菜开奖后再魂穿）</span><br>
                     <n-text type="error" style="font-size:1.125rem">现有饼干会被碎掉</n-text><br>
                 </div>
             </n-form>
