@@ -2,7 +2,8 @@
     <n-modal v-model:show="showThis" display-directive="if">
         <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" closable @close="showThis = false" size="small">
             <n-flex vertical :align="'center'" :size="[4, 4]">
-                <img style="max-width: 100%;" :src="modalParams.emojiUrl">
+                <img style="max-width: 100%;" :src="modalParams.emojiUrl" ref="emojiImgDom">
+                <span>(new!)点击图片可以追加到自定义表情包</span>
                 <span>当前票数：{{ modalParams.voteNum }}</span>
                 <n-input-group>
                     <f-input-group-label style="width: 4.2rem;">投票额</f-input-group-label>
@@ -37,11 +38,13 @@
 import { useCommonStore } from '@/stores/common';
 import { FButton } from '@custom';
 import { FInputGroupLabel } from '@custom';
-import { NCard, NFlex, NInput, NModal, NInputGroup, NInputNumber, NText } from 'naive-ui';
-import { ref } from 'vue';
+import { NCard, NFlex, NAlert, NModal, NInputGroup, NInputNumber, NText } from 'naive-ui';
+import { ref, h, nextTick } from 'vue';
 import { type moeUserVoteParams, moeUserVotePoster } from '@/api/methods/emojiContest';
 import { useRequest } from 'alova';
 import { useUserStore } from '@/stores/user';
+import type { MessageRenderMessage } from 'naive-ui'
+import { myEmojisAddPoster, type myEmojisAddParams } from '@/api/methods/user'
 
 //基础数据
 const commonStore = useCommonStore()
@@ -54,6 +57,7 @@ const modalParams = ref<modalParams>({
     endFlag: 0, //活动进度，0=未开始，1=进行中，2=已结束
 })
 const voteNum = ref<number>()
+const emojiImgDom = ref<HTMLImageElement | null>(null)//回复内容组件的ref
 
 
 //来自父组件的唤醒emit
@@ -69,6 +73,11 @@ function show(params: modalParams) {
     showThis.value = true
     modalParams.value = params
     voteNum.value = undefined
+
+    //配置点击追加表情包的功能
+    nextTick(() => {
+        setImgOnClick()
+    })
 }
 defineExpose({ show })
 
@@ -96,6 +105,67 @@ voteHandleOnSuccess(() => {
     voteNum.value = undefined
     showThis.value = false
 })
+
+//点击图片添加到表情包功能
+const emojiSelected = ref<HTMLImageElement>()
+function setImgOnClick() {
+    const imgDom = emojiImgDom.value
+    console.log(imgDom)
+
+    imgDom?.addEventListener('click', (event) => {
+        emojiSelected.value = imgDom
+        window.$message.success('要添加至自定义表情包吗？', {
+            render: renderMessage,
+            closable: true
+        })
+    })
+}
+const renderMessage: MessageRenderMessage = (props) => {
+    const { type } = props
+    return h(
+        NAlert,
+        {
+            closable: false,
+            type: type === 'loading' ? 'default' : type,
+            showIcon: false,
+            style: {
+                boxShadow: 'var(--n-box-shadow)',
+                maxWidth: 'calc(100vw - 64px)',
+                width: '250px'
+            }
+        },
+        () => [
+            h('span', { innerText: props.content }),
+            h(
+                FButton,
+                {
+                    size: 'tiny',
+                    type: 'success',
+                    onClick: emojiAddHandle
+                },
+                {
+                    default: () => '确定'
+                }
+
+            )
+        ]
+    )
+}
+function emojiAddHandle() {
+    const myEmojis = userStore.userData.my_emoji
+    const newEmojiSrc = emojiSelected.value?.getAttribute('src')
+    if (!newEmojiSrc) { return }
+    if (myEmojis !== null && myEmojis.includes(newEmojiSrc)) {
+        window.$message.error('已经添加过该表情包了')
+    } else {
+        const params: myEmojisAddParams = {
+            binggan: userStore.binggan!,
+            my_emoji: newEmojiSrc!,
+        }
+        myEmojisAddPoster(params).then(() => userStore.refreshUserData())
+    }
+
+}
 
 //各种emit
 const emit = defineEmits<{
