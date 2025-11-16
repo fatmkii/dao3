@@ -752,6 +752,12 @@ class Medals
             'threshold' => 1000, //这里指1000票，100000个olo
             'varname' => 'emoji_contest_total',
         ),
+        269 => array(
+            'name' => '小火锅，我不当陪跑了！',
+            'describe' => '你骂谁二次元呢',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //大喇叭相关
         270 => array(
@@ -784,9 +790,5 @@ class Medals
             'threshold' => 100,
             'varname' => 'loudspeakers_con',
         ),
-
-
-
-
     );
 }

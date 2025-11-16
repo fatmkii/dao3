@@ -791,6 +791,12 @@ export const medalsHidden: medalsData = {
         'threshold': 1000, //这里指1000票，100000个olo
         'img': 'https://wmimg.com/i/1547/2025/11/691096599a9ce.png',
     },
+    269: {
+        'name': '小火锅，我不当陪跑了！',
+        'describe': '你骂谁二次元呢',
+        'threshold': null,
+        'img': 'https://wmimg.com/i/1547/2025/11/691924d616951.png',
+    },
 
     270: {
         'name': '吼那么大声干嘛啦',
