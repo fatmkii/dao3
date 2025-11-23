@@ -1782,8 +1782,6 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/11/6910bf70537e7.jpg",
             "https://wmimg.com/i/1547/2025/11/6910bf74ecdb3.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf79b2363.gif",
-            "https://wmimg.com/i/1547/2025/11/6910bf7ea39a4.gif",
-            "https://wmimg.com/i/1547/2025/11/6910bf836e796.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf8818349.gif",
             "https://wmimg.com/i/1547/2025/11/6910bf8ca9a5c.webp",
             "https://wmimg.com/i/1547/2025/11/6910bf914dd00.jpg",
@@ -1831,7 +1829,9 @@ const emojiData = [
             "https://wmimg.com/i/1547/2025/11/6917424244bcc.gif",
             "https://wmimg.com/i/1547/2025/11/6917424267beb.gif",
             "https://wmimg.com/i/1547/2025/11/6917424273719.gif",
-            "https://wmimg.com/i/1547/2025/11/6910c001dbcba.png"
+            "https://wmimg.com/i/1547/2025/11/6910c001dbcba.png",
+            "https://wmimg.com/i/1547/2025/11/6910bf7ea39a4.gif",
+            "https://wmimg.com/i/1547/2025/11/6910bf836e796.gif"
         ]
     },
     {
