@@ -90,7 +90,29 @@ class EraseNissinedDatabase extends Command
         $this->info('开始清理failed_jobs表');
         DB::table('failed_jobs')->truncate();
         Log::channel('database_log')->info('failed_jobs表已清理');
-        
+
+
+        $this->info('开始释放数据库空间');
+        // 生成posts_xx表清单
+        $thread_id_max = $nissined_threads_id->max();
+        $max_suffix = intval($thread_id_max / 10000);
+        $posts_tables = [];
+        for ($i = 1; $i <= $max_suffix; $i++) {
+            $posts_tables[] = 'posts_' . $i;
+        }
+        // 对所有posts_xx表执行alter table操作，以释放空间
+        foreach ($posts_tables as $key => $table_name) {
+            DB::raw(sprintf('ALTER TABLE %s', $table_name));
+            $this->info(sprintf('已执行：ALTER TABLE %s', $table_name));
+        }
+        //对其他表执行alter table操作
+        DB::raw('ALTER TABLE battle_messages');
+        $this->info('ALTER TABLE battle_messages');
+        DB::raw('ALTER TABLE failed_jobs');
+        $this->info('ALTER TABLE failed_jobs');
+
+        $this->info('数据库空间释放完成');
+
         $this->info('全部清理完成');
 
         return True;
