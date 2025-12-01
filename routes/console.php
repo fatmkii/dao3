@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('4:00');; //每天删除一次过期token
-Schedule::command('EraseNissinedDatabase:run')->dailyAt('5:00'); //清理数据库释放空间
+Schedule::command('EraseNissinedDatabase:run')->dailyAt('5:00')->appendOutputTo(storage_path('logs/erase-database.log')); //清理数据库释放空间
 Schedule::command('BattlePolling:run')->everyMinute(); //过期大乱斗处理
 Schedule::command('DailyNissinHandle:run')->dailyAt('8:00'); //日清的处理
 Schedule::command('DelayThreadHandle:run')->dailyAt('8:00'); //延迟主题的处理，务必要要在日清处理之后！
