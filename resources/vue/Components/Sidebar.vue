@@ -3,14 +3,14 @@
         :align="'center'">
         <!-- 到顶部 -->
         <Transition name="slide-fade">
-            <n-icon v-if="showButtons" :size="buttonSize + 2" class="icon" @click="scrollHandle('up')"
+            <n-icon key="up" v-if="showButtons" :size="buttonSize + 2" class="icon" @click="scrollHandle('up')"
                 :color="themeStore.themeColor.sidebarColor">
                 <Up />
             </n-icon>
         </Transition>
         <!-- 新主题 -->
         <Transition name="slide-fade">
-            <n-icon v-if="showButtons && mode == 'forum'" :size="buttonSize" class="icon" @click="emit('newThread')"
+            <n-icon key="new-thread" v-if="showButtons && mode == 'forum'" :size="buttonSize" class="icon" @click="emit('newThread')"
                 :color="themeStore.themeColor.sidebarColor">
                 <svg viewBox="0 0 16 16">
                     <path
@@ -20,7 +20,7 @@
         </Transition>
         <!-- 刷新 -->
         <Transition name="slide-fade">
-            <n-icon v-if="showButtons" :size="buttonSize" class="icon" @click="emit('refresh')"
+            <n-icon key="refresh" v-if="showButtons" :size="buttonSize" class="icon" @click="emit('refresh')"
                 :color="themeStore.themeColor.sidebarColor">
                 <svg viewBox="0 0 512 512">
                     <path
@@ -31,20 +31,20 @@
         </Transition>
         <!-- 跳楼机 -->
         <Transition name="slide-fade">
-            <n-icon v-if="showButtons && mode == 'thread'" :size="buttonSize" class="icon"
+            <n-icon key="jump" v-if="showButtons && mode == 'thread'" :size="buttonSize" class="icon"
                 :color="themeStore.themeColor.sidebarColor" @click="emit('showJumpModal')">
                 <Forward />
             </n-icon>
         </Transition>
         <!-- 到底部 -->
         <Transition name="slide-fade">
-            <n-icon v-if="showButtons" :size="buttonSize + 2" class="icon" @click="scrollHandle('down')"
+            <n-icon key="down" v-if="showButtons" :size="buttonSize + 2" class="icon" @click="scrollHandle('down')"
                 :color="themeStore.themeColor.sidebarColor">
                 <Down />
             </n-icon>
         </Transition>
         <!-- 初始按钮 -->
-        <n-icon :size="buttonSize" class="icon" @click="showButtons = !showButtons"
+        <n-icon key="toggle" :size="buttonSize" class="icon" @click="showButtons = !showButtons"
             :color="themeStore.themeColor.sidebarColor">
             <Layer />
         </n-icon>
