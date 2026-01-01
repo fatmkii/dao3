@@ -46,8 +46,8 @@ class GlobalSettingClass
         $festival_days = [
             ['month' => 6, 'day' => 18],
             ['month' => 11, 'day' => 11],
-            ['month' => 1, 'day' => 28], //TODO，春节用每次都要改
-            ['month' => 1, 'day' => 29], //TODO，春节用每次都要改
+            ['month' => 2, 'day' => 16], //TODO，春节用每次都要改，26年已改
+            ['month' => 2, 'day' => 17], //TODO，春节用每次都要改，26年已改
         ];
 
         $is_october_1st = false;
