@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Common\WatermarkObfuscator;
 
 class AdminController extends Controller
 {
@@ -1528,5 +1529,62 @@ class AdminController extends Controller
     //         'message' => '已删除公告',
     //     ]);
     // }
+
+
+    public function watermark_decode(Request $request)
+    {
+        $request->validate([
+            'watermark_string' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        // 仅超级管理员可调用
+        if (!($user->tokenCan('admin') && $user->admin == 99)) {
+            return response()->json(
+                [
+                    'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                    'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+                ],
+            );
+        }
+
+        try {
+            $raw_string = WatermarkObfuscator::decode($request->watermark_string);
+            
+            // user_id固定为100000以上的6位数字
+            // 如果长度大于6，前6位是user_id
+            // 如果长度小于等于6，说明只有thread_id（未登录用户）
+            // thread_id是10000到999999的数字
+            $user_id_target = 0;
+            $thread_id_target = 0;
+
+            if (strlen($raw_string) > 6) {
+                $user_id_target = intval(substr($raw_string, 0, 6)); //用户ID固定6位
+                $thread_id_target = intval(substr($raw_string, 6));
+            } else {
+                $thread_id_target = intval($raw_string);
+            }
+
+            $user_target = User::find($user_id_target);
+            
+            return response()->json([
+                'code' => ResponseCode::SUCCESS,
+                'message' => '解混淆成功',
+                'data' => [
+                    'raw_string' => $raw_string,
+                    'user_id' => $user_id_target,
+                    'thread_id' => $thread_id_target,
+                    'binggan' => $user_target ? $user_target->binggan : null,
+                ]
+            ]);
+
+        } catch (Exception $e) {
+             return response()->json([
+                'code' => ResponseCode::DEFAULT,
+                'message' => '解混淆失败: ' . $e->getMessage(),
+            ]);
+        }
+    }
 
 }

@@ -193,6 +193,8 @@
     <!-- 管理员操作的弹出modal -->
     <AdminActionModal ref="AdminActionModalCom" v-if="userStore.checkAdminForums(forumData?.id)"
         @refresh-posts-list="handleFetchPostsList" :thread-id="threadId" :forum-id="forumData?.id" />
+    <!-- 水印遮罩 -->
+    <div :style="watermarkStyle"></div>
 </template>
 
 <script setup lang="ts">
@@ -699,6 +701,43 @@ onDeactivated(() => {
     window.removeEventListener("keyup", keyupListener);
 })
 
+// 水印相关配置
+const wmFontSize = ref<string>('1rem') // 水印字体大小
+const wmColor = ref<string>('rgb(150,150,150)') // 水印颜色
+const wmOpacity = ref<number>(0.01) // 水印不透明度
+const wmDensity = ref<number>(150) // 水印单元格大小（密度）
+const wmText = computed(() => { return postsListData.value.watermark_string ?? "loading" })
+
+// 生成水印背景样式的计算属性
+const watermarkStyle = computed(() => {
+    // 构造 SVG 背景图
+    const svgContent = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${wmDensity.value}" height="${wmDensity.value}">
+            <text x="50%" y="50%" dy=".3em" text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="${wmFontSize.value}"
+                fill="${wmColor.value}"
+                opacity="${wmOpacity.value}"
+                transform="rotate(-45, ${wmDensity.value / 2}, ${wmDensity.value / 2})">
+                ${wmText.value}
+            </text>
+        </svg>
+    `.trim().replace(/\s+/g, ' ');
+
+    // 对 SVG 进行 URI 编码
+    const encodedSvg = encodeURIComponent(svgContent);
+    return {
+        backgroundImage: `url("data:image/svg+xml;charset=utf-8,${encodedSvg}")`,
+        backgroundRepeat: 'repeat',
+        pointerEvents: 'none' as const, // 确保水印层不遮挡页面点击事件
+        position: 'fixed' as const,
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0, // 确保水印位于最顶层
+    }
+})
 
 </script>
 

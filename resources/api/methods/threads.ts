@@ -121,6 +121,7 @@ interface postsListData {
         data: postData[],
     },
     your_post_floors: number[],
+    watermark_string: string,
 }
 interface getPostsListParams {
     threadId: number,

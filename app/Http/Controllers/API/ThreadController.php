@@ -18,6 +18,7 @@ use App\Models\GambleQuestion;
 use App\Models\Hongbao;
 use App\Models\UserMedalRecord;
 use App\Models\VoteQuestion;
+use App\Common\WatermarkObfuscator;
 use Exception;
 
 class ThreadController extends Controller
@@ -546,6 +547,9 @@ class ThreadController extends Controller
         //     $user_medal_record->check_national_day_just_read();
         // }
 
+        // 生成混淆后的水印字符串
+        $watermark_string = WatermarkObfuscator::encode($user ? $user->id : '0', $Thread_id);
+               
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
@@ -558,6 +562,7 @@ class ThreadController extends Controller
                     "lastPage" => $lastPage,
                 ),
                 'your_post_floors' => $your_post_floors,
+                'watermark_string' => (string)$watermark_string,
             ],
         ]);
     }

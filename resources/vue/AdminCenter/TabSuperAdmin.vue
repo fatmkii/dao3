@@ -63,20 +63,43 @@
             <f-button type="primary" :loading="createMedalHandling" :disabled="createMedalHandling"
                 @click="createMedalHandle">提交</f-button>
         </n-form>
+        <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
+            <n-text style="font-size: 0.875rem;">解密水印 </n-text>
+        </n-divider>
+        <n-form ref="watermarkFormRef" :model="watermarkFormInput" label-placement="left" label-width="auto"
+            :rules="watermarkInputRules" :size="commonStore.isMobile ? 'small' : 'medium'" style="max-width: 450px;">
+            <n-form-item label="水印字符串" path="watermark_string">
+                <f-input v-model:value="watermarkFormInput.watermark_string" />
+            </n-form-item>
+            <f-button type="primary" :loading="watermarkDecodeHandling" :disabled="watermarkDecodeHandling"
+                @click="watermarkDecodeHandle">提交</f-button>
+            <div v-if="watermarkFormInput.result_binggan !== null" style="margin-top: 10px;">
+                <n-text>饼干：{{ watermarkFormInput.result_binggan }}</n-text><br />
+                <n-a :href="'/thread/' + watermarkFormInput.result_thread_id" target="_blank">
+                    跳转到主题 (ID: {{ watermarkFormInput.result_thread_id }})
+                </n-a>
+            </div>
+            <div v-else-if="watermarkFormInput.result_thread_id !== null" style="margin-top: 10px;">
+                <n-text type="warning">未登录用户（无饼干）</n-text><br />
+                <n-a :href="'/thread/' + watermarkFormInput.result_thread_id" target="_blank">
+                    跳转到主题 (ID: {{ watermarkFormInput.result_thread_id }})
+                </n-a>
+            </div>
+        </n-form>
     </n-flex>
 
 </template>
 
 <script setup lang="ts">
 
-import { createMedalPoster, setUserOloPoster, transferThreadPoster, unlockUuidPoster, type createMedalParams, type setUserOloParams, type transferThreadParams, type unlockUuidParams } from '@/api/methods/admin'
+import { createMedalPoster, setUserOloPoster, transferThreadPoster, unlockUuidPoster, watermarkDecodePoster, type createMedalParams, type setUserOloParams, type transferThreadParams, type unlockUuidParams, type watermarkDecodeParams } from '@/api/methods/admin'
 import { inputNumberFormat, inputNumberParse } from '@/js/func/inputNumberFormat'
 import { useCommonStore } from '@/stores/common'
 import { useForumsStore } from '@/stores/forums'
 import { useUserStore } from '@/stores/user'
 import { FButton, FInput } from '@custom'
 import { useRequest } from 'alova'
-import { NDivider, NFlex, NForm, NFormItem, NInputNumber, NSelect, NSwitch, NText, type FormInst, type FormRules, } from 'naive-ui'
+import { NDivider, NFlex, NForm, NFormItem, NInputNumber, NSelect, NSwitch, NText, NA, type FormInst, type FormRules, } from 'naive-ui'
 import { computed, ref } from 'vue'
 
 //基础数据
@@ -87,6 +110,7 @@ const uuidFormRef = ref<FormInst | null>(null)
 const transferFormRef = ref<FormInst | null>(null)
 const oloFormRef = ref<FormInst | null>(null)
 const formRef = ref<FormInst | null>(null)
+const watermarkFormRef = ref<FormInst | null>(null)
 
 //输入的数据
 const oloFormInput = ref<{ binggan: string, olo: number | undefined, message: string }>(
@@ -109,6 +133,9 @@ const transferFormInput = ref<
     )
 const medalFormInput = ref<{ binggan: string, medalId: number }>(
     { binggan: '', medalId: 181 }
+)
+const watermarkFormInput = ref<{ watermark_string: string, result_binggan: string | null, result_thread_id: number | null }>(
+    { watermark_string: '', result_binggan: null, result_thread_id: null }
 )
 
 //板块名称的下拉菜单数据
@@ -173,6 +200,13 @@ const medalInputRules: FormRules = {
         required: true,
         message: '请选择要发放的成就',
         type: 'number',
+        trigger: 'blur'
+    },
+}
+const watermarkInputRules: FormRules = {
+    watermark_string: {
+        required: true,
+        message: '请填写混淆后的水印字符串',
         trigger: 'blur'
     },
 }
@@ -302,7 +336,37 @@ function createMedalHandle() {
     })
 }
 
+//提交解混淆水印
+const { loading: watermarkDecodeHandling,
+    send: watermarkDecodePosterSend,
+    onSuccess: watermarkDecodeOnSuccess,
+    onError: watermarkDecodeOnError, } = useRequest((params: watermarkDecodeParams) => watermarkDecodePoster(params), { immediate: false })
+watermarkDecodeOnSuccess((event) => {
+    // 显示结果
+    watermarkFormInput.value.result_binggan = event.data.binggan
+    watermarkFormInput.value.result_thread_id = event.data.thread_id
+})
+watermarkDecodeOnError(() => {
+    watermarkFormInput.value.result_binggan = null
+    watermarkFormInput.value.result_thread_id = null
+})
+function watermarkDecodeHandle() {
+    watermarkFormRef.value?.validate((errors) => {
+        if (errors) {
+            window.$message.error('请确认信息填写完整')
+            return
+        } else {
+            // 清空旧结果
+            watermarkFormInput.value.result_binggan = null
+            watermarkFormInput.value.result_thread_id = null
 
+            const params: watermarkDecodeParams = {
+                watermark_string: watermarkFormInput.value.watermark_string,
+            }
+            watermarkDecodePosterSend(params)
+        }
+    })
+}
 
 
 </script>

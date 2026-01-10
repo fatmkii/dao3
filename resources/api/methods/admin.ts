@@ -466,6 +466,34 @@ const transferThreadPoster = (params: transferThreadParams) => {
     return methodInstance
 }
 
+//管理员解混淆水印
+interface watermarkDecodeParams {
+    watermark_string: string
+}
+interface watermarkDecodeData {
+    raw_string: string,
+    user_id: number,
+    thread_id: number,
+    binggan: string | null
+}
+const watermarkDecodePoster = (params: watermarkDecodeParams) => {
+    const methodInstance = commonAlova.Post<watermarkDecodeData>(
+        'api/admin/watermark_decode',
+        params,
+        {
+            //第三个参数是config
+            name: 'watermarkDecodePoster',
+            params: {},
+            localCache: null,
+            hitSource: []
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: true
+    };
+    return methodInstance
+}
+
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -473,5 +501,6 @@ export {
     threadCancelTopParams, threadCancelTopPoster,
     setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
     globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
-    adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster, transferThreadParams, transferThreadPoster
+    adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster, transferThreadParams, transferThreadPoster,
+    watermarkDecodeParams, watermarkDecodePoster
 }
