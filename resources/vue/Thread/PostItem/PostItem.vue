@@ -69,7 +69,8 @@
 
             <!-- 红包组件 -->
             <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data" :forum-id="forumId"
-                :thread-id="postData.thread_id" :no-hongbao-pic-mode="noHongbaoPicMode" @refresh-posts-list="emit('refreshPostsList')" />
+                :thread-id="postData.thread_id" :no-hongbao-pic-mode="noHongbaoPicMode"
+                @refresh-posts-list="emit('refreshPostsList')" />
             <!-- 大乱斗组件 -->
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
@@ -420,14 +421,17 @@ const postContent = computed(() => {//数据处理
     if (props.useUrlMode) {
         function urlReplacer(match: string) {
             //判断是否是图片格式，如果非图片格式则转换为<a>标签
-            const reg = new RegExp(/.*(png|jpe?g|webp|gif)$/, 'i')
-            if (reg.test(match)) {
+            if (/\.(png|jpe?g|webp|gif)$/i.test(match)) {
                 return match
             } else {
-                return `<a href="${match}" target="_blank">${match}</a>`
+                let href = match
+                if (/^www\./i.test(match)) {
+                    href = 'http://' + match
+                }
+                return `<a href="${href}" target="_blank">${match}</a>`
             }
         }
-        const reg = new RegExp(/(https?:\/\/|www\.)[a-zA-Z_0-9\-@]+(\.\w[a-zA-Z_0-9\-:]+)+(\/[\(\)~#&\-=?\+\%/\:.\w]+)?/, 'gi')
+        const reg = /((https?:\/\/|www\.)[\w\-@:]+(\.[\w\-@:]+)+([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?)/gi
         postContent = postContent.replace(reg, urlReplacer)
     }
 
