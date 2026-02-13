@@ -563,6 +563,13 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/09/68b6dec371427.png',
     },
+    //26年春节
+    159: {
+        'name': '马年快乐',
+        'describe': '2026年小火锅马年祝福',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2026/02/698f06f44080d.png',
+    },
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',

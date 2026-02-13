@@ -491,7 +491,7 @@ class UserController extends Controller
                 if ($request->type == 'new_post') {
                     Redis::del('new_post_record_IP_' . $request->ip());
                 }
-                if($request->type =='hongbao_store'){
+                if ($request->type == 'hongbao_store') {
                     Redis::del('hongbao_record_IP_' . $request->ip());
                 }
                 return response()->json([

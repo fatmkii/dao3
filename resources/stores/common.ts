@@ -41,8 +41,8 @@ export const useCommonStore = defineStore('commonStore', () => {
         const festivalDays = [ //TODO 各个活动节日的时间（618和双十一）
             { month: 6, date: 18 },
             { month: 11, date: 11 },
-            { month: 2, date: 16 },//临时的，春节用
-            { month: 2, date: 17 },//临时的，春节用
+            { month: 2, date: 16 },//春节用
+            { month: 2, date: 17 },//春节用
         ]
         const now = dayjs.tz() //tz()才是获得UTC+8的时间
         let isDouble11 = false
