@@ -62,7 +62,7 @@
                     :hongbao-id="threadData.hongbao_id" :thread-id="threadId" :forum-id="forumData?.id"
                     :no-hongbao-pic-mode="noHongbaoPicMode" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- TODO 这里每次活动要改threadID -->
-                <PoolComponent ref="PoolComponentCom" v-if="threadId === 166424" :thread-id="threadId"
+                <PoolComponent ref="PoolComponentCom" v-if="threadId === 181261" :thread-id="threadId"
                     :forum-id="forumData?.id" @refresh-posts-list="handleFetchPostsList(false)" />
                 <!-- 这是第1楼及之后 -->
                 <PostItem v-for="postData in postsData.slice(1)" :key="postData.id" :post-data="postData"
