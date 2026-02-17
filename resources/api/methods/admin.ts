@@ -494,6 +494,39 @@ const watermarkDecodePoster = (params: watermarkDecodeParams) => {
     return methodInstance
 }
 
+//查询每日数据
+interface dailyDataItem {
+    date: string,
+    login_count: number,
+}
+interface dailyDataListData {
+    data: dailyDataItem[],
+    last_page: number,
+}
+interface dailyDataGetterParams {
+    binggan: string,
+    page: number | null,
+    date_start: string,
+    date_end: string,
+}
+const dailyDataGetter = (params: dailyDataGetterParams) => {
+    const methodInstance = commonAlova.Get<dailyDataListData>(
+        'api/admin/get_daily_data',
+        {
+            name: 'dailyDataGetter',
+            params: {
+                ...params,
+            },
+            localCache: null,
+            hitSource: [],
+        }
+    )
+    methodInstance.meta = {
+        shouldRemind: false
+    };
+    return methodInstance
+}
+
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -502,5 +535,6 @@ export {
     setBannersParams, setBannersPoster, createMedalParams, createMedalPoster, setUserOloParams, setUserOloPoster,
     globalSettingData, globalSettingDataGetter, setGlobalSettingParams, setGlobalSettingPoster,
     adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster, transferThreadParams, transferThreadPoster,
-    watermarkDecodeParams, watermarkDecodePoster
+    watermarkDecodeParams, watermarkDecodePoster,
+    dailyDataItem, dailyDataListData, dailyDataGetterParams, dailyDataGetter
 }

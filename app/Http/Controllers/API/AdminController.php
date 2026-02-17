@@ -1551,7 +1551,7 @@ class AdminController extends Controller
 
         try {
             $raw_string = WatermarkObfuscator::decode($request->watermark_string);
-            
+
             // user_id固定为100000以上的6位数字
             // 如果长度大于6，前6位是user_id
             // 如果长度小于等于6，说明只有thread_id（未登录用户）
@@ -1567,7 +1567,7 @@ class AdminController extends Controller
             }
 
             $user_target = User::find($user_id_target);
-            
+
             return response()->json([
                 'code' => ResponseCode::SUCCESS,
                 'message' => '解混淆成功',
@@ -1578,13 +1578,55 @@ class AdminController extends Controller
                     'binggan' => $user_target ? $user_target->binggan : null,
                 ]
             ]);
-
         } catch (Exception $e) {
-             return response()->json([
+            return response()->json([
                 'code' => ResponseCode::DEFAULT,
                 'message' => '解混淆失败: ' . $e->getMessage(),
             ]);
         }
     }
 
+    // 查询每日数据（登录binggan数等）
+    public function get_daily_data(Request $request)
+    {
+        $request->validate([
+            'page' => 'integer|nullable',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after_or_equal:date_start',
+        ]);
+
+        $user = $request->user();
+
+        // 仅超级管理员可查询
+        if (!$user->tokenCan('super_admin')) {
+            return response()->json(
+                [
+                    'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                    'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+                ],
+            );
+        }
+
+        $page = $request->page ?? 1;
+        $limit = 30;
+
+        $query = \App\Models\DailyData::orderByDesc('date')
+            ->where('date', '>=', $request->date_start)
+            ->where('date', '<=', $request->date_end);
+
+        $total = $query->count();
+        $lastPage = max(1, ceil($total / $limit));
+        $data = $query->offset(($page - 1) * $limit)->limit($limit)->get();
+
+        return response()->json(
+            [
+                'code' => ResponseCode::SUCCESS,
+                'message' => '已查询每日数据',
+                'data' => [
+                    'data' => $data,
+                    'last_page' => $lastPage,
+                ]
+            ]
+        );
+    }
 }

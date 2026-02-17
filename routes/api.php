@@ -87,6 +87,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/unlock_uuid', [AdminController::class, 'unlock_uuid']); //解锁一个用户注册的uuid限制
     Route::post('/transfer_thread', [AdminController::class, 'transfer_thread']); //解锁一个用户注册的uuid限制
     Route::post('/watermark_decode', [AdminController::class, 'watermark_decode']); //解混淆水印
+    Route::get('/get_daily_data', [AdminController::class, 'get_daily_data']); //查询每日数据
 });
 
 
