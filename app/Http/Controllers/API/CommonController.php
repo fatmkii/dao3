@@ -291,7 +291,7 @@ class CommonController extends Controller
         if (Carbon::now() < Carbon::create("2026-2-17 0:0:0")) {
             $coin = 0;
             $message = "本次活动尚未开始，请稍等喔";
-        } elseif (Carbon::now() > Carbon::create("2026-2-19 0:0:0")) {
+        } elseif (Carbon::now() > Carbon::create("2026-2-20 0:0:0")) {
             $coin = 0;
             $message = "本次活动已经结束，你来晚啦";
         } elseif (DB::table("hongbao_record")->where('user_id', $user->id)->lockForUpdate()->exists()) {
@@ -415,7 +415,7 @@ class CommonController extends Controller
                 'message' => "本次活动尚未开始，请稍等喔",
             ]);
         }
-        if (Carbon::now() > Carbon::create("2026-2-19 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2026-2-20 0:0:0")) {
             return response()->json([
                 'code' => ResponseCode::USER_CANNOT,
                 'message' => "本次活动已经结束，你来晚啦",
