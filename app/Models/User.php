@@ -146,7 +146,7 @@ class User extends Authenticatable
     }
 
     //统一的奥利奥变更接口，并且留下income_statement记录
-    public function coinChange(string $action = "normal", array $income_statement, bool $ignore_olo_0 = false)
+    public function coinChange(string $action, array $income_statement, bool $ignore_olo_0 = false)
     {
         //检查olo是否足够
         if ($income_statement['olo'] < 0 && $this->coin < -$income_statement['olo']) {
