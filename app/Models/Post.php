@@ -118,6 +118,9 @@ class Post extends ModelWithSuffix
                     return $nickname;
                 }
             case 2:
+                if ($this->is_your_post || (request()->user() && request()->user()->tokenCan('admin'))) {
+                    return $nickname;
+                }
                 if ($this->created_by_admin != 2) {
                     return '****';
                 } else {
@@ -158,6 +161,9 @@ class Post extends ModelWithSuffix
             case 1:
                 return '*此贴已被作者删除*';
             case 2:
+                if ($this->is_your_post || (request()->user() && request()->user()->tokenCan('admin'))) {
+                    return $content;
+                }
                 return '*此贴已被管理员删除*';
             default:
                 return $content;

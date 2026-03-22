@@ -435,6 +435,12 @@ const postContent = computed(() => {//数据处理
         postContent = postContent.replace(reg, urlReplacer)
     }
 
+    // 对于发帖者或管理员的已被管理员删除的帖子，使用 details 标签折叠，包裹原始内容
+    if (props.postData.is_deleted === 2 && (props.postData.is_your_post || userStore.admin.isNormalAdmin)) {
+        const expandText = props.postData.is_your_post ? '发帖者可点击展开' : '管理员可点击展开'
+        postContent = `<details><summary class="system-post-summary" style="cursor: pointer;">此贴已被管理员删除（${expandText}）</summary><div style="margin-top: 8px;">${postContent}</div></details>`
+    }
+
     return postContent
 })
 
