@@ -124,6 +124,9 @@ const hideBanner = useStorage<boolean>('banner_hiden', false)
 //新窗口打开(
 const newWindowToPost = useStorage<boolean>('new_window_to_post', false)
 
+//关闭愚人节彩蛋
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false)
+
 //功能选项下拉框
 function renderFuncOptions() {
     return h(
@@ -143,6 +146,11 @@ function renderFuncOptions() {
                 'onUpdate:checked': (value: boolean) => newWindowToPost.value = value,
                 label: "新窗口打开"
             }),
+            commonStore.isFoolday ? h(FCheckbox, {
+                checked: noFoolday2026.value,
+                'onUpdate:checked': (value: boolean) => noFoolday2026.value = value,
+                label: "关闭愚人节彩蛋"
+            }) : null,
         ]
     )
 }

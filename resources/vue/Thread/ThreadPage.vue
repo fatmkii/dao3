@@ -240,6 +240,7 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const route = useRoute()
 const router = useRouter()
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false) //愚人节彩蛋开关
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 const PostItemComs = ref<InstanceType<typeof PostItem>[]>([]) //回复内容的组件，但注意这里ref不包括第0楼
 const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//输入框组件的ref
@@ -430,6 +431,25 @@ postsListOnSuccess((event) => {
             const floorTarget = document.querySelector(route.hash)
             floorTarget?.scrollIntoView({ block: "center", behavior: "auto" });
             floorTarget?.classList.add('on-focus');//高亮显示该楼层
+        }
+
+        // 愚人节彩蛋弹出
+        if (route.query.foolday === '1' && !noFoolday2026.value) {
+            //移除URL中foolday参数，避免刷新再次弹出
+            const query = { ...route.query }
+            delete query.foolday
+            router.replace({ query })
+            
+            window.$dialog.warning({
+                title: '锅底混乱了！',
+                content: '群星回到了它应有的位置，小火锅的时空出现了混乱……似乎跳转到别的地方了',
+                positiveText: '确定',
+                negativeText: '咒姐别闹了',
+                onPositiveClick: () => {},
+                onNegativeClick: () => {
+                    noFoolday2026.value = true
+                }
+            })
         }
     })
 })

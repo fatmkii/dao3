@@ -79,6 +79,13 @@ export const useCommonStore = defineStore('commonStore', () => {
         return now.month() === 9 //0是一月，9是十月
     })
 
+    //是否2026年愚人节的flag
+    const isFoolday = computed<boolean>(() => {
+        const now = dayjs.tz() //tz()才是获得UTC+8的时间
+        return now.year() === 2026 && now.month() === 3 && now.date() === 1
+        // return true //测试用
+    })
+
 
     //用户的一般设定（在个人中心设置的）
     interface userCustomType {
@@ -181,7 +188,7 @@ export const useCommonStore = defineStore('commonStore', () => {
 
     }
 
-    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, isOctober1st, userCustom, modalMaxWidth, userCustomReset }
+    return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, isOctober1st, isFoolday, userCustom, modalMaxWidth, userCustomReset }
 
 })
 

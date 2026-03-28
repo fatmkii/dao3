@@ -19,6 +19,7 @@
                     {{ threadData.hongbao_id ? '🧧' : '' }}
                     <!-- 标题内容 -->
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
+                        @click="handleFooldayJump($event, threadData, 'title')"
                         :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
@@ -26,6 +27,7 @@
                     <!-- 页码 -->
                     <router-link
                         :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
+                        @click="handleFooldayJump($event, threadData, 'page')"
                         v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
@@ -67,6 +69,7 @@ import { useBrowseLogger } from '@/js/func/browseLogger'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
+import { useStorage } from '@vueuse/core'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
 import { useRouter } from 'vue-router'
@@ -76,6 +79,38 @@ import { useRouter } from 'vue-router'
 const commonStore = useCommonStore()
 const themeVars = useThemeVars()
 const router = useRouter()
+
+//愚人节彩蛋开关
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false)
+
+//愚人节拦截函数
+function handleFooldayJump(e: Event, currentThread: threadData, type: 'title' | 'page') {
+    if (commonStore.isFoolday && !noFoolday2026.value && props.threadsListData && props.threadsListData.length > 1) {
+        if (Math.random() < 0.5) {
+            e.preventDefault()
+            const otherThreads = props.threadsListData.filter(t => t.id !== currentThread.id)
+            const targetThread = otherThreads[Math.floor(Math.random() * otherThreads.length)]
+            
+            let targetPage = 1
+            if (type === 'page') {
+                targetPage = Math.ceil((targetThread.posts_num + 1) / 200)
+            }
+
+            const routerParams = {
+                name: 'thread',
+                params: { threadId: targetThread.id, page: targetPage > 1 ? targetPage : undefined },
+                query: { foolday: '1' }
+            }
+
+            if (props.newWindowToPost) {
+                const href = router.resolve(routerParams)
+                window.open(href.href, '_blank')
+            } else {
+                router.push(routerParams)
+            }
+        }
+    }
+}
 
 //组件props
 interface Props {
