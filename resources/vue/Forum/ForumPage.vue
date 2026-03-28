@@ -248,7 +248,8 @@ function toggleDelayThreads() {
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
-function pageUpdate(toPage: number) {
+function pageUpdate(toPage: number | undefined) {
+    if (toPage === undefined) return
     router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search, delay: props.delay ? 'true' : undefined } })
 }
 watch(() => props.page,
