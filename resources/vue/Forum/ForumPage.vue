@@ -39,7 +39,8 @@
         <LoudspeakerComponent />
         <!-- 主题列表 -->
         <ThreadList ref="ThreadListCom" :threads-list-data="threadListData" :new-window-to-post="newWindowToPost"
-            :show-this="!threadsDataLoading" @withdraw-delay-thread-success="handleFetchThreadsList" />
+            :forum-id="forumId" :show-this="!threadsDataLoading"
+            @withdraw-delay-thread-success="handleFetchThreadsList" />
 
         <!-- 底部分页导航及延时主题按钮 -->
         <n-flex :align="'center'">

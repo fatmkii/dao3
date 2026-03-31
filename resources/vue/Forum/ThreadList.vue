@@ -1,6 +1,6 @@
 <template>
     <n-flex vertical :size="2" v-if="showThis">
-        <n-card v-for=" threadData in threadsListData  " size="small" :bordered="true" :key="threadData.id"
+        <n-card v-for="threadData in threadsListData" size="small" :bordered="true" :key="threadData.id"
             class="thread-cards" :content-style="{ padding: commonStore.userCustom.threadListCardPadding + 'px' }"
             hoverable>
             <n-flex vertical :size="[0, 0]">
@@ -27,8 +27,8 @@
                     <!-- 页码 -->
                     <router-link
                         :to="{ name: 'thread', params: { threadId: threadData.id, page: Math.ceil((threadData.posts_num + 1) / 200) } }"
-                        @click="handleFooldayJump($event, threadData, 'page')"
-                        v-if="threadData.posts_num > 200" :target="newWindowToPost ? '_blank' : false">
+                        @click="handleFooldayJump($event, threadData, 'page')" v-if="threadData.posts_num > 200"
+                        :target="newWindowToPost ? '_blank' : false">
                         [{{ Math.ceil((threadData.posts_num + 1) / 200) }}]
                     </router-link>
                     <!-- 根据浏览记录的按钮 -->
@@ -58,7 +58,7 @@
         </n-card>
     </n-flex>
     <n-flex vertical :size="2" v-else>
-        <n-card class="threads-card-skeleton" v-for="  n in 50  " />
+        <n-card class="threads-card-skeleton" v-for="n in 50" />
     </n-flex>
 </template>
 
@@ -85,12 +85,12 @@ const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false)
 
 //愚人节拦截函数
 function handleFooldayJump(e: Event, currentThread: threadData, type: 'title' | 'page') {
-    if (commonStore.isFoolday && !noFoolday2026.value && props.threadsListData && props.threadsListData.length > 1) {
+    if (commonStore.isFoolday && !noFoolday2026.value && props.threadsListData && props.threadsListData.length > 1 && props.forumId == 914) {
         if (Math.random() < 0.5) {
             e.preventDefault()
             const otherThreads = props.threadsListData.filter(t => t.id !== currentThread.id)
             const targetThread = otherThreads[Math.floor(Math.random() * otherThreads.length)]
-            
+
             let targetPage = 1
             if (type === 'page') {
                 targetPage = Math.ceil((targetThread.posts_num + 1) / 200)
@@ -114,6 +114,7 @@ function handleFooldayJump(e: Event, currentThread: threadData, type: 'title' | 
 
 //组件props
 interface Props {
+    forumId: number,
     threadsListData: threadData[],
     showThis: boolean
     newWindowToPost?: boolean
