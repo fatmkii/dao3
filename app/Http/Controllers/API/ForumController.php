@@ -11,7 +11,7 @@ use App\Common\ResponseCode;
 use App\Jobs\ProcessUserActive;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\RateLimiter;
 
 class ForumController extends Controller
 {
@@ -57,19 +57,15 @@ class ForumController extends Controller
             'delay' => 'boolean|nullable|', //是否显示延时发送主题
         ]);
 
-        //用redis记录，全局每10秒搜索50次限制
+        //用RateLimiter记录，全局每10秒搜索50次限制
         if ($request->has('search_title')) {
-            if (Redis::exists('search_record_global')) {
-                Redis::incr('search_record_global');
-                if (Redis::GET('search_record_global') > 50) {
-                    return response()->json([
-                        'code' => ResponseCode::SEARCH_TOO_MANY,
-                        'message' => ResponseCode::$codeMap[ResponseCode::SEARCH_TOO_MANY],
-                    ]);
-                }
-            } else {
-                Redis::setex('search_record_global',  10, 1);
+            if (RateLimiter::tooManyAttempts('search_record_global', 50)) {
+                return response()->json([
+                    'code' => ResponseCode::SEARCH_TOO_MANY,
+                    'message' => ResponseCode::$codeMap[ResponseCode::SEARCH_TOO_MANY],
+                ]);
             }
+            RateLimiter::hit('search_record_global', 10);
         }
 
         $CurrentForum = Forum::find($forum_id);

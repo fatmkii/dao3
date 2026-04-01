@@ -11,7 +11,7 @@ use App\Common\ResponseCode;
 use Carbon\Carbon;
 use App\Exceptions\CoinException;
 use App\Facades\GlobalSetting;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Jobs\ProcessUserActive;
 use App\Models\Crowd;
 use App\Models\GambleQuestion;
@@ -354,19 +354,15 @@ class ThreadController extends Controller
             ]);
         }
 
-        //用redis记录，全局每10秒搜索20次限制
+        //用RateLimiter记录，全局每10秒搜索20次限制
         if ($request->has('search_content')) {
-            if (Redis::exists('search_record_global')) {
-                Redis::incr('search_record_global');
-                if (Redis::GET('search_record_global') > 20) {
-                    return response()->json([
-                        'code' => ResponseCode::SEARCH_TOO_MANY,
-                        'message' => ResponseCode::$codeMap[ResponseCode::SEARCH_TOO_MANY],
-                    ]);
-                }
-            } else {
-                Redis::setex('search_record_global',  10, 1);
+            if (RateLimiter::tooManyAttempts('search_record_global', 20)) {
+                return response()->json([
+                    'code' => ResponseCode::SEARCH_TOO_MANY,
+                    'message' => ResponseCode::$codeMap[ResponseCode::SEARCH_TOO_MANY],
+                ]);
             }
+            RateLimiter::hit('search_record_global', 10);
         }
 
         //判断是否可无饼干访问的板块
