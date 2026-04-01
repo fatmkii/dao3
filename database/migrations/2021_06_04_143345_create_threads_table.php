@@ -39,6 +39,7 @@ class CreateThreadsTable extends Migration
             $table->boolean('is_private')->default(0);   //是否私密主题
             $table->timestamps();
             $table->index('updated_at');
+            $table->index(['forum_id', 'is_deleted', 'is_delay', 'sub_id', 'updated_at'], 'idx_forum_list_complex'); // 版块列表复合索引
         });
     }
 
