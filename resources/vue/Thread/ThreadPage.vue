@@ -120,7 +120,7 @@
 
         <!-- 输入框（只有输入框用v-show避免重复加载） -->
         <PostInput v-show="!postsListLoading && showThis" ref="postInputCom" mode="post" :forum-id="forumData?.id"
-            :thread-id="threadId" :disabled="false" :handling="newPostHandling"
+            :thread-id="threadId" :disabled="threadData?.is_delay == true" :handling="newPostHandling"
             :random-heads-group="threadData?.random_heads_group" @content-commit="newPostHandle"
             @refresh-posts-list="handleFetchPostsList" />
 

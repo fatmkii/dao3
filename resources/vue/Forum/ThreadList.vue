@@ -20,7 +20,7 @@
                     <!-- 标题内容 -->
                     <router-link :to="{ name: 'thread', params: { threadId: threadData.id } }"
                         @click="handleFooldayJump($event, threadData, 'title')"
-                        :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1, pointerEvents: threadData.is_delay ? 'none' : undefined }"
+                        :style="{ color: threadData.title_color && !commonStore.userCustom.monochromeMode ? threadData.title_color : themeVars.textColor1 }"
                         :target="newWindowToPost ? '_blank' : false">
                         {{ threadData.title }}
                     </router-link>

@@ -100,7 +100,7 @@
         </n-flex>
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder" :rows="inputRows"
-            ref="contentInputDom" :style="inputStyle" :input-props="{ id: 'content-input' }" :disabled="userIsLocked"
+            ref="contentInputDom" :style="inputStyle" :input-props="{ id: 'content-input' }" :disabled="userIsLocked || disabled"
             @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false"
             @focus="isTyping = true" />
         <!-- 提交按钮等 -->
@@ -117,7 +117,7 @@
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
-                        :disabled="handling || userIsLocked">提交</f-button>
+                        :disabled="handling || userIsLocked || disabled">提交</f-button>
                 </template>
                 可以Ctrl+Enter
             </n-popover>
@@ -203,6 +203,9 @@ const inputRows = computed(() => {
 
 //用户禁言显示
 const textareaPlaceHolder = computed(() => {
+    if (props.disabled) {
+        return '延时主题暂不能回复（每天早上8点自动发出）'
+    }
     if (userStore.userData.binggan.locked_ttl > 0) {
         return `你的饼干封禁中，将于${Math.floor(userStore.userData.binggan.locked_ttl / 3600) + 1}小时后解封`
     } else {

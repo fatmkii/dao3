@@ -336,7 +336,7 @@ class ThreadController extends Controller
         ]);
 
         $CurrentThread = Thread::find($Thread_id);
-        if (!$CurrentThread || $CurrentThread->is_delay == 1) {
+        if (!$CurrentThread) {
             return response()->json([
                 'code' => ResponseCode::THREAD_NOT_FOUND,
                 'message' => ResponseCode::$codeMap[ResponseCode::THREAD_NOT_FOUND],
