@@ -570,6 +570,15 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2026/02/698f06f44080d.png',
     },
+    //26年5周年
+    160: {
+        'name': '小火锅五周年！',
+        'describe': '等等，哪来的小甲鱼？',
+        'threshold': 0,
+        'img': 'https://wmimg.com/i/1547/2026/02/698f06f43d40e.png',
+    },
+
+
     //画师荣誉徽章
     181: {
         'name': '皇家御用画宗',

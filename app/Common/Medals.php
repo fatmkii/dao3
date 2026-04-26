@@ -378,7 +378,6 @@ class Medals
             'threshold' => null,
             'varname' => null,
         ),
-
         //25年9月阅兵
         158 => array(
             'name' => '八十周年阅兵纪念',
@@ -390,6 +389,13 @@ class Medals
         159 => array(
             'name' => '马年快乐',
             'describe' => '2026年小火锅马年祝福',
+            'threshold' => null,
+            'varname' => null,
+        ),
+        //26年5周年
+        160 => array(
+            'name' => '小火锅五周年',
+            'describe' => '等等，哪来的小甲鱼？',
             'threshold' => null,
             'varname' => null,
         ),
