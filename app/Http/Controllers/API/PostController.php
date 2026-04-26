@@ -147,9 +147,9 @@ class PostController extends Controller
         }
 
         if (
-            //26年春节红包楼
-            $request->thread_id == 181260  //TODO 这里每次活动要改
-            && strpos($request->content, '新春快乐') !== false
+            //26年5周年红包楼
+            $request->thread_id == 187893  //TODO 这里每次活动要改
+            // && strpos($request->content, '新春快乐') !== false
         ) {
             CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
         }
