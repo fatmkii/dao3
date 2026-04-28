@@ -132,7 +132,7 @@ class GambleController extends Controller
             $post_content = sprintf("我为“%s”下注了%u块奥利奥", $bet_option->option_text, $request->betting_olo); //TODO
             // $post = new Post;
             // $post->setSuffix(intval($thread_id / 10000));
-            // $post->created_binggan = $request->binggan;
+            // $post->created_binggan = $user->binggan;
             // $post->forum_id = $gamble_question->Thread->Forum->id;
             // $post->thread_id = $thread_id;
             // $post->content = $post_content;
@@ -145,7 +145,7 @@ class GambleController extends Controller
             // $post->floor = $thread->posts_num;
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $gamble_question->Thread->Forum->id,
                 'thread_id' => $thread_id,
                 'content' => $post_content,
@@ -326,7 +326,7 @@ class GambleController extends Controller
             $post_content = sprintf("管理员已为此菠菜开奖，中奖项为：%s <br>奖金已发放，恭喜中奖的各位！", $result_option->option_text);
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $gamble_question->Thread->Forum->id,
                 'thread_id' => $thread_id,
                 'content' => $post_content,
@@ -418,7 +418,7 @@ class GambleController extends Controller
             $post_content = sprintf("管理员已中止此菠菜，投注额已退回。");
             // $post = new Post;
             // $post->setSuffix(intval($thread_id / 10000));
-            // $post->created_binggan = $request->binggan;
+            // $post->created_binggan = $user->binggan;
             // $post->forum_id = $gamble_question->Thread->Forum->id;
             // $post->thread_id = $thread_id;
             // $post->content = $post_content;
@@ -433,7 +433,7 @@ class GambleController extends Controller
             // $post->save();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $gamble_question->Thread->Forum->id,
                 'thread_id' => $thread_id,
                 'content' => $post_content,

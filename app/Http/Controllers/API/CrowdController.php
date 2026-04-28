@@ -109,7 +109,7 @@ class CrowdController extends Controller
             $thread_id = $crowd->thread_id;
             $post_content = sprintf("我众筹了%u块奥利奥", $olo_to_crowd);
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $crowd->Thread->Forum->id,
                 'thread_id' => $thread_id,
                 'content' => $post_content,
@@ -218,7 +218,7 @@ class CrowdController extends Controller
             $thread_id = $crowd->Thread->id;
             $post_content = sprintf("管理员已中止此众筹，众筹的olo已退回。");
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $crowd->Thread->Forum->id,
                 'thread_id' => $thread_id,
                 'content' => $post_content,

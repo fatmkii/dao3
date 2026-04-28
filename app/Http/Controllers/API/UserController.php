@@ -343,7 +343,7 @@ class UserController extends Controller
             ]);
         }
         //判断用户饼干和对象饼干是否一致
-        if ($user_target->binggan == $request->binggan) {
+        if ($user_target->binggan == $user->binggan) {
             return response()->json([
                 'code' => ResponseCode::DEFAULT,
                 'message' => '给自己打赏是想给税收做贡献吗？',
@@ -366,7 +366,7 @@ class UserController extends Controller
             DB::beginTransaction();
             // $post = new Post;
             // $post->setSuffix(intval($request->thread_id / 10000));
-            // $post->created_binggan = $request->binggan;
+            // $post->created_binggan = $user->binggan;
             // $post->forum_id = $request->forum_id;
             // $post->thread_id = $request->thread_id;
             // $post->content = "<span class='quote-content'>" .
@@ -390,7 +390,7 @@ class UserController extends Controller
                 '块奥利奥<br>——' . $request->content;
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $post_content,
@@ -466,7 +466,7 @@ class UserController extends Controller
                 'code' => ResponseCode::SUCCESS,
                 'message' => '打赏成功！对方获得' . $request->coin . '个奥利奥，你减少了' . $coin_pay . '个奥利奥',
                 'data' => [
-                    'binggan' => $request->binggan,
+                    'binggan' => $user->binggan,
                     'coin' => $request->coin
                 ]
             ],

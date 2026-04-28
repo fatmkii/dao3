@@ -136,7 +136,7 @@ class HongbaoController extends Controller
             DB::beginTransaction();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $request->content,
@@ -223,7 +223,7 @@ class HongbaoController extends Controller
             $hongbao->save();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $post_content,

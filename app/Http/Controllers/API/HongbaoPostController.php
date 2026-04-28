@@ -103,7 +103,7 @@ class HongbaoPostController extends Controller
             DB::beginTransaction();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => "来抢红包啦！",
@@ -294,7 +294,7 @@ class HongbaoPostController extends Controller
             DB::beginTransaction();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $request->content,
@@ -386,7 +386,7 @@ class HongbaoPostController extends Controller
                 HongbaoPost::withTrashed()->where('id', $hongbao->id)->decrement('num_remains');
 
                 $post_reply = Post::create([
-                    'created_binggan' => $request->binggan,
+                    'created_binggan' => $user->binggan,
                     'forum_id' => $request->forum_id,
                     'thread_id' => $request->thread_id,
                     'content' => $post_content,

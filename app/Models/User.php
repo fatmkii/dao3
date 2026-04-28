@@ -215,10 +215,12 @@ class User extends Authenticatable
     //newPostKey的检查，下面的waterCheck以及hongbaoRobotCheck检查共用
     private function newPostKeyCheck(Request $request)
     {
+        $user = $request->user();
+
         //确认是否脚本机器人发帖（JS脚本类型）
-        $key_1 = md5($request->thread_id . $request->binggan . $request->timestamp . "true"); //浏览器的isTrusted为true时候;
+        $key_1 = md5($request->thread_id . $user->binggan . $request->timestamp . "true"); //浏览器的isTrusted为true时候;
         if ($request->new_post_key != $key_1) {
-            $key_2 = md5($request->thread_id . $request->binggan . $request->timestamp . "false"); //浏览器的isTrusted为false时候;
+            $key_2 = md5($request->thread_id . $user->binggan . $request->timestamp . "false"); //浏览器的isTrusted为false时候;
             if ($request->new_post_key == $key_2) {
                 ProcessUserActive::dispatch(
                     [

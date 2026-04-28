@@ -99,7 +99,7 @@ class BattleController extends Controller
             DB::beginTransaction();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => "我发起了一场表情包大乱斗！",

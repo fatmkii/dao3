@@ -114,7 +114,7 @@ class PostController extends Controller
         try {
             DB::beginTransaction();
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $request->content,
@@ -397,9 +397,11 @@ class PostController extends Controller
             'thread_id' => 'required|integer',
         ]);
 
+        $user = $request->user();
+
         $post = Post::suffix(intval($request->thread_id / 10000))->find($id);
         //判断删帖操作者饼干和post饼干是否相同
-        if ($post->created_binggan != $request->binggan) {
+        if ($post->created_binggan != $user->binggan) {
             return response()->json(
                 [
                     'code' => ResponseCode::USER_UNAUTHORIZED,
@@ -407,7 +409,7 @@ class PostController extends Controller
                     'data' => [
                         'post_id' => $id,
                         'created_binggan' => $post->created_binggan,
-                        '$request->binggan' => $request->binggan,
+                        '$request->binggan' => $user->binggan,
                     ]
                 ],
             );
@@ -480,9 +482,11 @@ class PostController extends Controller
             'thread_id' => 'required|integer',
         ]);
 
+        $user= $request->user();
+
         $post = Post::suffix(intval($request->thread_id / 10000))->find($id);
         //判断删帖操作者饼干和post饼干是否相同
-        if ($post->created_binggan != $request->binggan) {
+        if ($post->created_binggan != $user->binggan) {
             return response()->json(
                 [
                     'code' => ResponseCode::USER_UNAUTHORIZED,
@@ -490,7 +494,7 @@ class PostController extends Controller
                     'data' => [
                         'post_id' => $id,
                         'created_binggan' => $post->created_binggan,
-                        '$request->binggan' => $request->binggan,
+                        '$request->binggan' => $user->binggan,
                     ]
                 ],
             );
@@ -595,7 +599,7 @@ class PostController extends Controller
             DB::beginTransaction();
 
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $roll_result_str,

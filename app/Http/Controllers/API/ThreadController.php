@@ -184,7 +184,7 @@ class ThreadController extends Controller
                 ); //通过统一接口、记录操作
                 $thread->is_private = $request->is_private;
             }
-            $thread->created_binggan = $request->binggan;
+            $thread->created_binggan = $user->binggan;
             $thread->forum_id = $request->forum_id;
             if ($request->subtitle == '[公告]') {
                 $thread->sub_id = $request->sub_id; //sub_id 10是版内公告，99是全岛公告
@@ -213,7 +213,7 @@ class ThreadController extends Controller
 
             //发主题帖的第0楼（Post）
             $post = Post::create([
-                'created_binggan' => $request->binggan,
+                'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $thread->id,
                 'content' => $request->content,
