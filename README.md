@@ -1,66 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dao3
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+匿名论坛，基于 **Laravel 11** (API) + **Vue 3** (SPA) 构建。
 
-## About Laravel
+## 技术栈
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **后端**: Laravel 11, Sanctum, Reverb (WebSocket), Redis, Roadrunner/Octane
+- **前端**: Vue 3 (Composition API), Naive UI, Pinia, Vite 7, Alova
+- **实时**: Laravel Echo + Pusher 协议，通过 Reverb 推送新帖通知
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 本地开发
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+# 前端
+npm install
+npm run dev          # Vite 热更新开发服务器
 
-## Learning Laravel
+# 后端
+composer install
+cp .env.example .env # 编辑数据库、Redis 等配置
+php artisan key:generate
+php artisan migrate
+php artisan serve    # Laravel 开发服务器
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# 队列 & WebSocket
+php artisan queue:listen
+php artisan reverb:start --debug
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+或使用 `dev.cmd` 一键启动前端 + 队列 + Reverb + 定时任务。
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 生产构建
 
-## Laravel Sponsors
+```bash
+npm run build         # 普通生产构建
+npm run staging       # 预发布构建 (mode=staging)
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+生产环境使用 Roadrunner/Octane 运行。
 
-### Premium Partners
+## 测试
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+php artisan test
+php artisan test --filter=ClassName
+```
 
-## Contributing
+## 项目结构
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| 目录 | 说明 |
+|---|---|
+| `app/Http/Controllers/API/` | API 控制器 |
+| `app/Models/` | Eloquent 模型 |
+| `app/Common/` | 公共工具 (ResponseCode, Medals 等) |
+| `routes/api.php` | API 路由定义 (~110 条) |
+| `resources/vue/` | Vue 组件 |
+| `resources/stores/` | Pinia 状态管理 |
+| `resources/api/` | 前端 API 请求层 |
 
-## Code of Conduct
+## 认证
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+基于 `饼干` (binggan) 的自定义认证：用户"认领"饼干后设置密码，通过 Laravel Sanctum 签发 API Token。`CheckBinggan` 中间件控制读写权限。
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
