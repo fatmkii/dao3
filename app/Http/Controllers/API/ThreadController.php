@@ -113,9 +113,6 @@ class ThreadController extends Controller
 
 
         $user = $request->user();
-        $water_check = $user->waterCheck('new_thread', $request->ip());
-        if ($water_check != 'ok') return $water_check;
-
 
         //确认是否冒认管理员发公告或者管理员帖
         if (
@@ -285,8 +282,6 @@ class ThreadController extends Controller
             DB::rollback();
             throw $e;
         }
-
-        $user->waterRecord('new_thread', $request->ip()); //用redis记录发帖频率。
 
         ProcessUserActive::dispatch(
             [
@@ -531,8 +526,6 @@ class ThreadController extends Controller
         }
 
         if ($user) {
-            //有正常看帖行为则清除redis灌水检查记录
-            $user->waterClear('view_post', $request->ip());
             //检查成就（小火锅终末旅行）
             UserMedalRecord::check_end_travel($Thread_id, $user);
         }

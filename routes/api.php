@@ -100,16 +100,16 @@ Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
 
 //thread系列
 Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
-    Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show'); //查看主题
-    Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create'); //发新主题
+    Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show')->middleware('RecordPostActivity'); //查看主题
+    Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //发新主题
     Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
     Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色
 });
 
 //Post系列
 Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
-    Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show'); //获得单个帖子数据
-    Route::post('/create', [PostController::class, 'create'])->middleware('throttle:new_post')->middleware('CheckBinggan:create'); //新帖子
+    Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show')->middleware('RecordPostActivity'); //获得单个帖子数据
+    Route::post('/create', [PostController::class, 'create'])->middleware('throttle:new_post')->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //新帖子
     Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
     Route::post('/create_roll', [PostController::class, 'create_roll'])->middleware('CheckBinggan:create'); //新roll点
     Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
@@ -155,13 +155,13 @@ Route::prefix('hongbao')->middleware('auth:sanctum')->group(function () {
 //HongbaoPost系列
 Route::prefix('hongbao_post')->middleware('auth:sanctum')->group(function () {
     Route::post('create', [HongbaoPostController::class, 'create'])->middleware('CheckBinggan:create'); //发出新回帖红包
-    Route::post('store', [HongbaoPostController::class, 'store'])->middleware('CheckBinggan:create'); //抢回帖红包
+    Route::post('store', [HongbaoPostController::class, 'store'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //抢回帖红包
 });
 
 //Battle系列
 Route::prefix('battles')->middleware('auth:sanctum')->group(function () {
     Route::get('/{battle_id}', [BattleController::class, 'show'])->middleware('CheckBinggan:show');  //获取大乱斗数据
-    Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create');  //用户发起大乱斗
+    Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity');  //用户发起大乱斗
     Route::post('/c_roll', [BattleController::class, 'challenger_roll'])->middleware('CheckBinggan:create');  //挑战者投色子
 });
 

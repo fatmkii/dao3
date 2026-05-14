@@ -20,7 +20,7 @@ class CreateGambleUsersTable extends Migration
                 $table->integer('gamble_question_id')->index();
                 $table->integer('option_id')->index();
                 $table->unsignedInteger('betting_olo');
-                $table->unsignedFloat('odds', 8, 2, true)->nullable();
+                $table->float('odds', 8, 2, true)->nullable();
                 $table->unsignedInteger('win_olo')->nullable();
                 $table->timestamps();
             });

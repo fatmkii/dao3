@@ -75,10 +75,6 @@ class BattleController extends Controller
 
         $user = $request->user();
 
-        $water_check = $user->waterCheck('new_post', $request->ip(), $request->thread_id, $request);
-        if ($water_check != 'ok') return $water_check;
-
-
         $can_battle = DB::table('threads')->where('id', $request->thread_id)->value('can_battle');
         if ($can_battle == 0) {
             return response()->json([
@@ -137,8 +133,6 @@ class BattleController extends Controller
             DB::rollback();
             throw $e;
         }
-
-        $user->waterRecord('new_post', $request->ip()); //用redis记录发帖频率。
 
         //广播发帖动作
         // broadcast(new NewPostBroadcast($request->thread_id, $post->id, $post->floor))->toOthers();
