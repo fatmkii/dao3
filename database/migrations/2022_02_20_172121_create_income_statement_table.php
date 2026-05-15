@@ -13,7 +13,7 @@ class CreateIncomeStatementTable extends Migration
      */
     public function up()
     {
-        for ($i = 2022; $i < 2024; $i++) {
+        for ($i = 2022; $i < 2028; $i++) {
             Schema::create('income_statement_' . $i, function (Blueprint $table) {
                 $table->id()->from(1000001);
                 $table->timestamp('created_at')->nullable();
@@ -39,7 +39,7 @@ class CreateIncomeStatementTable extends Migration
      */
     public function down()
     {
-        for ($i = 2022; $i < 2024; $i++) {
+        for ($i = 2022; $i < 2028; $i++) {
             Schema::dropIfExists('income_statement_' . $i);
         }
     }

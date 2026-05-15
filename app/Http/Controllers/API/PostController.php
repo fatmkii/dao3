@@ -47,10 +47,6 @@ class PostController extends Controller
 
         $user = $request->user();
 
-        //灌水检查
-        $water_check = $user->waterCheck('new_post', $request->ip(), $request->thread_id, $request);
-        if ($water_check != 'ok') return $water_check;
-
         $thread = Thread::find($request->thread_id);
         if (!$thread || $thread->is_delay == 1 || $thread->is_deleted != 0) {
             return response()->json([
@@ -153,9 +149,6 @@ class PostController extends Controller
         ) {
             CommonController::post_hongbao($request, $thread, $post); //执行送红包流程
         }
-
-        //用redis记录回频率。
-        $user->waterRecord('new_post', $request->ip());
 
         //检查成就（抢到特定楼层）
         UserMedalRecord::check_floor($post->floor, $user);
@@ -353,11 +346,6 @@ class PostController extends Controller
         //为超管加入发帖者饼干显示
         if ($user && $user->admin == 99) {
             $post->makeVisible('created_binggan');
-        }
-
-        //有正常看帖行为则清除redis灌水检查记录
-        if ($user) {
-            $user->waterClear('view_post', $request->ip());
         }
 
         return response()->json([

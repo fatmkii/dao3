@@ -5,6 +5,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckBinggan;
+use App\Http\Middleware\RecordPostActivity;
+use App\Http\Middleware\ThrottlePost;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'CheckBinggan' => CheckBinggan::class
+            'CheckBinggan' => CheckBinggan::class,
+            'ThrottlePost' => ThrottlePost::class,
+            'RecordPostActivity' => RecordPostActivity::class,
         ]);
         // $middleware->priority([
         //     \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class, //需要先执行过auth，才能在获得$request->user()

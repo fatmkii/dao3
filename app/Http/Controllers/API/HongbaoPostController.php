@@ -195,10 +195,6 @@ class HongbaoPostController extends Controller
 
         $user = $request->user();
 
-        //灌水检查（用下面的红包机器人检查代替了）
-        // $water_check = $user->waterCheck('new_post', $request->ip(), $request->thread_id, $request);
-        // if ($water_check != 'ok') return $water_check;
-
         $thread = Thread::find($request->thread_id);
         if (!$thread || $thread->is_delay == 1 || $thread->is_deleted != 0) {
             return response()->json([
@@ -247,14 +243,6 @@ class HongbaoPostController extends Controller
             );
         }
 
-        //抢红包机器人检查
-        if ($hongbao->user_id != $user->id) {
-            //当然自己的红包不用检查
-            $hongbao_robot_check = $user->hongbaoRobotCheck('hongbao_store', $request->ip(), $request->thread_id, $request);
-            if ($hongbao_robot_check != 'ok') {
-                return $hongbao_robot_check;
-            }
-        }
 
 
         //检查是否已经抢过红包了
@@ -320,9 +308,6 @@ class HongbaoPostController extends Controller
             DB::rollback();
             throw $e;
         }
-
-        //用redis记录回帖频率。（改为用hongbaoRobotCheck，并且抢成功才会检查）
-        // $user->waterRecord('new_post', $request->ip());
 
         //检查红包关键词是否正确 
         if ($hongbao->key_word == $request->hongbao_key_word) { //口令正确的流程：
@@ -422,9 +407,6 @@ class HongbaoPostController extends Controller
                 DB::rollback();
                 throw $e;
             }
-
-            //用redis记录抢红包的频率（上面抢成功了才会记录）
-            $user->hongbaoRobotRecord('hongbao_store', $request->ip());
 
             //检查成就
             UserMedalRecord::check_floor($post->floor, $user); //（抢到特定楼层）
