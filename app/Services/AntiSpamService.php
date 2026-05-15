@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Common\ResponseCode;
 use App\Exceptions\SpamDetectedException;
 use App\Jobs\ProcessUserActive;
-use App\Models\Post;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -18,8 +17,6 @@ class AntiSpamService
     const NEW_POST_INTERVAL = 60;
     const NEW_POST_NUMBER_IP = 100;
     const NEW_POST_NUMBER_IP2 = 5;
-    const NEW_POST_NUMBER_IP3 = 70;
-    const NEW_POST_NUMBER_IP4 = 20;
     const NEW_POST_INTERVAL_IP = 3600;
 
     // 抢红包相关常量
@@ -92,24 +89,12 @@ class AntiSpamService
             );
         }
 
-        // 第3类检查：IP记录，只回帖不看帖
-        if ($new_post_record_IP2 >= self::NEW_POST_NUMBER_IP2 && $new_post_record_IP2 % 5 == 0 && $user->admin < 10) {
-            ProcessUserActive::dispatch([
-                'binggan' => $user->binggan,
-                'user_id' => $user->id,
-                'thread_id' => $threadId,
-                'active' => '怀疑用户用脚本刷帖(回帖不看帖)',
-                'content' => 'ip:' . $ip . ' record:' . $new_post_record_IP2,
-            ]);
-        }
+        // 第3-4类检查已由 calculateRiskScore 多维度评分取代
+        // 第3类：只回帖不看帖 → 维度D
+        // 第4类：发帖间隔方差 → 维度A (Redis Sorted Set)
 
-        // 第4类检查：IP记录，发帖间隔方差
-        if ($new_post_record_IP == self::NEW_POST_NUMBER_IP3 && $user->admin < 10) {
-            $this->checkVariance($user, $threadId, $ip);
-        }
-
-        // 第5类检查：JS new_post_key 验证
-        if ($new_post_record_IP % self::NEW_POST_NUMBER_IP4 == 0 && $user->admin < 10) {
+        // 第5类检查：JS new_post_key 验证（静默记录）
+        if ($user->admin < 10) {
             $this->newPostKeyCheck($user->binggan, $user->id, $threadId, $ip, $newPostKey, $timestamp);
         }
     }
@@ -343,62 +328,7 @@ class AntiSpamService
     // ===== Private helpers =====
 
     /**
-     * 发帖间隔方差检查（对应原第4类检查中的 DB 查询部分）
-     */
-    private function checkVariance(User $user, ?int $threadId, string $ip): void
-    {
-        $posts_time = Post::suffix(intval($threadId / 10000))
-            ->where('created_binggan', $user->binggan)
-            ->orderBy('id', 'desc')
-            ->limit(21)
-            ->pluck('created_at')
-            ->toArray();
-
-        $posts_time_d = [];
-        for ($i = 0; $i < count($posts_time) - 1; ++$i) {
-            array_push($posts_time_d, $posts_time[$i]->timestamp - $posts_time[$i + 1]->timestamp);
-        }
-        if (count($posts_time_d) == 0) {
-            Log::channel('common')->warning('new_post check failed', ['array' => $posts_time_d, 'binggan' => $user->binggan]);
-            return;
-        }
-
-        list($avg, $variance) = $this->getAvgVar($posts_time_d);
-
-        if ($variance < 5) {
-            ProcessUserActive::dispatch([
-                'binggan' => $user->binggan,
-                'user_id' => $user->id,
-                'thread_id' => $threadId,
-                'active' => '怀疑用户用脚本刷帖(方差一致)',
-                'content' => sprintf("ip:%s avg:%.1f  var:%.1f", $ip, $avg, $variance),
-            ]);
-        }
-    }
-
-    /**
-     * 计算平均值和方差
-     */
-    private function getAvgVar(array $array): array
-    {
-        $sum = 0;
-        $count = count($array);
-        foreach ($array as $num) {
-            $sum += $num;
-        }
-        $avg = $sum / $count;
-
-        $square = 0;
-        foreach ($array as $num) {
-            $square += pow($num - $avg, 2);
-        }
-        $variance = $square / $count;
-
-        return [$avg, $variance];
-    }
-
-    /**
-     * newPostKey 检查（验证前端 JS 生成的签名）
+     * newPostKey 检查（验证前端 JS 生成的签名，静默记录）
      */
     private function newPostKeyCheck(string $binggan, int $userId, ?int $threadId, string $ip, ?string $newPostKey, ?int $timestamp): void
     {
