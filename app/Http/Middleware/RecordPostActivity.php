@@ -36,12 +36,14 @@ class RecordPostActivity
 
         switch ($action) {
             case 'new_post':
-                $this->antiSpam->recordPost($ip);
-                if ($user) {
+                $ip2Count = $this->antiSpam->recordPost($ip);
+                if ($user && mt_rand(1, 3) === 1) {
                     $this->antiSpam->calculateRiskScore(
                         $user->binggan,
+                        $user->id,
                         $ip,
-                        $request->input('thread_id')
+                        $request->input('thread_id'),
+                        $ip2Count
                     );
                 }
                 break;
