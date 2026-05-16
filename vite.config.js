@@ -48,11 +48,16 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     //     vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
                     // }
                     manualChunks: (id) => {
-                        // 将 node_modules 中的依赖打包到 vendor
                         if (id.includes('node_modules')) {
-                            return 'vendor';
+                            const match = id.match(/node_modules\/(?:\.pnpm\/.+?\/node_modules\/)?(@[^/]+\/[^/]+|[^/]+)/);
+                            if (match) {
+                                const pkg = match[1];
+                                if (pkg.startsWith('@vicons/')) return 'vicons';
+                                if (pkg === 'vue' || pkg === 'vue-router' || pkg === 'pinia') return 'vue-ecosystem';
+                                return pkg;
+                            }
                         }
-                        return null
+                        return null;
                     },
                 }
             }
