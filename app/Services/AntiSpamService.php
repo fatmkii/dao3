@@ -148,23 +148,23 @@ class AntiSpamService
      */
     public function recordPost(string $ip): int
     {
-        $results = Redis::pipeline(function ($pipe) use ($ip) {
-            $pipe->incr(self::REDIS_POST_RECORD . $ip);
-            $pipe->incr(self::REDIS_POST_RECORD_IP . $ip);
-            $pipe->incr(self::REDIS_POST_RECORD_IP2 . $ip);
-        });
-
-        if ($results[0] == 1) {
+        // 逐个 INCR（非 pipeline），保证返回值可靠，EXPIRE 才能正确触发
+        $r0 = Redis::incr(self::REDIS_POST_RECORD . $ip);
+        if ($r0 == 1) {
             Redis::expire(self::REDIS_POST_RECORD . $ip, self::NEW_POST_INTERVAL);
         }
-        if ($results[1] == 1) {
+
+        $r1 = Redis::incr(self::REDIS_POST_RECORD_IP . $ip);
+        if ($r1 == 1) {
             Redis::expire(self::REDIS_POST_RECORD_IP . $ip, self::NEW_POST_INTERVAL_IP);
         }
-        if ($results[2] == 1) {
+
+        $r2 = Redis::incr(self::REDIS_POST_RECORD_IP2 . $ip);
+        if ($r2 == 1) {
             Redis::expire(self::REDIS_POST_RECORD_IP2 . $ip, self::NEW_POST_INTERVAL_IP);
         }
 
-        return (int) $results[2];
+        return $r2;
     }
 
     /**
