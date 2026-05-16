@@ -6,7 +6,6 @@ use App\Common\ResponseCode;
 use App\Exceptions\SpamDetectedException;
 use App\Jobs\ProcessUserActive;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class AntiSpamService
@@ -51,19 +50,21 @@ class AntiSpamService
      */
     public function checkPostSpam(string $ip, User $user, ?int $threadId, ?string $newPostKey, ?int $timestamp): void
     {
-        $records = [
-            'new_post_record' => self::REDIS_POST_RECORD . $ip,
-            'new_post_record_IP' => self::REDIS_POST_RECORD_IP . $ip,
-            'new_post_record_IP2' => self::REDIS_POST_RECORD_IP2 . $ip,
+        $keys = [
+            self::REDIS_POST_RECORD . $ip,
+            self::REDIS_POST_RECORD_IP . $ip,
+            self::REDIS_POST_RECORD_IP2 . $ip,
         ];
 
-        foreach ($records as $name => $redis_key) {
-            if (Redis::TTL($redis_key) == -1) {
-                Redis::del($redis_key);
-                Log::channel('common')->error('new_post_record expired failed', ['key' => $redis_key]);
+        $results = Redis::pipeline(function ($pipe) use ($keys) {
+            foreach ($keys as $key) {
+                $pipe->get($key);
             }
-            $$name = Redis::GET($redis_key);
-        }
+        });
+
+        $new_post_record = (int) ($results[0] ?? 0);
+        $new_post_record_IP = (int) ($results[1] ?? 0);
+        $new_post_record_IP2 = (int) ($results[2] ?? 0);
 
         // 第1类检查：IP记录，1分钟最多10贴
         if ($new_post_record >= self::NEW_POST_NUMBER && $user->admin < 10) {
@@ -120,17 +121,7 @@ class AntiSpamService
      */
     public function checkHongbaoSpam(string $ip, User $user, ?int $threadId, ?string $newPostKey, ?int $timestamp): void
     {
-        $records = [
-            'hongbao_record_IP' => self::REDIS_HONGBAO_RECORD_IP . $ip,
-        ];
-
-        foreach ($records as $name => $redis_key) {
-            if (Redis::TTL($redis_key) == -1) {
-                Redis::del($redis_key);
-                Log::channel('common')->error('hongbao_record_IP expired failed', ['key' => $redis_key]);
-            }
-            $$name = Redis::GET($redis_key);
-        }
+        $hongbao_record_IP = (int) (Redis::GET(self::REDIS_HONGBAO_RECORD_IP . $ip) ?: 0);
 
         // 抢红包IP检查
         if ($hongbao_record_IP >= self::HONGBAO_NUMBER_IP && $user->admin < 100) {
@@ -155,25 +146,27 @@ class AntiSpamService
     }
 
     /**
-     * 记录发帖/回帖频率（对应原 waterRecord 'new_post'）
+     * 记录发帖/回帖频率，返回 IP2 计数器的新值（供 calculateRiskScore 复用）
      */
-    public function recordPost(string $ip): void
+    public function recordPost(string $ip): int
     {
-        if (Redis::exists(self::REDIS_POST_RECORD . $ip)) {
-            Redis::incr(self::REDIS_POST_RECORD . $ip);
-        } else {
-            Redis::setex(self::REDIS_POST_RECORD . $ip, self::NEW_POST_INTERVAL, 1);
+        $results = Redis::pipeline(function ($pipe) use ($ip) {
+            $pipe->incr(self::REDIS_POST_RECORD . $ip);
+            $pipe->incr(self::REDIS_POST_RECORD_IP . $ip);
+            $pipe->incr(self::REDIS_POST_RECORD_IP2 . $ip);
+        });
+
+        if ($results[0] == 1) {
+            Redis::expire(self::REDIS_POST_RECORD . $ip, self::NEW_POST_INTERVAL);
         }
-        if (Redis::exists(self::REDIS_POST_RECORD_IP . $ip)) {
-            Redis::incr(self::REDIS_POST_RECORD_IP . $ip);
-        } else {
-            Redis::setex(self::REDIS_POST_RECORD_IP . $ip, self::NEW_POST_INTERVAL_IP, 1);
+        if ($results[1] == 1) {
+            Redis::expire(self::REDIS_POST_RECORD_IP . $ip, self::NEW_POST_INTERVAL_IP);
         }
-        if (Redis::exists(self::REDIS_POST_RECORD_IP2 . $ip)) {
-            Redis::incr(self::REDIS_POST_RECORD_IP2 . $ip);
-        } else {
-            Redis::setex(self::REDIS_POST_RECORD_IP2 . $ip, self::NEW_POST_INTERVAL_IP, 1);
+        if ($results[2] == 1) {
+            Redis::expire(self::REDIS_POST_RECORD_IP2 . $ip, self::NEW_POST_INTERVAL_IP);
         }
+
+        return (int) $results[2];
     }
 
     /**
@@ -211,14 +204,18 @@ class AntiSpamService
     {
         $key = self::REDIS_POST_TIMELINE . $binggan;
         Redis::zadd($key, now()->timestamp, $postId);
-        Redis::zremrangeByRank($key, 0, -31); // 保留最近30条
+
+        // 概率性裁剪：1/5 概率执行，减少 Redis 调用
+        if (mt_rand(1, 5) === 1) {
+            Redis::zremrangeByRank($key, 0, -31);
+        }
     }
 
     /**
      * 多维度机器人风险评分（只计算，不拦截）
      * 只有总分 >= SCORE_MIN_RECORD (7) 才写数据库
      */
-    public function calculateRiskScore(string $binggan, string $ip, ?int $threadId): void
+    public function calculateRiskScore(string $binggan, int $userId, string $ip, ?int $threadId, int $ip2Count): void
     {
         $timelineKey = self::REDIS_POST_TIMELINE . $binggan;
         $timeline = Redis::zrange($timelineKey, 0, -1, true);
@@ -283,8 +280,7 @@ class AntiSpamService
             }
         }
 
-        // 维度D：回帖不看帖
-        $ip2Count = (int) (Redis::GET(self::REDIS_POST_RECORD_IP2 . $ip) ?: 0);
+        // 维度D：回帖不看帖（ip2Count 由调用方传入）
         $scoreD = $ip2Count >= self::NEW_POST_NUMBER_IP2 ? 2 : 0;
 
         // 维度E：深夜时段
@@ -298,9 +294,6 @@ class AntiSpamService
         if ($normalizedScore < self::SCORE_MIN_RECORD) {
             return;
         }
-
-        // 查找用户ID（通过 binggan）
-        $userId = User::where('binggan', $binggan)->value('id') ?: 0;
 
         $details = [
             'score' => $normalizedScore,

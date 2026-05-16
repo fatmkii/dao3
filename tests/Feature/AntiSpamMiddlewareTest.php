@@ -458,7 +458,7 @@ class AntiSpamMiddlewareTest extends TestCase
         $middleware->terminate($request, $htmlResponse);
     }
 
-    public function test_record_new_post_calls_risk_score(): void
+    public function test_record_new_post_calls_record_post(): void
     {
         $middleware = new RecordPostActivity($this->antiSpamMock);
 
@@ -467,10 +467,9 @@ class AntiSpamMiddlewareTest extends TestCase
         ]);
         $request->setUserResolver(fn() => $this->user);
 
-        $this->antiSpamMock->expects($this->once())->method('recordPost');
         $this->antiSpamMock->expects($this->once())
-            ->method('calculateRiskScore')
-            ->with('test_binggan_abc', '127.0.0.1', 10001);
+            ->method('recordPost')
+            ->with('127.0.0.1');
 
         $jsonResponse = new JsonResponse(['code' => 200]);
         $middleware->terminate($request, $jsonResponse);
