@@ -94,25 +94,30 @@ class AntiSpamServiceTest extends TestCase
     }
 
     // ============================================
-    // 多维评分 - 维度B (取整间隔比)
+    // 多维评分 - 维度B (平均间隔是否接近 6 秒)
     // ============================================
 
-    public function test_risk_score_dimension_b_high_rounded_ratio_scores_4(): void
+    public function test_risk_score_dimension_b_avg_interval_close_to_6_scores_4(): void
     {
-        $this->assertEquals(4, $this->getScoreForRoundedRatio(0.71));
-        $this->assertEquals(4, $this->getScoreForRoundedRatio(1.0));
+        $this->assertEquals(4, $this->getScoreForAvgInterval(5.0));
+        $this->assertEquals(4, $this->getScoreForAvgInterval(6.0));
+        $this->assertEquals(4, $this->getScoreForAvgInterval(7.0));
     }
 
-    public function test_risk_score_dimension_b_medium_rounded_ratio_scores_2(): void
+    public function test_risk_score_dimension_b_avg_interval_moderate_scores_2(): void
     {
-        $this->assertEquals(2, $this->getScoreForRoundedRatio(0.41));
-        $this->assertEquals(2, $this->getScoreForRoundedRatio(0.69));
+        $this->assertEquals(2, $this->getScoreForAvgInterval(2.0));
+        $this->assertEquals(2, $this->getScoreForAvgInterval(4.9));
+        $this->assertEquals(2, $this->getScoreForAvgInterval(7.1));
+        $this->assertEquals(2, $this->getScoreForAvgInterval(10.0));
     }
 
-    public function test_risk_score_dimension_b_low_rounded_ratio_scores_0(): void
+    public function test_risk_score_dimension_b_avg_interval_far_scores_0(): void
     {
-        $this->assertEquals(0, $this->getScoreForRoundedRatio(0));
-        $this->assertEquals(0, $this->getScoreForRoundedRatio(0.39));
+        $this->assertEquals(0, $this->getScoreForAvgInterval(0.5));
+        $this->assertEquals(0, $this->getScoreForAvgInterval(1.9));
+        $this->assertEquals(0, $this->getScoreForAvgInterval(10.1));
+        $this->assertEquals(0, $this->getScoreForAvgInterval(30.0));
     }
 
     // ============================================
@@ -168,7 +173,7 @@ class AntiSpamServiceTest extends TestCase
     {
         // 典型正常用户的评分组合
         $this->assertLessThan(7, $this->getScoreForVariance(15.0)      // A=0
-            + $this->getScoreForRoundedRatio(0.3)                      // B=0
+            + $this->getScoreForAvgInterval(12.0)                      // B=0
             + $this->getScoreForPostsPerMinute(1.0)                    // C=0
             + 0                                                         // D=0
             + 0);                                                       // E=0
@@ -176,9 +181,9 @@ class AntiSpamServiceTest extends TestCase
 
     public function test_score_7_or_above_is_recorded(): void
     {
-        // 机器人的评分组合：低方差 + 高取整间隔比
+        // 机器人的评分组合：低方差 + 平均间隔接近 6
         $score = $this->getScoreForVariance(3.0)         // A=4
-            + $this->getScoreForRoundedRatio(0.8)         // B=4
+            + $this->getScoreForAvgInterval(6.0)          // B=4
             + $this->getScoreForPostsPerMinute(1.0);       // C=0
 
         $this->assertGreaterThanOrEqual(7, $score);
@@ -199,12 +204,12 @@ class AntiSpamServiceTest extends TestCase
         return 0;
     }
 
-    private function getScoreForRoundedRatio(float $ratio): int
+    private function getScoreForAvgInterval(float $avg): int
     {
-        if ($ratio > 0.7) {
+        if ($avg >= 5 && $avg <= 7) {
             return 4;
         }
-        if ($ratio > 0.4) {
+        if ($avg >= 2 && $avg <= 10) {
             return 2;
         }
         return 0;
