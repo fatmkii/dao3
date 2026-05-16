@@ -77,6 +77,46 @@ const greenThemeOverrides: GlobalThemeOverrides = {
         "textColorTertiary": "rgb(118, 124, 130)",
     }
 }
+const blueThemeOverrides: GlobalThemeOverrides = {
+    "common": {
+        "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"',
+        "bodyColor": "#f2f5ff",
+        "primaryColor": "#6495EDFF",
+    },
+    "Card": {
+        "color": "#f5f7ff80",
+        "borderColor": "rgba(220, 228, 250, 1)",
+    },
+    "Button": {
+        "colorPrimary": "#6495EDFF",
+        "colorHoverPrimary": "#7BA7F0FF",
+        "color": "#ffffffFF",
+        "colorHover": "#ffffffFF",
+        "colorPressed": "#ffffffFF",
+        "colorFocus": "#ffffffFF",
+        "colorDisabled": "#ffffffFF",
+        "colorPressedPrimary": "#4D7DD9FF",
+        "borderPressedPrimary": "0px",
+        "borderFocusPrimary": "0px",
+        "borderDisabledPrimary": "0px",
+        "borderHoverPrimary": "0px",
+        "borderPrimary": "0px",
+        "colorSecondary": "rgba(100, 149, 237, .08)",
+        "colorTertiary": "rgba(100, 149, 237, .08)",
+        "textColorTertiary": "rgb(100, 120, 160)",
+        "colorSuccess": "#6495EDFF",
+        "colorHoverSuccess": "#7BA7F0FF",
+        "colorPressedSuccess": "#4D7DD9FF",
+        "colorFocusSuccess": "#6495EDFF",
+        "colorDisabledSuccess": "#6495EDFF",
+        "textColorDisabledSuccess": "#ffffffFF",
+        "borderSuccess": "0px",
+        "borderHoverSuccess": "0px",
+        "borderPressedSuccess": "0px",
+        "borderFocusSuccess": "0px",
+        "borderDisabledSuccess": "0px",
+    }
+}
 
 //自己用的各个颜色
 const lightThemeColors = {
@@ -103,6 +143,12 @@ const greenThemeColors = {
     postItemBorderColor: "#5FB878",
     postFooterColor: "#5FB878",
 }
+const blueThemeColors = {
+    topBarBackgroudColor: "#f5f7ffFF",
+    sidebarColor: "#6495ed",
+    postItemBorderColor: "#6495ED",
+    postFooterColor: "#6495ED",
+}
 
 
-export { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors }
+export { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, blueThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors, blueThemeColors }

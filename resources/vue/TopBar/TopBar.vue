@@ -57,6 +57,7 @@ const themeOptions = [
     { label: '白汤锅', key: 'light', icon: renderIcon(Circle, { color: "#d9efd9" }) },
     { label: '芝麻锅', key: 'dark', icon: renderIcon(Circle, { color: "#101014" }) },
     { label: '青菜锅', key: 'green', icon: renderIcon(Circle, { color: "#53A551" }) },
+    { label: '甘蓝锅', key: 'blue', icon: renderIcon(Circle, { color: "#6495ED" }) },
     { type: 'render', key: 'monochrome', render: renderOptions },
 ]
 //皮肤选项下拉框的下面部分

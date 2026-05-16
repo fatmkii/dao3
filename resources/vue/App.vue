@@ -68,7 +68,7 @@ const emojiBackGroundColor = computed(() =>
 .post-footer {
 
     &.system-post .post-nick-name {
-        color: v-bind('themeVars.primaryColor')
+        color: v-bind('themeStore.themeColor.postItemBorderColor')
     }
 
     &.admin-post .post-nick-name {
@@ -86,7 +86,7 @@ const emojiBackGroundColor = computed(() =>
 
 .post-item.card {
     &.on-focus {
-        border-color: v-bind('themeVars.primaryColor');
+        border-color: v-bind('themeStore.themeColor.postItemBorderColor');
     }
 }
 
