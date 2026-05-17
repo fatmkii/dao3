@@ -32,7 +32,7 @@ class AntiSpamService
     const SCORE_INTERVAL_VARIANCE_MED = 15;
     const SCORE_POSTS_PER_MINUTE_HIGH = 3;
     const SCORE_POSTS_PER_MINUTE_MED = 2;
-    const SCORE_MIN_RECORD = 4; // 分数 >= 7 才记录到数据库
+    const SCORE_MIN_RECORD = 2; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
     const REDIS_POST_RECORD = 'new_post_record_';
