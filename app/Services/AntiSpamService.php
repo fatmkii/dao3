@@ -296,16 +296,16 @@ class AntiSpamService
         }
 
         $details = [
-            'score' => $normalizedScore,
-            'total_raw' => $totalScore,
-            'dimensions' => [
-                'A_variance' => ['score' => $scoreA, 'variance' => round($variance, 2), 'avg_interval' => round($avg, 2)],
-                'B_rounded' => ['score' => $scoreB, 'ratio' => round($roundedRatio, 2), 'rounded_count' => $roundedCount, 'total_intervals' => $deltaCount],
-                'C_density' => ['score' => $scoreC, 'posts_per_minute' => $duration > 0 ? round($count / ($duration / 60), 2) : 0, 'duration_seconds' => $duration, 'post_count' => $count],
-                'D_no_read' => ['score' => $scoreD, 'ip2_count' => $ip2Count],
-                'E_night' => ['score' => $scoreE, 'hour' => $hour],
+            'sc' => $normalizedScore,
+            'raw' => $totalScore,
+            'dm' => [
+                'A' => ['s' => $scoreA, 'v' => round($variance, 2), 'avg' => round($avg, 2)],
+                'B' => ['s' => $scoreB, 'avg' => round($avg, 2), 'n' => $deltaCount],
+                'C' => ['s' => $scoreC, 'ppm' => $duration > 0 ? round($count / ($duration / 60), 2) : 0, 'dur' => $duration, 'n' => $count],
+                'D' => ['s' => $scoreD, 'n' => $ip2Count],
+                'E' => ['s' => $scoreE, 'h' => $hour],
             ],
-            'binggan' => $binggan,
+            'bg' => $binggan,
             'ip' => $ip,
         ];
 
