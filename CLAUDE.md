@@ -57,6 +57,10 @@ dev.cmd                  # Starts Vite + queue + reverb + schedule concurrently
 
 **WebSocket broadcasting**: When a post is created, a `NewPostBroadcast` event fires. The frontend Echo instance connects via Reverb to receive real-time new-post notifications on `thread.{id}` channels.
 
+### Git Workflow
+
+Before making any code changes, check the current branch and confirm with the user whether it's appropriate. If the user hasn't specified a branch, remind them — don't silently commit to `main` or whatever branch happens to be checked out.
+
 ### Directory Map
 
 | Directory | Purpose |
