@@ -32,7 +32,7 @@ class AntiSpamService
     const SCORE_INTERVAL_VARIANCE_MED = 15;
     const SCORE_POSTS_PER_MINUTE_HIGH = 3;
     const SCORE_POSTS_PER_MINUTE_MED = 2;
-    const SCORE_MIN_RECORD = 0; // 分数 >= 7 才记录到数据库
+    const SCORE_MIN_RECORD = 4; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
     const REDIS_POST_RECORD = 'new_post_record_';
@@ -279,16 +279,14 @@ class AntiSpamService
         $scoreE = ($hour >= 3 && $hour < 6) ? 1 : 0;
 
         $totalScore = $scoreA + $scoreB + $scoreC + $scoreD + $scoreE;
-        $normalizedScore = min($totalScore, 10);
 
         // 只有 >= 7 分才记录到数据库
-        if ($normalizedScore < self::SCORE_MIN_RECORD) {
+        if ($totalScore < self::SCORE_MIN_RECORD) {
             return;
         }
 
         $details = [
-            'sc' => $normalizedScore,
-            'raw' => $totalScore,
+            'sc' => $totalScore,
             'dm' => [
                 'A' => ['s' => $scoreA, 'v' => round($variance, 2), 'avg' => round($avg, 2)],
                 'B' => ['s' => $scoreB, 'avg' => round($avg, 2), 'n' => $deltaCount],
