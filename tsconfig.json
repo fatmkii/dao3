@@ -44,16 +44,15 @@
         "forceConsistentCasingInFileNames": true,
         // See <https://github.com/vuejs/vue-cli/pull/5688>
         "skipLibCheck": true,
-        "baseUrl": ".",
         "paths": {
             "@/*": [
-                "resources/*"
+                "./resources/*"
             ],
             "@custom": [
-                "resources/vue/Custom/index.ts"
+                "./resources/vue/Custom/index.ts"
             ],
             "@custom/*": [
-                "resources/vue/Custom/*"
+                "./resources/vue/Custom/*"
             ]
         },
         "types": [
