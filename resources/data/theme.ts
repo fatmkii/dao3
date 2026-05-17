@@ -82,6 +82,13 @@ const blueThemeOverrides: GlobalThemeOverrides = {
         "fontFamily": 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol","Microsoft YaHei"',
         "bodyColor": "#f2f5ff",
         "primaryColor": "#6495EDFF",
+        "primaryColorHover": "#7BA7F0FF",
+        "primaryColorPressed": "#4D7DD9FF",
+        "primaryColorSuppl": "#6495EDFF",
+        "successColor": "#6495EDFF",
+        "successColorHover": "#7BA7F0FF",
+        "successColorPressed": "#4D7DD9FF",
+        "successColorSuppl": "#6495EDFF",
     },
     "Card": {
         "color": "#f5f7ff80",
