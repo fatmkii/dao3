@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { ref, computed } from 'vue'
-import { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors } from '@/data/theme'
+import { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, blueThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors, blueThemeColors } from '@/data/theme'
 import { useStorage } from '@vueuse/core'
 
 export const useThemeStore = defineStore('themeStore', () => {
@@ -16,7 +16,8 @@ export const useThemeStore = defineStore('themeStore', () => {
             'light': null,
             'sfw': null, //魔芋锅主题在浅色主题上修改
             'dark': darkTheme,
-            'green': null //绿色主题基于浅色主题上修改
+            'green': null, //绿色主题基于浅色主题上修改
+            'blue': null //蓝色主题基于浅色主题上修改
         };
         return themeNameMap[themeName.value] || null;
     })
@@ -27,7 +28,8 @@ export const useThemeStore = defineStore('themeStore', () => {
             'light': lightThemeOverrides,
             'sfw': sfwThemeOverrides,
             'dark': darkThemeOverrides,
-            'green': greenThemeOverrides //绿色主题基于浅色主题改
+            'green': greenThemeOverrides, //绿色主题基于浅色主题改
+            'blue': blueThemeOverrides //蓝色主题基于浅色主题改
         };
 
         return themeClassMap[themeName.value] || lightThemeOverrides
@@ -40,7 +42,8 @@ export const useThemeStore = defineStore('themeStore', () => {
             'light': { strong: true, secondary: true, tertiary: false },
             'sfw': { strong: true, secondary: false, tertiary: true },
             'dark': { strong: true, secondary: true, tertiary: false },
-            'green': { strong: false, secondary: false, tertiary: false }
+            'green': { strong: false, secondary: false, tertiary: false },
+            'blue': { strong: false, secondary: false, tertiary: false }
         };
         return buttonThemeAttrMap[themeName.value] || { strong: true, secondary: true, tertiary: false }
     })
@@ -53,6 +56,7 @@ export const useThemeStore = defineStore('themeStore', () => {
             'sfw': sfwThemeColors,
             'dark': darkThemeColors,
             'green': greenThemeColors,
+            'blue': blueThemeColors,
         }
         return themeColorsMap[themeName.value] || lightThemeColors
     })

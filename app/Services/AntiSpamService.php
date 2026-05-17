@@ -30,11 +30,9 @@ class AntiSpamService
     // 多维度评分内部参数
     const SCORE_INTERVAL_VARIANCE_LOW = 5;
     const SCORE_INTERVAL_VARIANCE_MED = 15;
-    const SCORE_ROUNDED_RATIO_HIGH = 0.7;
-    const SCORE_ROUNDED_RATIO_MED = 0.4;
     const SCORE_POSTS_PER_MINUTE_HIGH = 3;
     const SCORE_POSTS_PER_MINUTE_MED = 2;
-    const SCORE_MIN_RECORD = 7; // 分数 >= 7 才记录到数据库
+    const SCORE_MIN_RECORD = 0; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
     const REDIS_POST_RECORD = 'new_post_record_';
@@ -253,18 +251,11 @@ class AntiSpamService
             $scoreA = 2;
         }
 
-        // 维度B：取整间隔比例
-        $roundedCount = 0;
-        foreach ($deltas as $d) {
-            if ($d % 5 === 0) {
-                $roundedCount++;
-            }
-        }
-        $roundedRatio = $roundedCount / $deltaCount;
+        // 维度B：平均间隔是否接近 6 秒（60s/10次 = 6s，机器人卡此间隔）
         $scoreB = 0;
-        if ($roundedRatio > self::SCORE_ROUNDED_RATIO_HIGH) {
+        if ($avg >= 5 && $avg <= 7) {
             $scoreB = 4;
-        } elseif ($roundedRatio > self::SCORE_ROUNDED_RATIO_MED) {
+        } elseif ($avg >= 2 && $avg <= 10) {
             $scoreB = 2;
         }
 
