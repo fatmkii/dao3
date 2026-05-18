@@ -8,6 +8,7 @@ use App\Models\AdminActive;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminActivesController extends Controller
 {
@@ -50,6 +51,71 @@ class AdminActivesController extends Controller
         $lastPage = ceil($data_num /  $limit);
 
         return array($data, $lastPage);
+    }
+
+    public function antibotScores(Request $request)
+    {
+        $request->validate([
+            'date_from' => 'required|date|date_format:Y-m-d',
+            'date_to' => 'required|date|date_format:Y-m-d|after_or_equal:date_from',
+            'page' => 'integer|nullable',
+        ]);
+
+        $user = $request->user();
+        if (!$user->tokenCan('super_admin')) {
+            return response()->json([
+                'code' => ResponseCode::ADMIN_UNAUTHORIZED,
+                'message' => ResponseCode::$codeMap[ResponseCode::ADMIN_UNAUTHORIZED],
+            ]);
+        }
+
+        $dateFrom = Carbon::parse($request->date_from);
+        $dateTo = Carbon::parse($request->date_to);
+
+        // 校验同月
+        if ($dateFrom->format('Y-m') !== $dateTo->format('Y-m')) {
+            return response()->json([
+                'code' => ResponseCode::PARAM_FAILED,
+                'message' => '只能查询同一个月的数据',
+            ]);
+        }
+
+        $monthSuffix = $dateFrom->format('Y_n'); // 例：2026_5
+        $tableName = 'user_actives_' . $monthSuffix;
+
+        if (!Schema::hasTable($tableName)) {
+            return response()->json([
+                'code' => ResponseCode::SUCCESS,
+                'message' => '该月暂无评分数据',
+                'data' => ['data' => [], 'last_page' => 1],
+            ]);
+        }
+
+        $page = $request->page ?? 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $query = DB::table($tableName)
+            ->select('binggan', 'content', 'created_at')
+            ->where('active', '反机器人多维评分')
+            ->whereBetween('created_at', [
+                $dateFrom->startOfDay()->toDateTimeString(),
+                $dateTo->endOfDay()->toDateTimeString(),
+            ])
+            ->orderByDesc('id');
+
+        $total = $query->count();
+        $data = $query->offset($offset)->limit($limit)->get();
+        $lastPage = max(1, (int) ceil($total / $limit));
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已查询数据',
+            'data' => [
+                'data' => $data,
+                'last_page' => $lastPage,
+            ],
+        ]);
     }
 
     public function show(Request $request)
