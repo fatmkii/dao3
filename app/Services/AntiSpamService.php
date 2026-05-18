@@ -28,11 +28,11 @@ class AntiSpamService
     const SCORE_THRESHOLD_LOCK = 10;
 
     // 多维度评分内部参数
-    const SCORE_INTERVAL_VARIANCE_LOW = 5;
-    const SCORE_INTERVAL_VARIANCE_MED = 15;
-    const SCORE_POSTS_PER_MINUTE_HIGH = 3;
-    const SCORE_POSTS_PER_MINUTE_MED = 2;
-    const SCORE_MIN_RECORD = 4; // 分数 >= 7 才记录到数据库
+    const SCORE_INTERVAL_VARIANCE_LOW = 2;
+    const SCORE_INTERVAL_VARIANCE_MED = 5;
+    const SCORE_POSTS_PER_MINUTE_HIGH = 30;
+    const SCORE_POSTS_PER_MINUTE_MED = 12;
+    const SCORE_MIN_RECORD = 7; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
     const REDIS_POST_RECORD = 'new_post_record_';
@@ -254,9 +254,9 @@ class AntiSpamService
         // 维度B：平均间隔是否接近 6 秒（60s/10次 = 6s，机器人卡此间隔）
         $scoreB = 0;
         if ($avg >= 5 && $avg <= 7) {
-            $scoreB = 4;
+            $scoreB = 7;
         } elseif ($avg >= 2 && $avg <= 10) {
-            $scoreB = 2;
+            $scoreB = 3;
         }
 
         // 维度C：持续发帖密度
@@ -265,9 +265,9 @@ class AntiSpamService
         if ($duration > 0 && $count >= 5) {
             $postsPerMinute = $count / ($duration / 60);
             if ($postsPerMinute > self::SCORE_POSTS_PER_MINUTE_HIGH) {
-                $scoreC = 3;
+                $scoreC = 7;
             } elseif ($postsPerMinute > self::SCORE_POSTS_PER_MINUTE_MED) {
-                $scoreC = 1;
+                $scoreC = 3;
             }
         }
 
@@ -276,7 +276,7 @@ class AntiSpamService
 
         // 维度E：深夜时段
         $hour = (int) now()->format('H');
-        $scoreE = ($hour >= 3 && $hour < 6) ? 1 : 0;
+        $scoreE = ($hour >= 2 && $hour < 7) ? 1 : 0;
 
         $totalScore = $scoreA + $scoreB + $scoreC + $scoreD + $scoreE;
 
@@ -294,7 +294,7 @@ class AntiSpamService
                 'D' => ['s' => $scoreD, 'n' => $ip2Count],
                 'E' => ['s' => $scoreE, 'h' => $hour],
             ],
-            'bg' => $binggan,
+            // 'bg' => $binggan, //在user_actives表中已经有记录binggna，这里无需记录
             'ip' => $ip,
         ];
 
