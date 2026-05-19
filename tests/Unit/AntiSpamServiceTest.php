@@ -49,8 +49,8 @@ class AntiSpamServiceTest extends TestCase
 
     public function test_variance_scoring_constants(): void
     {
-        $this->assertEquals(5, AntiSpamService::SCORE_INTERVAL_VARIANCE_LOW);
-        $this->assertEquals(15, AntiSpamService::SCORE_INTERVAL_VARIANCE_MED);
+        $this->assertEquals(2, AntiSpamService::SCORE_INTERVAL_VARIANCE_LOW);
+        $this->assertEquals(5, AntiSpamService::SCORE_INTERVAL_VARIANCE_MED);
     }
 
     // ============================================
@@ -68,51 +68,25 @@ class AntiSpamServiceTest extends TestCase
     }
 
     // ============================================
-    // 多维评分 - 维度A (间隔方差)
+    // 多维评分 - 维度A (平均间隔是否接近 6 秒)
     // ============================================
 
-    public function test_risk_score_dimension_a_low_variance_scores_4(): void
+    public function test_risk_score_dimension_a_avg_interval_close_to_6_scores_7(): void
     {
-        // 方差 < 5 → +4
-        // 这个测试验证评分常数的正确性
-        $this->assertEquals(4, $this->getScoreForVariance(1.0));
-        $this->assertEquals(4, $this->getScoreForVariance(3.0));
-        $this->assertEquals(4, $this->getScoreForVariance(4.9));
+        $this->assertEquals(7, $this->getScoreForAvgInterval(5.0));
+        $this->assertEquals(7, $this->getScoreForAvgInterval(6.0));
+        $this->assertEquals(7, $this->getScoreForAvgInterval(7.0));
     }
 
-    public function test_risk_score_dimension_a_medium_variance_scores_2(): void
+    public function test_risk_score_dimension_a_avg_interval_moderate_scores_3(): void
     {
-        $this->assertEquals(2, $this->getScoreForVariance(5.0));
-        $this->assertEquals(2, $this->getScoreForVariance(10.0));
-        $this->assertEquals(2, $this->getScoreForVariance(14.9));
+        $this->assertEquals(3, $this->getScoreForAvgInterval(2.0));
+        $this->assertEquals(3, $this->getScoreForAvgInterval(4.9));
+        $this->assertEquals(3, $this->getScoreForAvgInterval(7.1));
+        $this->assertEquals(3, $this->getScoreForAvgInterval(10.0));
     }
 
-    public function test_risk_score_dimension_a_high_variance_scores_0(): void
-    {
-        $this->assertEquals(0, $this->getScoreForVariance(15.0));
-        $this->assertEquals(0, $this->getScoreForVariance(100.0));
-    }
-
-    // ============================================
-    // 多维评分 - 维度B (平均间隔是否接近 6 秒)
-    // ============================================
-
-    public function test_risk_score_dimension_b_avg_interval_close_to_6_scores_4(): void
-    {
-        $this->assertEquals(4, $this->getScoreForAvgInterval(5.0));
-        $this->assertEquals(4, $this->getScoreForAvgInterval(6.0));
-        $this->assertEquals(4, $this->getScoreForAvgInterval(7.0));
-    }
-
-    public function test_risk_score_dimension_b_avg_interval_moderate_scores_2(): void
-    {
-        $this->assertEquals(2, $this->getScoreForAvgInterval(2.0));
-        $this->assertEquals(2, $this->getScoreForAvgInterval(4.9));
-        $this->assertEquals(2, $this->getScoreForAvgInterval(7.1));
-        $this->assertEquals(2, $this->getScoreForAvgInterval(10.0));
-    }
-
-    public function test_risk_score_dimension_b_avg_interval_far_scores_0(): void
+    public function test_risk_score_dimension_a_avg_interval_far_scores_0(): void
     {
         $this->assertEquals(0, $this->getScoreForAvgInterval(0.5));
         $this->assertEquals(0, $this->getScoreForAvgInterval(1.9));
@@ -121,25 +95,52 @@ class AntiSpamServiceTest extends TestCase
     }
 
     // ============================================
+    // 多维评分 - 维度B (间隔方差)
+    // ============================================
+
+    public function test_risk_score_dimension_b_low_variance_scores_4(): void
+    {
+        // 方差 < 2 → +4
+        $this->assertEquals(4, $this->getScoreForVariance(0.5));
+        $this->assertEquals(4, $this->getScoreForVariance(1.0));
+        $this->assertEquals(4, $this->getScoreForVariance(1.9));
+    }
+
+    public function test_risk_score_dimension_b_medium_variance_scores_2(): void
+    {
+        $this->assertEquals(2, $this->getScoreForVariance(2.0));
+        $this->assertEquals(2, $this->getScoreForVariance(3.0));
+        $this->assertEquals(2, $this->getScoreForVariance(4.9));
+    }
+
+    public function test_risk_score_dimension_b_high_variance_scores_0(): void
+    {
+        $this->assertEquals(0, $this->getScoreForVariance(5.0));
+        $this->assertEquals(0, $this->getScoreForVariance(10.0));
+        $this->assertEquals(0, $this->getScoreForVariance(100.0));
+    }
+
+    // ============================================
     // 多维评分 - 维度C (持续发帖密度)
     // ============================================
 
-    public function test_risk_score_dimension_c_high_density_scores_3(): void
+    public function test_risk_score_dimension_c_high_density_scores_7(): void
     {
-        $this->assertEquals(3, $this->getScoreForPostsPerMinute(3.1));
-        $this->assertEquals(3, $this->getScoreForPostsPerMinute(10.0));
+        $this->assertEquals(7, $this->getScoreForPostsPerMinute(30.1));
+        $this->assertEquals(7, $this->getScoreForPostsPerMinute(60.0));
     }
 
-    public function test_risk_score_dimension_c_medium_density_scores_1(): void
+    public function test_risk_score_dimension_c_medium_density_scores_3(): void
     {
-        $this->assertEquals(1, $this->getScoreForPostsPerMinute(2.1));
-        $this->assertEquals(1, $this->getScoreForPostsPerMinute(2.9));
+        $this->assertEquals(3, $this->getScoreForPostsPerMinute(12.1));
+        $this->assertEquals(3, $this->getScoreForPostsPerMinute(20.0));
     }
 
     public function test_risk_score_dimension_c_low_density_scores_0(): void
     {
         $this->assertEquals(0, $this->getScoreForPostsPerMinute(0));
-        $this->assertEquals(0, $this->getScoreForPostsPerMinute(1.9));
+        $this->assertEquals(0, $this->getScoreForPostsPerMinute(10.0));
+        $this->assertEquals(0, $this->getScoreForPostsPerMinute(12.0));
     }
 
     // ============================================
@@ -157,11 +158,12 @@ class AntiSpamServiceTest extends TestCase
 
     public function test_risk_score_dimension_e_night_hours(): void
     {
-        // 凌晨 3-6 点 → +1
+        // 凌晨 2-7 点 → +1
+        $this->assertEquals(1, $this->getScoreForHour(2));
         $this->assertEquals(1, $this->getScoreForHour(3));
         $this->assertEquals(1, $this->getScoreForHour(5));
-        $this->assertEquals(0, $this->getScoreForHour(2));
-        $this->assertEquals(0, $this->getScoreForHour(6));
+        $this->assertEquals(1, $this->getScoreForHour(6));
+        $this->assertEquals(0, $this->getScoreForHour(7));
         $this->assertEquals(0, $this->getScoreForHour(12));
     }
 
@@ -172,8 +174,8 @@ class AntiSpamServiceTest extends TestCase
     public function test_score_below_7_is_not_recorded(): void
     {
         // 典型正常用户的评分组合
-        $this->assertLessThan(7, $this->getScoreForVariance(15.0)      // A=0
-            + $this->getScoreForAvgInterval(12.0)                      // B=0
+        $this->assertLessThan(7, $this->getScoreForVariance(15.0)      // B=0
+            + $this->getScoreForAvgInterval(12.0)                      // A=0
             + $this->getScoreForPostsPerMinute(1.0)                    // C=0
             + 0                                                         // D=0
             + 0);                                                       // E=0
@@ -181,10 +183,10 @@ class AntiSpamServiceTest extends TestCase
 
     public function test_score_7_or_above_is_recorded(): void
     {
-        // 机器人的评分组合：低方差 + 平均间隔接近 6
-        $score = $this->getScoreForVariance(3.0)         // A=4
-            + $this->getScoreForAvgInterval(6.0)          // B=4
-            + $this->getScoreForPostsPerMinute(1.0);       // C=0
+        // 机器人的评分组合：平均间隔接近 6 + 低方差
+        $score = $this->getScoreForAvgInterval(6.0)          // A=7
+            + $this->getScoreForVariance(3.0)                // B=2
+            + $this->getScoreForPostsPerMinute(1.0);          // C=0
 
         $this->assertGreaterThanOrEqual(7, $score);
     }
@@ -195,10 +197,10 @@ class AntiSpamServiceTest extends TestCase
 
     private function getScoreForVariance(float $variance): int
     {
-        if ($variance < 5) {
+        if ($variance < 2) {
             return 4;
         }
-        if ($variance < 15) {
+        if ($variance < 5) {
             return 2;
         }
         return 0;
@@ -207,21 +209,21 @@ class AntiSpamServiceTest extends TestCase
     private function getScoreForAvgInterval(float $avg): int
     {
         if ($avg >= 5 && $avg <= 7) {
-            return 4;
+            return 7;
         }
         if ($avg >= 2 && $avg <= 10) {
-            return 2;
+            return 3;
         }
         return 0;
     }
 
     private function getScoreForPostsPerMinute(float $ppm): int
     {
-        if ($ppm > 3) {
-            return 3;
+        if ($ppm > 30) {
+            return 7;
         }
-        if ($ppm > 2) {
-            return 1;
+        if ($ppm > 12) {
+            return 3;
         }
         return 0;
     }
@@ -233,6 +235,6 @@ class AntiSpamServiceTest extends TestCase
 
     private function getScoreForHour(int $hour): int
     {
-        return ($hour >= 3 && $hour < 6) ? 1 : 0;
+        return ($hour >= 2 && $hour < 7) ? 1 : 0;
     }
 }

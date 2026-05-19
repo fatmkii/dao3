@@ -288,7 +288,7 @@ class AntiSpamHttpTest extends TestCase
         $antiSpamMock = $this->createMock(AntiSpamService::class);
         $antiSpamMock->method('checkPostSpam');
         $antiSpamMock->method('recordPost');
-        $antiSpamMock->method('calculateRiskScore');
+        $antiSpamMock->method('evaluateTimelineBatch');
         $this->app->instance(AntiSpamService::class, $antiSpamMock);
 
         // 发帖
