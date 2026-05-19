@@ -37,8 +37,8 @@ class RecordPostActivity
         switch ($action) {
             case 'new_post':
                 $ip2Count = $this->antiSpam->recordPost($ip);
-                if ($user && mt_rand(1, 3) === 1) {
-                    $this->antiSpam->calculateRiskScore(
+                if ($user) {
+                    $this->antiSpam->evaluateTimelineBatch(
                         $user->binggan,
                         $user->id,
                         $ip,

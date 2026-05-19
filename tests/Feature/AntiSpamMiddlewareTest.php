@@ -438,7 +438,7 @@ class AntiSpamMiddlewareTest extends TestCase
         $this->antiSpamMock->expects($this->never())->method('recordHongbao');
         $this->antiSpamMock->expects($this->never())->method('recordThread');
         $this->antiSpamMock->expects($this->never())->method('clearPostView');
-        $this->antiSpamMock->expects($this->never())->method('calculateRiskScore');
+        $this->antiSpamMock->expects($this->never())->method('evaluateTimelineBatch');
 
         $middleware->terminate($request, $errorResponse);
     }
