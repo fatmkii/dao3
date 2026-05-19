@@ -29,6 +29,10 @@ php artisan test --filter=ClassName  # Run a specific test
 dev.cmd                  # Starts Vite + queue + reverb + schedule concurrently
 ```
 
+### Required Services
+
+**MySQL and Redis must be running** for tests and local development. Feature tests use `RefreshDatabase` and hit a real MySQL connection; many components depend on Redis for caching, queues, and rate limiting. If you see `SQLSTATE[HY000] [2002] Connection refused` or `Connection refused [tcp://127.0.0.1:6379]` when running `php artisan test`, prompt the user to start MySQL and Redis before debugging further.
+
 ## Architecture Overview
 
 **Laravel 11** API backend + **Vue 3** SPA frontend. The backend serves as a pure API; all frontend rendering is client-side. Laravel Octane (Roadrunner) is used for production.
