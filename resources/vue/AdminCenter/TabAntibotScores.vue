@@ -65,9 +65,7 @@ const columns = [
     { title: '评分', key: '_sc', resizable: true },
     { title: 'A 间隔方差', key: '_dimA', resizable: true, ellipsis: { tooltip: true } },
     { title: 'B 均隔', key: '_dimB', resizable: true, ellipsis: { tooltip: true } },
-    { title: 'C 密度', key: '_dimC', resizable: true, ellipsis: { tooltip: true } },
-    { title: 'D 不看帖', key: '_dimD', resizable: true, ellipsis: { tooltip: true } },
-    { title: 'E 深夜', key: '_dimE', resizable: true, ellipsis: { tooltip: true } },
+    { title: 'C 不看帖', key: '_dimC', resizable: true, ellipsis: { tooltip: true } },
     { title: '时间', key: 'created_at', resizable: true },
 ]
 
@@ -82,16 +80,13 @@ function fmtDim(d: any): string {
     return `${d.s}分`
         + (d.v !== undefined ? ` v=${d.v}` : '')
         + (d.avg !== undefined ? ` avg=${d.avg}s` : '')
-        + (d.ppm !== undefined ? ` ${d.ppm}帖/分` : '')
-        + (d.dur !== undefined ? ` dur=${d.dur}s` : '')
         + (d.n !== undefined ? ` n=${d.n}` : '')
-        + (d.h !== undefined ? ` ${d.h}h` : '')
 }
 
 const tableData = computed(() => {
     return dataList.value.data.map((item, index) => {
         let sc = '?'
-        let dimA = '—', dimB = '—', dimC = '—', dimD = '—', dimE = '—'
+        let dimA = '—', dimB = '—', dimC = '—'
         try {
             const parsed = JSON.parse(item.content)
             sc = parsed.sc ?? '?'
@@ -100,8 +95,6 @@ const tableData = computed(() => {
                 dimA = fmtDim(dm.A)
                 dimB = fmtDim(dm.B)
                 dimC = fmtDim(dm.C)
-                dimD = fmtDim(dm.D)
-                dimE = fmtDim(dm.E)
             }
         } catch { /* fallback to raw content */ }
         return {
@@ -111,8 +104,6 @@ const tableData = computed(() => {
             _dimA: dimA,
             _dimB: dimB,
             _dimC: dimC,
-            _dimD: dimD,
-            _dimE: dimE,
         }
     })
 })

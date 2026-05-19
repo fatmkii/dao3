@@ -30,8 +30,6 @@ class AntiSpamService
     // 多维度评分内部参数
     const SCORE_INTERVAL_VARIANCE_LOW = 2;
     const SCORE_INTERVAL_VARIANCE_MED = 5;
-    const SCORE_POSTS_PER_MINUTE_HIGH = 30;
-    const SCORE_POSTS_PER_MINUTE_MED = 12;
     const SCORE_MIN_RECORD = 7; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
@@ -88,8 +86,8 @@ class AntiSpamService
             );
         }
 
-        // 第3-4类检查已由 calculateRiskScore 多维度评分取代
-        // 第3类：只回帖不看帖 → 维度D
+        // 第3-4类检查已由 computeRiskScore 多维度评分取代
+        // 第3类：只回帖不看帖 → 维度C
         // 第4类：发帖间隔方差 → 维度A (Redis Sorted Set)
 
         // 第5类检查：JS new_post_key 验证（静默记录）
@@ -267,26 +265,10 @@ class AntiSpamService
             $scoreB = 2;
         }
 
-        // 维度C：持续发帖密度
-        $duration = $scores[$count - 1] - $scores[0];
-        $scoreC = 0;
-        if ($duration > 0 && $count >= 5) {
-            $postsPerMinute = $count / ($duration / 60);
-            if ($postsPerMinute > self::SCORE_POSTS_PER_MINUTE_HIGH) {
-                $scoreC = 7;
-            } elseif ($postsPerMinute > self::SCORE_POSTS_PER_MINUTE_MED) {
-                $scoreC = 3;
-            }
-        }
+        // 维度C：回帖不看帖（ip2Count 由调用方传入）
+        $scoreC = $ip2Count >= self::NEW_POST_NUMBER_IP2 ? 2 : 0;
 
-        // 维度D：回帖不看帖（ip2Count 由调用方传入）
-        $scoreD = $ip2Count >= self::NEW_POST_NUMBER_IP2 ? 2 : 0;
-
-        // 维度E：深夜时段
-        $hour = (int) now()->format('H');
-        $scoreE = ($hour >= 2 && $hour < 7) ? 1 : 0;
-
-        $totalScore = $scoreA + $scoreB + $scoreC + $scoreD + $scoreE;
+        $totalScore = $scoreA + $scoreB + $scoreC;
 
         if ($totalScore < self::SCORE_MIN_RECORD) {
             return;
@@ -295,11 +277,9 @@ class AntiSpamService
         $details = [
             'sc' => $totalScore,
             'dm' => [
-                'A' => ['s' => $scoreA, 'avg' => round($avg, 2), 'n' => $deltaCount],
-                'B' => ['s' => $scoreB, 'v' => round($variance, 2)],
-                'C' => ['s' => $scoreC, 'ppm' => $duration > 0 ? round($count / ($duration / 60), 2) : 0, 'dur' => $duration, 'n' => $count],
-                'D' => ['s' => $scoreD, 'n' => $ip2Count],
-                'E' => ['s' => $scoreE, 'h' => $hour],
+                'A' => ['s' => $scoreA, 'v' => round($variance, 2), 'avg' => round($avg, 2)],
+                'B' => ['s' => $scoreB, 'avg' => round($avg, 2), 'n' => $deltaCount],
+                'C' => ['s' => $scoreC, 'n' => $ip2Count],
             ],
             'ip' => $ip,
         ];
