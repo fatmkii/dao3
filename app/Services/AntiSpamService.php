@@ -200,26 +200,33 @@ class AntiSpamService
      */
     public function recordPostTimeline(string $binggan, int $postId): void
     {
-        $key = self::REDIS_POST_TIMELINE . $binggan;
-        Redis::zadd($key, now()->timestamp, $postId);
-
-        // 概率性裁剪：1/5 概率执行，减少 Redis 调用
-        if (mt_rand(1, 5) === 1) {
-            Redis::zremrangeByRank($key, 0, -31);
-        }
+        Redis::zadd(self::REDIS_POST_TIMELINE . $binggan, now()->timestamp, $postId);
     }
 
     /**
-     * 多维度机器人风险评分（只计算，不拦截）
-     * 只有总分 >= SCORE_MIN_RECORD (7) 才写数据库
+     * 批量评估时间线：累积到 6 条后触发评分并清空 key
      */
-    public function calculateRiskScore(string $binggan, int $userId, string $ip, ?int $threadId, int $ip2Count): void
+    public function evaluateTimelineBatch(string $binggan, int $userId, string $ip, ?int $threadId, int $ip2Count): void
     {
-        $timelineKey = self::REDIS_POST_TIMELINE . $binggan;
-        $timeline = Redis::zrange($timelineKey, 0, -1, true);
+        $key = self::REDIS_POST_TIMELINE . $binggan;
+        $count = Redis::zcard($key);
+        if ($count < 6) {
+            return;
+        }
 
-        if (!$timeline || count($timeline) < 3) {
-            return; // 数据不足
+        $timeline = Redis::zrange($key, 0, 5, true);
+        Redis::del($key);
+
+        $this->computeRiskScore($timeline, $binggan, $userId, $ip, $threadId, $ip2Count);
+    }
+
+    /**
+     * 多维度机器人风险评分计算（不读 Redis，由调用方传入时间线数据）
+     */
+    private function computeRiskScore(array $timeline, string $binggan, int $userId, string $ip, ?int $threadId, int $ip2Count): void
+    {
+        if (count($timeline) < 3) {
+            return;
         }
 
         $scores = array_values($timeline);
@@ -236,27 +243,28 @@ class AntiSpamService
             return;
         }
 
-        // 维度A：间隔方差
+        // 维度A：平均间隔是否接近 6 秒（60s/10次 = 6s，机器人卡此间隔）
         $avg = array_sum($deltas) / $deltaCount;
+
+        $scoreA = 0;
+        if ($avg >= 5 && $avg <= 7) {
+            $scoreA = 7;
+        } elseif ($avg >= 2 && $avg <= 10) {
+            $scoreA = 3;
+        }
+
+        // 维度B：间隔方差
         $variance = 0;
         foreach ($deltas as $d) {
             $variance += pow($d - $avg, 2);
         }
         $variance /= $deltaCount;
 
-        $scoreA = 0;
-        if ($variance < self::SCORE_INTERVAL_VARIANCE_LOW) {
-            $scoreA = 4;
-        } elseif ($variance < self::SCORE_INTERVAL_VARIANCE_MED) {
-            $scoreA = 2;
-        }
-
-        // 维度B：平均间隔是否接近 6 秒（60s/10次 = 6s，机器人卡此间隔）
         $scoreB = 0;
-        if ($avg >= 5 && $avg <= 7) {
-            $scoreB = 7;
-        } elseif ($avg >= 2 && $avg <= 10) {
-            $scoreB = 3;
+        if ($variance < self::SCORE_INTERVAL_VARIANCE_LOW) {
+            $scoreB = 4;
+        } elseif ($variance < self::SCORE_INTERVAL_VARIANCE_MED) {
+            $scoreB = 2;
         }
 
         // 维度C：持续发帖密度
@@ -280,7 +288,6 @@ class AntiSpamService
 
         $totalScore = $scoreA + $scoreB + $scoreC + $scoreD + $scoreE;
 
-        // 只有 >= 7 分才记录到数据库
         if ($totalScore < self::SCORE_MIN_RECORD) {
             return;
         }
@@ -288,13 +295,12 @@ class AntiSpamService
         $details = [
             'sc' => $totalScore,
             'dm' => [
-                'A' => ['s' => $scoreA, 'v' => round($variance, 2), 'avg' => round($avg, 2)],
-                'B' => ['s' => $scoreB, 'avg' => round($avg, 2), 'n' => $deltaCount],
+                'A' => ['s' => $scoreA, 'avg' => round($avg, 2), 'n' => $deltaCount],
+                'B' => ['s' => $scoreB, 'v' => round($variance, 2)],
                 'C' => ['s' => $scoreC, 'ppm' => $duration > 0 ? round($count / ($duration / 60), 2) : 0, 'dur' => $duration, 'n' => $count],
                 'D' => ['s' => $scoreD, 'n' => $ip2Count],
                 'E' => ['s' => $scoreE, 'h' => $hour],
             ],
-            // 'bg' => $binggan, //在user_actives表中已经有记录binggna，这里无需记录
             'ip' => $ip,
         ];
 
