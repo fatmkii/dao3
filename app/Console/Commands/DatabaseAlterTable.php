@@ -30,23 +30,23 @@ class DatabaseAlterTable extends Command
         $this->info('开始释放数据库空间');
 
         // 生成posts_xx表清单
-        $max_threads_id = Thread::max('id');
-        $max_suffix = intval($max_threads_id / 10000);
-        $posts_tables = [];
-        for ($i = 1; $i <= $max_suffix; $i++) {
-            $posts_tables[] = 'posts_' . $i;
+        $maxThreadsId = (int) Thread::max('id');
+        if ($maxThreadsId > 0) {
+            $maxSuffix = (int) ($maxThreadsId / 10000);
+            for ($i = 1; $i <= $maxSuffix; $i++) {
+                $tableName = 'posts_' . $i;
+                DB::statement(sprintf('ALTER TABLE %s ENGINE=InnoDB', $tableName));
+                $this->info(sprintf('已执行：ALTER TABLE %s ENGINE=InnoDB', $tableName));
+            }
         }
-        // 对所有posts_xx表执行alter table操作，以释放空间
-        foreach ($posts_tables as $key => $table_name) {
-            DB::raw(sprintf('ALTER TABLE %s ENGINE=InnoDB;', $table_name));
-            $this->info(sprintf('已执行：ALTER TABLE %s ENGINE=InnoDB;', $table_name));
-        }
-        //对其他表执行alter table操作
-        DB::raw('ALTER TABLE battle_messages ENGINE=InnoDB;');
-        $this->info('ALTER TABLE battle_messages ENGINE=InnoDB;');
-        DB::raw('ALTER TABLE failed_jobs ENGINE=InnoDB;');
-        $this->info('ALTER TABLE failed_jobs ENGINE=InnoDB;');
+
+        // 对其他表执行alter table操作
+        DB::statement('ALTER TABLE battle_messages ENGINE=InnoDB');
+        $this->info('ALTER TABLE battle_messages ENGINE=InnoDB');
+        DB::statement('ALTER TABLE failed_jobs ENGINE=InnoDB');
+        $this->info('ALTER TABLE failed_jobs ENGINE=InnoDB');
 
         $this->info('数据库空间释放完成');
+        return self::SUCCESS;
     }
 }
