@@ -46,3 +46,8 @@ This repository is a Laravel 11 API + Vue 3 SPA.
   - test evidence (`php artisan test`, targeted filters),
   - screenshots/GIFs for UI-visible Vue changes.
 - Call out config/env changes explicitly (Redis/Reverb/queue-related settings).
+
+# Terminal
+Use bash commands instead of PowerShell.
+Environment is Git Bash / WSL.
+Avoid PowerShell syntax.
