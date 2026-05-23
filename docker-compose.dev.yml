@@ -1,0 +1,59 @@
+services:
+  vite:
+    image: node:22
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: npm run dev
+    tty: true
+    stdin_open: true
+    ports:
+      - "5173:5173"
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: php artisan queue:listen
+    depends_on:
+      - mysql
+      - redis
+
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: php artisan reverb:start --debug --host=0.0.0.0
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+
+  schedule:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: php artisan schedule:work
+    depends_on:
+      - mysql
+      - redis
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
