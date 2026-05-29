@@ -10,24 +10,57 @@
 ## 目录结构速览
 
 ```text
-c:\laragon\wwwroot\dao3\
+/home/fat/projects/dao3/
 ├── app/                    # Laravel 核心后端代码目录
 ├── bootstrap/              # Laravel 启动与缓存文件
 ├── config/                 # 后端全局配置文件
 ├── database/               # 数据库迁移 (migrations) 和初始配置数据
+├── docker/                 # Docker 运行环境配置，如 nginx 本地配置
 ├── docs/                   # 项目级说明文档与使用指南存放目录 (本文档所在地)
 ├── lang/                   # 语言提示包
 ├── public/                 # 本地运行或部署提供对外的公共资源与 SPA index.html 渲染总入口
 ├── resources/              # 前端 Vue 源码及关联资产的核心工作区
 ├── routes/                 # 后端路由（API 及控制台）定义表
+├── scripts/                # Docker 开发环境启动、初始化、重建脚本
 ├── storage/                # 服务器日志、文件上传存储、缓存等
 ├── tests/                  # 自动化测试代码存放区
 ├── composer.json           # PHP 库依赖配置文件
+├── docker-compose.yml      # 基础容器编排：nginx/php/mysql/redis/node
+├── docker-compose.dev.yml  # 开发附加服务：vite/queue/reverb/schedule/phpMyAdmin
 ├── package.json            # Node.js 服务与前端包依赖配置文件
 └── vite.config.js          # Vite (前端构建工具) 配置信息
 ```
 
 ---
+
+## Docker 开发环境
+
+本项目开发环境已迁移到 **WSL 中的 Docker Compose**。日常开发应从 WSL/bash 执行项目脚本，不再使用 Laragon、PowerShell 或直接在宿主机运行 `php artisan serve` / `npm run dev`。
+
+- **首次初始化**: `./scripts/init.sh`
+  - 构建并启动基础容器。
+  - 在容器内安装 Composer 与 npm 依赖。
+  - 配置 Laravel `APP_KEY` 并执行数据库迁移。
+- **日常启动**: `./scripts/dev.sh`
+  - 使用 `docker-compose.yml` + `docker-compose.dev.yml` 启动完整开发栈。
+- **重建基础环境**: `./scripts/rebuild.sh`
+  - 停止并重新构建基础 Docker Compose 服务。
+
+常用容器命令：
+
+```bash
+docker compose exec php php artisan test
+docker compose exec php php artisan migrate
+docker compose exec node npm run build
+docker compose exec node npm run staging
+```
+
+本地开发服务端口：
+
+- nginx: `http://localhost`
+- Vite: `http://localhost:5173`
+- Reverb: `http://localhost:8080`
+- phpMyAdmin: `http://localhost:8081`
 
 ## 核心后端机制 (`app/` & `routes/`)
 

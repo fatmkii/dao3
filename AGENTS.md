@@ -12,17 +12,18 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - Public build output/assets: `public/`
 
 ## Build, Test, and Development Commands
-- `composer install`: install PHP dependencies.
-- `npm install`: install frontend dependencies.
-- `php artisan key:generate`: generate app key after `.env` setup.
-- `php artisan migrate`: run database migrations.
-- `php artisan serve`: run Laravel locally.
-- `npm run dev`: run Vite dev server (`vite --host localhost`).
-- `npm run build`: production frontend build.
-- `npm run staging`: staging-mode frontend build.
-- `php artisan test`: run all tests.
-- `php artisan test --filter=AntiSpam`: run a focused subset.
-- `dev.cmd`: convenience script to start core local processes.
+- Development runs in Docker Compose from WSL. Do not use `sudo` for normal project commands; fix script or Docker socket permissions instead.
+- `./scripts/init.sh`: build/start containers, configure Laravel, install Composer/npm dependencies, generate `APP_KEY`, and run migrations.
+- `./scripts/dev.sh`: start the full development stack with `docker-compose.yml` plus `docker-compose.dev.yml`.
+- `./scripts/rebuild.sh`: rebuild and restart the base Docker Compose stack.
+- `docker compose exec php composer install`: install PHP dependencies inside the PHP container.
+- `docker compose exec node npm install`: install frontend dependencies inside the Node container.
+- `docker compose exec php php artisan migrate`: run database migrations.
+- `docker compose exec php php artisan test`: run all tests.
+- `docker compose exec php php artisan test --filter=AntiSpam`: run a focused subset.
+- `docker compose exec node npm run build`: production frontend build.
+- `docker compose exec node npm run staging`: staging-mode frontend build.
+- Development services include nginx on port `80`, Vite on `5173`, Reverb on `8080`, and phpMyAdmin on `8081`.
 
 ## Coding Style & Naming Conventions
 - Follow `.editorconfig`: UTF-8, LF, spaces, 4-space indent (2 for `*.yml`/`*.yaml`).
@@ -49,5 +50,5 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 
 # Terminal
 Use bash commands instead of PowerShell.
-Environment is Git Bash / WSL.
+Environment is WSL with Docker Compose.
 Avoid PowerShell syntax.
