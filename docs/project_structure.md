@@ -43,6 +43,7 @@
   - 配置 Laravel `APP_KEY` 并执行数据库迁移。
 - **日常启动**: `./scripts/dev.sh`
   - 使用 `docker-compose.yml` + `docker-compose.dev.yml` 启动完整开发栈。
+  - 开发环境中已在 Docker 内配置并运行 `npm run dev`，前端代码变更后不需要手动执行 `npm run build`。
 - **重建基础环境**: `./scripts/rebuild.sh`
   - 停止并重新构建基础 Docker Compose 服务。
 

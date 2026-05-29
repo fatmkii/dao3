@@ -16,6 +16,7 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - `./scripts/init.sh`: build/start containers, configure Laravel, install Composer/npm dependencies, generate `APP_KEY`, and run migrations.
 - `./scripts/dev.sh`: start the full development stack with `docker-compose.yml` plus `docker-compose.dev.yml`.
 - `./scripts/rebuild.sh`: rebuild and restart the base Docker Compose stack.
+- In the development environment, `npm run dev` is already configured to run in Docker, so frontend code changes do not require `npm run build`.
 - `docker compose exec php composer install`: install PHP dependencies inside the PHP container.
 - `docker compose exec node npm install`: install frontend dependencies inside the Node container.
 - `docker compose exec php php artisan migrate`: run database migrations.
