@@ -34,7 +34,7 @@ import { useUserStore } from '@/stores/user';
 import LoginModal from '@/vue/TopBar/LoginModal.vue';
 import RegisterHintModal from '@/vue/TopBar/RegisterHintModal.vue';
 import { FButton, FCheckbox } from '@custom';
-import { Circle, Cog as CogIcon } from '@vicons/fa';
+import { Circle, Cog as CogIcon, Flag as FlagIcon } from '@vicons/fa';
 import { Shield24Regular as Admin } from '@vicons/fluent';
 import { LogOutOutline as LogoutIcon } from '@vicons/ionicons5';
 import { NDropdown, NFlex, NText, useThemeVars } from 'naive-ui';
@@ -144,6 +144,14 @@ const userOptions = computed(() => {
             }
         },
         {
+            label: '举报中心',
+            key: 'accuse',
+            icon: renderIcon(FlagIcon, { size: '1.25rem' }),
+            props: {
+                onClick: () => router.push('/accuse')
+            }
+        },
+        {
             label: '退出饼干',
             key: 'logout',
             icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
@@ -155,7 +163,7 @@ const userOptions = computed(() => {
 
     //如果是管理员，则加入管理中新选项
     if (userStore.admin.isForumAdmin) {
-        arr.splice(3, 0, {
+        arr.splice(4, 0, {
             label: '管理中心',
             key: 'admin',
             icon: renderIcon(Admin, { size: '1.25rem' }),
