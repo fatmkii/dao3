@@ -26,6 +26,10 @@
                     @click="recoverPostHandle">
                     <Recover />
                 </n-icon>
+                <!-- 举报按钮 -->
+                <n-icon :size="22" v-if="!postData.is_your_post" class="post-accuse-icon" @click="accuseHandle">
+                    <AccuseFlag />
+                </n-icon>
                 <!-- 打赏按钮 -->
                 <n-icon :size="24" v-if="!postData.is_your_post" style="cursor: pointer;" @click="rewardHandle">
                     <Gift />
@@ -110,13 +114,14 @@ import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
-import { Question as Hint } from '@vicons/fa'
+import { Flag as AccuseFlag, Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { CardGiftcardFilled as Gift } from '@vicons/material'
 import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, h, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Battle from './Battle.vue'
 import HongbaoPost from './HongbaoPost.vue'
 
@@ -127,6 +132,7 @@ const renderDropdown = ref<boolean>(false)
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const themeStore = useThemeStore()
+const router = useRouter()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
@@ -264,6 +270,17 @@ function rewardHandle() {
         threadId: props.postData.thread_id,
         postId: props.postData.id,
         postFloorMessage: postFooterText.value,
+    })
+}
+
+function accuseHandle() {
+    router.push({
+        name: 'accuse',
+        query: {
+            thread_id: props.postData.thread_id,
+            post_id: props.postData.id,
+            floor: props.postData.floor,
+        },
     })
 }
 
@@ -605,3 +622,14 @@ function refreshBattleData() {
 defineExpose({ refreshBattleData })
 
 </script>
+
+<style scoped>
+.post-accuse-icon {
+    cursor: pointer;
+    opacity: 0.55;
+}
+
+.post-accuse-icon:hover {
+    opacity: 0.9;
+}
+</style>
