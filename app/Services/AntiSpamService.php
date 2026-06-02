@@ -30,7 +30,7 @@ class AntiSpamService
     // 多维度评分内部参数
     const SCORE_INTERVAL_VARIANCE_LOW = 2;
     const SCORE_INTERVAL_VARIANCE_MED = 5;
-    const SCORE_MIN_RECORD = 7; // 分数 >= 7 才记录到数据库
+    const SCORE_MIN_RECORD = 11; // 分数 >= 7 才记录到数据库
 
     // Redis key 前缀
     const REDIS_POST_RECORD = 'new_post_record_';
