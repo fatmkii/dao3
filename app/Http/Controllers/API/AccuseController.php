@@ -1,0 +1,309 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Common\ResponseCode;
+use App\Http\Controllers\Controller;
+use App\Models\Accuse;
+use App\Models\AccuseReason;
+use App\Models\Admin;
+use App\Models\Post;
+use App\Models\Thread;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AccuseController extends Controller
+{
+    public function index(Request $request)
+    {
+        $request->validate([
+            'pending_only' => 'boolean|nullable',
+            'page' => 'integer|nullable|min:1',
+        ]);
+
+        $query = Accuse::with(['reasons', 'handledBy.AdminPermissions'])
+            ->orderBy('id', 'desc');
+
+        if ($request->boolean('pending_only')) {
+            $query->where('status', 'pending');
+        }
+
+        $total = $query->count();
+        $lastPage = max(1, (int) ceil($total / 10));
+        $page = min(max((int) $request->query('page', 1), 1), $lastPage);
+
+        $accuses = $query->forPage($page, 10)->get();
+        $pendingCount = Accuse::where('status', 'pending')->count();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
+            'data' => [
+                'data' => $accuses->map(fn (Accuse $accuse) => $this->formatAccuse($accuse, $request->user())),
+                'last_page' => $lastPage,
+                'pending_count' => $pendingCount,
+            ],
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'thread_id' => 'required|integer|min:1',
+            'post_id' => 'required|integer|min:1',
+            'floor' => 'required|integer|min:0',
+            'reason' => 'required|string|min:5|max:500',
+        ]);
+
+        $thread = Thread::find($request->thread_id);
+        if (!$thread || $thread->is_delay == 1 || $thread->is_deleted != 0) {
+            return $this->error(ResponseCode::THREAD_NOT_FOUND);
+        }
+
+        $post = Post::suffix(intval($request->thread_id / 10000))->find($request->post_id);
+        if (!$post || $post->is_deleted != 0) {
+            return $this->error(ResponseCode::POST_NOT_FOUND);
+        }
+
+        if ($post->thread_id != $thread->id) {
+            return $this->error(ResponseCode::PARAM_FAILED, '回复不属于该主题');
+        }
+
+        if ((int) $post->floor !== (int) $request->floor) {
+            return $this->error(ResponseCode::PARAM_FAILED, '回复楼层不匹配');
+        }
+
+        $user = $request->user();
+        $duplicated = AccuseReason::where('post_id', $post->id)
+            ->where('reporter_user_id', $user->id)
+            ->exists();
+
+        if ($duplicated) {
+            return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个回复了');
+        }
+
+        $accuse = DB::transaction(function () use ($request, $thread, $post, $user) {
+            $accuse = Accuse::firstOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'thread_id' => $thread->id,
+                    'forum_id' => $post->forum_id,
+                    'floor' => $post->floor,
+                    'target_binggan' => $post->created_binggan,
+                    'thread_title' => $thread->title,
+                    'status' => 'pending',
+                    'uncertain' => false,
+                ]
+            );
+
+            AccuseReason::create([
+                'accuse_id' => $accuse->id,
+                'post_id' => $post->id,
+                'reporter_user_id' => $user->id,
+                'reason' => trim($request->reason),
+            ]);
+
+            $accuse->status = 'pending';
+            $accuse->handled_by_user_id = null;
+            $accuse->handled_at = null;
+            $accuse->handle_action = null;
+            $accuse->handle_note = null;
+            $accuse->handle_reduce_olo = false;
+            $accuse->save();
+
+            return $accuse->load(['reasons', 'handledBy.AdminPermissions']);
+        });
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '举报已提交',
+            'data' => $this->formatAccuse($accuse, $user),
+        ]);
+    }
+
+    public function hint(Request $request, Accuse $accuse)
+    {
+        if (!$this->canHint($request->user(), $accuse)) {
+            return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
+        }
+
+        $request->merge([
+            'thread_id' => $accuse->thread_id,
+            'post_id' => $accuse->post_id,
+        ]);
+
+        return app(AdminController::class)->check_post($request);
+    }
+
+    public function handle(Request $request, Accuse $accuse)
+    {
+        $request->validate([
+            'action' => 'required|string|in:ignore,delete,deleteAll,lock,ban',
+            'reason' => 'required_unless:action,ignore|nullable|string|max:255',
+            'reduce_olo' => 'boolean|nullable',
+        ]);
+
+        if (!$this->canHandle($request->user(), $accuse, $request->action)) {
+            return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
+        }
+
+        if ($request->action !== 'ignore') {
+            $result = $this->runAdminAction($request, $accuse);
+            $payload = $result->getData(true);
+            if (($payload['code'] ?? null) !== ResponseCode::SUCCESS) {
+                return $result;
+            }
+        }
+
+        $accuse->status = 'handled';
+        $accuse->handled_by_user_id = $request->user()->id;
+        $accuse->handled_at = Carbon::now();
+        $accuse->handle_action = $request->action;
+        $accuse->handle_note = $request->action === 'ignore' ? '忽略' : trim($request->reason);
+        $accuse->handle_reduce_olo = in_array($request->action, ['delete', 'deleteAll']) && $request->boolean('reduce_olo');
+        $accuse->save();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已更新处理状态',
+            'data' => $this->formatAccuse($accuse->load(['reasons', 'handledBy.AdminPermissions']), $request->user()),
+        ]);
+    }
+
+    public function uncertain(Request $request, Accuse $accuse)
+    {
+        $request->validate([
+            'uncertain' => 'required|boolean',
+        ]);
+
+        if (!$this->canForumAdmin($request->user(), $accuse->forum_id)) {
+            return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
+        }
+
+        $accuse->uncertain = $request->boolean('uncertain');
+        $accuse->save();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已更新标记',
+            'data' => $this->formatAccuse($accuse->load(['reasons', 'handledBy.AdminPermissions']), $request->user()),
+        ]);
+    }
+
+    private function runAdminAction(Request $request, Accuse $accuse)
+    {
+        $request->merge([
+            'thread_id' => $accuse->thread_id,
+            'post_id' => $accuse->post_id,
+            'content' => trim($request->reason),
+            'reduce_olo' => $request->boolean('reduce_olo'),
+        ]);
+
+        $controller = app(AdminController::class);
+
+        return match ($request->action) {
+            'delete' => $controller->post_delete($request, $accuse->post_id),
+            'deleteAll' => $controller->post_delete_all($request),
+            'lock' => $controller->user_lock($request),
+            'ban' => $controller->user_ban($request),
+        };
+    }
+
+    private function formatAccuse(Accuse $accuse, $user): array
+    {
+        $isAdmin = $this->canForumAdmin($user, $accuse->forum_id);
+
+        $data = [
+            'id' => $accuse->id,
+            'thread_id' => $accuse->thread_id,
+            'post_id' => $accuse->post_id,
+            'floor' => $accuse->floor,
+            'thread_title' => $accuse->thread_title,
+            'status' => $accuse->status,
+            'created_at' => $accuse->created_at?->format('Y-m-d H:i:s'),
+            'reasons' => $accuse->reasons->map(fn (AccuseReason $reason) => [
+                'id' => $reason->id,
+                'content' => $reason->reason,
+                'created_at' => $reason->created_at?->format('Y-m-d H:i:s'),
+                'reporter_recent_count' => $isAdmin ? $this->reporterRecentCount($reason->reporter_user_id) : null,
+            ])->values(),
+            'target_recent_count' => $isAdmin ? $this->targetRecentCount($accuse->target_binggan) : null,
+            'uncertain' => $isAdmin ? $accuse->uncertain : false,
+            'handle_reduce_olo' => $isAdmin ? $accuse->handle_reduce_olo : false,
+        ];
+
+        if ($isAdmin) {
+            $data['handled_by'] = $accuse->handled_by_user_id ? $this->adminName($accuse->handled_by_user_id) : null;
+            $data['handled_at'] = $accuse->handled_at?->format('Y-m-d H:i:s');
+            $data['handle_action'] = $accuse->handle_action;
+            $data['handle_note'] = $accuse->handle_note;
+        }
+
+        return $data;
+    }
+
+    private function reporterRecentCount(int $reporterUserId): int
+    {
+        return AccuseReason::where('reporter_user_id', $reporterUserId)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->count();
+    }
+
+    private function targetRecentCount(?string $targetBinggan): int
+    {
+        if ($targetBinggan === null) {
+            return 0;
+        }
+
+        return AccuseReason::whereHas('accuse', fn ($query) => $query->where('target_binggan', $targetBinggan))
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->count();
+    }
+
+    private function adminName(int $userId): string
+    {
+        return Admin::where('user_id', $userId)->value('name') ?: '管理员';
+    }
+
+    private function canHandle($user, Accuse $accuse, string $action): bool
+    {
+        if ($action === 'ban') {
+            return $this->canAdmin($user, $accuse->forum_id);
+        }
+
+        return $this->canForumAdmin($user, $accuse->forum_id);
+    }
+
+    private function canHint($user, Accuse $accuse): bool
+    {
+        return $user
+            && $user->tokenCan('senior_admin')
+            && $user->AdminPermissions
+            && in_array($accuse->forum_id, $user->AdminPermissions->forums ?? []);
+    }
+
+    private function canAdmin($user, int $forumId): bool
+    {
+        return $user
+            && $user->tokenCan('admin')
+            && $user->AdminPermissions
+            && in_array($forumId, $user->AdminPermissions->forums ?? []);
+    }
+
+    private function canForumAdmin($user, int $forumId): bool
+    {
+        return $user
+            && $user->tokenCan('forum_admin')
+            && $user->AdminPermissions
+            && in_array($forumId, $user->AdminPermissions->forums ?? []);
+    }
+
+    private function error(int $code, ?string $message = null)
+    {
+        return response()->json([
+            'code' => $code,
+            'message' => $message ?: ResponseCode::$codeMap[$code],
+        ]);
+    }
+}

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import {
-    getAccuseDemoList,
+    accuseCreatePoster,
+    accuseHandlePoster,
+    accuseHintPoster,
+    accuseListGetter,
+    accuseUncertainPutter,
     type AccuseAction,
     type AccuseCreateParams,
     type AccuseItemData,
@@ -9,6 +13,7 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
 import { FlagOutline } from '@vicons/ionicons5'
+import { useRequest } from 'alova'
 import { NEmpty, NFlex, NIcon, NSwitch, NText } from 'naive-ui'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -21,28 +26,48 @@ const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
 
-const items = ref<AccuseItemData[]>(getAccuseDemoList())
 const showPendingOnly = shallowRef(false)
 const pageSelected = shallowRef(1)
-const pageSize = 10
 const createModalCom = ref<InstanceType<typeof AccuseCreateModal> | null>(null)
 const handleModalCom = ref<InstanceType<typeof AccuseHandleModal> | null>(null)
-const currentUserReportedPostIds = ref<Set<number>>(new Set())
 
-const isAdminView = computed(() => userStore.admin.isForumAdmin || import.meta.env.DEV)
-const filteredItems = computed(() => {
-    const list = showPendingOnly.value
-        ? items.value.filter(item => item.status === 'pending')
-        : items.value
+const {
+    data: accuseData,
+    send: getAccuses,
+} = useRequest(
+    (params: { page: number, pending_only: boolean }) => accuseListGetter(params),
+    {
+        immediate: false,
+        initialData: {
+            data: [] as AccuseItemData[],
+            last_page: 1,
+            pending_count: 0,
+        },
+    },
+)
+const { send: createAccuse } = useRequest((params: AccuseCreateParams) => accuseCreatePoster(params), { immediate: false })
+const { send: hintAccuse } = useRequest((id: number) => accuseHintPoster(id), { immediate: false })
+const { send: handleAccuse } = useRequest(
+    (params: { id: number, action: Exclude<AccuseAction, 'hint'>, reason?: string, reduceOlo?: boolean }) => accuseHandlePoster(params.id, {
+        action: params.action,
+        reason: params.reason,
+        reduce_olo: params.reduceOlo,
+    }),
+    { immediate: false },
+)
+const { send: putUncertain } = useRequest(
+    (params: { id: number, uncertain: boolean }) => accuseUncertainPutter(params.id, params.uncertain),
+    { immediate: false },
+)
 
-    return [...list].sort((a, b) => b.id - a.id)
-})
-const lastPage = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize)))
-const pagedItems = computed(() => {
-    const start = (pageSelected.value - 1) * pageSize
-    return filteredItems.value.slice(start, start + pageSize)
-})
-const pendingCount = computed(() => items.value.filter(item => item.status === 'pending').length)
+const isAdminView = computed(() => userStore.admin.isForumAdmin)
+const pagedItems = computed(() => accuseData.value.data)
+const lastPage = computed(() => accuseData.value.last_page)
+const pendingCount = computed(() => accuseData.value.pending_count)
+
+watch([showPendingOnly, pageSelected], () => {
+    loadAccuses()
+}, { immediate: true })
 
 watch(showPendingOnly, () => {
     pageSelected.value = 1
@@ -59,6 +84,13 @@ watch(
     },
     { immediate: true },
 )
+
+async function loadAccuses() {
+    await getAccuses({
+        page: pageSelected.value,
+        pending_only: showPendingOnly.value,
+    })
+}
 
 function parseRoutePayload(): Omit<AccuseCreateParams, 'reason'> | null {
     const threadId = Number(route.query.thread_id)
@@ -88,56 +120,15 @@ function cleanQuery() {
     }
 }
 
-function handleCreateAccuse(params: AccuseCreateParams) {
-    if (currentUserReportedPostIds.value.has(params.post_id)) {
-        window.$message.error('你已经举报过这个回复了')
-        cleanQuery()
-        return
-    }
-
-    const existing = items.value.find(item => item.post_id === params.post_id)
-    if (existing) {
-        existing.reasons.push({
-            id: Date.now(),
-            content: params.reason,
-            created_at: new Date().toLocaleString('zh-CN', { hour12: false }),
-            reporter_recent_count: 1,
-        })
-        existing.status = 'pending'
-        existing.handle_action = undefined
-        existing.handle_note = undefined
-        existing.handle_reduce_olo = false
-        existing.handled_at = undefined
-        existing.handled_by = undefined
-    } else {
-        items.value.unshift({
-            id: Math.max(...items.value.map(item => item.id), 100) + 1,
-            thread_id: params.thread_id,
-            post_id: params.post_id,
-            floor: params.floor,
-            thread_title: `主题 ${params.thread_id}`,
-            status: 'pending',
-            created_at: new Date().toLocaleString('zh-CN', { hour12: false }),
-            reasons: [{
-                id: Date.now(),
-                content: params.reason,
-                created_at: new Date().toLocaleString('zh-CN', { hour12: false }),
-                reporter_recent_count: 1,
-            }],
-            target_recent_count: 1,
-            uncertain: false,
-            handle_reduce_olo: false,
-        })
-    }
-
-    currentUserReportedPostIds.value = new Set([...currentUserReportedPostIds.value, params.post_id])
+async function handleCreateAccuse(params: AccuseCreateParams) {
+    await createAccuse(params)
     pageSelected.value = 1
-    window.$message.success('举报已提交')
+    await loadAccuses()
     cleanQuery()
 }
 
 function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: number }) {
-    const item = items.value.find(current => current.id === payload.id)
+    const item = pagedItems.value.find(current => current.id === payload.id)
     if (!item) {
         return
     }
@@ -152,10 +143,12 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
     }
 
     if (payload.action === 'hint') {
-        window.$dialog.info({
-            title: actionLabels[payload.action],
-            content: `此饼干状态：正常。近7天被举报 ${item.target_recent_count} 次。（前端 demo）`,
-            positiveText: '确定',
+        hintAccuse(payload.id).then((data) => {
+            window.$dialog.info({
+                title: actionLabels[payload.action],
+                content: `此饼干状态：${data.user_status}。已封禁次数：${data.locked_count}。近7天被举报 ${item.target_recent_count ?? 0} 次。`,
+                positiveText: '确定',
+            })
         })
         return
     }
@@ -180,31 +173,33 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
 
     handleModalCom.value?.show({
         id: payload.id,
-        action: payload.action,
+        action: payload.action as Exclude<AccuseAction, 'hint' | 'ignore'>,
         floor: payload.floor,
     })
 }
 
-function commitHandle(payload: { id: number, action: AccuseAction, reason: string, reduceOlo: boolean }) {
-    const item = items.value.find(current => current.id === payload.id)
-    if (!item) {
-        return
+async function commitHandle(payload: { id: number, action: Exclude<AccuseAction, 'hint'>, reason: string, reduceOlo: boolean }) {
+    const item = await handleAccuse(payload)
+    if (showPendingOnly.value) {
+        await loadAccuses()
+    } else {
+        replaceAccuseItem(item)
     }
-
-    item.status = 'handled'
-    item.handle_action = payload.action
-    item.handled_by = userStore.binggan ?? '蒜苗'
-    item.handled_at = new Date().toLocaleString('zh-CN', { hour12: false })
-    item.handle_note = payload.reason
-    item.handle_reduce_olo = payload.reduceOlo
-    window.$message.success('已更新处理状态')
 }
 
-function toggleUncertain(id: number) {
-    const item = items.value.find(current => current.id === id)
+async function toggleUncertain(id: number) {
+    const item = pagedItems.value.find(current => current.id === id)
     if (item) {
-        item.uncertain = !item.uncertain
+        const updated = await putUncertain({ id, uncertain: !item.uncertain })
+        replaceAccuseItem(updated)
     }
+}
+
+function replaceAccuseItem(item: AccuseItemData) {
+    accuseData.value.data = accuseData.value.data.map(current => current.id === item.id ? item : current)
+    accuseData.value.pending_count = item.status === 'handled'
+        ? Math.max(0, accuseData.value.pending_count - 1)
+        : accuseData.value.pending_count
 }
 </script>
 
