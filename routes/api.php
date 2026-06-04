@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AdminActivesController;
+use App\Http\Controllers\API\AccuseController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CommonController;
 use Illuminate\Http\Request;
@@ -89,6 +90,15 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/watermark_decode', [AdminController::class, 'watermark_decode']); //解混淆水印
     Route::get('/get_daily_data', [AdminController::class, 'get_daily_data']); //查询每日数据
     Route::get('/antibot_scores', [AdminActivesController::class, 'antibotScores']); //查询反机器人多维评分
+});
+
+//Accuse系列
+Route::prefix('accuses')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [AccuseController::class, 'index']);
+    Route::post('', [AccuseController::class, 'store']);
+    Route::post('/{accuse}/hint', [AccuseController::class, 'hint']);
+    Route::post('/{accuse}/handle', [AccuseController::class, 'handle']);
+    Route::put('/{accuse}/uncertain', [AccuseController::class, 'uncertain']);
 });
 
 
