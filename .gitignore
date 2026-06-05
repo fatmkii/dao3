@@ -19,6 +19,7 @@ playwright-report/
 /.fleet
 /.idea
 /.claude
+/.agents
 /.vscode
 .env.staging
 .env.local
