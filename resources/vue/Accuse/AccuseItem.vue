@@ -82,7 +82,9 @@ function dropdownSelect(key: string | number) {
                     <div class="accuse-spacer"></div>
                     <n-checkbox :checked="item.uncertain" @update:checked="emit('toggleUncertain', item.id)">
                         <n-flex align="center" :size="4">
-                            <span>不确定</span>
+                            <n-icon :size="22">
+                                <HelpCircleOutline />
+                            </n-icon>
                         </n-flex>
                     </n-checkbox>
                     <n-dropdown v-if="item.status === 'pending'" trigger="click" :options="adminOptions"
