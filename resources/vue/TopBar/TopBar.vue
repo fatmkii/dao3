@@ -144,14 +144,6 @@ const userOptions = computed(() => {
             }
         },
         {
-            label: '举报中心',
-            key: 'accuse',
-            icon: renderIcon(FlagIcon, { size: '1.25rem' }),
-            props: {
-                onClick: () => router.push('/accuse')
-            }
-        },
-        {
             label: '退出饼干',
             key: 'logout',
             icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
@@ -161,9 +153,20 @@ const userOptions = computed(() => {
         }
     ]
 
+    if (userStore.admin.isNormalAdmin) {
+        arr.splice(arr.length - 1, 0, {
+            label: '举报中心',
+            key: 'accuse',
+            icon: renderIcon(FlagIcon, { size: '1.25rem' }),
+            props: {
+                onClick: () => router.push('/accuse')
+            }
+        })
+    }
+
     //如果是管理员，则加入管理中新选项
     if (userStore.admin.isForumAdmin) {
-        arr.splice(4, 0, {
+        arr.splice(arr.length - 1, 0, {
             label: '管理中心',
             key: 'admin',
             icon: renderIcon(Admin, { size: '1.25rem' }),

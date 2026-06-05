@@ -27,7 +27,8 @@
                     <Recover />
                 </n-icon>
                 <!-- 举报按钮 -->
-                <n-icon :size="24" v-if="!postData.is_your_post" class="post-accuse-icon" @click="accuseHandle">
+                <n-icon :size="24" v-if="!postData.is_your_post && userStore.admin.isNormalAdmin"
+                    class="post-accuse-icon" @click="accuseHandle">
                     <Flag />
                 </n-icon>
                 <!-- 打赏按钮 -->
