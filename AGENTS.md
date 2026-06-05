@@ -22,6 +22,10 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - `docker compose exec php php artisan migrate`: run database migrations.
 - `docker compose exec php php artisan test`: run all tests.
 - `docker compose exec php php artisan test --filter=AntiSpam`: run a focused subset.
+- `npm run e2e:install`: install the local Playwright Chromium browser after npm dependencies are installed.
+- `docker compose exec node npm run e2e:docker:install`: install Playwright Chromium and browser runtime dependencies in the Node container after it is created or rebuilt.
+- `npm run e2e`: run Playwright smoke checks against `http://localhost:80` from WSL after local browser dependencies are installed.
+- `docker compose exec node npm run e2e:docker`: run Playwright smoke checks from the Node container, mapping browser `localhost` requests back to the WSL host. Prefer this command in the Docker development environment.
 - `docker compose exec node npm run build`: production frontend build.
 - `docker compose exec node npm run staging`: staging-mode frontend build.
 - Development services include nginx on port `80`, Vite on `5173`, Reverb on `8080`, and phpMyAdmin on `8081`.
@@ -35,6 +39,7 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 
 ## Testing Guidelines
 - Framework: PHPUnit (via `php artisan test`).
+- Frontend smoke checks use Playwright. After changes that affect Vue pages, routing, frontend assets, or page rendering, run `docker compose exec node npm run e2e:docker` with the local stack available at `http://localhost:80`.
 - Place HTTP/integration tests in `tests/Feature`; pure logic tests in `tests/Unit`.
 - Name test files with `*Test.php` suffix (example: `AntiSpamHttpTest.php`).
 - Add or update tests for behavior changes in middleware, services, and API responses.

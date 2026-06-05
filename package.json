@@ -4,9 +4,14 @@
     "scripts": {
         "dev": "vite --host 0.0.0.0",
         "build": "vite build",
-        "staging": "vite build --mode staging"
+        "staging": "vite build --mode staging",
+        "e2e:install": "playwright install chromium",
+        "e2e:docker:install": "playwright install --with-deps chromium",
+        "e2e": "playwright test",
+        "e2e:docker": "PLAYWRIGHT_MAP_LOCALHOST_TO_HOST=true playwright test"
     },
     "devDependencies": {
+        "@playwright/test": "^1.60.0",
         "@types/crypto-js": "^4.2.2",
         "@types/node": "^24.6.2",
         "@vicons/antd": "^0.13.0",
