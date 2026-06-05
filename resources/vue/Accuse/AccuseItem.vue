@@ -67,7 +67,7 @@ function dropdownSelect(key: string | number) {
 <template>
     <n-card size="small" class="accuse-item" :content-style="{ padding: commonStore.isMobile ? '10px' : '14px' }">
         <n-flex vertical :size="10">
-            <n-flex align="center" :wrap="true">
+            <n-flex align="center" :wrap="true" class="accuse-item-header">
                 <n-tag :type="statusType" size="small">
                     <template #icon>
                         <n-icon>
@@ -77,25 +77,26 @@ function dropdownSelect(key: string | number) {
                     </template>
                     {{ statusText }}
                 </n-tag>
-                <n-text :depth="3">{{ item.created_at }}</n-text>
+                <n-text :depth="3" class="accuse-created-at">{{ item.created_at }}</n-text>
                 <template v-if="isAdmin">
                     <div class="accuse-spacer"></div>
-                    <n-checkbox :checked="item.uncertain" @update:checked="emit('toggleUncertain', item.id)">
-                        <n-flex align="center" :size="4">
+                    <div class="accuse-admin-actions">
+                        <n-checkbox class="accuse-uncertain-checkbox" :checked="item.uncertain"
+                            @update:checked="emit('toggleUncertain', item.id)">
                             <n-icon :size="22">
                                 <HelpCircleOutline />
                             </n-icon>
-                        </n-flex>
-                    </n-checkbox>
-                    <n-dropdown v-if="item.status === 'pending'" trigger="click" :options="adminOptions"
-                        :size="commonStore.isMobile ? 'medium' : 'large'" @select="dropdownSelect">
-                        <n-flex align="center" :size="2" class="accuse-admin-menu">
-                            <n-icon :size="20">
-                                <Dropdown />
-                            </n-icon>
-                            <n-text>操作</n-text>
-                        </n-flex>
-                    </n-dropdown>
+                        </n-checkbox>
+                        <n-dropdown v-if="item.status === 'pending'" trigger="click" :options="adminOptions"
+                            :size="commonStore.isMobile ? 'medium' : 'large'" @select="dropdownSelect">
+                            <n-flex align="center" :size="2" class="accuse-admin-menu">
+                                <n-icon :size="20">
+                                    <Dropdown />
+                                </n-icon>
+                                <n-text class="accuse-admin-menu-text">操作</n-text>
+                            </n-flex>
+                        </n-dropdown>
+                    </div>
                 </template>
             </n-flex>
 
@@ -137,9 +138,33 @@ function dropdownSelect(key: string | number) {
     border-radius: 8px;
 }
 
+.accuse-item-header {
+    min-width: 0;
+}
+
+.accuse-created-at {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .accuse-spacer {
     flex: 1;
     min-width: 8px;
+}
+
+.accuse-admin-actions {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.accuse-uncertain-checkbox :deep(.n-checkbox__label) {
+    display: flex;
+    padding-left: 4px;
 }
 
 .accuse-floor-link {
@@ -155,6 +180,24 @@ function dropdownSelect(key: string | number) {
 
 .accuse-admin-menu {
     cursor: pointer;
+}
+
+@media (max-width: 420px) {
+    .accuse-spacer {
+        min-width: 0;
+    }
+
+    .accuse-admin-actions {
+        gap: 4px;
+    }
+
+    .accuse-admin-menu-text {
+        display: none;
+    }
+
+    .accuse-uncertain-checkbox :deep(.n-checkbox__label) {
+        padding-left: 2px;
+    }
 }
 
 .accuse-reasons {
