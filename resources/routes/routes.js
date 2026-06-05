@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     { path: '/', name: 'Homepage', component: () => import('@/vue/Home/Home.vue') },
+    { path: '/accuse', name: 'accuse', component: () => import('@/vue/Accuse/AccusePage.vue') },
     { path: '/:pathMatch(.*)*', name: 'Page404', component: () => import('@/vue/Errors/404.vue') },
     {
         path: '/forum/:forumId/:page?',
