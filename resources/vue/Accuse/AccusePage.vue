@@ -12,7 +12,7 @@ import {
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import Pagination from '@/vue/Components/Pagination.vue'
-import { FlagOutline } from '@vicons/ionicons5'
+import { FlagOutlined as Flag } from '@vicons/material'
 import { useRequest } from 'alova'
 import { NEmpty, NFlex, NIcon, NSwitch, NText } from 'naive-ui'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
@@ -162,7 +162,7 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
             onPositiveClick: () => {
                 commitHandle({
                     id: payload.id,
-                    action: payload.action,
+                    action: 'ignore',
                     reason: '忽略',
                     reduceOlo: false,
                 })
@@ -208,7 +208,7 @@ function replaceAccuseItem(item: AccuseItemData) {
         <n-flex align="center" :wrap="true" class="accuse-toolbar">
             <n-flex align="center" :size="8">
                 <n-icon :size="commonStore.isMobile ? 22 : 26">
-                    <FlagOutline />
+                    <Flag />
                 </n-icon>
                 <n-text strong>举报中心</n-text>
                 <n-text :depth="3">未处理 {{ pendingCount }}</n-text>

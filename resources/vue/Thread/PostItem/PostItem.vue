@@ -27,8 +27,8 @@
                     <Recover />
                 </n-icon>
                 <!-- 举报按钮 -->
-                <n-icon :size="22" v-if="!postData.is_your_post" class="post-accuse-icon" @click="accuseHandle">
-                    <AccuseFlag />
+                <n-icon :size="24" v-if="!postData.is_your_post" class="post-accuse-icon" @click="accuseHandle">
+                    <Flag />
                 </n-icon>
                 <!-- 打赏按钮 -->
                 <n-icon :size="24" v-if="!postData.is_your_post" style="cursor: pointer;" @click="rewardHandle">
@@ -114,9 +114,9 @@ import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
 import { Delete } from '@vicons/carbon'
-import { Flag as AccuseFlag, Question as Hint } from '@vicons/fa'
+import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
-import { CardGiftcardFilled as Gift } from '@vicons/material'
+import { CardGiftcardFilled as Gift, FlagOutlined as Flag } from '@vicons/material'
 import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
