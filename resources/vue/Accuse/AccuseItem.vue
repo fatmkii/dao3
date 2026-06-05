@@ -25,6 +25,21 @@ const emit = defineEmits<{
 
 const statusType = computed<'default' | 'success'>(() => props.item.status === 'handled' ? 'success' : 'default')
 const statusText = computed(() => props.item.status === 'handled' ? '已处理' : '未处理')
+const handleActionLabels: Record<Exclude<AccuseAction, 'hint'>, string> = {
+    ignore: '忽略',
+    delete: '删帖',
+    deleteAll: '删全',
+    lock: '锁定',
+    ban: '封禁',
+}
+const handleActionText = computed(() => {
+    const action = props.item.handle_action
+    if (!action || action === 'hint') {
+        return null
+    }
+
+    return handleActionLabels[action]
+})
 const page = computed(() => Math.floor(props.item.floor / 200) + 1)
 const floorLink = computed(() => ({
     name: 'thread',
@@ -103,8 +118,9 @@ function dropdownSelect(key: string | number) {
                 </div>
             </div>
 
-            <div v-if="isAdmin && (item.handled_by || item.handle_note)" class="accuse-admin-meta">
+            <div v-if="isAdmin && (item.handled_by || handleActionText || item.handle_note)" class="accuse-admin-meta">
                 <n-text v-if="item.handled_by" :depth="3">处理人：{{ item.handled_by }}</n-text>
+                <n-text v-if="handleActionText" :depth="3">处理操作：{{ handleActionText }}</n-text>
                 <n-text v-if="item.handle_note" :depth="3">
                     处理原因：{{ item.handle_note }}
                     <template v-if="item.handle_reduce_olo">（罚款olo）</template>

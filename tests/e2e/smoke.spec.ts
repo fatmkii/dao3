@@ -47,6 +47,18 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
             },
         ],
     };
+    const handledAccuseItem = {
+        ...accuseItem,
+        id: 105,
+        post_id: 952742,
+        floor: 234,
+        status: 'handled',
+        handled_by: '测试管理员',
+        handled_at: '2026-05-29 15:26:18',
+        handle_action: 'delete',
+        handle_note: '违反规则删除',
+        uncertain: false,
+    };
 
     page.on('console', (message) => {
         if (message.type() === 'error') {
@@ -105,7 +117,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
                     code: 200,
                     message: 'success',
                     data: {
-                        data: [accuseItem],
+                        data: [accuseItem, handledAccuseItem],
                         last_page: 1,
                         pending_count: 1,
                     },
@@ -143,9 +155,10 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByText('举报中心')).toBeVisible();
-    await expect(page.getByText('祝福池活动集中帖')).toBeVisible();
+    await expect(page.getByText('祝福池活动集中帖').first()).toBeVisible();
     await expect(page.getByText('楼层：').first()).toBeVisible();
     await expect(page.getByText('近期被举报').first()).toBeVisible();
+    await expect(page.getByText('处理操作：删帖')).toBeVisible();
 
     await page.getByText('操作').first().click();
     await expect(page.getByText('提示')).toBeVisible();

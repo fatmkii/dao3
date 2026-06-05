@@ -78,6 +78,7 @@ class AccuseTest extends TestCase
         $list = $this->getJson('/api/accuses')->json('data.data.0');
 
         $this->assertArrayNotHasKey('handled_by', $list);
+        $this->assertArrayNotHasKey('handle_action', $list);
         $this->assertArrayNotHasKey('handle_note', $list);
         $this->assertNull($list['target_recent_count']);
         $this->assertNull($list['reasons'][0]['reporter_recent_count']);
