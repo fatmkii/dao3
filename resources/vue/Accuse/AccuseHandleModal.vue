@@ -22,8 +22,8 @@ const userInput = ref({
 const actionLabels: Record<ModalAction, string> = {
     delete: '删帖',
     deleteAll: '删全',
-    lock: '锁定饼干',
-    ban: '封禁饼干',
+    lock: '封禁饼干',
+    ban: '碎饼',
 }
 
 const contentMessage = computed(() => {

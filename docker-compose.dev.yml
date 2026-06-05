@@ -2,6 +2,7 @@ services:
   vite:
     image: node:22
     working_dir: /var/www
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     volumes:
       - ./:/var/www
     command: npm run dev

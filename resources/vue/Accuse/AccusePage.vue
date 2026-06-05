@@ -138,8 +138,8 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
         ignore: '忽略',
         delete: '删帖',
         deleteAll: '删全',
-        lock: '锁定饼干',
-        ban: '封禁饼干',
+        lock: '封禁饼干',
+        ban: '碎饼',
     }
 
     if (payload.action === 'hint') {

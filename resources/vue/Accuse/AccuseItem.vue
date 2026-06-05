@@ -29,8 +29,8 @@ const handleActionLabels: Record<Exclude<AccuseAction, 'hint'>, string> = {
     ignore: '忽略',
     delete: '删帖',
     deleteAll: '删全',
-    lock: '锁定',
-    ban: '封禁',
+    lock: '封禁',
+    ban: '碎饼',
 }
 const handleActionText = computed(() => {
     const action = props.item.handle_action
@@ -55,8 +55,8 @@ const adminOptions = computed<DropdownOption[]>(() => [
     { label: '忽略', key: 'ignore', icon: renderIcon(CloseCircleOutline, { size: '1.25rem' }) },
     { label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.25rem' }) },
     { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.25rem' }) },
-    { label: '锁定', key: 'lock', icon: renderIcon(Lock, { size: '1.25rem' }) },
-    { label: '封禁', key: 'ban', icon: renderIcon(Ban, { size: '1.25rem' }) },
+    { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.25rem' }) },
+    { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.25rem' }) },
 ])
 
 function dropdownSelect(key: string | number) {
