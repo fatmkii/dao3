@@ -19,13 +19,18 @@ class AccuseController extends Controller
     {
         $request->validate([
             'pending_only' => 'boolean|nullable',
+            'my_pending_only' => 'boolean|nullable',
             'page' => 'integer|nullable|min:1',
         ]);
 
+        $adminForumIds = $this->adminForumIds($request->user());
         $query = Accuse::with(['reasons', 'handledBy.AdminPermissions'])
             ->orderBy('id', 'desc');
 
-        if ($request->boolean('pending_only')) {
+        if ($request->boolean('my_pending_only')) {
+            $query->where('status', 'pending')
+                ->whereIn('forum_id', $adminForumIds);
+        } elseif ($request->boolean('pending_only')) {
             $query->where('status', 'pending');
         }
 
@@ -35,6 +40,9 @@ class AccuseController extends Controller
 
         $accuses = $query->forPage($page, 10)->get();
         $pendingCount = Accuse::where('status', 'pending')->count();
+        $myPendingCount = empty($adminForumIds)
+            ? 0
+            : Accuse::where('status', 'pending')->whereIn('forum_id', $adminForumIds)->count();
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -43,6 +51,7 @@ class AccuseController extends Controller
                 'data' => $accuses->map(fn (Accuse $accuse) => $this->formatAccuse($accuse, $request->user())),
                 'last_page' => $lastPage,
                 'pending_count' => $pendingCount,
+                'my_pending_count' => $myPendingCount,
             ],
         ]);
     }
@@ -218,6 +227,7 @@ class AccuseController extends Controller
             'id' => $accuse->id,
             'thread_id' => $accuse->thread_id,
             'post_id' => $accuse->post_id,
+            'forum_id' => $accuse->forum_id,
             'floor' => $accuse->floor,
             'thread_title' => $accuse->thread_title,
             'status' => $accuse->status,
@@ -231,6 +241,7 @@ class AccuseController extends Controller
             'target_recent_count' => $isAdmin ? $this->targetRecentCount($accuse->target_binggan) : null,
             'uncertain' => $isAdmin ? $accuse->uncertain : false,
             'handle_reduce_olo' => $isAdmin ? $accuse->handle_reduce_olo : false,
+            'can_manage' => $isAdmin,
         ];
 
         if ($isAdmin) {
@@ -297,6 +308,15 @@ class AccuseController extends Controller
             && $user->tokenCan('forum_admin')
             && $user->AdminPermissions
             && in_array($forumId, $user->AdminPermissions->forums ?? []);
+    }
+
+    private function adminForumIds($user): array
+    {
+        if (!$user || !$user->tokenCan('forum_admin') || !$user->AdminPermissions) {
+            return [];
+        }
+
+        return $user->AdminPermissions->forums ?? [];
     }
 
     private function error(int $code, ?string $message = null)

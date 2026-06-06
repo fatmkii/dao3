@@ -14,6 +14,7 @@ interface AccuseItemData {
     id: number,
     thread_id: number,
     post_id: number,
+    forum_id: number,
     floor: number,
     thread_title: string,
     status: AccuseStatus,
@@ -26,6 +27,7 @@ interface AccuseItemData {
     handle_note?: string | null,
     handle_reduce_olo: boolean,
     uncertain: boolean,
+    can_manage?: boolean,
 }
 
 interface AccuseCreateParams {
@@ -37,13 +39,15 @@ interface AccuseCreateParams {
 
 interface AccuseListParams {
     page: number,
-    pending_only: boolean,
+    pending_only?: boolean,
+    my_pending_only?: boolean,
 }
 
 interface AccuseListData {
     data: AccuseItemData[],
     last_page: number,
     pending_count: number,
+    my_pending_count: number,
 }
 
 interface AccuseHandleParams {
@@ -64,6 +68,7 @@ const accuseListGetter = (params: AccuseListParams) => commonAlova.Get<AccuseLis
         params: {
             page: params.page,
             pending_only: params.pending_only ? 1 : 0,
+            my_pending_only: params.my_pending_only ? 1 : 0,
         },
         localCache: null,
         hitSource: [],

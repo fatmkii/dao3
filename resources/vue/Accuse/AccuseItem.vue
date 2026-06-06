@@ -2,6 +2,7 @@
 import type { AccuseAction, AccuseItemData } from '@/api/methods/accuse'
 import { renderIcon } from '@/js/func/renderIcon'
 import { useCommonStore } from '@/stores/common'
+import { useForumsStore } from '@/stores/forums'
 import { Delete } from '@vicons/carbon'
 import { Question as Hint } from '@vicons/fa'
 import { LockClosed12Regular as Lock } from '@vicons/fluent'
@@ -10,10 +11,11 @@ import { NCard, NCheckbox, NDropdown, NFlex, NIcon, NTag, NText, type DropdownOp
 import { computed } from 'vue'
 
 const commonStore = useCommonStore()
+const forumsStore = useForumsStore()
 
 interface Props {
     item: AccuseItemData,
-    isAdmin: boolean,
+    canManage: boolean,
 }
 
 const props = defineProps<Props>()
@@ -25,6 +27,7 @@ const emit = defineEmits<{
 
 const statusType = computed<'default' | 'success'>(() => props.item.status === 'handled' ? 'success' : 'default')
 const statusText = computed(() => props.item.status === 'handled' ? '已处理' : '未处理')
+const forumName = computed(() => forumsStore.forumData(props.item.forum_id)?.name ?? `#${props.item.forum_id}`)
 const handleActionLabels: Record<Exclude<AccuseAction, 'hint'>, string> = {
     ignore: '忽略',
     delete: '删帖',
@@ -78,7 +81,7 @@ function dropdownSelect(key: string | number) {
                     {{ statusText }}
                 </n-tag>
                 <n-text :depth="3" class="accuse-created-at">{{ item.created_at }}</n-text>
-                <template v-if="isAdmin">
+                <template v-if="canManage">
                     <div class="accuse-spacer"></div>
                     <div class="accuse-admin-actions">
                         <n-checkbox class="accuse-uncertain-checkbox" :checked="item.uncertain"
@@ -101,13 +104,14 @@ function dropdownSelect(key: string | number) {
             </n-flex>
 
             <n-flex vertical :size="6">
+                <n-text>板块：{{ forumName }}</n-text>
                 <n-text strong>主题：{{ item.thread_title }}</n-text>
                 <n-flex align="center" :size="8" :wrap="true">
                     <n-text>楼层：</n-text>
                     <router-link :to="floorLink" target="_blank" class="accuse-floor-link">
                         №{{ item.floor }}
                     </router-link>
-                    <n-text v-if="isAdmin" :depth="3">近期被举报 {{ item.target_recent_count }} 次</n-text>
+                    <n-text v-if="canManage" :depth="3">近期被举报 {{ item.target_recent_count }} 次</n-text>
                 </n-flex>
             </n-flex>
 
@@ -116,12 +120,12 @@ function dropdownSelect(key: string | number) {
                     <n-text>{{ reason.content }}</n-text>
                     <n-text :depth="3" class="accuse-reason-time">
                         {{ reason.created_at }}
-                        <template v-if="isAdmin"> 近期举报 {{ reason.reporter_recent_count }} 次</template>
+                        <template v-if="canManage"> 近期举报 {{ reason.reporter_recent_count }} 次</template>
                     </n-text>
                 </div>
             </div>
 
-            <div v-if="isAdmin && (item.handled_by || handleActionText || item.handle_note)" class="accuse-admin-meta">
+            <div v-if="canManage && (item.handled_by || handleActionText || item.handle_note)" class="accuse-admin-meta">
                 <n-text v-if="item.handled_by" :depth="3">处理人：{{ item.handled_by }}</n-text>
                 <n-text v-if="handleActionText" :depth="3">处理操作：{{ handleActionText }}</n-text>
                 <n-text v-if="item.handle_note" :depth="3">
