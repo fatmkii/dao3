@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -25,7 +25,7 @@ jobs:
         run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -46,7 +46,7 @@ jobs:
             -czf /tmp/dao3-release.tar.gz .
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dao3-release
           path: /tmp/dao3-release.tar.gz
