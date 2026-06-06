@@ -26,7 +26,7 @@ const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
 
-const showPendingOnly = shallowRef(false)
+const showMyPendingOnly = shallowRef(false)
 const pageSelected = shallowRef(1)
 const createModalCom = ref<InstanceType<typeof AccuseCreateModal> | null>(null)
 const handleModalCom = ref<InstanceType<typeof AccuseHandleModal> | null>(null)
@@ -35,13 +35,14 @@ const {
     data: accuseData,
     send: getAccuses,
 } = useRequest(
-    (params: { page: number, pending_only: boolean }) => accuseListGetter(params),
+    (params: { page: number, my_pending_only: boolean }) => accuseListGetter(params),
     {
         immediate: false,
         initialData: {
             data: [] as AccuseItemData[],
             last_page: 1,
             pending_count: 0,
+            my_pending_count: 0,
         },
     },
 )
@@ -60,16 +61,16 @@ const { send: putUncertain } = useRequest(
     { immediate: false },
 )
 
-const isAdminView = computed(() => userStore.admin.isForumAdmin)
 const pagedItems = computed(() => accuseData.value.data)
 const lastPage = computed(() => accuseData.value.last_page)
 const pendingCount = computed(() => accuseData.value.pending_count)
+const myPendingCount = computed(() => accuseData.value.my_pending_count)
 
-watch([showPendingOnly, pageSelected], () => {
+watch([showMyPendingOnly, pageSelected], () => {
     loadAccuses()
 }, { immediate: true })
 
-watch(showPendingOnly, () => {
+watch(showMyPendingOnly, () => {
     pageSelected.value = 1
 })
 
@@ -88,7 +89,7 @@ watch(
 async function loadAccuses() {
     await getAccuses({
         page: pageSelected.value,
-        pending_only: showPendingOnly.value,
+        my_pending_only: showMyPendingOnly.value,
     })
 }
 
@@ -180,7 +181,7 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
 
 async function commitHandle(payload: { id: number, action: Exclude<AccuseAction, 'hint'>, reason: string, reduceOlo: boolean }) {
     const item = await handleAccuse(payload)
-    if (showPendingOnly.value) {
+    if (showMyPendingOnly.value) {
         await loadAccuses()
     } else {
         replaceAccuseItem(item)
@@ -196,10 +197,18 @@ async function toggleUncertain(id: number) {
 }
 
 function replaceAccuseItem(item: AccuseItemData) {
+    const previousItem = accuseData.value.data.find(current => current.id === item.id)
     accuseData.value.data = accuseData.value.data.map(current => current.id === item.id ? item : current)
-    accuseData.value.pending_count = item.status === 'handled'
-        ? Math.max(0, accuseData.value.pending_count - 1)
-        : accuseData.value.pending_count
+    if (previousItem?.status !== 'handled' && item.status === 'handled') {
+        accuseData.value.pending_count = Math.max(0, accuseData.value.pending_count - 1)
+        if (canManageAccuse(item)) {
+            accuseData.value.my_pending_count = Math.max(0, accuseData.value.my_pending_count - 1)
+        }
+    }
+}
+
+function canManageAccuse(item: AccuseItemData) {
+    return item.can_manage ?? userStore.checkAdminForums(item.forum_id)
 }
 </script>
 
@@ -211,18 +220,18 @@ function replaceAccuseItem(item: AccuseItemData) {
                     <Flag />
                 </n-icon>
                 <n-text strong>举报中心</n-text>
-                <n-text :depth="3">未处理 {{ pendingCount }}</n-text>
+                <n-text :depth="3">未处理 {{ showMyPendingOnly ? myPendingCount : pendingCount }}</n-text>
             </n-flex>
             <div class="accuse-spacer"></div>
-            <n-switch v-model:value="showPendingOnly">
-                <template #checked>仅未处理</template>
+            <n-switch v-model:value="showMyPendingOnly">
+                <template #checked>我的待处理</template>
                 <template #unchecked>全部举报</template>
             </n-switch>
         </n-flex>
 
         <n-empty v-if="pagedItems.length === 0" description="暂无举报" />
         <n-flex v-else vertical :size="8">
-            <AccuseItem v-for="item in pagedItems" :key="item.id" :item="item" :is-admin="isAdminView"
+            <AccuseItem v-for="item in pagedItems" :key="item.id" :item="item" :can-manage="canManageAccuse(item)"
                 @handle="handleAccuseAction" @toggle-uncertain="toggleUncertain" />
         </n-flex>
 

@@ -168,6 +168,112 @@ class AccuseTest extends TestCase
         ]);
     }
 
+    public function test_my_pending_only_returns_only_admin_forums(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $otherForum = Forum::create([
+            'name' => '其他板块',
+            'description' => 'other forum',
+            'status' => 1,
+            'accessible_coin' => 0,
+        ]);
+
+        $otherThread = new Thread();
+        $otherThread->forum_id = $otherForum->id;
+        $otherThread->title = '其他主题';
+        $otherThread->sub_title = '[测试]';
+        $otherThread->is_delay = 0;
+        $otherThread->is_deleted = 0;
+        $otherThread->is_private = false;
+        $otherThread->locked_by_coin = 0;
+        $otherThread->created_binggan = $this->target->binggan;
+        $otherThread->save();
+
+        $otherPost = Post::withoutEvents(fn () => Post::create([
+            'forum_id' => $otherForum->id,
+            'thread_id' => $otherThread->id,
+            'content' => '其他被举报回复内容',
+            'created_binggan' => $this->target->binggan,
+        ]));
+
+        $this->postJson('/api/accuses', $this->payload([
+            'thread_id' => $otherThread->id,
+            'post_id' => $otherPost->id,
+            'floor' => $otherPost->floor,
+            'reason' => '另一个有效举报理由',
+        ]))->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan']);
+        $adminPermission = new Admin();
+        $adminPermission->user_id = $admin->id;
+        $adminPermission->name = '测试管理员';
+        $adminPermission->forums = [$this->forum->id];
+        $adminPermission->save();
+
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $response = $this->getJson('/api/accuses?my_pending_only=1');
+
+        $response->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'pending_count' => 2,
+                'my_pending_count' => 1,
+            ],
+        ]);
+
+        $this->assertCount(1, $response->json('data.data'));
+        $this->assertSame($this->forum->id, $response->json('data.data.0.forum_id'));
+        $this->assertTrue($response->json('data.data.0.can_manage'));
+    }
+
+    public function test_admin_without_forum_permission_sees_user_view_and_cannot_operate(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $otherForum = Forum::create([
+            'name' => '无权限板块',
+            'description' => 'no permission forum',
+            'status' => 1,
+            'accessible_coin' => 0,
+        ]);
+
+        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan']);
+        $adminPermission = new Admin();
+        $adminPermission->user_id = $admin->id;
+        $adminPermission->name = '测试管理员';
+        $adminPermission->forums = [$otherForum->id];
+        $adminPermission->save();
+
+        Sanctum::actingAs($admin, ['forum_admin', 'senior_admin', 'admin']);
+
+        $list = $this->getJson('/api/accuses')->json('data.data.0');
+
+        $this->assertFalse($list['can_manage']);
+        $this->assertArrayNotHasKey('handled_by', $list);
+        $this->assertArrayNotHasKey('handle_action', $list);
+        $this->assertArrayNotHasKey('handle_note', $list);
+        $this->assertNull($list['target_recent_count']);
+        $this->assertNull($list['reasons'][0]['reporter_recent_count']);
+
+        $this->postJson('/api/accuses/' . $list['id'] . '/handle', [
+            'action' => 'ignore',
+        ])->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+
+        $this->putJson('/api/accuses/' . $list['id'] . '/uncertain', [
+            'uncertain' => true,
+        ])->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+
+        $this->postJson('/api/accuses/' . $list['id'] . '/hint')
+            ->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+
+        $this->assertSame('pending', Accuse::first()->status);
+        $this->assertFalse(Accuse::first()->uncertain);
+    }
+
     public function test_admin_delete_action_marks_accuse_handled_after_post_is_deleted(): void
     {
         Sanctum::actingAs($this->reporter);

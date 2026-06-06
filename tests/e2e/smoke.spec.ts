@@ -27,6 +27,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
         id: 104,
         thread_id: 181261,
         post_id: 952741,
+        forum_id: 1,
         floor: 233,
         thread_title: '祝福池活动集中帖',
         status: 'pending',
@@ -38,6 +39,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
         handle_note: null,
         handle_reduce_olo: false,
         uncertain: true,
+        can_manage: true,
         reasons: [
             {
                 id: 1,
@@ -120,6 +122,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
                         data: [accuseItem, handledAccuseItem],
                         last_page: 1,
                         pending_count: 1,
+                        my_pending_count: 1,
                     },
                 }),
             });
@@ -151,10 +154,36 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
         });
     });
 
+    await page.route('**/api/forums/', async (route) => {
+        await route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({
+                code: 200,
+                message: 'success',
+                data: [
+                    {
+                        id: 1,
+                        sub_id: 0,
+                        name: '综合版',
+                        description: 'test forum',
+                        status: 1,
+                        is_anonymous: 0,
+                        accessible_coin: 0,
+                        is_nissin: 0,
+                        banners: [],
+                        default_heads: 0,
+                        deleted_at: null,
+                    },
+                ],
+            }),
+        });
+    });
+
     const response = await page.goto('/accuse', { waitUntil: 'networkidle' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByText('举报中心')).toBeVisible();
+    await expect(page.getByText('板块：综合版').first()).toBeVisible();
     await expect(page.getByText('祝福池活动集中帖').first()).toBeVisible();
     await expect(page.getByText('楼层：').first()).toBeVisible();
     await expect(page.getByText('近期被举报').first()).toBeVisible();
