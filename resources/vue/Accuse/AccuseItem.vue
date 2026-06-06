@@ -104,7 +104,7 @@ function dropdownSelect(key: string | number) {
             </n-flex>
 
             <n-flex vertical :size="6">
-                <n-text>板块：{{ forumName }}</n-text>
+                <n-text>小岛：{{ forumName }}</n-text>
                 <n-text strong>主题：{{ item.thread_title }}</n-text>
                 <n-flex align="center" :size="8" :wrap="true">
                     <n-text>楼层：</n-text>
