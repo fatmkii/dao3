@@ -34,6 +34,12 @@ jobs:
         run: npm ci
 
       - name: Build frontend
+        env:
+            VITE_REVERB_APP_KEY: ${{ secrets.VITE_REVERB_APP_KEY }}
+            VITE_REVERB_PORT: '8090'
+            VITE_REVERB_SCHEME: 'https'
+            VITE_REVERB_HOST: 'localhost'
+            VITE_REVERB_HOST_SUBDOMAIN: 'socket.'
         run: npm run build
 
       - name: Prepare release archive
