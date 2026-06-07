@@ -97,8 +97,6 @@ jobs:
             rm -rf "$RELEASE_DIR/storage"
             ln -sfn "$SHARED_DIR/storage" "$RELEASE_DIR/storage"
 
-            ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
-
             cd "$RELEASE_DIR"
             "$PHP_BIN" artisan config:cache
             "$PHP_BIN" artisan route:cache
@@ -106,6 +104,9 @@ jobs:
             "$PHP_BIN" artisan storage:link || true
 
             chown -R "$APP_USER:$APP_GROUP" "$RELEASE_DIR"
+
+            ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
+            systemctl reload php-fpm
 
             supervisorctl restart 'Laravel-worker-3:*'
             supervisorctl restart 'Laravel-Reverb:*'
