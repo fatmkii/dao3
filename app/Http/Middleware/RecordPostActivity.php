@@ -53,6 +53,9 @@ class RecordPostActivity
                 }
                 break;
             case 'hongbao_store':
+                if ($request->attributes->get('is_own_hongbao_post') === true) {
+                    break;
+                }
                 $this->antiSpam->recordHongbao($ip);
                 break;
             case 'view_post':

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\SpamDetectedException;
+use App\Models\HongbaoPost;
 use App\Services\AntiSpamService;
 use Closure;
 use Illuminate\Http\Request;
@@ -43,6 +44,9 @@ class ThrottlePost
                     $this->antiSpam->checkThreadSpam($user->binggan, $user);
                     break;
                 case 'hongbao_store':
+                    if ($this->isOwnHongbaoPost($request, $user->id)) {
+                        break;
+                    }
                     $this->antiSpam->checkHongbaoSpam(
                         $ip,
                         $user,
@@ -75,5 +79,19 @@ class ThrottlePost
         }
 
         return null;
+    }
+
+    private function isOwnHongbaoPost(Request $request, int $userId): bool
+    {
+        $hongbaoPostId = $request->input('hongbao_post_id');
+        if (!$hongbaoPostId) {
+            return false;
+        }
+
+        $hongbaoUserId = HongbaoPost::whereKey($hongbaoPostId)->value('user_id');
+        $isOwnHongbaoPost = (int) $hongbaoUserId === $userId;
+        $request->attributes->set('is_own_hongbao_post', $isOwnHongbaoPost);
+
+        return $isOwnHongbaoPost;
     }
 }

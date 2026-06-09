@@ -6,8 +6,12 @@ use App\Common\ResponseCode;
 use App\Exceptions\SpamDetectedException;
 use App\Http\Middleware\RecordPostActivity;
 use App\Http\Middleware\ThrottlePost;
+use App\Models\Forum;
+use App\Models\HongbaoPost;
+use App\Models\Thread;
 use App\Models\User;
 use App\Services\AntiSpamService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,6 +19,8 @@ use Tests\TestCase;
 
 class AntiSpamMiddlewareTest extends TestCase
 {
+    use RefreshDatabase;
+
     private User $user;
     private AntiSpamService $antiSpamMock;
 
@@ -235,6 +241,28 @@ class AntiSpamMiddlewareTest extends TestCase
         $this->assertEquals(ResponseCode::POST_TOO_MANY_MAYBE_ROBOT, $content->code);
     }
 
+    public function test_throttle_post_skips_hongbao_check_for_own_hongbao(): void
+    {
+        $middleware = new ThrottlePost($this->antiSpamMock);
+        $hongbao = $this->createHongbaoPostForUser($this->user->id);
+
+        $request = Request::create('/api/hongbao_post/store', 'POST', [
+            'hongbao_post_id' => $hongbao->id,
+            'thread_id' => 10001,
+            'new_post_key' => 'test_key',
+            'timestamp' => time(),
+        ]);
+        $request->setUserResolver(fn() => $this->user);
+
+        $this->antiSpamMock->expects($this->never())
+            ->method('checkHongbaoSpam');
+
+        $response = $middleware->handle($request, fn($req) => new Response('controller_reached'));
+
+        $this->assertEquals('controller_reached', $response->getContent());
+        $this->assertTrue($request->attributes->get('is_own_hongbao_post'));
+    }
+
     // ============================================
     // ThrottlePost - 放行测试（正常请求）
     // ============================================
@@ -410,6 +438,21 @@ class AntiSpamMiddlewareTest extends TestCase
         $middleware->terminate($request, $jsonResponse);
     }
 
+    public function test_record_hongbao_store_skips_own_hongbao(): void
+    {
+        $middleware = new RecordPostActivity($this->antiSpamMock);
+
+        $request = Request::create('/api/hongbao_post/store', 'POST');
+        $request->setUserResolver(fn() => $this->user);
+        $request->attributes->set('is_own_hongbao_post', true);
+
+        $this->antiSpamMock->expects($this->never())
+            ->method('recordHongbao');
+
+        $jsonResponse = new JsonResponse(['code' => 200]);
+        $middleware->terminate($request, $jsonResponse);
+    }
+
     public function test_record_handle_always_passes_through(): void
     {
         $middleware = new RecordPostActivity($this->antiSpamMock);
@@ -473,6 +516,41 @@ class AntiSpamMiddlewareTest extends TestCase
 
         $jsonResponse = new JsonResponse(['code' => 200]);
         $middleware->terminate($request, $jsonResponse);
+    }
+
+    private function createHongbaoPostForUser(int $userId): HongbaoPost
+    {
+        $forum = Forum::create([
+            'name' => '测试板块',
+            'description' => 'test forum',
+            'status' => 1,
+            'accessible_coin' => 0,
+        ]);
+
+        $thread = Thread::create([
+            'forum_id' => $forum->id,
+            'title' => '测试主题',
+            'created_binggan' => 'test_binggan_abc',
+            'is_delay' => 0,
+            'is_deleted' => 0,
+            'is_private' => false,
+            'locked_by_coin' => 0,
+        ]);
+
+        return HongbaoPost::create([
+            'user_id' => $userId,
+            'thread_id' => $thread->id,
+            'post_id' => 1000001,
+            'floor' => 1,
+            'olo_total' => 3000,
+            'num_total' => 5,
+            'olo_remains' => 3000,
+            'num_remains' => 5,
+            'type' => 1,
+            'key_word_type' => 1,
+            'key_word' => 'test',
+            'olo_hide' => false,
+        ]);
     }
 
     // ============================================
