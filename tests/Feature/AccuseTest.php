@@ -77,6 +77,8 @@ class AccuseTest extends TestCase
             ],
         ]);
 
+        $this->assertSame($this->target->id, Accuse::first()->target_user_id);
+
         $list = $this->getJson('/api/accuses')->json('data.data.0');
 
         $this->assertArrayNotHasKey('handled_by', $list);

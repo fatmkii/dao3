@@ -88,6 +88,7 @@ class AccuseController extends Controller
         }
 
         $user = $request->user();
+        $targetUserId = User::where('binggan', $post->created_binggan)->value('id');
         $duplicated = AccuseReason::where('post_id', $post->id)
             ->where('reporter_user_id', $user->id)
             ->exists();
@@ -96,7 +97,7 @@ class AccuseController extends Controller
             return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个回复了');
         }
 
-        $accuse = DB::transaction(function () use ($request, $thread, $post, $user) {
+        $accuse = DB::transaction(function () use ($request, $thread, $post, $user, $targetUserId) {
             $accuse = Accuse::firstOrCreate(
                 ['post_id' => $post->id],
                 [
@@ -104,6 +105,7 @@ class AccuseController extends Controller
                     'forum_id' => $post->forum_id,
                     'floor' => $post->floor,
                     'target_binggan' => $post->created_binggan,
+                    'target_user_id' => $targetUserId,
                     'thread_title' => $thread->title,
                     'status' => 'pending',
                     'uncertain' => false,
@@ -243,7 +245,7 @@ class AccuseController extends Controller
                 'reporter_recent_count' => $isAdmin ? $this->reporterRecentCount($reason->reporter_user_id) : null,
             ])->values(),
             'target_recent_count' => $isAdmin ? $this->targetRecentCount($accuse->target_binggan) : null,
-            'target_deleted_post_penalty_count' => $isAdmin ? $this->targetDeletedPostPenaltyCount($accuse->target_binggan) : null,
+            'target_deleted_post_penalty_count' => $isAdmin ? $this->targetDeletedPostPenaltyCount($accuse->target_user_id) : null,
             'uncertain' => $isAdmin ? $accuse->uncertain : false,
             'handle_reduce_olo' => $isAdmin ? $accuse->handle_reduce_olo : false,
             'can_manage' => $isAdmin,
@@ -277,18 +279,13 @@ class AccuseController extends Controller
             ->count();
     }
 
-    private function targetDeletedPostPenaltyCount(?string $targetBinggan): int
+    private function targetDeletedPostPenaltyCount(?int $targetUserId): int
     {
-        if ($targetBinggan === null) {
+        if ($targetUserId === null) {
             return 0;
         }
 
-        $user = User::where('binggan', $targetBinggan)->first();
-        if (!$user) {
-            return 0;
-        }
-
-        return (int) (Redis::get(self::DELETED_POST_PENALTY_REDIS_PREFIX . $user->id) ?: 0);
+        return (int) (Redis::get(self::DELETED_POST_PENALTY_REDIS_PREFIX . $targetUserId) ?: 0);
     }
 
     private function adminName(int $userId): string
