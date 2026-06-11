@@ -21,6 +21,7 @@ interface AccuseItemData {
     created_at: string,
     reasons: AccuseReason[],
     target_recent_count: number | null,
+    target_deleted_post_penalty_count: number | null,
     handled_by?: string | null,
     handled_at?: string | null,
     handle_action?: AccuseAction | null,

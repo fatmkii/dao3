@@ -12,6 +12,7 @@ use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Redis;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -33,6 +34,7 @@ class AccuseTest extends TestCase
 
         $this->reporter = User::factory()->create(['binggan' => 'reporter_binggan']);
         $this->target = User::factory()->create(['binggan' => 'target_binggan']);
+        Redis::del($this->deletedPostPenaltyKey($this->target));
 
         $this->forum = Forum::create([
             'name' => '测试板块',
@@ -81,6 +83,7 @@ class AccuseTest extends TestCase
         $this->assertArrayNotHasKey('handle_action', $list);
         $this->assertArrayNotHasKey('handle_note', $list);
         $this->assertNull($list['target_recent_count']);
+        $this->assertNull($list['target_deleted_post_penalty_count']);
         $this->assertNull($list['reasons'][0]['reporter_recent_count']);
         $this->assertStringNotContainsString($this->reporter->binggan, json_encode($list));
         $this->assertStringNotContainsString($this->target->binggan, json_encode($list));
@@ -150,9 +153,11 @@ class AccuseTest extends TestCase
         $adminPermission->save();
 
         Sanctum::actingAs($admin, ['forum_admin', 'senior_admin', 'admin']);
+        Redis::setex($this->deletedPostPenaltyKey($this->target), 24 * 3600, 4);
 
         $list = $this->getJson('/api/accuses')->json('data.data.0');
         $this->assertSame(1, $list['target_recent_count']);
+        $this->assertSame(4, $list['target_deleted_post_penalty_count']);
         $this->assertSame(1, $list['reasons'][0]['reporter_recent_count']);
 
         $this->postJson('/api/accuses/' . $list['id'] . '/handle', [
@@ -257,6 +262,7 @@ class AccuseTest extends TestCase
         $this->assertArrayNotHasKey('handle_action', $list);
         $this->assertArrayNotHasKey('handle_note', $list);
         $this->assertNull($list['target_recent_count']);
+        $this->assertNull($list['target_deleted_post_penalty_count']);
         $this->assertNull($list['reasons'][0]['reporter_recent_count']);
 
         $this->postJson('/api/accuses/' . $list['id'] . '/handle', [
@@ -328,5 +334,10 @@ class AccuseTest extends TestCase
             'floor' => $this->post->floor,
             'reason' => '这是一个有效举报理由',
         ], $override);
+    }
+
+    private function deletedPostPenaltyKey(User $user): string
+    {
+        return 'deleted_post_penalty_count_' . $user->id;
     }
 }

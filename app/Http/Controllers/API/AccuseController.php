@@ -9,12 +9,16 @@ use App\Models\AccuseReason;
 use App\Models\Admin;
 use App\Models\Post;
 use App\Models\Thread;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class AccuseController extends Controller
 {
+    private const DELETED_POST_PENALTY_REDIS_PREFIX = 'deleted_post_penalty_count_';
+
     public function index(Request $request)
     {
         $request->validate([
@@ -239,6 +243,7 @@ class AccuseController extends Controller
                 'reporter_recent_count' => $isAdmin ? $this->reporterRecentCount($reason->reporter_user_id) : null,
             ])->values(),
             'target_recent_count' => $isAdmin ? $this->targetRecentCount($accuse->target_binggan) : null,
+            'target_deleted_post_penalty_count' => $isAdmin ? $this->targetDeletedPostPenaltyCount($accuse->target_binggan) : null,
             'uncertain' => $isAdmin ? $accuse->uncertain : false,
             'handle_reduce_olo' => $isAdmin ? $accuse->handle_reduce_olo : false,
             'can_manage' => $isAdmin,
@@ -270,6 +275,20 @@ class AccuseController extends Controller
         return AccuseReason::whereHas('accuse', fn ($query) => $query->where('target_binggan', $targetBinggan))
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->count();
+    }
+
+    private function targetDeletedPostPenaltyCount(?string $targetBinggan): int
+    {
+        if ($targetBinggan === null) {
+            return 0;
+        }
+
+        $user = User::where('binggan', $targetBinggan)->first();
+        if (!$user) {
+            return 0;
+        }
+
+        return (int) (Redis::get(self::DELETED_POST_PENALTY_REDIS_PREFIX . $user->id) ?: 0);
     }
 
     private function adminName(int $userId): string
