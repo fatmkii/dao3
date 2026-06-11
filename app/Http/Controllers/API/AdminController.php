@@ -21,10 +21,15 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use App\Common\WatermarkObfuscator;
 
 class AdminController extends Controller
 {
+    private const DELETED_POST_PENALTY_REDIS_PREFIX = 'deleted_post_penalty_count_';
+    private const DELETED_POST_PENALTY_TTL = 24 * 3600;
+    private const DELETED_POST_PENALTY_THRESHOLD = 5;
+
     public function thread_delete(Request $request)
     {
         $request->validate([
@@ -338,6 +343,10 @@ class AdminController extends Controller
             ]
         ));
 
+        if ($request->reduce_olo == True) {
+            $this->recordDeletedPostPenalty($request, $post, 1);
+        }
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '该帖子已删除。',
@@ -537,6 +546,10 @@ class AdminController extends Controller
             ]
         ));
 
+        if ($request->reduce_olo == True) {
+            $this->recordDeletedPostPenalty($request, $post, 3);
+        }
+
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' =>  sprintf('该作者全部帖子已删除。一共有%d个帖子', $posts_num),
@@ -733,6 +746,43 @@ class AdminController extends Controller
             'code' => ResponseCode::SUCCESS,
             'message' => $msg,
         ]);
+    }
+
+    private function recordDeletedPostPenalty(Request $request, Post $post, int $count): void
+    {
+        $user_to_lock = User::where('binggan', $post->created_binggan)->first();
+        if (!$user_to_lock) {
+            return;
+        }
+
+        $key = self::DELETED_POST_PENALTY_REDIS_PREFIX . $user_to_lock->id;
+        $current_count = (int) Redis::incrby($key, $count);
+        if ($current_count === $count) {
+            Redis::expire($key, self::DELETED_POST_PENALTY_TTL);
+        }
+
+        if ($current_count < self::DELETED_POST_PENALTY_THRESHOLD) {
+            return;
+        }
+
+        if ($user_to_lock->is_banned) {
+            return;
+        }
+
+        if ($user_to_lock->locked_until != null && Carbon::parse($user_to_lock->locked_until)->gt(Carbon::now())) {
+            return;
+        }
+
+        $lock_request = $request->duplicate();
+        $lock_request->setUserResolver($request->getUserResolver());
+        $lock_request->setRouteResolver($request->getRouteResolver());
+        $lock_request->merge([
+            'post_id' => $post->id,
+            'thread_id' => $post->thread_id,
+            'content' => sprintf('24h被删帖%d次', $current_count),
+        ]);
+
+        $this->user_lock($lock_request);
     }
 
     public function set_banner(Request $request)
