@@ -113,7 +113,29 @@ class AccuseTest extends TestCase
         $this->assertSame(1, Accuse::first()->reasons()->count());
     }
 
-    public function test_different_users_merge_into_one_pending_accuse_and_reopen_handled_item(): void
+    public function test_different_users_merge_into_one_pending_accuse(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $accuse = Accuse::first();
+        $secondReporter = User::factory()->create(['binggan' => 'second_reporter']);
+
+        Sanctum::actingAs($secondReporter);
+        $this->postJson('/api/accuses', $this->payload(['reason' => '第二个用户举报理由']))->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'id' => $accuse->id,
+                'status' => 'pending',
+            ],
+        ]);
+
+        $accuse->refresh();
+        $this->assertSame('pending', $accuse->status);
+        $this->assertSame(2, $accuse->reasons()->count());
+    }
+
+    public function test_different_user_cannot_accuse_handled_item_again(): void
     {
         Sanctum::actingAs($this->reporter);
         $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
@@ -129,17 +151,32 @@ class AccuseTest extends TestCase
         $secondReporter = User::factory()->create(['binggan' => 'second_reporter']);
         Sanctum::actingAs($secondReporter);
         $this->postJson('/api/accuses', $this->payload(['reason' => '第二个用户举报理由']))->assertJson([
-            'code' => ResponseCode::SUCCESS,
-            'data' => [
-                'id' => $accuse->id,
-                'status' => 'pending',
-            ],
+            'code' => ResponseCode::USER_CANNOT,
+            'message' => '该回复的举报已处理',
         ]);
 
         $accuse->refresh();
-        $this->assertSame('pending', $accuse->status);
-        $this->assertNull($accuse->handled_by_user_id);
-        $this->assertSame(2, $accuse->reasons()->count());
+        $this->assertSame('handled', $accuse->status);
+        $this->assertSame($this->reporter->id, $accuse->handled_by_user_id);
+        $this->assertSame(1, $accuse->reasons()->count());
+    }
+
+    public function test_same_user_sees_handled_message_when_accuse_was_already_handled(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        Accuse::first()->update([
+            'status' => 'handled',
+            'handled_by_user_id' => $this->reporter->id,
+            'handle_action' => 'ignore',
+            'handle_note' => '忽略',
+        ]);
+
+        $this->postJson('/api/accuses', $this->payload())->assertJson([
+            'code' => ResponseCode::USER_CANNOT,
+            'message' => '该回复的举报已处理',
+        ]);
     }
 
     public function test_admin_can_see_counts_and_ignore_accuse(): void
