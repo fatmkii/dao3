@@ -33,6 +33,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
         status: 'pending',
         created_at: '2026-05-29 14:26:18',
         target_recent_count: 3,
+        target_deleted_post_penalty_count: 2,
         handled_by: null,
         handled_at: null,
         handle_action: null,
@@ -183,10 +184,11 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByText('举报中心')).toBeVisible();
-    await expect(page.getByText('板块：综合版').first()).toBeVisible();
+    await expect(page.getByText('小岛：综合版').first()).toBeVisible();
     await expect(page.getByText('祝福池活动集中帖').first()).toBeVisible();
     await expect(page.getByText('楼层：').first()).toBeVisible();
     await expect(page.getByText('近期被举报').first()).toBeVisible();
+    await expect(page.getByText('近期被举报 3 次，被删帖 2 次').first()).toBeVisible();
     await expect(page.getByText('处理操作：删帖')).toBeVisible();
 
     await page.getByText('操作').first().click();

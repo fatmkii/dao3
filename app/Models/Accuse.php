@@ -15,6 +15,7 @@ class Accuse extends Model
         'forum_id',
         'floor',
         'target_binggan',
+        'target_user_id',
         'thread_title',
         'status',
         'uncertain',
@@ -27,6 +28,7 @@ class Accuse extends Model
 
     protected $hidden = [
         'target_binggan',
+        'target_user_id',
         'handled_by_user_id',
         'updated_at',
     ];

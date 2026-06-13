@@ -28,6 +28,14 @@ const emit = defineEmits<{
 const statusType = computed<'default' | 'success'>(() => props.item.status === 'handled' ? 'success' : 'default')
 const statusText = computed(() => props.item.status === 'handled' ? '已处理' : '未处理')
 const forumName = computed(() => forumsStore.forumData(props.item.forum_id)?.name ?? `#${props.item.forum_id}`)
+const targetDeletedPostPenaltyCount = computed(() => props.item.target_deleted_post_penalty_count ?? 0)
+const targetStatsText = computed(() => {
+    const deletedPostText = targetDeletedPostPenaltyCount.value > 0
+        ? `，被删帖 ${targetDeletedPostPenaltyCount.value} 次`
+        : ''
+
+    return `近期被举报 ${props.item.target_recent_count} 次${deletedPostText}`
+})
 const handleActionLabels: Record<Exclude<AccuseAction, 'hint'>, string> = {
     ignore: '忽略',
     delete: '删帖',
@@ -111,7 +119,7 @@ function dropdownSelect(key: string | number) {
                     <router-link :to="floorLink" target="_blank" class="accuse-floor-link">
                         №{{ item.floor }}
                     </router-link>
-                    <n-text v-if="canManage" :depth="3">近期被举报 {{ item.target_recent_count }} 次</n-text>
+                    <n-text v-if="canManage" :depth="3">{{ targetStatsText }}</n-text>
                 </n-flex>
             </n-flex>
 

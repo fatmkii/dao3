@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('forum_id')->index();
             $table->integer('floor')->index();
             $table->string('target_binggan')->nullable()->index();
+            $table->unsignedBigInteger('target_user_id')->nullable()->index();
             $table->string('thread_title');
             $table->string('status')->default('pending')->index();
             $table->boolean('uncertain')->default(false);

@@ -9,12 +9,16 @@ use App\Models\AccuseReason;
 use App\Models\Admin;
 use App\Models\Post;
 use App\Models\Thread;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class AccuseController extends Controller
 {
+    private const DELETED_POST_PENALTY_REDIS_PREFIX = 'deleted_post_penalty_count_';
+
     public function index(Request $request)
     {
         $request->validate([
@@ -84,6 +88,12 @@ class AccuseController extends Controller
         }
 
         $user = $request->user();
+        $targetUserId = User::where('binggan', $post->created_binggan)->value('id');
+        $existingAccuse = Accuse::where('post_id', $post->id)->first();
+        if ($existingAccuse?->status === 'handled') {
+            return $this->error(ResponseCode::USER_CANNOT, '该回复的举报已处理');
+        }
+
         $duplicated = AccuseReason::where('post_id', $post->id)
             ->where('reporter_user_id', $user->id)
             ->exists();
@@ -92,19 +102,18 @@ class AccuseController extends Controller
             return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个回复了');
         }
 
-        $accuse = DB::transaction(function () use ($request, $thread, $post, $user) {
-            $accuse = Accuse::firstOrCreate(
-                ['post_id' => $post->id],
-                [
-                    'thread_id' => $thread->id,
-                    'forum_id' => $post->forum_id,
-                    'floor' => $post->floor,
-                    'target_binggan' => $post->created_binggan,
-                    'thread_title' => $thread->title,
-                    'status' => 'pending',
-                    'uncertain' => false,
-                ]
-            );
+        $accuse = DB::transaction(function () use ($request, $thread, $post, $user, $targetUserId, $existingAccuse) {
+            $accuse = $existingAccuse ?: Accuse::create([
+                'thread_id' => $thread->id,
+                'post_id' => $post->id,
+                'forum_id' => $post->forum_id,
+                'floor' => $post->floor,
+                'target_binggan' => $post->created_binggan,
+                'target_user_id' => $targetUserId,
+                'thread_title' => $thread->title,
+                'status' => 'pending',
+                'uncertain' => false,
+            ]);
 
             AccuseReason::create([
                 'accuse_id' => $accuse->id,
@@ -112,14 +121,6 @@ class AccuseController extends Controller
                 'reporter_user_id' => $user->id,
                 'reason' => trim($request->reason),
             ]);
-
-            $accuse->status = 'pending';
-            $accuse->handled_by_user_id = null;
-            $accuse->handled_at = null;
-            $accuse->handle_action = null;
-            $accuse->handle_note = null;
-            $accuse->handle_reduce_olo = false;
-            $accuse->save();
 
             return $accuse->load(['reasons', 'handledBy.AdminPermissions']);
         });
@@ -239,6 +240,7 @@ class AccuseController extends Controller
                 'reporter_recent_count' => $isAdmin ? $this->reporterRecentCount($reason->reporter_user_id) : null,
             ])->values(),
             'target_recent_count' => $isAdmin ? $this->targetRecentCount($accuse->target_binggan) : null,
+            'target_deleted_post_penalty_count' => $isAdmin ? $this->targetDeletedPostPenaltyCount($accuse->target_user_id) : null,
             'uncertain' => $isAdmin ? $accuse->uncertain : false,
             'handle_reduce_olo' => $isAdmin ? $accuse->handle_reduce_olo : false,
             'can_manage' => $isAdmin,
@@ -270,6 +272,15 @@ class AccuseController extends Controller
         return AccuseReason::whereHas('accuse', fn ($query) => $query->where('target_binggan', $targetBinggan))
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->count();
+    }
+
+    private function targetDeletedPostPenaltyCount(?int $targetUserId): int
+    {
+        if ($targetUserId === null) {
+            return 0;
+        }
+
+        return (int) (Redis::get(self::DELETED_POST_PENALTY_REDIS_PREFIX . $targetUserId) ?: 0);
     }
 
     private function adminName(int $userId): string

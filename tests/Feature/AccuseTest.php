@@ -12,6 +12,7 @@ use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Redis;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -33,6 +34,7 @@ class AccuseTest extends TestCase
 
         $this->reporter = User::factory()->create(['binggan' => 'reporter_binggan']);
         $this->target = User::factory()->create(['binggan' => 'target_binggan']);
+        Redis::del($this->deletedPostPenaltyKey($this->target));
 
         $this->forum = Forum::create([
             'name' => '测试板块',
@@ -75,12 +77,15 @@ class AccuseTest extends TestCase
             ],
         ]);
 
+        $this->assertSame($this->target->id, Accuse::first()->target_user_id);
+
         $list = $this->getJson('/api/accuses')->json('data.data.0');
 
         $this->assertArrayNotHasKey('handled_by', $list);
         $this->assertArrayNotHasKey('handle_action', $list);
         $this->assertArrayNotHasKey('handle_note', $list);
         $this->assertNull($list['target_recent_count']);
+        $this->assertNull($list['target_deleted_post_penalty_count']);
         $this->assertNull($list['reasons'][0]['reporter_recent_count']);
         $this->assertStringNotContainsString($this->reporter->binggan, json_encode($list));
         $this->assertStringNotContainsString($this->target->binggan, json_encode($list));
@@ -108,7 +113,29 @@ class AccuseTest extends TestCase
         $this->assertSame(1, Accuse::first()->reasons()->count());
     }
 
-    public function test_different_users_merge_into_one_pending_accuse_and_reopen_handled_item(): void
+    public function test_different_users_merge_into_one_pending_accuse(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $accuse = Accuse::first();
+        $secondReporter = User::factory()->create(['binggan' => 'second_reporter']);
+
+        Sanctum::actingAs($secondReporter);
+        $this->postJson('/api/accuses', $this->payload(['reason' => '第二个用户举报理由']))->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'id' => $accuse->id,
+                'status' => 'pending',
+            ],
+        ]);
+
+        $accuse->refresh();
+        $this->assertSame('pending', $accuse->status);
+        $this->assertSame(2, $accuse->reasons()->count());
+    }
+
+    public function test_different_user_cannot_accuse_handled_item_again(): void
     {
         Sanctum::actingAs($this->reporter);
         $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
@@ -124,17 +151,32 @@ class AccuseTest extends TestCase
         $secondReporter = User::factory()->create(['binggan' => 'second_reporter']);
         Sanctum::actingAs($secondReporter);
         $this->postJson('/api/accuses', $this->payload(['reason' => '第二个用户举报理由']))->assertJson([
-            'code' => ResponseCode::SUCCESS,
-            'data' => [
-                'id' => $accuse->id,
-                'status' => 'pending',
-            ],
+            'code' => ResponseCode::USER_CANNOT,
+            'message' => '该回复的举报已处理',
         ]);
 
         $accuse->refresh();
-        $this->assertSame('pending', $accuse->status);
-        $this->assertNull($accuse->handled_by_user_id);
-        $this->assertSame(2, $accuse->reasons()->count());
+        $this->assertSame('handled', $accuse->status);
+        $this->assertSame($this->reporter->id, $accuse->handled_by_user_id);
+        $this->assertSame(1, $accuse->reasons()->count());
+    }
+
+    public function test_same_user_sees_handled_message_when_accuse_was_already_handled(): void
+    {
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        Accuse::first()->update([
+            'status' => 'handled',
+            'handled_by_user_id' => $this->reporter->id,
+            'handle_action' => 'ignore',
+            'handle_note' => '忽略',
+        ]);
+
+        $this->postJson('/api/accuses', $this->payload())->assertJson([
+            'code' => ResponseCode::USER_CANNOT,
+            'message' => '该回复的举报已处理',
+        ]);
     }
 
     public function test_admin_can_see_counts_and_ignore_accuse(): void
@@ -150,9 +192,11 @@ class AccuseTest extends TestCase
         $adminPermission->save();
 
         Sanctum::actingAs($admin, ['forum_admin', 'senior_admin', 'admin']);
+        Redis::setex($this->deletedPostPenaltyKey($this->target), 24 * 3600, 4);
 
         $list = $this->getJson('/api/accuses')->json('data.data.0');
         $this->assertSame(1, $list['target_recent_count']);
+        $this->assertSame(4, $list['target_deleted_post_penalty_count']);
         $this->assertSame(1, $list['reasons'][0]['reporter_recent_count']);
 
         $this->postJson('/api/accuses/' . $list['id'] . '/handle', [
@@ -257,6 +301,7 @@ class AccuseTest extends TestCase
         $this->assertArrayNotHasKey('handle_action', $list);
         $this->assertArrayNotHasKey('handle_note', $list);
         $this->assertNull($list['target_recent_count']);
+        $this->assertNull($list['target_deleted_post_penalty_count']);
         $this->assertNull($list['reasons'][0]['reporter_recent_count']);
 
         $this->postJson('/api/accuses/' . $list['id'] . '/handle', [
@@ -328,5 +373,10 @@ class AccuseTest extends TestCase
             'floor' => $this->post->floor,
             'reason' => '这是一个有效举报理由',
         ], $override);
+    }
+
+    private function deletedPostPenaltyKey(User $user): string
+    {
+        return 'deleted_post_penalty_count_' . $user->id;
     }
 }
