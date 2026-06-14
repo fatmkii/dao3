@@ -70,7 +70,7 @@ defineExpose({ show })
                     <f-input-group-label style="width: 5.5rem;">回复楼层</f-input-group-label>
                     <f-input :value="'№' + form.floor" disabled />
                 </n-input-group>
-                <f-input v-model:value="form.reason" type="textarea" placeholder="填写举报理由（至少5字）&#10;如有具体楼规请附上以提升处理效率&#10;如需举报多条，请在这里说明" :maxlength="500" show-count />
+                <f-input v-model:value="form.reason" type="textarea" placeholder="填写举报理由（至少5字）&#10;为提升效率，请附上具体楼规、缩写、花名等&#10;如需举报多条，请在这里说明" :maxlength="500" show-count />
             </n-flex>
 
             <template #action>
