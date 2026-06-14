@@ -623,6 +623,36 @@ class Medals
             'threshold' => 0,
             'varname' => null,
         ),
+        285 => array(
+            'name' => '领结猫',
+            'describe' => '\\\\ 领结猫，出道！//',
+            'threshold' => 500, //这里指500票，50000个olo
+            'varname' => null,
+        ),
+        286 => array(
+            'name' => '第四届隐藏1',
+            'describe' => '',
+            'threshold' => 100, //这里指100票，10000个olo
+            'varname' => null,
+        ),
+        287 => array(
+            'name' => '第四届隐藏2',
+            'describe' => '',
+            'threshold' => 1000, //这里指1000票，100000个olo
+            'varname' => null,
+        ),
+        288 => array(
+            'name' => '冠军徽章预留',
+            'describe' => '',
+            'threshold' => 0,
+            'varname' => null,
+        ),
+        289 => array(
+            'name' => '淘汰徽章预留',
+            'describe' => '',
+            'threshold' => 0,
+            'varname' => null,
+        ),
 
         //连续赢得大乱斗
         221 => array(
