@@ -47,7 +47,7 @@ class EmojiContestMedal extends Command
                 array_push($user_array, $user_id);
                 UserMedal::create([
                     'user_id' => $user_id,
-                    'medal_id' => 269, //本次冠军徽章ID是269，这里记得每次改！！！ 
+                    'medal_id' => 288, //本次冠军徽章ID是288，这里记得每次改！！！ 
                     'created_at' => Carbon::now(),
                 ]);
             }
@@ -58,26 +58,26 @@ class EmojiContestMedal extends Command
 
 
         // 发放淘汰徽章
-        // $user_array = [];
-        // foreach ($user_ids as $key => $user_id) {
-        //     $user_vote_total = EmojiContestUserTotal::where('user_id', $user_id)
-        //         ->where('emoji_group_id', 10) //本次被淘汰的是小黄脸10号，这里记得每次改！！！ 
-        //         ->get();
+        $user_array = [];
+        foreach ($user_ids as $key => $user_id) {
+            $user_vote_total = EmojiContestUserTotal::where('user_id', $user_id)
+                ->where('emoji_group_id', 10) //本次被淘汰的是小黄脸10号，这里记得每次改！！！ 
+                ->get();
 
-        //     foreach ($user_vote_total as $key => $value) {
-        //         if ($value->votes_num_total >= 10) {
-        //             array_push($user_array, $user_id);
-        //             UserMedal::create([
-        //                 'user_id' => $user_id,
-        //                 'medal_id' => 283, //本次淘汰徽章ID是283，这里记得每次改！！！ 
-        //                 'created_at' => Carbon::now(),
-        //             ]);
-        //         }
-        //     }
-        // }
-        // Log::channel('temp_log')->info('淘汰徽章，发放user_id', [$user_array]);
-        // Log::channel('temp_log')->info('淘汰徽章，合计发放个数：', [count($user_array)]);
-        // $this->info('淘汰徽章，合计发放个数：' . count($user_array));
+            foreach ($user_vote_total as $key => $value) {
+                if ($value->votes_num_total >= 10) {
+                    array_push($user_array, $user_id);
+                    UserMedal::create([
+                        'user_id' => $user_id,
+                        'medal_id' => 289, //本次淘汰徽章ID是289，这里记得每次改！！！ 
+                        'created_at' => Carbon::now(),
+                    ]);
+                }
+            }
+        }
+        Log::channel('temp_log')->info('淘汰徽章，发放user_id', [$user_array]);
+        Log::channel('temp_log')->info('淘汰徽章，合计发放个数：', [count($user_array)]);
+        $this->info('淘汰徽章，合计发放个数：' . count($user_array));
 
         return true;
     }

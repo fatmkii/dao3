@@ -7,7 +7,7 @@
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'warning'">
             <span>（new!）本次活动同样有版头应援活动喔！</span>
-            <router-link :to="'/thread/10054'">点击这里投稿</router-link>
+            <router-link :to="'/thread/192451'">点击这里投稿</router-link>
         </n-alert>
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
@@ -82,21 +82,20 @@ import dayjs from 'dayjs'
 import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
-const startTime = dayjs.tz('2025-11-11 20:00')
-const endTime = dayjs.tz('2025-11-14 20:00')
-const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
+const startTime = dayjs.tz('2026-6-18 20:00')
+const endTime = dayjs.tz('2026-6-22 20:00')
+const emojiGroupIdList = [1, 2, 3, 5, 6, 9, 16, 17, 18] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
     // 这里的序号记得也要改
-    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf6742408.webp", "name": "领结猫" },
-    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c019b2a92.gif", "name": "宝可梦" },
-    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c11e4aaed.gif", "name": "假飞鼠" },
-    4: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c1a7bad16.gif", "name": "猫猫虫" },
-    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c29cbda8f.gif", "name": "小甲鱼" },
-    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c2d3e4ff1.gif", "name": "奶龙" },
-    7: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6911cf46a80a4.gif", "name": "姆明" },
-    8: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c44cb2227.gif", "name": "青蛙波仔" },
-    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c48d98a26.jpg", "name": "四荤一素" },
-    10: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c559db1b4.gif", "name": "谷歌布丁" },
+    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2d6530f41.gif", "name": "AC娘" },
+    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2f8780322.png", "name": "鹦鹉鸡" },
+    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "咪子鱼" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "麻将脸" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3845d3839.jpg", "name": "小恐龙" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3d2be5311.jpg", "name": "小企鹅" },
+    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab79a86a0cb.gif", "name": "药水哥" },
+    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "吉伊卡哇" },
+    18: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf4fb0954.gif", "name": "领结猫" },
 } as {
     [key: number]: {
         emojiUrl: string
@@ -106,7 +105,7 @@ const emojiGroupIndex = {
 //应援版头
 const bannersShuffled = computed(() => {
     const banners = [
-        'https://wmimg.com/i/1547/2025/11/691097b73d035.png',
+        'https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png',
     ]
     return shuffleArray(banners).slice(0, 5)
 })

@@ -666,6 +666,7 @@ class UserMedalRecord extends Model
             11 => 211,
             16 => 216,
             17 => 280,
+            18 => 285,
         ];
         //表情包萌成就判断（每个角色的成就）
         $medal_id = $medal_id_map[$group_id];
@@ -691,7 +692,8 @@ class UserMedalRecord extends Model
         // $medals_id = array(217, 218); //217和218是第二届表情包萌
         // $medals_id = array(264, 265); //217和218是第二届表情包出道
         // $medals_id = array(281, 282); //281和282是第三届表情包萌
-        $medals_id = array(267, 268); //267和268是第三届表情包出道
+        // $medals_id = array(267, 268); //267和268是第三届表情包出道
+        $medals_id = array(286, 287); //286和287是第四届表情包萌
 
 
         //已经获得过的徽章（统一查询一次，用于后续判断）

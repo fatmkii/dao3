@@ -749,7 +749,36 @@ export const medalsHidden: medalsData = {
         'threshold': 0,
         'img': 'https://wmimg.com/i/1547/2025/06/685807cd2008d.png',
     },
-
+    285: {
+        'name': '领结猫',
+        'describe': '\\\\ 领结猫，出道！//',
+        'threshold': 500, //这里指500票，10000个olo
+        'img': '',
+    },
+    286: {
+        'name': '小火锅第四届表情包萌',
+        'describe': '',
+        'threshold': 100, //这里指100票，10000个olo
+        'img': '',
+    },
+    287: {
+        'name': '',
+        'describe': '',
+        'threshold': 1000, //这里指1000票，100000个olo
+        'img': '',
+    },
+    288: {
+        'name': '冠军徽章预留',
+        'describe': '',
+        'threshold': 0, //本命是冠军表情包的全部饼干
+        'img': '',
+    },
+    289: {
+        'name': '淘汰徽章预留',
+        'describe': '',
+        'threshold': 0, //本命是淘汰表情包的全部饼干
+        'img': '',
+    },
 
     //银行提前支取累计 
     251: {
