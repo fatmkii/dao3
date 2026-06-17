@@ -49,8 +49,9 @@
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
                     :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
-                    :no-hongbao-pic-mode="noHongbaoPicMode" @quote-click="postInputCom?.quoteHandle"
-                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show" />
+                    @show-accuse-modal="AccuseCreateModalCom?.show" :no-hongbao-pic-mode="noHongbaoPicMode"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    @admin-handle="AdminActionModalCom?.show" />
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
@@ -71,9 +72,9 @@
                     :no-image-mode="noImageMode" :no-video-mode="noVideoMode" :use-url-mode="useUrlMode"
                     :random-head-group-index="threadData.random_heads_group" :super-admin-mode="superAdminMode"
                     :admin-mode="adminMode" :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
-                    :no-hongbao-pic-mode="noHongbaoPicMode" @quote-click="postInputCom?.quoteHandle"
-                    @refresh-posts-list="handleFetchPostsList(false)" @admin-handle="AdminActionModalCom?.show"
-                    ref="PostItemComs" />
+                    @show-accuse-modal="AccuseCreateModalCom?.show" :no-hongbao-pic-mode="noHongbaoPicMode"
+                    @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
+                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -182,6 +183,7 @@
             <JumpModal ref="JumpModalCom" :thread-id="threadId" :posts-num="threadData.posts_num" :page="page" />
             <RewardModal ref="RewardModalCom" @refresh-posts-list="handleFetchPostsList" />
         </template>
+        <AccuseCreateModal ref="AccuseCreateModalCom" @submit="handleCreateAccuse" />
         <!-- 侧边栏 -->
         <Sidebar :mode="'thread'" @refresh="handleFetchPostsList(true)" @show-jump-modal="JumpModalCom!.show()" />
     </n-flex>
@@ -198,6 +200,7 @@
 </template>
 
 <script setup lang="ts">
+import { accuseCreatePoster, type AccuseCreateParams } from '@/api/methods/accuse'
 import { newPostPoster, postGetter, type newPostParams, type postData, type postParams } from '@/api/methods/posts'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
@@ -207,6 +210,7 @@ import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import ForbiddenModal from '@/vue/Components/ForbiddenModal.vue'
 import Pagination from '@/vue/Components/Pagination.vue'
+import AccuseCreateModal from '@/vue/Accuse/AccuseCreateModal.vue'
 import type { contentCommit } from '@/vue/Components/PostInput/PostInput.vue'
 import PostInput from '@/vue/Components/PostInput/PostInput.vue'
 import Sidebar from '@/vue/Components/Sidebar.vue'
@@ -273,6 +277,7 @@ const CaptchaModalCom = ref<InstanceType<typeof CaptchaModal> | null>(null)
 const JumpModalCom = ref<InstanceType<typeof JumpModal> | null>(null)
 const ForbiddenModalCom = ref<InstanceType<typeof ForbiddenModal> | null>(null)//禁止访问的时候的弹出图片
 const RewardModalCom = ref<InstanceType<typeof RewardModal> | null>(null)
+const AccuseCreateModalCom = ref<InstanceType<typeof AccuseCreateModal> | null>(null)
 const AdminActionModalCom = ref<InstanceType<typeof AdminActionModal> | null>(null)
 
 //整体显示的开关。当遇到禁止进入等提示的时候关闭
@@ -391,6 +396,13 @@ const adminOptions = computed<DropdownOption[]>(() => {
     }
     return options
 })
+
+const { send: createAccuse } = useRequest((params: AccuseCreateParams) => accuseCreatePoster(params), { immediate: false })
+
+async function handleCreateAccuse(params: AccuseCreateParams) {
+    await createAccuse(params)
+    router.push({ name: 'accuse' })
+}
 
 function dropdownSelect(key: 'deleteThread' | 'setTop' | 'cancelTop') {
     AdminActionModalCom.value?.show({ action: key })

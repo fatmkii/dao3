@@ -103,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+import type { AccuseCreateParams } from '@/api/methods/accuse'
 import type { deletePostParams, postData, recoverPostParams } from '@/api/methods/posts'
 import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
 import { myEmojisAddPoster, type myEmojisAddParams } from '@/api/methods/user'
@@ -122,7 +123,6 @@ import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, h, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Battle from './Battle.vue'
 import HongbaoPost from './HongbaoPost.vue'
 
@@ -133,7 +133,6 @@ const renderDropdown = ref<boolean>(false)
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const themeStore = useThemeStore()
-const router = useRouter()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
@@ -242,6 +241,7 @@ const postFooterStyle = computed(() => ({
 //注册事件
 const emit = defineEmits<{
     showRewardModal: [payload: rewardModalPayload],
+    showAccuseModal: [payload: Omit<AccuseCreateParams, 'reason'>],
     quoteClick: [content: string],
     refreshPostsList: [],
     adminHandle: [{ action: 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery', postId: number }],
@@ -275,13 +275,10 @@ function rewardHandle() {
 }
 
 function accuseHandle() {
-    router.push({
-        name: 'accuse',
-        query: {
-            thread_id: props.postData.thread_id,
-            post_id: props.postData.id,
-            floor: props.postData.floor,
-        },
+    emit('showAccuseModal', {
+        thread_id: props.postData.thread_id,
+        post_id: props.postData.id,
+        floor: props.postData.floor,
     })
 }
 

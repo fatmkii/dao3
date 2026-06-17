@@ -59,7 +59,7 @@ defineExpose({ show })
 </script>
 
 <template>
-    <n-modal :show="showThis" display-directive="if" :mask-closable="false" @update:show="handleShowUpdate">
+    <n-modal :show="showThis" display-directive="if" @update:show="handleShowUpdate">
         <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="新增举报" closable size="small" @close="close">
             <n-flex vertical>
                 <n-input-group>
