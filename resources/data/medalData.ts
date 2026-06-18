@@ -753,19 +753,19 @@ export const medalsHidden: medalsData = {
         'name': '领结猫',
         'describe': '\\\\ 领结猫，出道！//',
         'threshold': 500, //这里指500票，10000个olo
-        'img': '',
+        'img': 'https://wmimg.com/i/1547/2026/06/6a329883b0b4f.png',
     },
     286: {
         'name': '小火锅第四届表情包萌',
-        'describe': '',
+        'describe': '表情包萌投票100票',
         'threshold': 100, //这里指100票，10000个olo
-        'img': '',
+        'img': 'https://wmimg.com/i/1547/2026/06/6a329883bbea1.png',
     },
     287: {
-        'name': '',
-        'describe': '',
+        'name': '萌出新高度',
+        'describe': '表情包萌投票1000票',
         'threshold': 1000, //这里指1000票，100000个olo
-        'img': '',
+        'img': 'https://wmimg.com/i/1547/2026/06/6a329883bb288.png',
     },
     288: {
         'name': '冠军徽章预留',

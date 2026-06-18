@@ -631,13 +631,13 @@ class Medals
         ),
         286 => array(
             'name' => '第四届隐藏1',
-            'describe' => '',
+            'describe' => '表情包萌投票100票',
             'threshold' => 100, //这里指100票，10000个olo
             'varname' => null,
         ),
         287 => array(
             'name' => '第四届隐藏2',
-            'describe' => '',
+            'describe' => '表情包萌投票1000票',
             'threshold' => 1000, //这里指1000票，100000个olo
             'varname' => null,
         ),
