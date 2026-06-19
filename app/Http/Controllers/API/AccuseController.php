@@ -10,6 +10,7 @@ use App\Models\Admin;
 use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
+use App\Services\AccuseHandlingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -166,18 +167,18 @@ class AccuseController extends Controller
             }
         }
 
-        $accuse->status = 'handled';
-        $accuse->handled_by_user_id = $request->user()->id;
-        $accuse->handled_at = Carbon::now();
-        $accuse->handle_action = $request->action;
-        $accuse->handle_note = $request->action === 'ignore' ? '忽略' : trim($request->reason);
-        $accuse->handle_reduce_olo = in_array($request->action, ['delete', 'deleteAll']) && $request->boolean('reduce_olo');
-        $accuse->save();
+        app(AccuseHandlingService::class)->markPendingByAccuseIds(
+            [$accuse->id],
+            $request->user(),
+            $request->action,
+            $request->action === 'ignore' ? '忽略' : trim($request->reason),
+            in_array($request->action, ['delete', 'deleteAll']) && $request->boolean('reduce_olo')
+        );
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
             'message' => '已更新处理状态',
-            'data' => $this->formatAccuse($accuse->load(['reasons', 'handledBy.AdminPermissions']), $request->user()),
+            'data' => $this->formatAccuse($accuse->refresh()->load(['reasons', 'handledBy.AdminPermissions']), $request->user()),
         ]);
     }
 
@@ -209,6 +210,7 @@ class AccuseController extends Controller
             'content' => trim($request->reason),
             'reduce_olo' => $request->boolean('reduce_olo'),
         ]);
+        $request->attributes->set('skip_accuse_auto_handle', true);
 
         $controller = app(AdminController::class);
 

@@ -324,12 +324,7 @@ class AccuseTest extends TestCase
         Sanctum::actingAs($this->reporter);
         $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
 
-        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan']);
-        $adminPermission = new Admin();
-        $adminPermission->user_id = $admin->id;
-        $adminPermission->name = '测试管理员';
-        $adminPermission->forums = [$this->forum->id];
-        $adminPermission->save();
+        $admin = $this->createAdmin();
 
         Sanctum::actingAs($admin, ['forum_admin']);
 
@@ -348,6 +343,82 @@ class AccuseTest extends TestCase
         ]);
 
         $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($this->post->id)->is_deleted);
+    }
+
+    public function test_direct_admin_post_delete_marks_matching_accuse_handled(): void
+    {
+        $this->createAccuseForPost($this->post);
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->deleteJson('/api/admin/post_delete/' . $this->post->id, [
+            'thread_id' => $this->thread->id,
+            'content' => '帖子页直接删帖',
+            'reduce_olo' => true,
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertAccuseHandled($this->post->id, $admin, 'delete', '帖子页直接删帖', true);
+    }
+
+    public function test_direct_admin_delete_all_marks_only_covered_author_accuses_handled(): void
+    {
+        $coveredPost = $this->createPost($this->thread, $this->target, '同作者被删全回复');
+        $otherTarget = User::factory()->create(['binggan' => 'other_target_binggan']);
+        $otherAuthorPost = $this->createPost($this->thread, $otherTarget, '其他作者回复');
+        $otherThread = $this->createThread('其他主题');
+        $otherThreadPost = $this->createPost($otherThread, $this->target, '其他主题同作者回复');
+
+        foreach ([$this->post, $coveredPost, $otherAuthorPost, $otherThreadPost] as $post) {
+            $this->createAccuseForPost($post);
+        }
+
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->postJson('/api/admin/post_delete_all', [
+            'thread_id' => $this->thread->id,
+            'post_id' => $this->post->id,
+            'content' => '帖子页直接删全',
+            'reduce_olo' => false,
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertAccuseHandled($this->post->id, $admin, 'deleteAll', '帖子页直接删全', false);
+        $this->assertAccuseHandled($coveredPost->id, $admin, 'deleteAll', '帖子页直接删全', false);
+        $this->assertSame('pending', Accuse::where('post_id', $otherAuthorPost->id)->first()->status);
+        $this->assertSame('pending', Accuse::where('post_id', $otherThreadPost->id)->first()->status);
+    }
+
+    public function test_direct_admin_user_lock_marks_matching_accuse_handled(): void
+    {
+        $this->createAccuseForPost($this->post);
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->postJson('/api/admin/user_lock', [
+            'thread_id' => $this->thread->id,
+            'post_id' => $this->post->id,
+            'content' => '帖子页直接封禁',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertAccuseHandled($this->post->id, $admin, 'lock', '帖子页直接封禁', false);
+    }
+
+    public function test_direct_admin_user_ban_marks_matching_accuse_handled(): void
+    {
+        $this->createAccuseForPost($this->post);
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin', 'admin']);
+
+        $this->postJson('/api/admin/user_ban', [
+            'thread_id' => $this->thread->id,
+            'post_id' => $this->post->id,
+            'content' => '帖子页直接碎饼',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertAccuseHandled($this->post->id, $admin, 'ban', '帖子页直接碎饼', false);
     }
 
     public function test_store_rejects_post_that_does_not_belong_to_thread(): void
@@ -373,6 +444,69 @@ class AccuseTest extends TestCase
             'floor' => $this->post->floor,
             'reason' => '这是一个有效举报理由',
         ], $override);
+    }
+
+    private function createAdmin(): User
+    {
+        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan']);
+        $adminPermission = new Admin();
+        $adminPermission->user_id = $admin->id;
+        $adminPermission->name = '测试管理员';
+        $adminPermission->forums = [$this->forum->id];
+        $adminPermission->save();
+
+        return $admin;
+    }
+
+    private function createThread(string $title): Thread
+    {
+        $thread = new Thread();
+        $thread->forum_id = $this->forum->id;
+        $thread->title = $title;
+        $thread->sub_title = '[测试]';
+        $thread->is_delay = 0;
+        $thread->is_deleted = 0;
+        $thread->is_private = false;
+        $thread->locked_by_coin = 0;
+        $thread->created_binggan = $this->target->binggan;
+        $thread->save();
+
+        return $thread;
+    }
+
+    private function createPost(Thread $thread, User $target, string $content): Post
+    {
+        return Post::withoutEvents(fn () => Post::create([
+            'forum_id' => $thread->forum_id,
+            'thread_id' => $thread->id,
+            'content' => $content,
+            'created_binggan' => $target->binggan,
+        ]));
+    }
+
+    private function createAccuseForPost(Post $post): void
+    {
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', [
+            'thread_id' => $post->thread_id,
+            'post_id' => $post->id,
+            'floor' => $post->floor,
+            'reason' => '这是一个有效举报理由',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+    }
+
+    private function assertAccuseHandled(Post|int $post, User $admin, string $action, string $note, bool $reduceOlo): void
+    {
+        $postId = $post instanceof Post ? $post->id : $post;
+        $accuse = Accuse::where('post_id', $postId)->first();
+
+        $this->assertSame('handled', $accuse->status);
+        $this->assertSame($admin->id, $accuse->handled_by_user_id);
+        $this->assertNotNull($accuse->handled_at);
+        $this->assertSame($action, $accuse->handle_action);
+        $this->assertSame($note, $accuse->handle_note);
+        $this->assertSame($reduceOlo, $accuse->handle_reduce_olo);
     }
 
     private function deletedPostPenaltyKey(User $user): string

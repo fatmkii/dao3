@@ -17,6 +17,7 @@ use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
 use App\Models\UserMedal;
+use App\Services\AccuseHandlingService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -346,6 +347,7 @@ class AdminController extends Controller
         if ($request->reduce_olo == True) {
             $this->recordDeletedPostPenalty($request, $post, 1);
         }
+        $this->markAccusesHandled($request, [$post->id], 'delete');
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -462,11 +464,13 @@ class AdminController extends Controller
             );
         }
 
-        $posts_num = Post::suffix(intval($request->thread_id / 10000))
+        $post_ids_to_delete = Post::suffix(intval($request->thread_id / 10000))
             ->where('thread_id', $request->thread_id)
             ->where('created_binggan', $post->created_binggan)
             ->where('is_deleted', 0)
-            ->count();
+            ->pluck('id')
+            ->all();
+        $posts_num = count($post_ids_to_delete);
         //确认是否已经删除过了
         if ($posts_num == 0) {
             return response()->json([
@@ -488,7 +492,7 @@ class AdminController extends Controller
         Post::suffix(intval($request->thread_id / 10000))
             ->where('thread_id', $request->thread_id)
             ->where('created_binggan', $post->created_binggan)
-            ->where('is_deleted', 0)
+            ->whereIn('id', $post_ids_to_delete)
             ->update(['is_deleted' => 2]);
 
         $olo_penalty = null;
@@ -549,6 +553,7 @@ class AdminController extends Controller
         if ($request->reduce_olo == True) {
             $this->recordDeletedPostPenalty($request, $post, 3);
         }
+        $this->markAccusesHandled($request, $post_ids_to_delete, 'deleteAll');
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -637,6 +642,7 @@ class AdminController extends Controller
                 'binggan_target' => $user_target->binggan,
             ]
         ));
+        $this->markAccusesHandled($request, [$post->id], 'ban');
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -741,6 +747,7 @@ class AdminController extends Controller
                 'binggan_target' => $user_target->binggan,
             ]
         ));
+        $this->markAccusesHandled($request, [$post->id], 'lock');
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -781,8 +788,24 @@ class AdminController extends Controller
             'thread_id' => $post->thread_id,
             'content' => sprintf('24h被删帖%d次', $current_count),
         ]);
+        $lock_request->attributes->set('skip_accuse_auto_handle', true);
 
         $this->user_lock($lock_request);
+    }
+
+    private function markAccusesHandled(Request $request, array $postIds, string $action): void
+    {
+        if ($request->attributes->get('skip_accuse_auto_handle')) {
+            return;
+        }
+
+        app(AccuseHandlingService::class)->markPendingByPostIds(
+            $postIds,
+            $request->user(),
+            $action,
+            $request->input('content'),
+            in_array($action, ['delete', 'deleteAll']) && $request->boolean('reduce_olo')
+        );
     }
 
     public function set_banner(Request $request)
