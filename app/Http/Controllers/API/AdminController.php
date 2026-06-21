@@ -259,8 +259,8 @@ class AdminController extends Controller
             ]);
         }
 
-        //确认是否已经删除过了
-        if ($post->is_deleted != 0) {
+        //确认是否已经被管理员删除过了
+        if ($post->is_deleted == 2) {
             return response()->json([
                 'code' => ResponseCode::DEFAULT,
                 'message' => '该帖子已经被删除过了',
@@ -467,7 +467,7 @@ class AdminController extends Controller
         $post_ids_to_delete = Post::suffix(intval($request->thread_id / 10000))
             ->where('thread_id', $request->thread_id)
             ->where('created_binggan', $post->created_binggan)
-            ->where('is_deleted', 0)
+            ->whereIn('is_deleted', [0, 1])
             ->pluck('id')
             ->all();
         $posts_num = count($post_ids_to_delete);

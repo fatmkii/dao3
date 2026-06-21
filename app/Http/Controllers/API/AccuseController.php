@@ -76,7 +76,7 @@ class AccuseController extends Controller
         }
 
         $post = Post::suffix(intval($request->thread_id / 10000))->find($request->post_id);
-        if (!$post || $post->is_deleted != 0) {
+        if (!$post || $post->is_deleted == 2) {
             return $this->error(ResponseCode::POST_NOT_FOUND);
         }
 

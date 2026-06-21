@@ -91,6 +91,45 @@ class AccuseTest extends TestCase
         $this->assertStringNotContainsString($this->target->binggan, json_encode($list));
     }
 
+    public function test_user_can_accuse_self_deleted_post(): void
+    {
+        $this->post->is_deleted = 1;
+        $this->post->save();
+
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->payload())->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'thread_id' => $this->thread->id,
+                'post_id' => $this->post->id,
+                'status' => 'pending',
+            ],
+        ]);
+    }
+
+    public function test_user_cannot_accuse_admin_deleted_post(): void
+    {
+        $this->post->is_deleted = 2;
+        $this->post->save();
+
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->payload())
+            ->assertJson(['code' => ResponseCode::POST_NOT_FOUND]);
+    }
+
+    public function test_user_cannot_accuse_post_in_deleted_thread(): void
+    {
+        $this->thread->is_deleted = 1;
+        $this->thread->save();
+
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->payload())
+            ->assertJson(['code' => ResponseCode::THREAD_NOT_FOUND]);
+    }
+
     public function test_index_accepts_numeric_pending_only_query(): void
     {
         Sanctum::actingAs($this->reporter);
@@ -345,6 +384,35 @@ class AccuseTest extends TestCase
         $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($this->post->id)->is_deleted);
     }
 
+    public function test_admin_delete_action_converts_self_deleted_post_to_admin_deleted(): void
+    {
+        $this->post->is_deleted = 1;
+        $this->post->save();
+
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->payload())->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $accuse = Accuse::first();
+        $this->postJson('/api/accuses/' . $accuse->id . '/handle', [
+            'action' => 'delete',
+            'reason' => '自删规避举报',
+            'reduce_olo' => false,
+        ])->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'status' => 'handled',
+                'handle_action' => 'delete',
+                'handle_note' => '自删规避举报',
+            ],
+        ]);
+
+        $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($this->post->id)->is_deleted);
+    }
+
     public function test_direct_admin_post_delete_marks_matching_accuse_handled(): void
     {
         $this->createAccuseForPost($this->post);
@@ -359,6 +427,25 @@ class AccuseTest extends TestCase
         ])->assertJson(['code' => ResponseCode::SUCCESS]);
 
         $this->assertAccuseHandled($this->post->id, $admin, 'delete', '帖子页直接删帖', true);
+    }
+
+    public function test_direct_admin_post_delete_converts_self_deleted_post(): void
+    {
+        $this->post->is_deleted = 1;
+        $this->post->save();
+        $this->createAccuseForPost($this->post);
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->deleteJson('/api/admin/post_delete/' . $this->post->id, [
+            'thread_id' => $this->thread->id,
+            'content' => '帖子页直接转管理员删除',
+            'reduce_olo' => false,
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($this->post->id)->is_deleted);
+        $this->assertAccuseHandled($this->post->id, $admin, 'delete', '帖子页直接转管理员删除', false);
     }
 
     public function test_direct_admin_delete_all_marks_only_covered_author_accuses_handled(): void
@@ -387,6 +474,38 @@ class AccuseTest extends TestCase
         $this->assertAccuseHandled($coveredPost->id, $admin, 'deleteAll', '帖子页直接删全', false);
         $this->assertSame('pending', Accuse::where('post_id', $otherAuthorPost->id)->first()->status);
         $this->assertSame('pending', Accuse::where('post_id', $otherThreadPost->id)->first()->status);
+    }
+
+    public function test_direct_admin_delete_all_includes_self_deleted_author_posts(): void
+    {
+        $selfDeletedPost = $this->createPost($this->thread, $this->target, '同作者自删回复');
+        $selfDeletedPost->is_deleted = 1;
+        $selfDeletedPost->save();
+        $adminDeletedPost = $this->createPost($this->thread, $this->target, '同作者管理员已删回复');
+        $adminDeletedPost->is_deleted = 2;
+        $adminDeletedPost->save();
+
+        foreach ([$this->post, $selfDeletedPost, $adminDeletedPost] as $post) {
+            if ($post->is_deleted != 2) {
+                $this->createAccuseForPost($post);
+            }
+        }
+
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->postJson('/api/admin/post_delete_all', [
+            'thread_id' => $this->thread->id,
+            'post_id' => $this->post->id,
+            'content' => '帖子页直接删全含自删',
+            'reduce_olo' => false,
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($this->post->id)->is_deleted);
+        $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($selfDeletedPost->id)->is_deleted);
+        $this->assertSame(2, Post::suffix(intval($this->thread->id / 10000))->find($adminDeletedPost->id)->is_deleted);
+        $this->assertAccuseHandled($this->post->id, $admin, 'deleteAll', '帖子页直接删全含自删', false);
+        $this->assertAccuseHandled($selfDeletedPost->id, $admin, 'deleteAll', '帖子页直接删全含自删', false);
     }
 
     public function test_direct_admin_user_lock_marks_matching_accuse_handled(): void
