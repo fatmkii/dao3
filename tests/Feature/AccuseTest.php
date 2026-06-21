@@ -547,6 +547,36 @@ class AccuseTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_toggle_loudspeaker_accuse_uncertain(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->firstOrFail();
+
+        $forumAdmin = $this->createAdmin();
+        Sanctum::actingAs($forumAdmin, ['forum_admin']);
+
+        $this->putJson('/api/accuses/' . $accuse->id . '/uncertain', [
+            'uncertain' => true,
+        ])->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->putJson('/api/accuses/' . $accuse->id . '/uncertain', [
+            'uncertain' => true,
+        ])->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'target_type' => 'loudspeaker',
+                'can_manage' => true,
+                'uncertain' => true,
+            ],
+        ]);
+
+        $this->assertTrue($accuse->refresh()->uncertain);
+    }
+
     public function test_loudspeaker_accuse_only_accepts_ignore_and_delete(): void
     {
         $loudspeaker = $this->createLoudspeaker();

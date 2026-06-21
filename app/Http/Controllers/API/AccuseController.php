@@ -296,7 +296,7 @@ class AccuseController extends Controller
             'uncertain' => 'required|boolean',
         ]);
 
-        if (!$this->canForumAdmin($request->user(), $accuse->forum_id)) {
+        if (!$this->canManage($request->user(), $accuse)) {
             return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
         }
 
