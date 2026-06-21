@@ -2,6 +2,7 @@ import { commonAlova } from '@/api/index'
 
 type AccuseStatus = 'pending' | 'handled'
 type AccuseAction = 'hint' | 'ignore' | 'delete' | 'deleteAll' | 'lock' | 'ban'
+type AccuseTargetType = 'post' | 'loudspeaker'
 
 interface AccuseReason {
     id: number,
@@ -12,11 +13,15 @@ interface AccuseReason {
 
 interface AccuseItemData {
     id: number,
+    target_type: AccuseTargetType,
     thread_id: number,
-    post_id: number,
+    post_id: number | null,
+    loudspeaker_id: number | null,
     forum_id: number,
     floor: number,
     thread_title: string,
+    loudspeaker_content: string | null,
+    loudspeaker_color: string | null,
     status: AccuseStatus,
     created_at: string,
     reasons: AccuseReason[],
@@ -31,12 +36,23 @@ interface AccuseItemData {
     can_manage?: boolean,
 }
 
-interface AccuseCreateParams {
+interface PostAccuseCreateParams {
+    target_type?: 'post',
     thread_id: number,
     post_id: number,
     floor: number,
     reason: string,
 }
+
+interface LoudspeakerAccuseCreateParams {
+    target_type: 'loudspeaker',
+    loudspeaker_id: number,
+    loudspeaker_content?: string,
+    loudspeaker_color?: string | null,
+    reason: string,
+}
+
+type AccuseCreateParams = PostAccuseCreateParams | LoudspeakerAccuseCreateParams
 
 interface AccuseListParams {
     page: number,
@@ -152,4 +168,5 @@ export {
     type AccuseListData,
     type AccuseReason,
     type AccuseStatus,
+    type AccuseTargetType,
 }

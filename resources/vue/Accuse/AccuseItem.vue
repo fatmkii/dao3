@@ -28,6 +28,7 @@ const emit = defineEmits<{
 const statusType = computed<'default' | 'success'>(() => props.item.status === 'handled' ? 'success' : 'default')
 const statusText = computed(() => props.item.status === 'handled' ? '已处理' : '未处理')
 const forumName = computed(() => forumsStore.forumData(props.item.forum_id)?.name ?? `#${props.item.forum_id}`)
+const isLoudspeaker = computed(() => props.item.target_type === 'loudspeaker')
 const targetDeletedPostPenaltyCount = computed(() => props.item.target_deleted_post_penalty_count ?? 0)
 const targetStatsText = computed(() => {
     const deletedPostText = targetDeletedPostPenaltyCount.value > 0
@@ -49,6 +50,10 @@ const handleActionText = computed(() => {
         return null
     }
 
+    if (action === 'delete' && isLoudspeaker.value) {
+        return '删除'
+    }
+
     return handleActionLabels[action]
 })
 const page = computed(() => Math.floor(props.item.floor / 200) + 1)
@@ -61,14 +66,23 @@ const floorLink = computed(() => ({
     hash: `#f_${props.item.floor}`,
 }))
 
-const adminOptions = computed<DropdownOption[]>(() => [
-    { label: '提示', key: 'hint', icon: renderIcon(Hint, { size: '1.25rem' }) },
-    { label: '忽略', key: 'ignore', icon: renderIcon(CloseCircleOutline, { size: '1.25rem' }) },
-    { label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.25rem' }) },
-    { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.25rem' }) },
-    { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.25rem' }) },
-    { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.25rem' }) },
-])
+const adminOptions = computed<DropdownOption[]>(() => {
+    if (isLoudspeaker.value) {
+        return [
+            { label: '忽略', key: 'ignore', icon: renderIcon(CloseCircleOutline, { size: '1.25rem' }) },
+            { label: '删除', key: 'delete', icon: renderIcon(Delete, { size: '1.25rem' }) },
+        ]
+    }
+
+    return [
+        { label: '提示', key: 'hint', icon: renderIcon(Hint, { size: '1.25rem' }) },
+        { label: '忽略', key: 'ignore', icon: renderIcon(CloseCircleOutline, { size: '1.25rem' }) },
+        { label: '删帖', key: 'delete', icon: renderIcon(Delete, { size: '1.25rem' }) },
+        { label: '删全', key: 'deleteAll', icon: renderIcon(Delete, { size: '1.25rem' }) },
+        { label: '碎饼', key: 'ban', icon: renderIcon(Ban, { size: '1.25rem' }) },
+        { label: '封禁', key: 'lock', icon: renderIcon(Lock, { size: '1.25rem' }) },
+    ]
+})
 
 function dropdownSelect(key: string | number) {
     emit('handle', { id: props.item.id, action: key as AccuseAction, floor: props.item.floor })
@@ -111,7 +125,12 @@ function dropdownSelect(key: string | number) {
                 </template>
             </n-flex>
 
-            <n-flex vertical :size="6">
+            <n-flex v-if="isLoudspeaker" vertical :size="6">
+                <n-text>
+                    大喇叭：{{ item.loudspeaker_content }}
+                </n-text>
+            </n-flex>
+            <n-flex v-else vertical :size="6">
                 <n-text>小岛：{{ forumName }}</n-text>
                 <n-text strong>主题：{{ item.thread_title }}</n-text>
                 <n-flex align="center" :size="8" :wrap="true">

@@ -12,6 +12,7 @@ class AccuseReason extends Model
     protected $fillable = [
         'accuse_id',
         'post_id',
+        'loudspeaker_id',
         'reporter_user_id',
         'reason',
     ];

@@ -137,7 +137,7 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
     const actionLabels: Record<AccuseAction, string> = {
         hint: '提示',
         ignore: '忽略',
-        delete: '删帖',
+        delete: item.target_type === 'loudspeaker' ? '删除大喇叭' : '删帖',
         deleteAll: '删全',
         lock: '封禁饼干',
         ban: '碎饼',
@@ -157,7 +157,9 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
     if (payload.action === 'ignore') {
         window.$dialog.warning({
             title: actionLabels[payload.action],
-            content: `确认要忽略 №${item.floor} 这条举报吗？`,
+            content: item.target_type === 'loudspeaker'
+                ? '确认要忽略这条大喇叭举报吗？'
+                : `确认要忽略 №${item.floor} 这条举报吗？`,
             positiveText: '确定',
             negativeText: '取消',
             onPositiveClick: () => {
@@ -176,6 +178,7 @@ function handleAccuseAction(payload: { id: number, action: AccuseAction, floor: 
         id: payload.id,
         action: payload.action as Exclude<AccuseAction, 'hint' | 'ignore'>,
         floor: payload.floor,
+        targetType: item.target_type,
     })
 }
 

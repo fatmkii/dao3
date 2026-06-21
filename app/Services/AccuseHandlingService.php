@@ -40,6 +40,22 @@ class AccuseHandlingService
             ->update($this->handledPayload($admin, $action, $note, $reduceOlo));
     }
 
+    public function markPendingByLoudspeakerIds(
+        array $loudspeakerIds,
+        User $admin,
+        string $action,
+        ?string $note,
+        bool $reduceOlo = false
+    ): int {
+        if (empty($loudspeakerIds)) {
+            return 0;
+        }
+
+        return Accuse::whereIn('loudspeaker_id', $loudspeakerIds)
+            ->where('status', 'pending')
+            ->update($this->handledPayload($admin, $action, $note, $reduceOlo));
+    }
+
     private function handledPayload(User $admin, string $action, ?string $note, bool $reduceOlo): array
     {
         return [

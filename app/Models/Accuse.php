@@ -10,13 +10,18 @@ class Accuse extends Model
     use HasFactory;
 
     protected $fillable = [
+        'target_type',
         'thread_id',
         'post_id',
+        'loudspeaker_id',
         'forum_id',
         'floor',
         'target_binggan',
         'target_user_id',
         'thread_title',
+        'loudspeaker_content',
+        'loudspeaker_color',
+        'loudspeaker_thread_id',
         'status',
         'uncertain',
         'handled_by_user_id',

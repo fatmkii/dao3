@@ -7,6 +7,7 @@ use App\Jobs\ProcessAdminActive;
 use App\Models\Accuse;
 use App\Models\Admin;
 use App\Models\Forum;
+use App\Models\Loudspeaker;
 use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Redis;
 use Laravel\Sanctum\Sanctum;
+use ReflectionProperty;
 use Tests\TestCase;
 
 class AccuseTest extends TestCase
@@ -436,6 +438,190 @@ class AccuseTest extends TestCase
             ->assertJson(['code' => ResponseCode::PARAM_FAILED]);
     }
 
+    public function test_user_can_accuse_loudspeaker_and_other_users_merge_reasons(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+
+        Sanctum::actingAs($this->reporter);
+        $this->postJson('/api/accuses', $this->loudspeakerPayload($loudspeaker))
+            ->assertJson([
+                'code' => ResponseCode::SUCCESS,
+                'data' => [
+                    'target_type' => 'loudspeaker',
+                    'loudspeaker_id' => $loudspeaker->id,
+                    'loudspeaker_content' => '被举报大喇叭',
+                    'loudspeaker_color' => '#ff0000',
+                    'can_manage' => false,
+                ],
+            ]);
+
+        $this->postJson('/api/accuses', $this->loudspeakerPayload($loudspeaker))
+            ->assertJson([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => '你已经举报过这个大喇叭了',
+            ]);
+
+        $secondReporter = User::factory()->create(['binggan' => 'second_reporter']);
+        Sanctum::actingAs($secondReporter);
+        $this->postJson('/api/accuses', $this->loudspeakerPayload($loudspeaker, ['reason' => '第二个大喇叭举报理由']))
+            ->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->firstOrFail();
+        $this->assertSame('loudspeaker', $accuse->target_type);
+        $this->assertSame(2, $accuse->reasons()->count());
+    }
+
+    public function test_only_admin_can_handle_loudspeaker_accuse_and_forum_admin_cannot_see_result(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->firstOrFail();
+
+        $forumAdmin = $this->createAdmin();
+        Sanctum::actingAs($forumAdmin, ['forum_admin']);
+
+        $list = $this->getJson('/api/accuses')->json('data.data.0');
+        $this->assertFalse($list['can_manage']);
+        $this->assertArrayNotHasKey('handled_by', $list);
+        $this->assertArrayNotHasKey('handle_action', $list);
+
+        $this->postJson('/api/accuses/' . $accuse->id . '/handle', [
+            'action' => 'ignore',
+        ])->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['forum_admin', 'admin']);
+
+        $this->postJson('/api/accuses/' . $accuse->id . '/handle', [
+            'action' => 'ignore',
+        ])->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'can_manage' => true,
+                'handled_by' => '测试管理员',
+                'handle_action' => 'ignore',
+                'handle_note' => '忽略',
+            ],
+        ]);
+
+        Sanctum::actingAs($forumAdmin, ['forum_admin']);
+        $handledList = $this->getJson('/api/accuses')->json('data.data.0');
+        $this->assertFalse($handledList['can_manage']);
+        $this->assertArrayNotHasKey('handled_by', $handledList);
+        $this->assertArrayNotHasKey('handle_action', $handledList);
+        $this->assertArrayNotHasKey('handle_note', $handledList);
+    }
+
+    public function test_my_pending_only_includes_loudspeaker_for_admin_only(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+
+        $forumAdmin = $this->createAdmin();
+        Sanctum::actingAs($forumAdmin, ['forum_admin']);
+
+        $forumAdminResponse = $this->getJson('/api/accuses?my_pending_only=1');
+        $forumAdminResponse->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'my_pending_count' => 0,
+            ],
+        ]);
+        $this->assertCount(0, $forumAdminResponse->json('data.data'));
+
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['forum_admin', 'admin']);
+
+        $adminResponse = $this->getJson('/api/accuses?my_pending_only=1');
+        $adminResponse->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'my_pending_count' => 1,
+                'data' => [
+                    [
+                        'target_type' => 'loudspeaker',
+                        'can_manage' => true,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_loudspeaker_accuse_only_accepts_ignore_and_delete(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->firstOrFail();
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['forum_admin', 'senior_admin', 'admin']);
+
+        foreach (['deleteAll', 'lock', 'ban'] as $action) {
+            $this->postJson('/api/accuses/' . $accuse->id . '/handle', [
+                'action' => $action,
+                'reason' => '不允许的处理',
+            ])->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+        }
+
+        $this->postJson('/api/accuses/' . $accuse->id . '/hint')
+            ->assertJson(['code' => ResponseCode::ADMIN_UNAUTHORIZED]);
+    }
+
+    public function test_loudspeaker_delete_requires_reason_records_admin_active_and_syncs_pending_accuse(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+        $admin = $this->createAdmin();
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->postJson('/api/admin/del_loudspeaker', [
+            'binggan' => $admin->binggan,
+            'loudspeaker_id' => $loudspeaker->id,
+        ])->assertStatus(422);
+
+        $this->postJson('/api/admin/del_loudspeaker', [
+            'binggan' => $admin->binggan,
+            'loudspeaker_id' => $loudspeaker->id,
+            'content' => '强制删除原因',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertSoftDeleted('loudspeakers', ['id' => $loudspeaker->id]);
+        $this->assertAccuseHandledByLoudspeaker($loudspeaker, $admin, 'delete', '强制删除原因');
+
+        Bus::assertDispatched(ProcessAdminActive::class, function (ProcessAdminActive $job) {
+            $payload = $this->adminActivePayload($job);
+
+            return $payload['active_type'] === 'del_loudspeaker'
+                && $payload['content'] === '强制删除原因';
+        });
+    }
+
+    public function test_accuse_center_delete_loudspeaker_deletes_and_marks_accuse_handled(): void
+    {
+        $loudspeaker = $this->createLoudspeaker();
+        $this->createAccuseForLoudspeaker($loudspeaker);
+        $admin = $this->createAdmin();
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->firstOrFail();
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->postJson('/api/accuses/' . $accuse->id . '/handle', [
+            'action' => 'delete',
+            'reason' => '举报中心删除原因',
+        ])->assertJson([
+            'code' => ResponseCode::SUCCESS,
+            'data' => [
+                'status' => 'handled',
+                'handle_action' => 'delete',
+                'handle_note' => '举报中心删除原因',
+            ],
+        ]);
+
+        $this->assertSoftDeleted('loudspeakers', ['id' => $loudspeaker->id]);
+        $this->assertAccuseHandledByLoudspeaker($loudspeaker, $admin, 'delete', '举报中心删除原因');
+    }
+
     private function payload(array $override = []): array
     {
         return array_merge([
@@ -448,7 +634,7 @@ class AccuseTest extends TestCase
 
     private function createAdmin(): User
     {
-        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan']);
+        $admin = User::factory()->admin()->create(['binggan' => 'admin_binggan_' . User::count()]);
         $adminPermission = new Admin();
         $adminPermission->user_id = $admin->id;
         $adminPermission->name = '测试管理员';
@@ -496,6 +682,38 @@ class AccuseTest extends TestCase
         ])->assertJson(['code' => ResponseCode::SUCCESS]);
     }
 
+    private function createLoudspeaker(): Loudspeaker
+    {
+        return Loudspeaker::create([
+            'sub_id' => 0,
+            'user_id' => $this->target->id,
+            'created_binggan' => $this->target->binggan,
+            'thread_id' => $this->thread->id,
+            'content' => '被举报大喇叭',
+            'color' => '#ff0000',
+            'effective_date' => now(),
+            'expire_date' => now()->addDay(),
+            'days' => 1,
+        ]);
+    }
+
+    private function loudspeakerPayload(Loudspeaker $loudspeaker, array $override = []): array
+    {
+        return array_merge([
+            'target_type' => 'loudspeaker',
+            'loudspeaker_id' => $loudspeaker->id,
+            'reason' => '这是一个有效举报理由',
+        ], $override);
+    }
+
+    private function createAccuseForLoudspeaker(Loudspeaker $loudspeaker): void
+    {
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->loudspeakerPayload($loudspeaker))
+            ->assertJson(['code' => ResponseCode::SUCCESS]);
+    }
+
     private function assertAccuseHandled(Post|int $post, User $admin, string $action, string $note, bool $reduceOlo): void
     {
         $postId = $post instanceof Post ? $post->id : $post;
@@ -507,6 +725,26 @@ class AccuseTest extends TestCase
         $this->assertSame($action, $accuse->handle_action);
         $this->assertSame($note, $accuse->handle_note);
         $this->assertSame($reduceOlo, $accuse->handle_reduce_olo);
+    }
+
+    private function assertAccuseHandledByLoudspeaker(Loudspeaker $loudspeaker, User $admin, string $action, string $note): void
+    {
+        $accuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->first();
+
+        $this->assertSame('handled', $accuse->status);
+        $this->assertSame($admin->id, $accuse->handled_by_user_id);
+        $this->assertNotNull($accuse->handled_at);
+        $this->assertSame($action, $accuse->handle_action);
+        $this->assertSame($note, $accuse->handle_note);
+        $this->assertFalse($accuse->handle_reduce_olo);
+    }
+
+    private function adminActivePayload(ProcessAdminActive $job): array
+    {
+        $property = new ReflectionProperty($job, 'admin_active');
+        $property->setAccessible(true);
+
+        return $property->getValue($job);
     }
 
     private function deletedPostPenaltyKey(User $user): string

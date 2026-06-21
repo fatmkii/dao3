@@ -14,20 +14,30 @@ const showThis = shallowRef(false)
 const itemId = shallowRef(0)
 const floor = shallowRef(0)
 const action = shallowRef<ModalAction>('delete')
+const targetType = shallowRef<'post' | 'loudspeaker'>('post')
 const userInput = ref({
     contentInput: undefined as string | undefined,
     reduceOlo: false,
 })
 
-const actionLabels: Record<ModalAction, string> = {
-    delete: '删帖',
-    deleteAll: '删全',
-    lock: '封禁饼干',
-    ban: '碎饼',
-}
+const actionLabel = computed(() => {
+    if (action.value === 'delete') {
+        return targetType.value === 'loudspeaker' ? '删除大喇叭' : '删帖'
+    }
+    if (action.value === 'deleteAll') {
+        return '删全'
+    }
+    if (action.value === 'lock') {
+        return '封禁饼干'
+    }
+    return '碎饼'
+})
 
 const contentMessage = computed(() => {
     if (action.value === 'delete') {
+        if (targetType.value === 'loudspeaker') {
+            return '要用管理员权限删除这个大喇叭吗？'
+        }
         return `要用管理员权限删除 №${floor.value} 这个回复吗？`
     }
     if (action.value === 'deleteAll') {
@@ -46,14 +56,17 @@ const inputRules = computed<FormRules>(() => ({
     },
 }))
 
+const showReduceOlo = computed(() => targetType.value === 'post' && ['delete', 'deleteAll'].includes(action.value))
+
 const emit = defineEmits<{
     submit: [payload: { id: number, action: ModalAction, reason: string, reduceOlo: boolean }],
 }>()
 
-function show(payload: { id: number, action: ModalAction, floor: number }) {
+function show(payload: { id: number, action: ModalAction, floor: number, targetType?: 'post' | 'loudspeaker' }) {
     itemId.value = payload.id
     action.value = payload.action
     floor.value = payload.floor
+    targetType.value = payload.targetType ?? 'post'
     userInput.value = {
         contentInput: undefined,
         reduceOlo: false,
@@ -72,7 +85,7 @@ function submitHandle() {
             id: itemId.value,
             action: action.value,
             reason: userInput.value.contentInput!,
-            reduceOlo: ['delete', 'deleteAll'].includes(action.value) ? userInput.value.reduceOlo : false,
+            reduceOlo: showReduceOlo.value ? userInput.value.reduceOlo : false,
         })
         showThis.value = false
     })
@@ -83,7 +96,7 @@ defineExpose({ show })
 
 <template>
     <n-modal v-model:show="showThis" display-directive="if">
-        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" :title="actionLabels[action]" closable
+        <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" :title="actionLabel" closable
             @close="showThis = false" size="small">
             <n-flex vertical>
                 <n-text style="white-space: pre-wrap;">{{ contentMessage }}</n-text>
@@ -92,7 +105,7 @@ defineExpose({ show })
                     <n-form-item label="理由" path="contentInput">
                         <f-input placeholder="必填" v-model:value="userInput.contentInput" />
                     </n-form-item>
-                    <n-form-item v-if="['delete', 'deleteAll'].includes(action)" label="罚款olo" path="reduceOlo">
+                    <n-form-item v-if="showReduceOlo" label="罚款olo" path="reduceOlo">
                         <n-switch v-model:value="userInput.reduceOlo" />
                         <n-text style="margin-left: 6px;">每个帖子罚款500，封顶5000个olo</n-text>
                     </n-form-item>

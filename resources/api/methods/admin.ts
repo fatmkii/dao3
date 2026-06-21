@@ -229,7 +229,8 @@ const threadCancelTopPoster = (params: threadCancelTopParams) => {
 //管理员删除大喇叭
 interface deleteLoudspeakerParams {
     binggan: string,
-    loudspeaker_id: number
+    loudspeaker_id: number,
+    content: string,
 }
 const deleteLoudspeakerPoster = (params: deleteLoudspeakerParams) => {
     const methodInstance = commonAlova.Post(
