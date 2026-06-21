@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AccuseCreateParams } from '@/api/methods/accuse'
+import type { AccuseCreatePayload } from '@/api/methods/accuse'
 import type { deletePostParams, postData, recoverPostParams } from '@/api/methods/posts'
 import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
 import { myEmojisAddPoster, type myEmojisAddParams } from '@/api/methods/user'
@@ -241,7 +241,7 @@ const postFooterStyle = computed(() => ({
 //注册事件
 const emit = defineEmits<{
     showRewardModal: [payload: rewardModalPayload],
-    showAccuseModal: [payload: Omit<AccuseCreateParams, 'reason'>],
+    showAccuseModal: [payload: AccuseCreatePayload],
     quoteClick: [content: string],
     refreshPostsList: [],
     adminHandle: [{ action: 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery', postId: number }],

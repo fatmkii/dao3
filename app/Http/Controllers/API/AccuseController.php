@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accuse;
 use App\Models\AccuseReason;
 use App\Models\Admin;
+use App\Models\Loudspeaker;
 use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
@@ -29,12 +30,30 @@ class AccuseController extends Controller
         ]);
 
         $adminForumIds = $this->adminForumIds($request->user());
+        $canHandleLoudspeaker = $this->canHandleLoudspeaker($request->user());
         $query = Accuse::with(['reasons', 'handledBy.AdminPermissions'])
             ->orderBy('id', 'desc');
 
         if ($request->boolean('my_pending_only')) {
             $query->where('status', 'pending')
-                ->whereIn('forum_id', $adminForumIds);
+                ->where(function ($query) use ($adminForumIds, $canHandleLoudspeaker) {
+                    if (empty($adminForumIds) && !$canHandleLoudspeaker) {
+                        $query->whereRaw('0 = 1');
+                        return;
+                    }
+
+                    if (!empty($adminForumIds)) {
+                        $query->where(function ($query) use ($adminForumIds) {
+                            $query->where('target_type', 'post')
+                                ->whereIn('forum_id', $adminForumIds);
+                        });
+                    }
+
+                    if ($canHandleLoudspeaker) {
+                        $method = empty($adminForumIds) ? 'where' : 'orWhere';
+                        $query->{$method}('target_type', 'loudspeaker');
+                    }
+                });
         } elseif ($request->boolean('pending_only')) {
             $query->where('status', 'pending');
         }
@@ -45,9 +64,26 @@ class AccuseController extends Controller
 
         $accuses = $query->forPage($page, 10)->get();
         $pendingCount = Accuse::where('status', 'pending')->count();
-        $myPendingCount = empty($adminForumIds)
-            ? 0
-            : Accuse::where('status', 'pending')->whereIn('forum_id', $adminForumIds)->count();
+        $myPendingCount = Accuse::where('status', 'pending')
+            ->where(function ($query) use ($adminForumIds, $canHandleLoudspeaker) {
+                if (empty($adminForumIds) && !$canHandleLoudspeaker) {
+                    $query->whereRaw('0 = 1');
+                    return;
+                }
+
+                if (!empty($adminForumIds)) {
+                    $query->where(function ($query) use ($adminForumIds) {
+                        $query->where('target_type', 'post')
+                            ->whereIn('forum_id', $adminForumIds);
+                    });
+                }
+
+                if ($canHandleLoudspeaker) {
+                    $method = empty($adminForumIds) ? 'where' : 'orWhere';
+                    $query->{$method}('target_type', 'loudspeaker');
+                }
+            })
+            ->count();
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -64,12 +100,23 @@ class AccuseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'thread_id' => 'required|integer|min:1',
-            'post_id' => 'required|integer|min:1',
-            'floor' => 'required|integer|min:0',
+            'target_type' => 'nullable|string|in:post,loudspeaker',
+            'thread_id' => 'required_unless:target_type,loudspeaker|integer|min:1',
+            'post_id' => 'required_unless:target_type,loudspeaker|integer|min:1',
+            'floor' => 'required_unless:target_type,loudspeaker|integer|min:0',
+            'loudspeaker_id' => 'required_if:target_type,loudspeaker|integer|min:1',
             'reason' => 'required|string|min:5|max:500',
         ]);
 
+        if ($request->input('target_type', 'post') === 'loudspeaker') {
+            return $this->storeLoudspeakerAccuse($request);
+        }
+
+        return $this->storePostAccuse($request);
+    }
+
+    private function storePostAccuse(Request $request)
+    {
         $thread = Thread::find($request->thread_id);
         if (!$thread || $thread->is_delay == 1 || $thread->is_deleted != 0) {
             return $this->error(ResponseCode::THREAD_NOT_FOUND);
@@ -105,6 +152,7 @@ class AccuseController extends Controller
 
         $accuse = DB::transaction(function () use ($request, $thread, $post, $user, $targetUserId, $existingAccuse) {
             $accuse = $existingAccuse ?: Accuse::create([
+                'target_type' => 'post',
                 'thread_id' => $thread->id,
                 'post_id' => $post->id,
                 'forum_id' => $post->forum_id,
@@ -133,8 +181,68 @@ class AccuseController extends Controller
         ]);
     }
 
+    private function storeLoudspeakerAccuse(Request $request)
+    {
+        $loudspeaker = Loudspeaker::find($request->loudspeaker_id);
+        if (!$loudspeaker) {
+            return $this->error(ResponseCode::USER_NOT_FOUND, '大喇叭不存在或已失效');
+        }
+
+        $user = $request->user();
+        $existingAccuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->first();
+        if ($existingAccuse?->status === 'handled') {
+            return $this->error(ResponseCode::USER_CANNOT, '该大喇叭的举报已处理');
+        }
+
+        $duplicated = AccuseReason::where('loudspeaker_id', $loudspeaker->id)
+            ->where('reporter_user_id', $user->id)
+            ->exists();
+
+        if ($duplicated) {
+            return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个大喇叭了');
+        }
+
+        $accuse = DB::transaction(function () use ($request, $loudspeaker, $user, $existingAccuse) {
+            $accuse = $existingAccuse ?: Accuse::create([
+                'target_type' => 'loudspeaker',
+                'thread_id' => $loudspeaker->thread_id ?? 0,
+                'post_id' => null,
+                'loudspeaker_id' => $loudspeaker->id,
+                'forum_id' => 0,
+                'floor' => 0,
+                'target_binggan' => $loudspeaker->created_binggan,
+                'target_user_id' => $loudspeaker->user_id,
+                'thread_title' => '',
+                'loudspeaker_content' => $loudspeaker->content,
+                'loudspeaker_color' => $loudspeaker->color,
+                'loudspeaker_thread_id' => $loudspeaker->thread_id,
+                'status' => 'pending',
+                'uncertain' => false,
+            ]);
+
+            AccuseReason::create([
+                'accuse_id' => $accuse->id,
+                'loudspeaker_id' => $loudspeaker->id,
+                'reporter_user_id' => $user->id,
+                'reason' => trim($request->reason),
+            ]);
+
+            return $accuse->load(['reasons', 'handledBy.AdminPermissions']);
+        });
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '举报已提交',
+            'data' => $this->formatAccuse($accuse, $user),
+        ]);
+    }
+
     public function hint(Request $request, Accuse $accuse)
     {
+        if ($accuse->target_type === 'loudspeaker') {
+            return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
+        }
+
         if (!$this->canHint($request->user(), $accuse)) {
             return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
         }
@@ -188,7 +296,7 @@ class AccuseController extends Controller
             'uncertain' => 'required|boolean',
         ]);
 
-        if (!$this->canForumAdmin($request->user(), $accuse->forum_id)) {
+        if (!$this->canManage($request->user(), $accuse)) {
             return $this->error(ResponseCode::ADMIN_UNAUTHORIZED);
         }
 
@@ -204,6 +312,17 @@ class AccuseController extends Controller
 
     private function runAdminAction(Request $request, Accuse $accuse)
     {
+        if ($accuse->target_type === 'loudspeaker') {
+            $request->merge([
+                'binggan' => $request->user()->binggan,
+                'loudspeaker_id' => $accuse->loudspeaker_id,
+                'content' => trim($request->reason),
+            ]);
+            $request->attributes->set('skip_accuse_auto_handle', true);
+
+            return app(AdminController::class)->del_loudspeaker($request);
+        }
+
         $request->merge([
             'thread_id' => $accuse->thread_id,
             'post_id' => $accuse->post_id,
@@ -224,15 +343,19 @@ class AccuseController extends Controller
 
     private function formatAccuse(Accuse $accuse, $user): array
     {
-        $isAdmin = $this->canForumAdmin($user, $accuse->forum_id);
+        $isAdmin = $this->canManage($user, $accuse);
 
         $data = [
             'id' => $accuse->id,
+            'target_type' => $accuse->target_type,
             'thread_id' => $accuse->thread_id,
             'post_id' => $accuse->post_id,
+            'loudspeaker_id' => $accuse->loudspeaker_id,
             'forum_id' => $accuse->forum_id,
             'floor' => $accuse->floor,
             'thread_title' => $accuse->thread_title,
+            'loudspeaker_content' => $accuse->loudspeaker_content,
+            'loudspeaker_color' => $accuse->loudspeaker_color,
             'status' => $accuse->status,
             'created_at' => $accuse->created_at?->format('Y-m-d H:i:s'),
             'reasons' => $accuse->reasons->map(fn (AccuseReason $reason) => [
@@ -292,6 +415,11 @@ class AccuseController extends Controller
 
     private function canHandle($user, Accuse $accuse, string $action): bool
     {
+        if ($accuse->target_type === 'loudspeaker') {
+            return in_array($action, ['ignore', 'delete'])
+                && $this->canHandleLoudspeaker($user);
+        }
+
         if ($action === 'ban') {
             return $this->canAdmin($user, $accuse->forum_id);
         }
@@ -301,6 +429,10 @@ class AccuseController extends Controller
 
     private function canHint($user, Accuse $accuse): bool
     {
+        if ($accuse->target_type === 'loudspeaker') {
+            return false;
+        }
+
         return $user
             && $user->tokenCan('senior_admin')
             && $user->AdminPermissions
@@ -321,6 +453,20 @@ class AccuseController extends Controller
             && $user->tokenCan('forum_admin')
             && $user->AdminPermissions
             && in_array($forumId, $user->AdminPermissions->forums ?? []);
+    }
+
+    private function canHandleLoudspeaker($user): bool
+    {
+        return $user && $user->tokenCan('admin');
+    }
+
+    private function canManage($user, Accuse $accuse): bool
+    {
+        if ($accuse->target_type === 'loudspeaker') {
+            return $this->canHandleLoudspeaker($user);
+        }
+
+        return $this->canForumAdmin($user, $accuse->forum_id);
     }
 
     private function adminForumIds($user): array

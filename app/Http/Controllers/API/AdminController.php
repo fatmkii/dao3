@@ -1177,6 +1177,7 @@ class AdminController extends Controller
         $request->validate([
             'binggan' => 'required|string',
             'loudspeaker_id' => 'required|integer',
+            'content' => 'required|string|max:255',
         ]);
 
 
@@ -1216,7 +1217,7 @@ class AdminController extends Controller
                 'admin_level' => $user->admin,
                 'active' => '删除大喇叭',
                 'active_type' => 'del_loudspeaker',
-                'content' => '大喇叭内容：' . $loudspeaker->content,
+                'content' => $request->content,
                 'olo' =>  null,
                 'post_id' => null,
                 'thread_id' => null,
@@ -1227,12 +1228,29 @@ class AdminController extends Controller
             ]
         ));
 
+        $this->markLoudspeakerAccusesHandled($request, [$loudspeaker->id], 'delete');
+
         return response()->json(
             [
                 'code' => ResponseCode::SUCCESS,
                 'message' => '已强制删除该大喇叭',
                 'data' => $loudspeaker,
             ]
+        );
+    }
+
+    private function markLoudspeakerAccusesHandled(Request $request, array $loudspeakerIds, string $action): void
+    {
+        if ($request->attributes->get('skip_accuse_auto_handle')) {
+            return;
+        }
+
+        app(AccuseHandlingService::class)->markPendingByLoudspeakerIds(
+            $loudspeakerIds,
+            $request->user(),
+            $action,
+            $request->input('content'),
+            false
         );
     }
 
