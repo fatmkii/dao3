@@ -44,7 +44,7 @@ class AntiSpamServiceTest extends TestCase
         $this->assertEquals(4, AntiSpamService::SCORE_THRESHOLD_CAPTCHA);
         $this->assertEquals(7, AntiSpamService::SCORE_THRESHOLD_COOLDOWN);
         $this->assertEquals(10, AntiSpamService::SCORE_THRESHOLD_LOCK);
-        $this->assertEquals(7, AntiSpamService::SCORE_MIN_RECORD);
+        $this->assertEquals(11, AntiSpamService::SCORE_MIN_RECORD);
     }
 
     public function test_variance_scoring_constants(): void
