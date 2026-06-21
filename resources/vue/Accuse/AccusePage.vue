@@ -7,6 +7,7 @@ import {
     accuseUncertainPutter,
     type AccuseAction,
     type AccuseCreateParams,
+    type AccuseCreatePayload,
     type AccuseItemData,
 } from '@/api/methods/accuse'
 import { useCommonStore } from '@/stores/common'
@@ -93,7 +94,7 @@ async function loadAccuses() {
     })
 }
 
-function parseRoutePayload(): Omit<AccuseCreateParams, 'reason'> | null {
+function parseRoutePayload(): AccuseCreatePayload | null {
     const threadId = Number(route.query.thread_id)
     const postId = Number(route.query.post_id)
     const floor = Number(route.query.floor)

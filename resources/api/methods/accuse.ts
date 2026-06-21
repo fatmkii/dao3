@@ -53,6 +53,7 @@ interface LoudspeakerAccuseCreateParams {
 }
 
 type AccuseCreateParams = PostAccuseCreateParams | LoudspeakerAccuseCreateParams
+type AccuseCreatePayload = Omit<PostAccuseCreateParams, 'reason'> | Omit<LoudspeakerAccuseCreateParams, 'reason'>
 
 interface AccuseListParams {
     page: number,
@@ -162,6 +163,7 @@ export {
     accuseUncertainPutter,
     type AccuseAction,
     type AccuseCreateParams,
+    type AccuseCreatePayload,
     type AccuseHandleParams,
     type AccuseHintData,
     type AccuseItemData,
@@ -169,4 +171,6 @@ export {
     type AccuseReason,
     type AccuseStatus,
     type AccuseTargetType,
+    type LoudspeakerAccuseCreateParams,
+    type PostAccuseCreateParams,
 }

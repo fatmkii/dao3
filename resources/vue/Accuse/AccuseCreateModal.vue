@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AccuseCreateParams } from '@/api/methods/accuse'
+import type { AccuseCreateParams, AccuseCreatePayload } from '@/api/methods/accuse'
 import { useCommonStore } from '@/stores/common'
 import { FButton, FInput, FInputGroupLabel } from '@custom'
 import { NCard, NFlex, NInputGroup, NModal } from 'naive-ui'
@@ -24,7 +24,7 @@ const emit = defineEmits<{
     close: [],
 }>()
 
-function show(params: Omit<AccuseCreateParams, 'reason'>) {
+function show(params: AccuseCreatePayload) {
     if (params.target_type === 'loudspeaker') {
         form.target_type = 'loudspeaker'
         form.thread_id = 0

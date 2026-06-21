@@ -28,7 +28,7 @@
 
         <!-- 分页器 -->
         <Pagination v-model:page="page" :last-page="Math.ceil(loudspeakerData.length / pageSize)"
-            @update:page="(value) => page = value" style="margin-right: auto;" />
+            @update:page="(value) => { if (value !== undefined) page = value }" style="margin-right: auto;" />
 
         <!-- 大喇叭数据 -->
         <template v-if="loudspeakerData.length > 0">
