@@ -642,14 +642,14 @@ class Medals
             'varname' => null,
         ),
         288 => array(
-            'name' => '冠军徽章预留',
-            'describe' => '',
+            'name' => '鹦鹉登鸡',
+            'describe' => '小火锅第四jie喜欢的表情包',
             'threshold' => 0,
             'varname' => null,
         ),
         289 => array(
-            'name' => '淘汰徽章预留',
-            'describe' => '',
+            'name' => '再见粪海狂蛆',
+            'describe' => '† 升天 †',
             'threshold' => 0,
             'varname' => null,
         ),

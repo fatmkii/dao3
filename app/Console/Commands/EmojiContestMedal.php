@@ -43,7 +43,7 @@ class EmojiContestMedal extends Command
                 ->orderBy('votes_num_total', 'desc')
                 ->orderBy('updated_at', 'desc')
                 ->first();
-            if ($user_vote_total->emoji_group_id == 1) { //本次冠军领结猫是1号，这里记得每次改！！！ 
+            if ($user_vote_total->emoji_group_id == 2) { //本次冠军鹦鹉鸡是2号，这里记得每次改！！！ 
                 array_push($user_array, $user_id);
                 UserMedal::create([
                     'user_id' => $user_id,
@@ -61,7 +61,7 @@ class EmojiContestMedal extends Command
         $user_array = [];
         foreach ($user_ids as $key => $user_id) {
             $user_vote_total = EmojiContestUserTotal::where('user_id', $user_id)
-                ->where('emoji_group_id', 10) //本次被淘汰的是小黄脸10号，这里记得每次改！！！ 
+                ->where('emoji_group_id', 5) //本次被淘汰的是麻将脸5号，这里记得每次改！！！ 
                 ->get();
 
             foreach ($user_vote_total as $key => $value) {

@@ -768,16 +768,16 @@ export const medalsHidden: medalsData = {
         'img': 'https://wmimg.com/i/1547/2026/06/6a329883bb288.png',
     },
     288: {
-        'name': '冠军徽章预留',
-        'describe': '',
+        'name': '鹦鹉登鸡',
+        'describe': '小火锅第四届喜欢的表情包',
         'threshold': 0, //本命是冠军表情包的全部饼干
-        'img': '',
+        'img': 'https://wmimg.com/i/1547/2026/06/6a3d4c4451779.png',
     },
     289: {
-        'name': '淘汰徽章预留',
-        'describe': '',
+        'name': '再见粪海狂蛆',
+        'describe': '† 升天 †',
         'threshold': 0, //本命是淘汰表情包的全部饼干
-        'img': '',
+        'img': 'https://wmimg.com/i/1547/2026/06/6a3d4c444e871.png',
     },
 
     //银行提前支取累计 
