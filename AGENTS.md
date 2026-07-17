@@ -58,3 +58,24 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 Use bash commands instead of PowerShell.
 Environment is WSL with Docker Compose.
 Avoid PowerShell syntax.
+
+## Android 开发环境
+
+WSL 内已安装 Android SDK：
+
+```text
+ANDROID_HOME=/home/fat/Android/Sdk
+平台：android-35、android-36
+Build Tools：36.0.0
+Command-line Tools：20.0
+```
+
+## Windows Android 虚拟机
+
+Android 虚拟机运行在 Windows 宿主机上。WSL 中应调用 Windows 版 `adb.exe`：
+
+```text
+/mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
+```
+
+模拟器设备为 `emulator-5554`。
