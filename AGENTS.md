@@ -78,4 +78,4 @@ Android 虚拟机运行在 Windows 宿主机上。WSL 中应调用 Windows 版 `
 /mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
 ```
 
-模拟器设备为 `emulator-5554`。
+模拟器设备为 `emulator-5556`。
