@@ -22,9 +22,10 @@ import { useUserStore } from '@/stores/user'
 import { NDivider, NFlex, NTabPane, NTabs, useThemeVars } from 'naive-ui'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { DndProvider } from 'vue3-dnd'
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 import { TabBank, TabChara, TabCommon, TabCustom, TabEmojis, TabIncome, TabLevelup, TabMedal, TabPassword, TabPingbici, UserCard } from './index'
 
 //基础数据
@@ -34,13 +35,14 @@ const forumsStore = useForumsStore()
 const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
+const { isAndroidApp } = useAndroidAppBridge()
 const tabValue = ref<string>()
 
 //设置浏览器标题
 document.title = '个人中心'
 
 //生成tabs
-const tabsList = [
+const allTabs = [
     { name: 'medals', tab: '我的成就', component: TabMedal },
     { name: 'common', tab: '一般设定', component: TabCommon },
     { name: 'pingbici', tab: '屏蔽词', component: TabPingbici },
@@ -52,5 +54,8 @@ const tabsList = [
     { name: 'customBinggan', tab: '定制饼干', component: TabCustom },
     { name: 'password', tab: '密码设定', component: TabPassword },
 ]
+const tabsList = computed(() => allTabs.filter(
+    tab => !isAndroidApp.value || tab.name !== 'customBinggan',
+))
 
 </script>

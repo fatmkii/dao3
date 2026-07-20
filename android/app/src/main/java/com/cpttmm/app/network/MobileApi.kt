@@ -21,21 +21,11 @@ interface MobileApi {
         appVersion: String,
     ): MobileSessionData
 
+    suspend fun registrationStatus(domain: AppDomain): RegistrationStatus
+
     suspend fun refresh(domain: AppDomain, refreshToken: String): MobileSessionData
 
     suspend fun logout(domain: AppDomain, refreshToken: String)
-
-    suspend fun customAccount(
-        domain: AppDomain,
-        accessToken: String,
-        binggan: String,
-        requestedBinggan: String,
-        password: String,
-        transfer: Boolean,
-        installationId: String,
-        deviceName: String,
-        appVersion: String,
-    ): MobileSessionData
 
     suspend fun version(domain: AppDomain): MobileReleaseInfo
 }

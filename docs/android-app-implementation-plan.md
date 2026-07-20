@@ -9,7 +9,7 @@
 - Android 10/API 29 起步，compile/target API 36；启动时强制检查 `MULTI_PROFILE`、`DOCUMENT_START_SCRIPT`、`WEB_MESSAGE_LISTENER`，不支持则引导更新 WebView，仍不支持时阻止进入主界面。
 - 每个账号对应独立 WebView Profile 和工作区，最多保存 5 个账号；不提供游客模式。
 - 默认使用 `cpttmm.com`，可全局手动切换到 `cpttmm.love`；加载失败只提示切换，不自动重放请求。`www` 地址规范化到对应裸域，其他域名交系统浏览器。
-- 原生底部工具栏提供后退、前进、标签、完整 binggan、账号切换和设置；标签与账号列表使用底部抽屉。外壳主题跟随当前网页主题。
+- 原生底部工具栏使用左右三角图标提供后退、前进，以圆角数字方块打开标签抽屉，并用带底色的完整 binggan 打开设置；饼干切换入口位于设置页，账号列表使用底部抽屉。外壳主题跟随当前网页主题。
 
 ## 服务端与公开接口
 
@@ -19,14 +19,14 @@
 - 新增以下 JSON 接口，继续使用现有 `{code,message,data}` 响应格式：
   - `POST /api/mobile/login`：`binggan`、可选密码、安装 ID、设备名、App 版本。
   - `POST /api/mobile/register`：按现有开放时间、IP 冷却和 Android SSAID 设备桶规则领取饼干，并直接创建移动会话。
+  - `GET /api/mobile/registration-status`：返回当前开放状态、下次开放时间和当前 IP 的领取冷却时间。
   - `POST /api/mobile/token/refresh`：轮换 refresh token 并签发新 access token。
   - `POST /api/mobile/logout`：幂等撤销 refresh session 及其 access tokens，即使 access token 已过期也可调用。
-  - `POST /api/mobile/custom-account`：创建定制饼干；普通创建返回新工作区会话，魂穿则撤销旧账号会话并返回新账号会话。
   - `GET /api/mobile/version`：返回最新版名称、versionCode、更新说明、官网 APK、GitHub 镜像和 SHA-256；只提示更新，不强制。
 - 会话响应统一包含 `binggan`、`access_token`、`access_expires_at`、`refresh_token`、闲置到期时间和绝对到期时间。
 - refresh 操作使用数据库事务和行锁，验证 `session_id` 与当前 secret 哈希后轮换 refresh token、删除该 session 的旧 access token并签发新 token；已轮换的旧 secret 再次出现即撤销整个 session。客户端按账号使用 single-flight 互斥锁串行刷新；刷新响应不确定时要求重新登录，不做危险的并发重试。
 - 改密码时：从 Android 发起则保留当前移动会话、撤销其他移动会话；从普通网页发起则撤销全部移动会话。账号被封禁或魂穿时立即撤销相应移动会话。
-- 抽取现有登录、注册和定制饼干业务逻辑供网页与移动端控制器复用，保持现有网页接口兼容。
+- 抽取现有登录和注册业务逻辑供网页与移动端控制器复用，保持现有网页接口兼容；定制饼干及魂穿仅保留网页版入口与接口，Android App 不提供相关能力。
 
 ### Android 注册设备桶
 
@@ -49,20 +49,20 @@
 - 使用受 origin 限制的 `WebMessageListener`，仅允许两个裸域；不使用通配符或 `addJavascriptInterface`。外部网页永远无法获得原生桥。[WebView bridge allowlist](https://developer.android.com/reference/androidx/webkit/WebViewCompat)
 - 在文档启动阶段向受信页面写入现有 `Binggan`/`Token` localStorage；refresh token 永不进入 WebView。access token 更新时同步活 WebView，并触发 `cpttmm:auth-updated` DOM 事件。
 - 新增 `useAndroidAppBridge` Vue composable，作为唯一桥接入口：
-  - 网页到原生：`themeChanged`、`authExpired`、`openCustomAccount`。
+  - 网页到原生：`themeChanged`、`authExpired`。
   - 原生到网页：`cpttmm:auth-updated`、`cpttmm:auth-refresh-failed`。
 - 原生层记录每个账号的 `access_expires_at`，以主动刷新为主：剩余不足 5 分钟时刷新；App 回到前台且剩余不足 10 分钟或已经过期时，在恢复 WebView 网络活动前刷新；创建/唤醒 WebView、切账号或切域名前也先检查。后台定时器不作为唯一刷新保证。
 - App 模式下 Vue 收到 401 时不立即弹出重新导入窗口，而是通过 bridge 请求原生刷新，同一账号等待原生 single-flight 结果；成功后更新 token，`GET`/`HEAD` 最多自动重试一次。`POST`/`PUT`/`PATCH`/`DELETE` 默认不自动重试，提示用户检查结果后手动重试，避免重复发帖、投注或打赏；只有未来具备服务端幂等键的写接口才允许自动重试。
 - refresh token 失效、会话被撤销或原生返回 `cpttmm:auth-refresh-failed` 后，Vue 才显示重新登录状态。普通浏览器继续沿用现有 401 与重新导入流程。
-- App 模式下原生层唯一管理登录、退出、领取饼干和定制饼干；网页 TopBar 隐藏这些入口但保留个人中心、举报和管理功能。普通浏览器完全不变。
+- App 模式下原生层唯一管理登录、退出和领取饼干；网页 TopBar 隐藏认证入口，个人中心隐藏定制饼干标签，但保留其他个人中心、举报和管理功能。定制饼干仅能在普通浏览器中操作。
 - 主题 store 暴露只读 `themeName`；根组件发送主题名、深浅模式和核心色值。切账号时先使用该账号最后缓存主题，再接受网页更新。
 - 支持图片/文件选择、DownloadManager、剪贴板、WebSocket、JavaScript 弹窗和前后台恢复；不申请宽泛存储权限。禁止明文 HTTP、忽略 TLS 错误、WebView 调试和 bridge token 日志。
 - 断网时显示原生错误页，提供重试和切换域名；不缓存帖子、不排队发帖。
 
 ## 测试与发布
 
-- PHPUnit 覆盖移动登录/注册、SSAID 设备桶与并发第五次锁定、管理员 abilities、access token 的 session 归属、1 小时到期、refresh 轮换与重用撤销、30/180 天期限、本机退出、封禁、密码修改、定制账号和魂穿事务，并验证上述操作不误删网页版或其他设备 token。
-- Playwright 覆盖普通浏览器行为不变，以及模拟 App bridge 时隐藏认证入口、上报鉴权失效、主动更新 token、401 后单次重试只读请求、拒绝自动重试写请求、同步主题和委托定制饼干。
+- PHPUnit 覆盖移动登录/注册、领取状态、SSAID 设备桶与并发第五次锁定、管理员 abilities、access token 的 session 归属、1 小时到期、refresh 轮换与重用撤销、30/180 天期限、本机退出、封禁和密码修改，并验证上述操作不误删网页版或其他设备 token；网页版定制账号和魂穿事务继续由网页接口测试覆盖。
+- Playwright 覆盖普通浏览器行为不变，以及模拟 App bridge 时隐藏认证与定制饼干入口、上报鉴权失效、主动更新 token、401 后单次重试只读请求、拒绝自动重试写请求和同步主题。
 - Android 单元/仪器测试覆盖 Keystore、SSAID 摘要与异常拒绝、5 账号限制、10/3 标签策略、Profile 隔离、域名映射、外链拦截、滚动恢复、进程重建、离线页、到期前/前台恢复刷新和每账号 single-flight 并发。
 
 ### 当前暂停点：真人实机验真与 APK 功能完善
@@ -84,5 +84,5 @@
 - 两个域名完全共用数据库、Redis 和 Sanctum token 表。
 - Android 是当前唯一原生客户端目标；现阶段不建设跨平台共享 UI，也不重写现有 Vue 业务页面。
 - 不做生物识别 App 锁、云备份、网页版设备会话列表、推送、分享、深链、离线内容、离线提交、第三方分析或崩溃上报。
-- 本地仅保存脱敏诊断日志，可由用户手动导出；禁止记录 token、密码、表单正文和完整 URL 查询参数。
+- 本地仅保存有限的脱敏诊断事件供应用内部排障，不提供用户导出入口；禁止记录 token、密码、表单正文和完整 URL 查询参数。设置页保留 Android 隐私说明入口，以满足设备标识使用披露要求。
 - 账号离线移除时立即清除本地工作区，并加密保存待撤销凭据，联网后完成服务端撤销。

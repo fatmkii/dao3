@@ -10,7 +10,6 @@ export interface AndroidThemePayload {
 type BridgeMessage =
     | { type: 'themeChanged', payload: AndroidThemePayload }
     | { type: 'authExpired' }
-    | { type: 'openCustomAccount' }
 
 const isAndroidApp = shallowRef(typeof window !== 'undefined' && Boolean(window.CpttmmAndroid))
 let pendingRefresh: Promise<void> | null = null
@@ -67,14 +66,9 @@ export function useAndroidAppBridge() {
         return refresh
     }
 
-    function openCustomAccount() {
-        postMessage({ type: 'openCustomAccount' })
-    }
-
     return {
         isAndroidApp: readonly(isAndroidApp),
         notifyThemeChanged,
         requestAuthRefresh,
-        openCustomAccount,
     }
 }

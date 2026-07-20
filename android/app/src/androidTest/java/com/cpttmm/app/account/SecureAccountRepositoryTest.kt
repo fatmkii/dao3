@@ -8,6 +8,7 @@ import com.cpttmm.app.data.local.AppDatabase
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileApi
 import com.cpttmm.app.network.MobileReleaseInfo
+import com.cpttmm.app.network.RegistrationStatus
 import com.cpttmm.app.session.MobileSessionData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -157,6 +158,8 @@ class SecureAccountRepositoryTest {
             appVersion: String,
         ): MobileSessionData = error("not used")
 
+        override suspend fun registrationStatus(domain: AppDomain): RegistrationStatus = error("not used")
+
         override suspend fun refresh(domain: AppDomain, refreshToken: String): MobileSessionData =
             error("not used")
 
@@ -164,18 +167,6 @@ class SecureAccountRepositoryTest {
             if (failLogout) error("offline")
             logouts += domain to refreshToken
         }
-
-        override suspend fun customAccount(
-            domain: AppDomain,
-            accessToken: String,
-            binggan: String,
-            requestedBinggan: String,
-            password: String,
-            transfer: Boolean,
-            installationId: String,
-            deviceName: String,
-            appVersion: String,
-        ): MobileSessionData = error("not used")
 
         override suspend fun version(domain: AppDomain): MobileReleaseInfo = error("not used")
     }

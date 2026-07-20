@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Common\NewBingganChecker;
 use App\Common\ResponseCode;
-use App\Exceptions\CustomAccountExistsException;
 use App\Exceptions\MobileSessionException;
 use App\Exceptions\RegistrationException;
+use App\Facades\GlobalSetting;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessUserActive;
 use App\Models\User;
 use App\Services\AndroidRegistrationService;
-use App\Services\CustomAccountService;
 use App\Services\MobileSessionService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
 class MobileSessionController extends Controller
@@ -22,7 +23,6 @@ class MobileSessionController extends Controller
     public function __construct(
         private readonly MobileSessionService $sessions,
         private readonly AndroidRegistrationService $registration,
-        private readonly CustomAccountService $customAccounts,
     ) {
     }
 
@@ -115,6 +115,21 @@ class MobileSessionController extends Controller
         ]);
     }
 
+    public function registrationStatus(Request $request): JsonResponse
+    {
+        [$enable, $nextDate] = NewBingganChecker::check();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已查询 Android 饼干领取状态',
+            'data' => [
+                'enable' => $enable && (bool) GlobalSetting::get('new_binggan'),
+                'next_date' => $nextDate->getTimestamp(),
+                'reg_record_TTL' => Redis::ttl('reg_record_'.$request->ip()),
+            ],
+        ]);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $validated = $this->validate($request, ['refresh_token' => 'required|string']);
@@ -163,46 +178,6 @@ class MobileSessionController extends Controller
         }
 
         return $release;
-    }
-
-    public function customAccount(Request $request): JsonResponse
-    {
-        $validated = $this->validate($request, [
-            'binggan' => 'required|string',
-            'binggan_apply' => 'required|string|alpha_dash|max:16|min:7',
-            'password' => 'required|string|alpha_dash|max:20|min:7',
-            'transfer_binggan' => 'required|boolean',
-            'installation_id' => 'required|string|max:128',
-            'device_name' => 'required|string|max:100',
-            'app_version' => 'required|string|max:50',
-        ]);
-        $origin = $request->user();
-        if (($origin->currentAccessToken()?->client_type ?? null) !== 'android') {
-            return $this->sessionError(new MobileSessionException('仅 Android 移动会话可使用此接口'));
-        }
-
-        try {
-            $created = $this->customAccounts->create(
-                $origin,
-                $validated['binggan_apply'],
-                $validated['password'],
-                $validated['transfer_binggan'],
-                $request->ip(),
-            );
-        } catch (CustomAccountExistsException) {
-            return $this->error(ResponseCode::USER_REGISTER_FAIL);
-        }
-
-        return response()->json([
-            'code' => ResponseCode::SUCCESS,
-            'message' => '定制饼干成功！',
-            'data' => $this->sessions->create(
-                $created,
-                $validated['installation_id'],
-                $validated['device_name'],
-                $validated['app_version'],
-            ),
-        ]);
     }
 
     private function error(int $code): JsonResponse

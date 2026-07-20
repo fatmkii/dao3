@@ -14,7 +14,7 @@
                 <component :is="Component" />
             </KeepAlive>
         </router-view>
-        <UnauthModal />
+        <UnauthModal v-if="!isAndroidApp" />
     </n-config-provider>
 </template>
 
@@ -39,7 +39,7 @@ const userStore = useUserStore()
 
 //一般设定的store
 const commonStore = useCommonStore()
-const { notifyThemeChanged } = useAndroidAppBridge()
+const { isAndroidApp, notifyThemeChanged } = useAndroidAppBridge()
 
 watch(
     () => [

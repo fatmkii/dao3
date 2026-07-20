@@ -1,13 +1,10 @@
 package com.cpttmm.app.diagnostics
 
 import android.content.Context
-import android.net.Uri
-import com.cpttmm.app.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Instant
 
 enum class DiagnosticEvent {
@@ -30,17 +27,6 @@ class DiagnosticLogger(private val context: Context) {
                 file.writeText((retained + "${Instant.now()} ${event.name}").joinToString("\n", postfix = "\n"))
             }
         }
-    }
-
-    suspend fun export(destination: Uri) = withContext(Dispatchers.IO) {
-        val lines = synchronized(lock) {
-            if (file.exists()) file.readText() else ""
-        }
-        context.contentResolver.openOutputStream(destination, "w")?.bufferedWriter()?.use { writer ->
-            writer.appendLine("Cpttmm Android ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-            writer.appendLine("Only fixed diagnostic event names are recorded; URLs and user content are excluded.")
-            writer.append(lines)
-        } ?: error("无法创建诊断日志文件")
     }
 
     private companion object {

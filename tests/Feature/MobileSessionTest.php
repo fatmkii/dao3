@@ -224,52 +224,6 @@ class MobileSessionTest extends TestCase
         }
     }
 
-    public function test_android_session_can_create_custom_account_and_receive_new_workspace(): void
-    {
-        Bus::fake();
-        $this->user->forceFill(['coin' => 200000])->save();
-        $accessToken = $this->login()['access_token'];
-
-        $data = $this->withToken($accessToken)
-            ->postJson('/api/mobile/custom-account', $this->customAccountPayload())
-            ->assertOk()
-            ->assertJson(['code' => ResponseCode::SUCCESS])
-            ->json('data');
-
-        $this->assertSame('CustomCookie', $data['binggan']);
-        $this->assertDatabaseHas('users', ['binggan' => 'CustomCookie', 'is_custom' => true]);
-        $this->assertDatabaseCount('mobile_sessions', 2);
-        $this->assertFalse($this->user->fresh()->is_banned);
-    }
-
-    public function test_custom_account_transfer_revokes_every_old_mobile_session(): void
-    {
-        Bus::fake();
-        $this->user->forceFill(['coin' => 200000])->save();
-        $accessToken = $this->login()['access_token'];
-        $this->login(['installation_id' => 'other-install']);
-
-        $this->withToken($accessToken)
-            ->postJson('/api/mobile/custom-account', $this->customAccountPayload([
-                'transfer_binggan' => true,
-            ]))
-            ->assertOk()
-            ->assertJson(['code' => ResponseCode::SUCCESS]);
-
-        $this->assertTrue($this->user->fresh()->is_banned);
-        $this->assertSame(2, MobileSession::where('user_id', $this->user->id)
-            ->whereNotNull('revoked_at')
-            ->count());
-        $this->assertDatabaseMissing('personal_access_tokens', [
-            'tokenable_id' => $this->user->id,
-            'client_type' => 'android',
-        ]);
-        $this->assertDatabaseHas('mobile_sessions', [
-            'user_id' => User::where('binggan', 'CustomCookie')->value('id'),
-            'revoked_at' => null,
-        ]);
-    }
-
     public function test_existing_web_custom_account_endpoint_uses_shared_service(): void
     {
         Bus::fake();
@@ -290,17 +244,9 @@ class MobileSessionTest extends TestCase
             ]);
     }
 
-    public function test_web_token_cannot_call_mobile_custom_account_endpoint(): void
+    public function test_mobile_custom_account_endpoint_is_not_available(): void
     {
-        $this->user->forceFill(['coin' => 200000])->save();
-        $webToken = $this->user->createToken('web')->plainTextToken;
-
-        $this->withToken($webToken)
-            ->postJson('/api/mobile/custom-account', $this->customAccountPayload())
-            ->assertUnauthorized()
-            ->assertJson(['code' => ResponseCode::USER_UNAUTHORIZED]);
-
-        $this->assertDatabaseMissing('users', ['binggan' => 'CustomCookie']);
+        $this->postJson('/api/mobile/custom-account')->assertStatus(405);
     }
 
     public function test_android_password_change_keeps_current_session_and_revokes_others(): void
@@ -373,21 +319,6 @@ class MobileSessionTest extends TestCase
         $this->assertDatabaseMissing('personal_access_tokens', ['client_type' => 'android']);
     }
 
-    public function test_custom_account_transaction_rolls_back_when_coin_is_insufficient(): void
-    {
-        Bus::fake();
-        $accessToken = $this->login()['access_token'];
-
-        $this->withToken($accessToken)
-            ->postJson('/api/mobile/custom-account', $this->customAccountPayload())
-            ->assertOk()
-            ->assertJson(['code' => ResponseCode::COIN_NOT_ENOUGH]);
-
-        $this->assertDatabaseMissing('users', ['binggan' => 'CustomCookie']);
-        $this->assertDatabaseCount('user_custom', 0);
-        $this->assertDatabaseCount('mobile_sessions', 1);
-    }
-
     private function login(array $overrides = []): array
     {
         return $this->postJson('/api/mobile/login', $this->loginPayload($overrides))
@@ -400,19 +331,6 @@ class MobileSessionTest extends TestCase
     {
         return array_merge([
             'binggan' => $this->user->binggan,
-            'installation_id' => 'install-123',
-            'device_name' => 'Pixel Test',
-            'app_version' => '0.1.0',
-        ], $overrides);
-    }
-
-    private function customAccountPayload(array $overrides = []): array
-    {
-        return array_merge([
-            'binggan' => $this->user->binggan,
-            'binggan_apply' => 'CustomCookie',
-            'password' => 'password_123',
-            'transfer_binggan' => false,
             'installation_id' => 'install-123',
             'device_name' => 'Pixel Test',
             'app_version' => '0.1.0',

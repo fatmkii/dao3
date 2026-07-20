@@ -5,20 +5,17 @@ import VueHook from 'alova/vue';
 import { useCommonStore } from '@/stores/common';
 import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
 
-async function recoverAndroidAuthentication(method: Method, commonStore: ReturnType<typeof useCommonStore>) {
+async function recoverAndroidAuthentication(method: Method) {
     const { isAndroidApp, requestAuthRefresh } = useAndroidAppBridge()
     if (!isAndroidApp.value) return { handled: false as const }
 
     if (method.meta?.androidAuthRetried) {
-        commonStore.unauthModalShow = true
         return { handled: false as const }
     }
 
     const canRetry = method.type === 'GET' || method.type === 'HEAD'
     if (!canRetry) {
-        requestAuthRefresh().catch(() => {
-            commonStore.unauthModalShow = true
-        })
+        requestAuthRefresh().catch(() => undefined)
         window.$message.warning('登录状态正在恢复。为避免重复提交，请确认操作结果后手动重试。', {
             closable: true,
             duration: 5000,
@@ -26,12 +23,7 @@ async function recoverAndroidAuthentication(method: Method, commonStore: ReturnT
         return { handled: false as const }
     }
 
-    try {
-        await requestAuthRefresh()
-    } catch (error) {
-        commonStore.unauthModalShow = true
-        throw error
-    }
+    await requestAuthRefresh()
     method.meta = { ...method.meta, androidAuthRetried: true }
     return { handled: true as const, data: await method.send(true) }
 }
@@ -57,7 +49,7 @@ export const commonAlova = createAlova({
                 commonStore.requestErrorCode = response.status
 
                 if (response.status == 401) {
-                    const recovery = await recoverAndroidAuthentication(method, commonStore)
+                    const recovery = await recoverAndroidAuthentication(method)
                     if (recovery.handled) return recovery.data
                     if (!useAndroidAppBridge().isAndroidApp.value) {
                         commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
@@ -82,7 +74,7 @@ export const commonAlova = createAlova({
                 commonStore.requestErrorCode = json.code
 
                 if (json.code == 21499) {
-                    const recovery = await recoverAndroidAuthentication(method, commonStore)
+                    const recovery = await recoverAndroidAuthentication(method)
                     if (recovery.handled) return recovery.data
                     if (!useAndroidAppBridge().isAndroidApp.value) {
                         commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal

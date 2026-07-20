@@ -6,6 +6,7 @@ import com.cpttmm.app.common.SingleFlight
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileApi
 import com.cpttmm.app.network.MobileReleaseInfo
+import com.cpttmm.app.network.RegistrationStatus
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.registration.RegistrationDeviceIdProvider
 import com.cpttmm.app.session.RefreshPolicy
@@ -46,6 +47,8 @@ class MobileAuthCoordinator(
         return accounts.saveSession(session)
     }
 
+    suspend fun registrationStatus(domain: AppDomain): RegistrationStatus = api.registrationStatus(domain)
+
     suspend fun refresh(accountId: String, domain: AppDomain): String {
         return refreshFlights.run(accountId) {
             val tokens = accounts.decryptedTokens(accountId) ?: throw MissingAccountSecretsException()
@@ -72,33 +75,6 @@ class MobileAuthCoordinator(
 
     suspend fun releaseInfo(domain: AppDomain): MobileReleaseInfo = api.version(domain)
 
-    suspend fun customAccount(
-        account: com.cpttmm.app.data.local.AccountEntity,
-        domain: AppDomain,
-        requestedBinggan: String,
-        password: String,
-        transfer: Boolean,
-        beforeTransferLocalRemoval: () -> Unit = {},
-    ): String {
-        val accessToken = accessTokenForWebView(account, domain)
-        val session = api.customAccount(
-            domain = domain,
-            accessToken = accessToken,
-            binggan = account.binggan,
-            requestedBinggan = requestedBinggan,
-            password = password,
-            transfer = transfer,
-            installationId = preferences.installationId(),
-            deviceName = Build.MODEL,
-            appVersion = BuildConfig.VERSION_NAME,
-        )
-        if (transfer) {
-            beforeTransferLocalRemoval()
-            accounts.removeLocal(account)
-        }
-
-        return accounts.saveSession(session)
-    }
 }
 
 class SsaidUnavailableException : IllegalStateException("无法读取 Android 设备标识，请改用网页版领取或联系管理员")

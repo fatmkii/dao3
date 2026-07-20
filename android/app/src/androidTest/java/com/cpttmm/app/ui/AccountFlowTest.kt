@@ -30,7 +30,6 @@ class AccountFlowTest {
         composeRule.onNodeWithText("饼干").assertIsDisplayed()
 
         composeRule.onNodeWithText("领取新饼干").performClick()
-        composeRule.onNodeWithText("领取前请了解").assertIsDisplayed()
-        composeRule.onNodeWithText("从这台设备领取").assertIsDisplayed()
+        composeRule.onNodeWithText("这里是私人论坛小火锅，欢迎来玩！", substring = true).assertIsDisplayed()
     }
 }

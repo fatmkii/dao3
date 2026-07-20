@@ -56,8 +56,12 @@ async function installAndroidBridge(page: Page) {
                 const message = JSON.parse(serialized) as BridgeMessage;
                 bridgeWindow.__bridgeMessages.push(message);
                 if (message.type === 'authExpired') {
-                    localStorage.setItem('Token', 'refreshed-token');
-                    window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));
+                    if (localStorage.getItem('__androidRefreshFails') === 'true') {
+                        window.dispatchEvent(new CustomEvent('cpttmm:auth-refresh-failed'));
+                    } else {
+                        localStorage.setItem('Token', 'refreshed-token');
+                        window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));
+                    }
                 }
             },
         };
@@ -194,7 +198,25 @@ test.describe('Android App bridge', () => {
         expect(writeRequestCount).toBe(1);
     });
 
-    test('delegates custom-account creation to the native app', async ({ page }) => {
+    test('keeps the web unauthenticated modal hidden when native refresh fails', async ({ page }) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('__androidRefreshFails', 'true');
+        });
+        await page.route('**/api/user/show', (route) => route.fulfill({
+            status: 401,
+            json: { code: 401, message: 'expired' },
+        }));
+
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+        await expect.poll(async () => {
+            const messages = await bridgeMessages(page);
+            return messages.filter((message) => message.type === 'authExpired').length;
+        }).toBe(1);
+        await expect(page.getByAltText('需要饼干才能进入喔')).toBeHidden();
+    });
+
+    test('hides custom-account creation in the Android app', async ({ page }) => {
         await mockAuthenticatedUser(page);
         await page.route('**/api/user/show_medals', (route) => route.fulfill({
             json: { code: 200, message: 'success', data: [] },
@@ -204,14 +226,6 @@ test.describe('Android App bridge', () => {
         }));
 
         await page.goto('/user-center', { waitUntil: 'domcontentloaded' });
-        await page.getByText('定制饼干', { exact: true }).click();
-        await expect(page.getByRole('button', { name: '在 App 中继续' })).toBeVisible();
-        await expect(page.getByRole('button', { name: '提交' })).toBeHidden();
-        await page.getByRole('button', { name: '在 App 中继续' }).click();
-
-        await expect.poll(async () => {
-            const messages = await bridgeMessages(page);
-            return messages.filter((message) => message.type === 'openCustomAccount').length;
-        }).toBe(1);
+        await expect(page.getByText('定制饼干', { exact: true })).toBeHidden();
     });
 });

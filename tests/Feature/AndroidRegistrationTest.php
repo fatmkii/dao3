@@ -73,6 +73,32 @@ class AndroidRegistrationTest extends TestCase
         $this->assertGreaterThan(0, Redis::ttl('new_user_'.$user->binggan));
     }
 
+    public function test_registration_status_reports_availability_and_ip_cooldown(): void
+    {
+        $ip = '10.10.4.1';
+
+        $this->withServerVariables(['REMOTE_ADDR' => $ip])
+            ->getJson('/api/mobile/registration-status')
+            ->assertOk()
+            ->assertJsonPath('data.enable', true)
+            ->assertJsonPath('data.reg_record_TTL', -2)
+            ->assertJsonStructure(['data' => ['next_date']]);
+
+        Redis::setex('reg_record_'.$ip, 3600, 1);
+
+        $ttl = $this->withServerVariables(['REMOTE_ADDR' => $ip])
+            ->getJson('/api/mobile/registration-status')
+            ->assertOk()
+            ->json('data.reg_record_TTL');
+        $this->assertGreaterThan(0, $ttl);
+
+        DB::table('global_setting')->where('key', 'new_binggan')->update(['value' => json_encode(false)]);
+        $this->withServerVariables(['REMOTE_ADDR' => $ip])
+            ->getJson('/api/mobile/registration-status')
+            ->assertOk()
+            ->assertJsonPath('data.enable', false);
+    }
+
     public function test_fifth_claim_succeeds_and_atomically_locks_device(): void
     {
         for ($claim = 1; $claim <= 5; $claim++) {
@@ -178,7 +204,7 @@ class AndroidRegistrationTest extends TestCase
 
     private function clearRegistrationRedis(): void
     {
-        $ips = ['10.10.0.1', '10.10.2.1', '10.10.3.1'];
+        $ips = ['10.10.0.1', '10.10.2.1', '10.10.3.1', '10.10.4.1'];
         for ($claim = 1; $claim <= 6; $claim++) {
             $ips[] = '10.10.1.'.$claim;
         }
