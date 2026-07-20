@@ -8,9 +8,11 @@ use App\Models\Accuse;
 use App\Models\Admin;
 use App\Models\Forum;
 use App\Models\Loudspeaker;
+use App\Models\MobileSession;
 use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
+use App\Services\MobileSessionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Redis;
@@ -526,10 +528,43 @@ class AccuseTest extends TestCase
         $this->assertAccuseHandled($this->post->id, $admin, 'lock', '帖子页直接封禁', false);
     }
 
+    public function test_fourth_admin_lock_permanently_bans_and_revokes_mobile_sessions(): void
+    {
+        $this->target->forceFill(['locked_count' => 3, 'locked_until' => null])->save();
+        app(MobileSessionService::class)->create(
+            $this->target,
+            'target-installation',
+            'Pixel Test',
+            '0.1.0',
+        );
+        $admin = $this->createAdmin();
+        Sanctum::actingAs($admin, ['forum_admin']);
+
+        $this->postJson('/api/admin/user_lock', [
+            'thread_id' => $this->thread->id,
+            'post_id' => $this->post->id,
+            'content' => '第四次封禁',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+
+        $this->assertTrue($this->target->fresh()->is_banned);
+        $this->assertNotNull(MobileSession::where('user_id', $this->target->id)->firstOrFail()->revoked_at);
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_id' => $this->target->id,
+            'client_type' => 'android',
+        ]);
+    }
+
     public function test_direct_admin_user_ban_marks_matching_accuse_handled(): void
     {
         $this->createAccuseForPost($this->post);
         $admin = $this->createAdmin();
+        app(MobileSessionService::class)->create(
+            $this->target,
+            'target-installation',
+            'Pixel Test',
+            '0.1.0',
+        );
+        $webTokenId = $this->target->createToken('web')->accessToken->id;
 
         Sanctum::actingAs($admin, ['forum_admin', 'admin']);
 
@@ -540,6 +575,12 @@ class AccuseTest extends TestCase
         ])->assertJson(['code' => ResponseCode::SUCCESS]);
 
         $this->assertAccuseHandled($this->post->id, $admin, 'ban', '帖子页直接碎饼', false);
+        $this->assertNotNull(MobileSession::where('user_id', $this->target->id)->firstOrFail()->revoked_at);
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_id' => $this->target->id,
+            'client_type' => 'android',
+        ]);
+        $this->assertDatabaseHas('personal_access_tokens', ['id' => $webTokenId, 'client_type' => 'web']);
     }
 
     public function test_store_rejects_post_that_does_not_belong_to_thread(): void

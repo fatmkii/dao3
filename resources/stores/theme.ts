@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
-import { ref, computed } from 'vue'
+import { computed, readonly } from 'vue'
 import { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, blueThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors, blueThemeColors } from '@/data/theme'
 import { useStorage } from '@vueuse/core'
 
@@ -62,6 +62,5 @@ export const useThemeStore = defineStore('themeStore', () => {
     })
 
 
-    return { themeClass, themeOverrideClass, themeChange, buttonThemeAttr, themeColor }
+    return { themeName: readonly(themeName), themeClass, themeOverrideClass, themeChange, buttonThemeAttr, themeColor }
 })
-

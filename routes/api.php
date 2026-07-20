@@ -18,6 +18,7 @@ use App\Http\Controllers\API\CrowdController;
 use App\Http\Controllers\API\EmojiConstestController;
 use App\Http\Controllers\API\GambleController;
 use App\Http\Controllers\API\VoteController;
+use App\Http\Controllers\API\MobileSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,10 +32,19 @@ use App\Http\Controllers\API\VoteController;
 */
 
 //Auth系列
+Route::prefix('mobile')->group(function () {
+    Route::get('/version', [MobileSessionController::class, 'version']);
+    Route::post('/login', [MobileSessionController::class, 'login'])->middleware('throttle:login');
+    Route::post('/register', [MobileSessionController::class, 'register']);
+    Route::post('/token/refresh', [MobileSessionController::class, 'refresh']);
+    Route::post('/logout', [MobileSessionController::class, 'logout']);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->Middleware('throttle:login')->withoutMiddleware('auth:sanctum'); //导入饼干
     Route::post('/logout', [AuthController::class, 'logout']); //退出饼干
     Route::post('/set_password', [AuthController::class, 'set_password'])->middleware('CheckBinggan:create');   //设定饼干密码
+    Route::post('/mobile/custom-account', [MobileSessionController::class, 'customAccount'])->middleware('CheckBinggan:create');
 });
 
 

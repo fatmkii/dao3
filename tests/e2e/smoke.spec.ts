@@ -13,11 +13,19 @@ test('home page renders without browser errors', async ({ page }) => {
         browserErrors.push(error.message);
     });
 
-    const response = await page.goto('/', { waitUntil: 'networkidle' });
+    const response = await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.locator('#app')).toBeVisible();
     await expect(page.locator('#app')).not.toHaveText('');
+    await expect(page.locator('#app').getByRole('button', { name: '导入饼干' })).toBeVisible();
+    expect(await page.evaluate(() => ({
+        hasBridge: 'CpttmmAndroid' in window,
+        hasBridgeMessages: '__bridgeMessages' in window,
+    }))).toEqual({
+        hasBridge: false,
+        hasBridgeMessages: false,
+    });
     expect(browserErrors).toEqual([]);
 });
 
@@ -180,7 +188,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
         });
     });
 
-    const response = await page.goto('/accuse', { waitUntil: 'networkidle' });
+    const response = await page.goto('/accuse', { waitUntil: 'domcontentloaded' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByText('举报中心')).toBeVisible();
@@ -201,7 +209,7 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
     await expect(page.getByPlaceholder('必填')).toBeVisible();
     await page.getByRole('button', { name: '关闭' }).click();
 
-    await page.goto('/accuse?thread_id=181261&post_id=952999&floor=0', { waitUntil: 'networkidle' });
+    await page.goto('/accuse?thread_id=181261&post_id=952999&floor=0', { waitUntil: 'domcontentloaded' });
     await expect(page.getByText('新增举报')).toBeVisible();
     await expect(page.locator('input[value="181261"]')).toBeDisabled();
     await expect(page.locator('input[value="№0"]')).toBeDisabled();

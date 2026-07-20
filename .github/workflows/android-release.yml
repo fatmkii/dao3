@@ -1,0 +1,148 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - "android-v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          tag='${{ github.ref_name }}'
+          if [[ ! "$tag" =~ ^android-v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Tag must match android-vX.Y.Z" >&2
+            exit 1
+          fi
+
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[3]}"
+          if (( minor > 999 || patch > 999 )); then
+            echo "Minor and patch versions must be at most 999" >&2
+            exit 1
+          fi
+
+          version_code=$((major * 1000000 + minor * 1000 + patch))
+          if (( version_code < 1 || version_code > 2100000000 )); then
+            echo "Calculated Android versionCode is outside the supported range" >&2
+            exit 1
+          fi
+
+          version_name="${tag#android-v}"
+          apk_name="cpttmm-${version_name}.apk"
+          echo "name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "apk_name=$apk_name" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Restore release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/android-release.jks"
+
+      - name: Test and build signed APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/android-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          ./android/gradlew -p android testDebugUnitTest assembleRelease --no-daemon \
+            -PVERSION_NAME='${{ steps.version.outputs.name }}' \
+            -PVERSION_CODE='${{ steps.version.outputs.code }}'
+
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" verify --verbose android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method POST \
+            "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name='${{ github.ref_name }}' \
+            --jq .body > release-notes.md
+
+      - name: Prepare release files
+        env:
+          APK_NAME: ${{ steps.version.outputs.apk_name }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/$APK_NAME"
+          sha256sum "dist/$APK_NAME" | cut -d' ' -f1 > dist/apk.sha256
+          sha256="$(cat dist/apk.sha256)"
+          jq -n \
+            --arg version_name "$VERSION_NAME" \
+            --argjson version_code "$VERSION_CODE" \
+            --rawfile notes release-notes.md \
+            --arg apk_url "https://cpttmm.com/downloads/android/$APK_NAME" \
+            --arg github_url "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
+            --arg sha256 "$sha256" \
+            '{version_name: $version_name, version_code: $version_code, notes: $notes, apk_url: $apk_url, github_url: $github_url, sha256: $sha256}' \
+            > dist/version.json
+
+      - name: Upload release files to production server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          port: ${{ secrets.PROD_PORT }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: dist/*
+          target: /tmp/cpttmm-android-release
+          strip_components: 1
+
+      - name: Publish official download files
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          port: ${{ secrets.PROD_PORT }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -e
+            destination=/data/wwwroot/v3.cpttmm.com/shared/downloads/android
+            mkdir -p "$destination"
+            install -m 0644 "/tmp/cpttmm-android-release/${{ steps.version.outputs.apk_name }}" "$destination/${{ steps.version.outputs.apk_name }}"
+            install -m 0644 /tmp/cpttmm-android-release/version.json "$destination/version.json"
+            install -m 0644 /tmp/cpttmm-android-release/apk.sha256 "$destination/apk.sha256"
+            rm -rf /tmp/cpttmm-android-release
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: |
+            dist/${{ steps.version.outputs.apk_name }}
+            dist/version.json
+            dist/apk.sha256

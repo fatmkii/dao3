@@ -14,6 +14,7 @@ use App\Models\UserBank;
 use App\Models\UserMedalRecord;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -86,6 +87,33 @@ class User extends Authenticatable
 
     const HONGBAO_INTERVAL = 300; //IP抢红包的检查周期
     const HONGBAO_NUMBER_IP = 6; //IP抢到红包的次数（也就是5分钟6次，第6次弹验证码）
+
+    public static function findByBinggan(string $binggan): ?self
+    {
+        return self::where(DB::raw('BINARY `binggan`'), $binggan)->first();
+    }
+
+    public function passwordMatches(?string $password): bool
+    {
+        return $this->password === null
+            || hash_equals($this->password, hash('sha256', ($password ?? '').config('app.password_salt')));
+    }
+
+    public function tokenAbilities(): array
+    {
+        return match ($this->admin) {
+            1 => ['forum_admin'],
+            10 => ['forum_admin', 'admin'],
+            20 => ['forum_admin', 'admin', 'senior_admin'],
+            99 => ['forum_admin', 'admin', 'senior_admin', 'super_admin'],
+            default => ['normal'],
+        };
+    }
+
+    public function mobileSessions()
+    {
+        return $this->hasMany(MobileSession::class);
+    }
 
     public function lockedTtl(): Attribute
     {

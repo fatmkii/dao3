@@ -1,18 +1,22 @@
 <template>
     <n-card title="定制饼干" size="small">
         <n-flex vertical>
+            <n-flex v-if="isAndroidApp" vertical>
+                <span>Android App 会在原生安全界面中完成定制与魂穿。</span>
+                <f-button type="primary" @click="openCustomAccount">在 App 中继续</f-button>
+            </n-flex>
             <!-- 说明 -->
-            <div>
+            <div v-if="!isAndroidApp">
                 <n-text :depth="3">说明：</n-text>
                 <span>可自由输入名称的定制饼干，并可选择魂穿到新饼干</span>
             </div>
-            <div>
+            <div v-if="!isAndroidApp">
                 <n-text :depth="3">价格：</n-text>
                 <span>10万 olo</span>
             </div>
 
             <!-- 数据输入 -->
-            <n-form ref="formRef" :model="userInput" label-placement="left" label-width="auto" style="max-width: 400px;"
+            <n-form v-if="!isAndroidApp" ref="formRef" :model="userInput" label-placement="left" label-width="auto" style="max-width: 400px;"
                 :rules="inputRules" :size="commonStore.isMobile ? 'small' : 'medium'">
                 <n-form-item label="定制饼干" path="bingganApply">
                     <f-input v-model:value="userInput.bingganApply" placeholder="7~16个字符(字母、数字、下划线)" :maxlength="16"
@@ -40,7 +44,7 @@
             </n-form>
 
             <!-- 提交按钮 -->
-            <n-flex size="small" :align="'center'">
+            <n-flex v-if="!isAndroidApp" size="small" :align="'center'">
                 <f-button type="primary" :loading="newCustomBingganLoading" :disabled="newCustomBingganLoading"
                     @click="newCustomBingganHandle">提交</f-button>
                 <n-text :depth="3">请务必保存好饼干和密码喔</n-text>
@@ -61,10 +65,12 @@ import { NCard, NFlex, NForm, NFormItem, NSwitch, NText, type FormInst, type For
 import { ref } from 'vue'
 import { userLogoutPoster } from '@/api/methods/auth';
 import { userLogout } from '@/js/func/logout';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const { isAndroidApp, openCustomAccount } = useAndroidAppBridge()
 const formRef = ref<FormInst | null>(null)
 
 

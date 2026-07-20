@@ -10,7 +10,7 @@ class UserLV extends Model
 {
     use HasFactory;
 
-    protected $table = 'users_LV';
+    protected $table = 'users_lv';
 
     protected $fillable = [
         'user_id',
