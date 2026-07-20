@@ -64,11 +64,20 @@
 - PHPUnit 覆盖移动登录/注册、SSAID 设备桶与并发第五次锁定、管理员 abilities、access token 的 session 归属、1 小时到期、refresh 轮换与重用撤销、30/180 天期限、本机退出、封禁、密码修改、定制账号和魂穿事务，并验证上述操作不误删网页版或其他设备 token。
 - Playwright 覆盖普通浏览器行为不变，以及模拟 App bridge 时隐藏认证入口、上报鉴权失效、主动更新 token、401 后单次重试只读请求、拒绝自动重试写请求、同步主题和委托定制饼干。
 - Android 单元/仪器测试覆盖 Keystore、SSAID 摘要与异常拒绝、5 账号限制、10/3 标签策略、Profile 隔离、域名映射、外链拦截、滚动恢复、进程重建、离线页、到期前/前台恢复刷新和每账号 single-flight 并发。
-- 在 API 29 与 API 36 模拟器、至少一台定制系统真机上验证；验收必须包含两个生产域名、图片上传、实时通信、管理员页面和 WebView 能力不足拦截。
-- 先部署向后兼容的数据库/API/Vue App 模式，再发布 Android 测试版；确认线上接口后才开放官网 APK。
-- 使用 `android-vX.Y.Z` 标签触发独立 GitHub Actions：测试、release keystore 签名、生成 SHA-256、创建 GitHub Release，并上传 APK 与版本清单到官网共享下载目录。
+
+### 当前暂停点：真人实机验真与 APK 功能完善
+
+- 当前实施阶段到代码实现、自动化测试和 API 29/API 36 模拟器验证为止；这些结果作为真人实机验真的基线。
+- 下一阶段先在至少一台定制系统真机上由真人逐项验真，重点检查账号与标签切换、两个域名、图片上传、文件下载、实时通信、管理员页面、前后台恢复、弱网/断网、WebView 能力不足拦截和安装升级流程。
+- 实机验真发现的问题先在本地开发环境修复并回归，继续完善 APK 功能和使用体验；在验真结论与功能范围确认前，不进入生产部署或公开发布流程。
+
+### 后续发布阶段（暂缓）
+
+- 生产服务器的数据库迁移、移动 API 和 Vue App 模式部署暂缓；待真人实机验真完成、APK 功能完善并确认发布范围后再执行。
+- 正式 release APK 的签名、SHA-256 生成、GitHub Release、官网 APK 与版本清单上传暂缓，不作为当前阶段的完成条件。
+- 后续发布时，使用 `android-vX.Y.Z` 标签触发独立 GitHub Actions：测试、release keystore 签名、生成 SHA-256、创建 GitHub Release，并上传 APK 与版本清单到官网共享下载目录。
 - release keystore 仅存 GitHub Secrets 和离线备份，不进入仓库。官网为主下载源，GitHub Release 为镜像。
-- 在公开发布前完成 Android Developer Console 身份验证并登记 `com.cpttmm.app`；Android 的站外分发验证将在 2027 年扩展到全球。[Android 开发者验证指南](https://developer.android.com/developer-verification/guides)
+- Android Developer Console 身份验证及 `com.cpttmm.app` 登记暂缓到公开发布准备阶段；Android 的站外分发验证将在 2027 年扩展到全球。[Android 开发者验证指南](https://developer.android.com/developer-verification/guides)
 
 ## 已锁定的边界
 
