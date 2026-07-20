@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - ".gitignore"
+      - "README.md"
+      - "docs/**"
+      - "android/**"
+      - ".agents/**"
+      - ".codex/**"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "skills-lock.json"
   workflow_dispatch:
 
 jobs:
@@ -17,7 +27,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
           extensions: mbstring, xml, ctype, json, bcmath, curl, fileinfo, pdo, pdo_mysql
           coverage: none
 
@@ -27,7 +37,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
 
       - name: Install frontend dependencies
@@ -35,11 +45,11 @@ jobs:
 
       - name: Build frontend
         env:
-            VITE_REVERB_APP_KEY: ${{ secrets.VITE_REVERB_APP_KEY }}
-            VITE_REVERB_PORT: '8090'
-            VITE_REVERB_SCHEME: 'https'
-            VITE_REVERB_HOST: 'localhost'
-            VITE_REVERB_HOST_SUBDOMAIN: 'socket.'
+          VITE_REVERB_APP_KEY: ${{ secrets.VITE_REVERB_APP_KEY }}
+          VITE_REVERB_PORT: "8090"
+          VITE_REVERB_SCHEME: "https"
+          VITE_REVERB_HOST: "localhost"
+          VITE_REVERB_HOST_SUBDOMAIN: "socket."
         run: npm run build
 
       - name: Prepare release archive
