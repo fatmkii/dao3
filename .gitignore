@@ -24,3 +24,6 @@ playwright-report/
 .env.staging
 .env.local
 /tmp
+/android/.gradle
+/android/local.properties
+/android/**/build
