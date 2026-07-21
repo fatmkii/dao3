@@ -786,7 +786,7 @@ private fun ActiveForumWorkspace(
             pageErrors[activeTab.id]?.let {
                 val alternative = if (domain == AppDomain.PRIMARY) AppDomain.FALLBACK else AppDomain.PRIMARY
                 OfflineErrorPage(
-                    alternativeHost = alternative.host,
+                    alternativeHost = alternative.host.takeUnless { BuildConfig.DEBUG },
                     onRetry = {
                         pageErrors[activeTab.id] = null
                         host.reload()
@@ -880,7 +880,7 @@ private fun ActiveForumWorkspace(
 
 @Composable
 internal fun OfflineErrorPage(
-    alternativeHost: String,
+    alternativeHost: String?,
     onRetry: () -> Unit,
     onSwitchDomain: () -> Unit,
 ) {
@@ -895,8 +895,10 @@ internal fun OfflineErrorPage(
             Text("请检查网络后重试。", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(18.dp))
             Button(onClick = onRetry) { Text("重新加载") }
-            Spacer(Modifier.height(8.dp))
-            TextButton(onClick = onSwitchDomain) { Text("切换到 $alternativeHost") }
+            if (alternativeHost != null) {
+                Spacer(Modifier.height(8.dp))
+                TextButton(onClick = onSwitchDomain) { Text("切换到 $alternativeHost") }
+            }
         }
     }
 }
@@ -1049,21 +1051,23 @@ private fun SettingsSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text("设置", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-            Text("访问域名", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppDomain.entries.forEach { candidate ->
-                    FilterChip(
-                        selected = candidate == domain,
-                        onClick = { onDomainChange(candidate) },
-                        label = { Text(candidate.host) },
-                    )
+            if (!BuildConfig.DEBUG) {
+                Text("访问域名", style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AppDomain.entries.forEach { candidate ->
+                        FilterChip(
+                            selected = candidate == domain,
+                            onClick = { onDomainChange(candidate) },
+                            label = { Text(candidate.host) },
+                        )
+                    }
                 }
+                Text(
+                    "切换前会先检查当前登录状态；应用不会自动重放失败请求。",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
-            Text(
-                "切换前会先检查当前登录状态；应用不会自动重放失败请求。",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
             if (error != null) InlineMessage(error)
             HorizontalDivider()
             Text("账号", style = MaterialTheme.typography.titleMedium)
@@ -1310,24 +1314,26 @@ private fun AddAccountSheet(
                     InlineMessage(error!!)
                 }
 
-                HorizontalDivider()
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("访问域名", style = MaterialTheme.typography.labelLarge)
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        AppDomain.entries.forEach { candidate ->
-                            FilterChip(
-                                selected = domain == candidate,
-                                onClick = { onDomainChange(candidate) },
-                                label = { Text(candidate.host) },
-                                enabled = !submitting,
-                            )
+                if (!BuildConfig.DEBUG) {
+                    HorizontalDivider()
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("访问域名", style = MaterialTheme.typography.labelLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            AppDomain.entries.forEach { candidate ->
+                                FilterChip(
+                                    selected = domain == candidate,
+                                    onClick = { onDomainChange(candidate) },
+                                    label = { Text(candidate.host) },
+                                    enabled = !submitting,
+                                )
+                            }
                         }
+                        Text(
+                            "加载失败时可手动切换，应用不会自动重放请求。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                    Text(
-                        "加载失败时可手动切换，应用不会自动重放请求。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
                 Spacer(Modifier.height(4.dp))
             }

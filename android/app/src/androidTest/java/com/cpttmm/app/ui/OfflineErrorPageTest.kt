@@ -3,9 +3,11 @@ package com.cpttmm.app.ui
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -31,6 +33,22 @@ class OfflineErrorPageTest {
         assertEquals("retry", action)
         composeRule.onNodeWithText("切换到 cpttmm.love").performClick()
         assertEquals("switch", action)
+    }
+
+    @Test
+    fun canHideDomainSwitch() {
+        composeRule.setContent {
+            MaterialTheme {
+                OfflineErrorPage(
+                    alternativeHost = null,
+                    onRetry = {},
+                    onSwitchDomain = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("重新加载").assertIsDisplayed()
+        assertTrue(composeRule.onAllNodesWithText("切换到 cpttmm.love").fetchSemanticsNodes().isEmpty())
     }
 
     @Test

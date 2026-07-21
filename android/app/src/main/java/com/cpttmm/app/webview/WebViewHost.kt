@@ -19,6 +19,7 @@ import androidx.webkit.ProfileStore
 import androidx.webkit.ScriptHandler
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
+import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.data.local.AccountEntity
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.navigation.DomainPolicy
@@ -58,7 +59,7 @@ class WebViewHost(
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun configure(accessToken: String) {
-        WebView.setWebContentsDebuggingEnabled(false)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         ProfileStore.getInstance().getOrCreateProfile(account.profileName)
         WebViewCompat.setProfile(view, account.profileName)
 

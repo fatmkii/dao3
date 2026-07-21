@@ -4,8 +4,8 @@ import com.cpttmm.app.BuildConfig
 import java.net.URI
 
 enum class AppDomain(val host: String) {
-    PRIMARY("cpttmm.com"),
-    FALLBACK("cpttmm.love"),
+    PRIMARY(URI(BuildConfig.PRODUCTION_PRIMARY_ORIGIN).host),
+    FALLBACK(URI(BuildConfig.PRODUCTION_FALLBACK_ORIGIN).host),
 }
 
 sealed interface NavigationTarget {
@@ -15,38 +15,41 @@ sealed interface NavigationTarget {
 }
 
 object DomainPolicy {
-    private val localServer = BuildConfig.LOCAL_SERVER_URL
+    private val developmentServer = BuildConfig.DEVELOPMENT_SERVER_ORIGIN
         .takeIf { BuildConfig.DEBUG && it.isNotBlank() }
         ?.let(::URI)
+    private val productionOrigins = linkedMapOf(
+        AppDomain.PRIMARY to URI(BuildConfig.PRODUCTION_PRIMARY_ORIGIN),
+        AppDomain.FALLBACK to URI(BuildConfig.PRODUCTION_FALLBACK_ORIGIN),
+    )
 
-    val trustedOrigins: Set<String> = AppDomain.entries
-        .mapTo(linkedSetOf()) { "https://${it.host}" }
-        .apply { localServer?.let { add(it.toString().trimEnd('/')) } }
+    val trustedOrigins: Set<String> = if (BuildConfig.DEBUG) {
+        setOf(requireNotNull(developmentServer).toString().trimEnd('/'))
+    } else {
+        productionOrigins.values.mapTo(linkedSetOf()) { it.toString().trimEnd('/') }
+    }
 
-    fun home(domain: AppDomain): URI = localServer ?: URI("https://${domain.host}/")
+    fun home(domain: AppDomain): URI = developmentServer ?: productionOrigins.getValue(domain)
 
     fun classify(rawUrl: String): NavigationTarget {
         val uri = runCatching { URI(rawUrl) }.getOrNull() ?: return NavigationTarget.Blocked
         if (uri.host.isNullOrBlank() || uri.userInfo != null) {
             return NavigationTarget.Blocked
         }
-        if (localServer != null && sameOrigin(uri, localServer)) return NavigationTarget.Internal(uri)
+        if (developmentServer != null && sameOrigin(uri, developmentServer)) {
+            return NavigationTarget.Internal(uri)
+        }
         if (uri.scheme?.lowercase() != "https") return NavigationTarget.Blocked
         if (uri.port != -1 && uri.port != 443) return NavigationTarget.Blocked
 
         val bareHost = uri.host.lowercase().removePrefix("www.")
         val appDomain = AppDomain.entries.firstOrNull { it.host == bareHost }
             ?: return NavigationTarget.External(uri)
+        if (BuildConfig.DEBUG) return NavigationTarget.External(uri)
 
         return NavigationTarget.Internal(
-            URI(
-                "https",
-                null,
-                appDomain.host,
-                -1,
-                uri.path,
-                uri.query,
-                uri.fragment,
+            productionOrigins.getValue(appDomain).resolve(
+                URI(null, null, uri.path, uri.query, uri.fragment),
             ),
         )
     }

@@ -41,10 +41,10 @@ This repository contains a Laravel 11 API, a Vue 3 SPA, and a native Android cli
 - `docker compose exec node npm run staging`: staging-mode frontend build.
 - Development services include nginx on port `80`, Vite on `5173`, Reverb on `8080`, and phpMyAdmin on `8081`.
 - `./android/gradlew -p android assembleDebug`: build the Android debug APK from the repository root.
-- `./android/gradlew -p android testDebugUnitTest`: run Android JVM unit tests.
+- `./android/gradlew -p android testDebugUnitTest testReleaseUnitTest`: run Android JVM unit tests for both variants.
 - `./android/gradlew -p android connectedDebugAndroidTest`: run Android instrumentation tests on a connected emulator or device.
 - `./android/gradlew -p android lintDebug`: run Android lint for the debug variant.
-- The Android debug client defaults to `http://192.168.1.210`; override it with `-PLOCAL_SERVER_URL=http://<host>` when building. See `android/README.md` for ADB port forwarding and installation steps.
+- The Android debug client is fixed to `http://192.168.1.210` and cannot be overridden. See `android/README.md` for ADB and installation steps.
 
 ## Coding Style & Naming Conventions
 - Follow `.editorconfig`: UTF-8, LF, spaces, 4-space indent (2 for `*.yml`/`*.yaml`).
@@ -80,6 +80,11 @@ Environment is WSL with Docker Compose.
 Avoid PowerShell syntax.
 
 ## Android 开发环境
+
+- `docker-compose.yml` + `docker-compose.dev.yml` provide the local development server at `192.168.1.210`; they are not the production deployment stack.
+- Debug uses `com.cpttmm.app.debug` and trusts only the fixed development origin. Release uses `com.cpttmm.app` and trusts only `https://cpttmm.com` and `https://cpttmm.love`; origins are build-time Android configuration, not Laravel `.env` values.
+- `.github/workflows/android-ci.yml` verifies Android changes on PRs and `main`. Official signed APKs are built and published only by `.github/workflows/android-release.yml` from `android-vX.Y.Z` tags.
+- The web production release is deployed separately by `.github/workflows/build-release.yml`.
 
 WSL 内已安装 Android SDK：
 

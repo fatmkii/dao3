@@ -8,7 +8,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
         android:icon="@drawable/ic_launcher"
-        android:label="小火锅"
+        android:label="${appLabel}"
         android:supportsRtl="true"
         android:theme="@style/Theme.Cpttmm"
         android:usesCleartextTraffic="false">

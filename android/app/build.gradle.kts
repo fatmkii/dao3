@@ -1,3 +1,4 @@
+import com.android.build.api.variant.HasUnitTestBuilder
 import java.net.URI
 
 plugins {
@@ -9,20 +10,26 @@ plugins {
 
 val configuredVersionCode = providers.gradleProperty("VERSION_CODE").orNull?.toInt() ?: 1
 val configuredVersionName = providers.gradleProperty("VERSION_NAME").orNull ?: "0.1.0"
-val localServerUrl = providers.gradleProperty("LOCAL_SERVER_URL").orNull.orEmpty()
+val developmentServerOrigin = "http://192.168.1.210"
+val productionPrimaryOrigin = "https://cpttmm.com"
+val productionFallbackOrigin = "https://cpttmm.love"
 val releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
 
-if (localServerUrl.isNotEmpty()) {
-    val uri = URI(localServerUrl)
+fun validateServerOrigin(name: String, origin: String, expectedScheme: String) {
+    val uri = URI(origin)
     require(
-        uri.scheme in setOf("http", "https") &&
+        uri.scheme == expectedScheme &&
             !uri.host.isNullOrBlank() &&
             uri.userInfo == null &&
             uri.rawPath.orEmpty().let { it.isEmpty() || it == "/" } &&
             uri.rawQuery == null &&
             uri.rawFragment == null
-    ) { "LOCAL_SERVER_URL must be an HTTP(S) origin without credentials, path, query, or fragment" }
+    ) { "$name must be a valid $expectedScheme origin without credentials, path, query, or fragment" }
 }
+
+validateServerOrigin("developmentServerOrigin", developmentServerOrigin, "http")
+validateServerOrigin("productionPrimaryOrigin", productionPrimaryOrigin, "https")
+validateServerOrigin("productionFallbackOrigin", productionFallbackOrigin, "https")
 
 room {
     schemaDirectory("$projectDir/schemas")
@@ -38,6 +45,9 @@ android {
         targetSdk = 36
         versionCode = configuredVersionCode
         versionName = configuredVersionName
+        manifestPlaceholders["appLabel"] = "小火锅"
+        buildConfigField("String", "PRODUCTION_PRIMARY_ORIGIN", "\"$productionPrimaryOrigin\"")
+        buildConfigField("String", "PRODUCTION_FALLBACK_ORIGIN", "\"$productionFallbackOrigin\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,11 +65,14 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "LOCAL_SERVER_URL", "\"$localServerUrl\"")
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            buildConfigField("String", "DEVELOPMENT_SERVER_ORIGIN", "\"$developmentServerOrigin\"")
+            manifestPlaceholders["appLabel"] = "小火锅 Dev"
         }
         release {
             isMinifyEnabled = true
-            buildConfigField("String", "LOCAL_SERVER_URL", "\"\"")
+            buildConfigField("String", "DEVELOPMENT_SERVER_ORIGIN", "\"\"")
             signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -76,6 +89,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) { variant ->
+        (variant as HasUnitTestBuilder).enableUnitTest = true
     }
 }
 

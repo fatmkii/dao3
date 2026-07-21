@@ -3,11 +3,14 @@ package com.cpttmm.app.navigation
 import com.cpttmm.app.BuildConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 class DomainPolicyTest {
     @Test
     fun `normalizes www app urls to bare domain`() {
+        assumeFalse(BuildConfig.DEBUG)
         val target = DomainPolicy.classify("https://www.cpttmm.com/forum?page=2")
 
         assertTrue(target is NavigationTarget.Internal)
@@ -16,6 +19,7 @@ class DomainPolicyTest {
 
     @Test
     fun `keeps both configured domains internal`() {
+        assumeFalse(BuildConfig.DEBUG)
         assertTrue(DomainPolicy.classify("https://cpttmm.com/") is NavigationTarget.Internal)
         assertTrue(DomainPolicy.classify("https://cpttmm.love/thread/1") is NavigationTarget.Internal)
     }
@@ -33,6 +37,7 @@ class DomainPolicyTest {
 
     @Test
     fun `only accepts the default https origin`() {
+        assumeFalse(BuildConfig.DEBUG)
         assertEquals(
             "https://cpttmm.com/thread/1",
             (DomainPolicy.classify("https://cpttmm.com:443/thread/1") as NavigationTarget.Internal)
@@ -43,11 +48,25 @@ class DomainPolicyTest {
     }
 
     @Test
-    fun `configured local server is internal only on its exact origin`() {
-        if (BuildConfig.LOCAL_SERVER_URL.isBlank()) return
+    fun `development build trusts only its fixed server origin`() {
+        assumeTrue(BuildConfig.DEBUG)
 
-        val localOrigin = BuildConfig.LOCAL_SERVER_URL.trimEnd('/')
+        val localOrigin = BuildConfig.DEVELOPMENT_SERVER_ORIGIN.trimEnd('/')
         assertTrue(DomainPolicy.classify("$localOrigin/thread/1") is NavigationTarget.Internal)
         assertEquals(NavigationTarget.Blocked, DomainPolicy.classify("http://127.0.0.2/thread/1"))
+        assertTrue(DomainPolicy.classify(BuildConfig.PRODUCTION_PRIMARY_ORIGIN) is NavigationTarget.External)
+        assertTrue(DomainPolicy.classify(BuildConfig.PRODUCTION_FALLBACK_ORIGIN) is NavigationTarget.External)
+        assertEquals(setOf(localOrigin), DomainPolicy.trustedOrigins)
+    }
+
+    @Test
+    fun `release build has no development server origin`() {
+        assumeFalse(BuildConfig.DEBUG)
+
+        assertTrue(BuildConfig.DEVELOPMENT_SERVER_ORIGIN.isBlank())
+        assertEquals(
+            setOf(BuildConfig.PRODUCTION_PRIMARY_ORIGIN, BuildConfig.PRODUCTION_FALLBACK_ORIGIN),
+            DomainPolicy.trustedOrigins,
+        )
     }
 }
