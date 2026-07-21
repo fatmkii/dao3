@@ -14,16 +14,11 @@ Debug APK 仅通过局域网地址 `http://192.168.1.210` 访问开发服务。�
 构建并安装 Debug APK：
 
 ```bash
-ADB=/mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
-DEVICE=emulator-5554
-test "$("$ADB" -s "$DEVICE" get-state 2>/dev/null | tr -d '\r')" = "device"
-"$ADB" -s "$DEVICE" reverse tcp:5173 tcp:5173
-cd android
-./gradlew assembleDebug
-"$ADB" -s "$DEVICE" install -r app/build/outputs/apk/debug/app-debug.apk
+./scripts/android-debug.sh emulator-5554
+# 真机示例：./scripts/android-debug.sh 192.168.1.162:37669
 ```
 
-端口 5173 和 8080 的反向映射分别供当前开发配置中的 Vite 热更新和 Reverb 使用；应用访问 Laravel 的主地址仍是 `192.168.1.210:80`。
+脚本统一调用 Windows Android SDK 中的 `adb.exe`，会检查指定设备、反向映射 Vite 使用的 5173 端口、构建并覆盖安装 Debug APK，然后启动应用。应用访问 Laravel 的主地址仍是 `192.168.1.210:80`。Reverb 使用页面的主机名连接 `192.168.1.210:8080`，不需要 ADB 反向映射。
 
 Debug 应用 ID 为 `com.cpttmm.app.debug`，桌面名称为“小火锅 Dev”，可以和正式版同时安装。Debug 只把 `192.168.1.210` 视为内部可信服务；两个生产域名会交给系统浏览器，不能使用原生桥。
 

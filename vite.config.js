@@ -85,6 +85,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             hmr: {
                 host: 'localhost',
             },
+            cors: {
+                origin: 'http://192.168.1.210',
+            },
         }
     }
 }

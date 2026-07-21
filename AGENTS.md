@@ -95,17 +95,22 @@ Build Tools：36.0.0
 Command-line Tools：20.0
 ```
 
-## Windows Android 虚拟机
+## Windows ADB（模拟器和实机）
 
-Android 虚拟机运行在 Windows 宿主机上。WSL 中应调用 Windows 版 `adb.exe`：
+Android 虚拟机运行在 Windows 宿主机上。为避免同时运行两套 ADB server，WSL 中连接 Android 模拟器和实机时均应调用 Windows 版 `adb.exe`，不要使用 WSL 的 `adb`：
 
 ```text
 /mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
 ```
 
-虚拟机设备为 `emulator-5554`或`emulator-5556`。
+虚拟机设备通常为 `emulator-5554` 或 `emulator-5556`。
 
 ## Android 实机
 
-WSL中同样有adb。实机是通过WSL的adb连接的。
-实机设备为`192.168.1.162:37669    device product:PKU110 model:PKU110 device:OP5DD2L1 transport_id:1`
+实机通过 TCP 连接 Windows ADB，设备序列号中的 IP 和端口可能变化。先用 Windows `adb.exe devices -l` 查询当前序列号，再将其作为参数传给安装脚本：
+
+```bash
+./scripts/android-debug.sh <device-serial>
+```
+
+脚本会设置 Vite 所需的 `reverse tcp:5173 tcp:5173`，使用 WSL Gradle 构建 APK，将 APK 路径转换为 Windows 路径后交给 Windows ADB 安装并启动。Reverb 根据页面主机名直接连接 `192.168.1.210:8080`，不需要反向映射 8080。
