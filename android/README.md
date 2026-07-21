@@ -18,7 +18,6 @@ ADB=/mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
 DEVICE=emulator-5554
 test "$("$ADB" -s "$DEVICE" get-state 2>/dev/null | tr -d '\r')" = "device"
 "$ADB" -s "$DEVICE" reverse tcp:5173 tcp:5173
-"$ADB" -s "$DEVICE" reverse tcp:8080 tcp:8080
 cd android
 ./gradlew assembleDebug
 "$ADB" -s "$DEVICE" install -r app/build/outputs/apk/debug/app-debug.apk
