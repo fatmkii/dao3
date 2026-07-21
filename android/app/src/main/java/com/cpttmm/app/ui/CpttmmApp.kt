@@ -3,6 +3,7 @@ package com.cpttmm.app.ui
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.widget.Toast
@@ -51,6 +52,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -779,10 +781,7 @@ private fun ActiveForumWorkspace(
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
-            AndroidView(
-                factory = { host.view },
-                modifier = Modifier.fillMaxSize(),
-            )
+            ActiveTabView(activeTab.id, host.view)
             pageErrors[activeTab.id]?.let {
                 val alternative = if (domain == AppDomain.PRIMARY) AppDomain.FALLBACK else AppDomain.PRIMARY
                 OfflineErrorPage(
@@ -874,6 +873,16 @@ private fun ActiveForumWorkspace(
             dismissButton = {
                 TextButton(onClick = { pendingLongPressUrl = null }) { Text("取消") }
             },
+        )
+    }
+}
+
+@Composable
+internal fun ActiveTabView(tabId: String, view: View) {
+    key(tabId) {
+        AndroidView(
+            factory = { view },
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
