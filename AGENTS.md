@@ -78,4 +78,9 @@ Android 虚拟机运行在 Windows 宿主机上。WSL 中应调用 Windows 版 `
 /mnt/c/Users/47155/AppData/Local/Android/Sdk/platform-tools/adb.exe
 ```
 
-模拟器设备为 `emulator-5556`。
+虚拟机设备为 `emulator-5554`或`emulator-5556`。
+
+## Android 实机
+
+WSL中同样有adb。实机是通过WSL的adb连接的。
+实机设备为`192.168.1.162:37669    device product:PKU110 model:PKU110 device:OP5DD2L1 transport_id:1`
