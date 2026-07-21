@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a Laravel 11 API + Vue 3 SPA.
+This repository contains a Laravel 11 API, a Vue 3 SPA, and a native Android client.
 
 - Backend app code: `app/` (`Http/Controllers`, `Models`, `Services`, `Jobs`, `Common`)
 - Routes: `routes/api.php` and `routes/web.php`
@@ -10,6 +10,17 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - Database migrations/seeders/factories: `database/`
 - Tests: `tests/Feature`, `tests/Unit`
 - Public build output/assets: `public/`
+- Android project: `android/` (single Gradle module: `android/app/`)
+- Android application source: `android/app/src/main/java/com/cpttmm/app/`
+  - `ui/`: Jetpack Compose application shell, account screens, and WebView workspace
+  - `account/`: account persistence, authentication coordination, tabs, and session revocation
+  - `webview/`: WebView lifecycle, profile isolation, JavaScript auth bridge, and pooling
+  - `network/`, `session/`, `registration/`: mobile API calls and session/device registration logic
+  - `data/local/`, `preferences/`, `crypto/`: Room storage, DataStore preferences, and Android Keystore encryption
+  - `navigation/`, `model/`, `diagnostics/`, `common/`: domain policy, state models, diagnostics, and shared utilities
+- Android resources and manifests: `android/app/src/main/res/`, `android/app/src/main/AndroidManifest.xml`, and `android/app/src/debug/AndroidManifest.xml`
+- Android JVM tests: `android/app/src/test/`; device/instrumentation tests: `android/app/src/androidTest/`
+- Android Room schema snapshots: `android/app/schemas/`; local setup and installation notes: `android/README.md`
 
 ## Build, Test, and Development Commands
 - Development runs in Docker Compose from WSL. Do not use `sudo` for normal project commands; fix script or Docker socket permissions instead.
@@ -29,12 +40,19 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - `docker compose exec node npm run build`: production frontend build.
 - `docker compose exec node npm run staging`: staging-mode frontend build.
 - Development services include nginx on port `80`, Vite on `5173`, Reverb on `8080`, and phpMyAdmin on `8081`.
+- `./android/gradlew -p android assembleDebug`: build the Android debug APK from the repository root.
+- `./android/gradlew -p android testDebugUnitTest`: run Android JVM unit tests.
+- `./android/gradlew -p android connectedDebugAndroidTest`: run Android instrumentation tests on a connected emulator or device.
+- `./android/gradlew -p android lintDebug`: run Android lint for the debug variant.
+- The Android debug client defaults to `http://192.168.1.210`; override it with `-PLOCAL_SERVER_URL=http://<host>` when building. See `android/README.md` for ADB port forwarding and installation steps.
 
 ## Coding Style & Naming Conventions
 - Follow `.editorconfig`: UTF-8, LF, spaces, 4-space indent (2 for `*.yml`/`*.yaml`).
 - PHP: PSR-4 autoloading (`App\\`, `Tests\\`), class names in `StudlyCase`.
 - Vue SFC files and components use `PascalCase` names (example: `ThreadPage.vue`).
 - TS/JS helpers use `camelCase` filenames/functions (example: `copyToClipboard.ts`).
+- Android code is Kotlin with Jetpack Compose; use `PascalCase` for classes and composables and `camelCase` for functions and properties. Keep packages under `com.cpttmm.app` and place code in the existing feature package that owns the behavior.
+- Android targets Java 17, min SDK 29, and compile/target SDK 36. Keep Room schema exports in `android/app/schemas/` when changing the database.
 - Run formatter/linter tools already configured in the stack before opening a PR (Laravel Pint for PHP where applicable).
 
 ## Testing Guidelines
@@ -43,6 +61,8 @@ This repository is a Laravel 11 API + Vue 3 SPA.
 - Place HTTP/integration tests in `tests/Feature`; pure logic tests in `tests/Unit`.
 - Name test files with `*Test.php` suffix (example: `AntiSpamHttpTest.php`).
 - Add or update tests for behavior changes in middleware, services, and API responses.
+- Android local logic tests use JUnit 4 under `android/app/src/test/`; tests requiring Android framework APIs, WebView profiles, process recreation, or Compose UI belong under `android/app/src/androidTest/`.
+- After Android changes, run the focused JVM test task and `lintDebug`; run `connectedDebugAndroidTest` when the behavior depends on an emulator/device, WebView, Keystore, Room process recreation, or Compose UI.
 
 ## Commit & Pull Request Guidelines
 - Recent history favors Conventional Commit prefixes: `feat:`, `fix:`, `refactor:`, `chore:`.
