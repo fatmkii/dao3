@@ -42,7 +42,7 @@ const tabValue = ref<string>()
 document.title = '个人中心'
 
 //生成tabs
-const allTabs = [
+const tabsList = [
     { name: 'medals', tab: '我的成就', component: TabMedal },
     { name: 'common', tab: '一般设定', component: TabCommon },
     { name: 'pingbici', tab: '屏蔽词', component: TabPingbici },
@@ -54,8 +54,5 @@ const allTabs = [
     { name: 'customBinggan', tab: '定制饼干', component: TabCustom },
     { name: 'password', tab: '密码设定', component: TabPassword },
 ]
-const tabsList = computed(() => allTabs.filter(
-    tab => !isAndroidApp.value || tab.name !== 'customBinggan',
-))
 
 </script>
