@@ -1275,7 +1275,7 @@ private fun AddAccountSheet(
     accountLimitReached: Boolean,
     onDomainChange: (AppDomain) -> Unit,
     onDismiss: () -> Unit,
-    onLogin: suspend (String, String?) -> Unit,
+    onLogin: suspend (String, String?) -> String,
     onRegister: suspend () -> String,
     loadRegistrationStatus: suspend () -> RegistrationStatus,
     onCompleted: (String?) -> Unit,
@@ -1315,7 +1315,6 @@ private fun AddAccountSheet(
             runCatching<String?> {
                 if (action == AccountAction.LOGIN) {
                     onLogin(binggan.trim(), password.ifBlank { null })
-                    null
                 } else {
                     onRegister()
                 }
