@@ -13,7 +13,9 @@ async function recoverAndroidAuthentication(method: Method) {
         return { handled: false as const }
     }
 
-    const canRetry = method.type === 'GET' || method.type === 'HEAD'
+    const canRetry = method.type === 'GET' ||
+        method.type === 'HEAD' ||
+        method.meta?.androidAuthRetry === true
     if (!canRetry) {
         requestAuthRefresh().catch(() => undefined)
         window.$message.warning('登录状态正在恢复。为避免重复提交，请确认操作结果后手动重试。', {

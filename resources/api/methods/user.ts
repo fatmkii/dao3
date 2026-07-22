@@ -31,6 +31,7 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
     {
         //第三个参数是config
         name: 'userDataGetter',
+        meta: { androidAuthRetry: true },
         params: {},
         // localCache: null,
         localCache: { mode: 'placeholder', expire: 60 * 60 * 1000 },

@@ -182,11 +182,20 @@ test.describe('Android App bridge', () => {
         expect(messages.filter((message) => message.type === 'authExpired')).toHaveLength(1);
     });
 
-    test('requests refresh but never replays a write request', async ({ page }) => {
-        let writeRequestCount = 0;
+    test('refreshes once and retries the safe user-data POST with the new token', async ({ page }) => {
+        let userDataRequestCount = 0;
+        const authorizationHeaders: string[] = [];
         await page.route('**/api/user/show', async (route) => {
-            writeRequestCount += 1;
-            await route.fulfill({ status: 401, json: { code: 401, message: 'expired' } });
+            userDataRequestCount += 1;
+            authorizationHeaders.push(route.request().headers().authorization ?? '');
+            if (userDataRequestCount === 1) {
+                await route.fulfill({ status: 401, json: { code: 401, message: 'expired' } });
+                return;
+            }
+
+            await route.fulfill({
+                json: { code: 200, message: 'success', data: userData },
+            });
         });
 
         await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -195,7 +204,11 @@ test.describe('Android App bridge', () => {
             const messages = await bridgeMessages(page);
             return messages.filter((message) => message.type === 'authExpired').length;
         }).toBe(1);
-        expect(writeRequestCount).toBe(1);
+        await expect.poll(() => userDataRequestCount).toBe(2);
+        expect(authorizationHeaders).toEqual([
+            'Bearer expired-token',
+            'Bearer refreshed-token',
+        ]);
     });
 
     test('keeps the web unauthenticated modal hidden when native refresh fails', async ({ page }) => {

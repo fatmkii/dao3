@@ -64,6 +64,18 @@ class WebViewPoolTest {
         assertEquals(listOf("pause:background", "resume:active"), events)
     }
 
+    @Test
+    fun `updates access token in every pooled host`() {
+        val pool = WebViewPool<FakeHost>()
+        val first = pool.getOrCreate("first") { FakeHost() }
+        val second = pool.getOrCreate("second") { FakeHost() }
+
+        pool.updateAccessToken("refreshed-token")
+
+        assertEquals("refreshed-token", first.accessToken)
+        assertEquals("refreshed-token", second.accessToken)
+    }
+
     private class FakeHost(
         private val name: String = "host",
         private val events: MutableList<String>? = null,
@@ -72,6 +84,7 @@ class WebViewPoolTest {
         var resumed = false
         var destroyed = false
         var savedOnDestroy: Boolean? = null
+        var accessToken: String? = null
 
         override fun pause() {
             paused = true
@@ -83,7 +96,9 @@ class WebViewPoolTest {
             events?.add("resume:$name")
         }
 
-        override fun updateAccessToken(accessToken: String) = Unit
+        override fun updateAccessToken(accessToken: String) {
+            this.accessToken = accessToken
+        }
 
         override fun destroy(saveState: Boolean) {
             destroyed = true

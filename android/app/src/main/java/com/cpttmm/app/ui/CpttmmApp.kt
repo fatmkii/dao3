@@ -689,6 +689,10 @@ private fun ActiveForumWorkspace(
                                     accounts = accounts,
                                     diagnostics = diagnostics,
                                     host = createdHost,
+                                    onAccessTokenRefreshed = { refreshedToken ->
+                                        currentAccessToken = refreshedToken
+                                        webViewPool.updateAccessToken(refreshedToken)
+                                    },
                                     onAuthFailure = onError,
                                     onThemeChanged = onThemeChanged,
                                 )
@@ -1009,16 +1013,15 @@ private suspend fun handleBridgeMessage(
     accounts: SecureAccountRepository,
     diagnostics: DiagnosticLogger,
     host: WebViewHost,
+    onAccessTokenRefreshed: (String) -> Unit,
     onAuthFailure: (Throwable) -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
 ) {
     val json = runCatching { JSONObject(message) }.getOrNull() ?: return
     when (json.optString("type")) {
         "authExpired" -> {
-            runCatching {
-                auth.refresh(account.id, domain)
-                checkNotNull(accounts.decryptedTokens(account.id)?.accessToken)
-            }.onSuccess(host::updateAccessToken)
+            runCatching { auth.refresh(account.id, domain) }
+                .onSuccess(onAccessTokenRefreshed)
                 .onFailure {
                     diagnostics.record(DiagnosticEvent.AUTH_REFRESH_FAILED)
                     host.dispatchAuthRefreshFailed()
