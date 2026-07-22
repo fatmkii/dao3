@@ -30,7 +30,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//Auth系列
 Route::prefix('mobile')->group(function () {
     Route::get('/version', [MobileSessionController::class, 'version']);
     Route::get('/registration-status', [MobileSessionController::class, 'registrationStatus']);
@@ -40,6 +39,7 @@ Route::prefix('mobile')->group(function () {
     Route::post('/logout', [MobileSessionController::class, 'logout']);
 });
 
+//Auth系列
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->Middleware('throttle:login')->withoutMiddleware('auth:sanctum'); //导入饼干
     Route::post('/logout', [AuthController::class, 'logout']); //退出饼干
