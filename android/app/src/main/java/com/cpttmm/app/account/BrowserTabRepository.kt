@@ -32,6 +32,10 @@ class BrowserTabRepository(
         dao.upsertTab(tab.copy(lastUsedAtMillis = nowMillis()))
     }
 
+    suspend fun updateTitle(tabId: String, title: String) {
+        if (title.isNotBlank()) dao.updateTabTitle(tabId, title)
+    }
+
     suspend fun save(tab: BrowserTabEntity, state: RestorableWebViewState) {
         dao.upsertTab(
             tab.copy(

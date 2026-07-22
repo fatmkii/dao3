@@ -38,6 +38,7 @@ class ProcessRecreationTest {
                     scrollY = 640,
                 ),
             )
+            tabs.updateTitle(tab.id, "实时标题")
             firstDatabase.close()
 
             val reopenedDatabase = database(context, databaseName)
@@ -48,7 +49,7 @@ class ProcessRecreationTest {
             assertEquals(accountId, account?.id)
             assertEquals("access-token", reopenedAccounts.decryptedTokens(accountId)?.accessToken)
             assertEquals("/thread/42?page=2", restoredTab.path)
-            assertEquals("恢复测试", restoredTab.title)
+            assertEquals("实时标题", restoredTab.title)
             assertEquals(640, restoredTab.scrollY)
 
             reopenedDatabase.close()

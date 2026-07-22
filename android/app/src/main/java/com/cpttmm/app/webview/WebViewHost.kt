@@ -38,6 +38,7 @@ class WebViewHost(
     private val onExternalNavigation: (String) -> Unit,
     private val onBridgeMessage: (String) -> Unit,
     private val onSaveState: (RestorableWebViewState) -> Unit,
+    private val onTitleChanged: (String) -> Unit,
     private val onOpenNewTab: (String) -> Unit,
     private val onLongPressLink: (String) -> Unit,
     private val onMainFrameError: (String?) -> Unit,
@@ -99,6 +100,10 @@ class WebViewHost(
             }
         }
         view.webChromeClient = object : WebChromeClient() {
+            override fun onReceivedTitle(webView: WebView, title: String) {
+                if (title.isNotBlank()) onTitleChanged(title)
+            }
+
             override fun onShowFileChooser(
                 webView: WebView,
                 filePathCallback: ValueCallback<Array<Uri>>,

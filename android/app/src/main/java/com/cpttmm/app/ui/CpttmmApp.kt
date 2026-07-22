@@ -13,6 +13,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +39,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -72,7 +75,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.cpttmm.app.R
 import com.cpttmm.app.account.AccountLimitException
 import com.cpttmm.app.account.BrowserTabRepository
@@ -254,7 +256,7 @@ private fun AccountSwitcherSheet(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = if (account.id == activeAccount.id) {
-                            Biscuit.copy(alpha = 0.38f)
+                            MaterialTheme.colorScheme.background
                         } else {
                             MaterialTheme.colorScheme.surface
                         },
@@ -324,7 +326,6 @@ private fun CpttmmTheme(theme: NativeThemePalette, content: @Composable () -> Un
         onPrimary = buttonTextColor,
         secondaryContainer = theme.primaryColor,
         onSecondaryContainer = buttonTextColor,
-        background = theme.backgroundColor,
         surface = theme.backgroundColor,
     )
     MaterialTheme(colorScheme = colors, content = content)
@@ -336,7 +337,7 @@ private fun defaultNativeThemePalette(themeName: String?): NativeThemePalette = 
     "dark" -> NativeThemePalette(themeName, Color(0xFF316C58), Color(0xFF18181C))
     "green" -> NativeThemePalette(themeName, Color(0xFF52B051), Color(0xFFFAFFFA))
     "blue" -> NativeThemePalette(themeName, Color(0xFF6495ED), Color(0xFFF5F7FF))
-    else -> NativeThemePalette(themeName, HotpotRed, WarmCanvas)
+    else -> NativeThemePalette("green", Color(0xFF52B051), Color(0xFFFAFFFA))
 }
 
 private fun contrastingTextColor(background: Color): Color =
@@ -363,7 +364,9 @@ private fun AccountHome(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCanvas),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             )
         },
     ) { padding ->
@@ -397,7 +400,7 @@ private fun EmptyAccountScreen(modifier: Modifier, onAddAccount: () -> Unit) {
             Surface(
                 modifier = Modifier.size(112.dp),
                 shape = RoundedCornerShape(32.dp),
-                color = Biscuit.copy(alpha = 0.42f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
             ) {
                 Image(
                     painter = painterResource(R.drawable.ic_launcher),
@@ -444,7 +447,7 @@ private fun AccountList(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onSelectAccount(account) },
-                colors = CardDefaults.cardColors(containerColor = WarmSurface),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(start = 18.dp, end = 8.dp),
@@ -646,6 +649,9 @@ private fun ActiveForumWorkspace(
                     }
                 },
                 onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
+                onTitleChanged = { title ->
+                    scope.launch { tabRepository.updateTitle(activeTab.id, title) }
+                },
                 onOpenNewTab = ::openInNewTab,
                 onLongPressLink = { pendingLongPressUrl = it },
                 onMainFrameError = {
@@ -719,55 +725,80 @@ private fun ActiveForumWorkspace(
 
     Scaffold(
         bottomBar = {
-            Surface(shadowElevation = 8.dp) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 2.dp,
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 7.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding()
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Surface(
                         onClick = { host.goBack() },
-                        modifier = Modifier.size(40.dp).semantics { contentDescription = "后退" },
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "后退" },
                         shape = RoundedCornerShape(11.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("◀", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                painter = painterResource(R.drawable.angle_left),
+                                contentDescription = null,
+                                modifier = Modifier.size(width = 12.dp, height = 24.dp),
+                            )
                         }
                     }
                     Surface(
                         onClick = { host.goForward() },
-                        modifier = Modifier.size(40.dp).semantics { contentDescription = "前进" },
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "前进" },
                         shape = RoundedCornerShape(11.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("▶", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                painter = painterResource(R.drawable.angle_right),
+                                contentDescription = null,
+                                modifier = Modifier.size(width = 12.dp, height = 24.dp),
+                            )
                         }
                     }
                     Surface(
                         onClick = { showTabs = true },
-                        modifier = Modifier.size(40.dp).semantics {
+                        modifier = Modifier.size(48.dp).semantics {
                             contentDescription = "标签，共 ${tabs.size} 个"
                         },
                         shape = RoundedCornerShape(11.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(tabs.size.toString(), fontWeight = FontWeight.SemiBold)
+                            Box(
+                                modifier = Modifier.size(width = 28.dp, height = 30.dp).border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    shape = RoundedCornerShape(6.dp),
+                                ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    tabs.size.toString(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                            }
                         }
                     }
                     Surface(
                         onClick = { showSettings = true },
-                        modifier = Modifier.weight(1f).height(40.dp).semantics {
+                        modifier = Modifier.weight(1f).height(48.dp).semantics {
                             contentDescription = "当前饼干 ${account.binggan}，打开设置"
                         },
                         shape = RoundedCornerShape(13.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(
                             modifier = Modifier.padding(horizontal = 14.dp),
@@ -995,9 +1026,9 @@ private fun TabSheet(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = if (tab.id == activeTab.id) {
-                            Biscuit.copy(alpha = 0.38f)
+                            MaterialTheme.colorScheme.background
                         } else {
-                            WarmSurface
+                            MaterialTheme.colorScheme.surface
                         },
                     ),
                 ) {
@@ -1059,7 +1090,6 @@ private fun SettingsSheet(
                 .padding(horizontal = 24.dp).padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("设置", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             if (!BuildConfig.DEBUG) {
                 Text("访问域名", style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -1078,8 +1108,7 @@ private fun SettingsSheet(
                 )
             }
             if (error != null) InlineMessage(error)
-            HorizontalDivider()
-            Text("账号", style = MaterialTheme.typography.titleMedium)
+            if (!BuildConfig.DEBUG) HorizontalDivider()
             Button(
                 onClick = onSelectAccount,
                 modifier = Modifier.fillMaxWidth().height(52.dp),

@@ -38,6 +38,9 @@ interface AccountDao {
     @Query("SELECT COUNT(*) FROM browser_tabs WHERE accountId = :accountId")
     suspend fun tabCount(accountId: String): Int
 
+    @Query("UPDATE browser_tabs SET title = :title WHERE id = :tabId AND title != :title")
+    suspend fun updateTabTitle(tabId: String, title: String)
+
     @Upsert
     suspend fun upsertAccount(account: AccountEntity)
 
