@@ -797,7 +797,7 @@ private fun ActiveForumWorkspace(
                             Icon(
                                 painter = painterResource(R.drawable.chevron_left),
                                 contentDescription = null,
-                                modifier = Modifier.size(width = 15.dp, height = 24.dp),
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
@@ -815,7 +815,7 @@ private fun ActiveForumWorkspace(
                             Icon(
                                 painter = painterResource(R.drawable.chevron_right),
                                 contentDescription = null,
-                                modifier = Modifier.size(width = 15.dp, height = 24.dp),
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
@@ -1088,7 +1088,6 @@ private fun TabSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("标签", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             tabs.forEach { tab ->
                 Card(
                     onClick = { onSelect(tab) },
