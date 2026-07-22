@@ -86,7 +86,10 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                 host: 'localhost',
             },
             cors: {
-                origin: 'http://192.168.1.210',
+                origin: [
+                    'http://192.168.1.210',
+                    'http://dao3.test',
+                ],
             },
         }
     }
