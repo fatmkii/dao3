@@ -187,7 +187,10 @@ fun CpttmmApp(
                 onLogin = { binggan, password -> auth.login(binggan, password) },
                 onRegister = { auth.register() },
                 loadRegistrationStatus = { auth.registrationStatus(domain) },
-                onCompleted = { showAccountSheet = false },
+                onCompleted = { registeredAccountId ->
+                    showAccountSheet = false
+                    if (registeredAccountId != null) activeAccountId = registeredAccountId
+                },
             )
         }
 
@@ -403,7 +406,7 @@ private fun EmptyAccountScreen(modifier: Modifier, onAddAccount: () -> Unit) {
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ic_launcher),
+                    painter = painterResource(R.drawable.icon_cat),
                     contentDescription = "小火锅应用图标",
                     modifier = Modifier.padding(24.dp),
                 )
@@ -731,43 +734,45 @@ private fun ActiveForumWorkspace(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding()
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                        .padding(start = 10.dp, top = 4.dp, end = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Surface(
                         onClick = { host.goBack() },
-                        modifier = Modifier.size(48.dp).semantics { contentDescription = "后退" },
+                        modifier = Modifier.size(width = 48.dp, height = 40.dp)
+                            .semantics { contentDescription = "后退" },
                         shape = RoundedCornerShape(11.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                painter = painterResource(R.drawable.angle_left),
+                                painter = painterResource(R.drawable.chevron_left),
                                 contentDescription = null,
-                                modifier = Modifier.size(width = 12.dp, height = 24.dp),
+                                modifier = Modifier.size(width = 15.dp, height = 24.dp),
                             )
                         }
                     }
                     Surface(
                         onClick = { host.goForward() },
-                        modifier = Modifier.size(48.dp).semantics { contentDescription = "前进" },
+                        modifier = Modifier.size(width = 48.dp, height = 40.dp)
+                            .semantics { contentDescription = "前进" },
                         shape = RoundedCornerShape(11.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                painter = painterResource(R.drawable.angle_right),
+                                painter = painterResource(R.drawable.chevron_right),
                                 contentDescription = null,
-                                modifier = Modifier.size(width = 12.dp, height = 24.dp),
+                                modifier = Modifier.size(width = 15.dp, height = 24.dp),
                             )
                         }
                     }
                     Surface(
                         onClick = { showTabs = true },
-                        modifier = Modifier.size(48.dp).semantics {
+                        modifier = Modifier.size(width = 48.dp, height = 40.dp).semantics {
                             contentDescription = "标签，共 ${tabs.size} 个"
                         },
                         shape = RoundedCornerShape(11.dp),
@@ -793,7 +798,7 @@ private fun ActiveForumWorkspace(
                     }
                     Surface(
                         onClick = { showSettings = true },
-                        modifier = Modifier.weight(1f).height(48.dp).semantics {
+                        modifier = Modifier.weight(1f).height(40.dp).semantics {
                             contentDescription = "当前饼干 ${account.binggan}，打开设置"
                         },
                         shape = RoundedCornerShape(13.dp),
@@ -1122,7 +1127,6 @@ private fun SettingsSheet(
                 modifier = Modifier.fillMaxWidth().height(48.dp),
             ) { Text("Android 隐私说明") }
             HorizontalDivider()
-            Text("应用版本", style = MaterialTheme.typography.titleMedium)
             Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             when {
                 release != null -> ReleaseDetails(release!!, context)
@@ -1197,9 +1201,9 @@ private fun AddAccountSheet(
     onDomainChange: (AppDomain) -> Unit,
     onDismiss: () -> Unit,
     onLogin: suspend (String, String?) -> Unit,
-    onRegister: suspend () -> Unit,
+    onRegister: suspend () -> String,
     loadRegistrationStatus: suspend () -> RegistrationStatus,
-    onCompleted: () -> Unit,
+    onCompleted: (String?) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -1233,14 +1237,15 @@ private fun AddAccountSheet(
         scope.launch {
             submitting = true
             error = null
-            runCatching {
+            runCatching<String?> {
                 if (action == AccountAction.LOGIN) {
                     onLogin(binggan.trim(), password.ifBlank { null })
+                    null
                 } else {
                     onRegister()
                 }
-            }.onSuccess {
-                onCompleted()
+            }.onSuccess { registeredAccountId ->
+                onCompleted(registeredAccountId)
             }.onFailure { throwable ->
                 error = accountErrorMessage(throwable)
             }

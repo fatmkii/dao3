@@ -60,7 +60,7 @@ class AndroidRegistrationService
                 );
             }
 
-            $user = $this->registration->createUser($ip);
+            $user = $this->registration->createUser($ip, $deviceKey);
             $newCount = $device->claim_count + 1;
             $device->forceFill([
                 'claim_count' => $newCount,

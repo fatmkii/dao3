@@ -62,7 +62,7 @@ class AndroidRegistrationTest extends TestCase
         $this->assertNotSame(self::DIGEST, $device->device_key);
         $this->assertSame(1, $device->claim_count);
         $this->assertFalse($device->is_banned);
-        $this->assertNull($user->created_UUID);
+        $this->assertSame($device->device_key, $user->created_UUID);
         $this->assertSame($user->binggan, $data['binggan']);
         $this->assertDatabaseHas('mobile_sessions', ['user_id' => $user->id]);
         $this->assertDatabaseHas('personal_access_tokens', [
