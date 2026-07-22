@@ -7,7 +7,6 @@ import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.widget.Toast
-import com.cpttmm.app.BuildConfig
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,8 +18,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -28,11 +27,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,17 +55,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -75,6 +73,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.R
 import com.cpttmm.app.account.AccountLimitException
 import com.cpttmm.app.account.BrowserTabRepository
@@ -93,11 +93,11 @@ import com.cpttmm.app.network.MobileApiException
 import com.cpttmm.app.network.MobileReleaseInfo
 import com.cpttmm.app.network.RegistrationStatus
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
+import com.cpttmm.app.session.RefreshPolicy
+import com.cpttmm.app.webview.WebProfileCleaner
 import com.cpttmm.app.webview.WebViewCapability
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
-import com.cpttmm.app.webview.WebProfileCleaner
-import com.cpttmm.app.session.RefreshPolicy
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.IOException
@@ -257,13 +257,15 @@ private fun AccountSwitcherSheet(
                 Card(
                     onClick = { onSelect(account) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (account.id == activeAccount.id) {
-                            MaterialTheme.colorScheme.background
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                if (account.id == activeAccount.id) {
+                                    MaterialTheme.colorScheme.background
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                        ),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
@@ -284,67 +286,89 @@ private fun AccountSwitcherSheet(
 }
 
 @Composable
-private fun CpttmmTheme(theme: NativeThemePalette, content: @Composable () -> Unit) {
-    val baseColors = when (theme.name) {
-        "dark" -> androidx.compose.material3.darkColorScheme(
-            primary = Color(0xFF77D477),
-            background = Color(0xFF101014),
-            surface = Color(0xFF2C2C32),
-        )
-        "blue" -> androidx.compose.material3.lightColorScheme(
-            primary = Color(0xFF4D7DD9),
-            background = Color(0xFFF2F5FF),
-            surface = Color(0xFFF5F7FF),
-        )
-        "green" -> androidx.compose.material3.lightColorScheme(
-            primary = Color(0xFF3A9958),
-            background = Color(0xFFEEFAEE),
-            surface = Color(0xFFFAFFFA),
-        )
-        "sfw" -> androidx.compose.material3.lightColorScheme(
-            primary = Color(0xFF333639),
-            background = Color(0xFFF5F6F8),
-            surface = Color.White,
-        )
-        "light" -> androidx.compose.material3.lightColorScheme(
-            primary = Color(0xFF32A852),
-            background = Color(0xFFF9F9F9),
-            surface = Color.White,
-        )
-        else -> androidx.compose.material3.lightColorScheme(
-            primary = HotpotRed,
-            onPrimary = Color.White,
-            secondary = Color(0xFF76552F),
-            onSecondary = Color.White,
-            background = WarmCanvas,
-            onBackground = DeepBroth,
-            surface = WarmSurface,
-            onSurface = DeepBroth,
-            error = Color(0xFFB3261E),
-        )
-    }
+private fun CpttmmTheme(
+    theme: NativeThemePalette,
+    content: @Composable () -> Unit,
+) {
+    val baseColors =
+        when (theme.name) {
+            "dark" -> {
+                androidx.compose.material3.darkColorScheme(
+                    primary = Color(0xFF77D477),
+                    background = Color(0xFF101014),
+                    surface = Color(0xFF2C2C32),
+                )
+            }
+
+            "blue" -> {
+                androidx.compose.material3.lightColorScheme(
+                    primary = Color(0xFF4D7DD9),
+                    background = Color(0xFFF2F5FF),
+                    surface = Color(0xFFF5F7FF),
+                )
+            }
+
+            "green" -> {
+                androidx.compose.material3.lightColorScheme(
+                    primary = Color(0xFF3A9958),
+                    background = Color(0xFFEEFAEE),
+                    surface = Color(0xFFFAFFFA),
+                )
+            }
+
+            "sfw" -> {
+                androidx.compose.material3.lightColorScheme(
+                    primary = Color(0xFF333639),
+                    background = Color(0xFFF5F6F8),
+                    surface = Color.White,
+                )
+            }
+
+            "light" -> {
+                androidx.compose.material3.lightColorScheme(
+                    primary = Color(0xFF32A852),
+                    background = Color(0xFFF9F9F9),
+                    surface = Color.White,
+                )
+            }
+
+            else -> {
+                androidx.compose.material3.lightColorScheme(
+                    primary = HotpotRed,
+                    onPrimary = Color.White,
+                    secondary = Color(0xFF76552F),
+                    onSecondary = Color.White,
+                    background = WarmCanvas,
+                    onBackground = DeepBroth,
+                    surface = WarmSurface,
+                    onSurface = DeepBroth,
+                    error = Color(0xFFB3261E),
+                )
+            }
+        }
     val buttonTextColor = contrastingTextColor(theme.primaryColor)
-    val colors = baseColors.copy(
-        primary = theme.primaryColor,
-        onPrimary = buttonTextColor,
-        secondaryContainer = theme.primaryColor,
-        onSecondaryContainer = buttonTextColor,
-        surface = theme.backgroundColor,
-    )
+    val colors =
+        baseColors.copy(
+            primary = theme.primaryColor,
+            onPrimary = buttonTextColor,
+            secondaryContainer = theme.primaryColor,
+            onSecondaryContainer = buttonTextColor,
+            surface = theme.backgroundColor,
+        )
     MaterialTheme(colorScheme = colors, content = content)
 }
 
-private fun defaultNativeThemePalette(themeName: String?): NativeThemePalette = when (themeName) {
-    "light" -> NativeThemePalette(themeName, Color(0xFF90D590), Color.White)
-    "sfw" -> NativeThemePalette(themeName, Color(0xFFAAAAAA), Color.White)
-    "dark" -> NativeThemePalette(themeName, Color(0xFF316C58), Color(0xFF18181C))
-    "green" -> NativeThemePalette(themeName, Color(0xFF52B051), Color(0xFFFAFFFA))
-    "blue" -> NativeThemePalette(themeName, Color(0xFF6495ED), Color(0xFFF5F7FF))
-    else -> NativeThemePalette("green", Color(0xFF52B051), Color(0xFFFAFFFA))
-}
+private fun defaultNativeThemePalette(themeName: String?): NativeThemePalette =
+    when (themeName) {
+        "light" -> NativeThemePalette(themeName, Color(0xFF90D590), Color.White)
+        "sfw" -> NativeThemePalette(themeName, Color(0xFFAAAAAA), Color.White)
+        "dark" -> NativeThemePalette(themeName, Color(0xFF316C58), Color(0xFF18181C))
+        "green" -> NativeThemePalette(themeName, Color(0xFF52B051), Color(0xFFFAFFFA))
+        "blue" -> NativeThemePalette(themeName, Color(0xFF6495ED), Color(0xFFF5F7FF))
+        else -> NativeThemePalette("green", Color(0xFF52B051), Color(0xFFFAFFFA))
+    }
 
-private fun contrastingTextColor(background: Color): Color =
-    if (background.luminance() > 0.5f) DeepBroth else Color.White
+private fun contrastingTextColor(background: Color): Color = if (background.luminance() > 0.5f) DeepBroth else Color.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -361,15 +385,16 @@ private fun AccountHome(
                     Column {
                         Text("小火锅", fontWeight = FontWeight.SemiBold)
                         Text(
-                            "Android",
+                            "For Android",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
         },
     ) { padding ->
@@ -391,7 +416,10 @@ private fun AccountHome(
 }
 
 @Composable
-private fun EmptyAccountScreen(modifier: Modifier, onAddAccount: () -> Unit) {
+private fun EmptyAccountScreen(
+    modifier: Modifier,
+    onAddAccount: () -> Unit,
+) {
     Box(
         modifier = modifier.fillMaxSize().padding(horizontal = 28.dp),
         contentAlignment = Alignment.Center,
@@ -412,23 +440,20 @@ private fun EmptyAccountScreen(modifier: Modifier, onAddAccount: () -> Unit) {
                 )
             }
             Text(
-                "把你的饼干装进口袋",
+                "把你的饼干放进来",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                "登录已有饼干，或在开放日从这台设备领取新的饼干。",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "这里是私人论坛小火锅，欢迎来玩！\n" +
+                    "QQ小火锅避难群：156840110\n" +
+                    "使用前需要在下面领取或者导入饼干喔",
+                modifier = Modifier.padding(8.dp),
+                style = MaterialTheme.typography.bodyMedium,
             )
             Button(onClick = onAddAccount, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                Text("添加账号")
+                Text("添加饼干")
             }
-            Text(
-                "最多保存 5 个账号",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -525,37 +550,45 @@ private fun ForumWorkspace(
     }
 
     when {
-        error != null -> WorkspaceMessage(
-            title = "论坛暂时无法打开",
-            message = error.orEmpty(),
-            actionLabel = "重试",
-            onAction = { retryGeneration += 1 },
-            onSelectAccount = onSelectAccount,
-        )
-        accessToken == null || tabList.isEmpty() || tabList.none { it.id == activeTabId } -> WorkspaceMessage(
-            title = "正在准备工作区",
-            message = "正在检查登录状态，然后再恢复网页网络活动。",
-            onSelectAccount = onSelectAccount,
-        )
-        else -> ActiveForumWorkspace(
-            account = account,
-            domain = domain,
-            accessToken = accessToken!!,
-            tabs = tabList,
-            activeTab = tabList.first { it.id == activeTabId },
-            tabRepository = tabs,
-            auth = auth,
-            accounts = accounts,
-            preferences = preferences,
-            diagnostics = diagnostics,
-            foregroundGeneration = foregroundGeneration,
-            onWebViewHostChanged = onWebViewHostChanged,
-            onWebViewPoolChanged = onWebViewPoolChanged,
-            onSelectAccount = onSelectAccount,
-            onThemeChanged = onThemeChanged,
-            onSelectTab = { activeTabId = it.id },
-            onError = { error = accountErrorMessage(it) },
-        )
+        error != null -> {
+            WorkspaceMessage(
+                title = "论坛暂时无法打开",
+                message = error.orEmpty(),
+                actionLabel = "重试",
+                onAction = { retryGeneration += 1 },
+                onSelectAccount = onSelectAccount,
+            )
+        }
+
+        accessToken == null || tabList.isEmpty() || tabList.none { it.id == activeTabId } -> {
+            WorkspaceMessage(
+                title = "正在准备工作区",
+                message = "正在检查登录状态，然后再恢复网页网络活动。",
+                onSelectAccount = onSelectAccount,
+            )
+        }
+
+        else -> {
+            ActiveForumWorkspace(
+                account = account,
+                domain = domain,
+                accessToken = accessToken!!,
+                tabs = tabList,
+                activeTab = tabList.first { it.id == activeTabId },
+                tabRepository = tabs,
+                auth = auth,
+                accounts = accounts,
+                preferences = preferences,
+                diagnostics = diagnostics,
+                foregroundGeneration = foregroundGeneration,
+                onWebViewHostChanged = onWebViewHostChanged,
+                onWebViewPoolChanged = onWebViewPoolChanged,
+                onSelectAccount = onSelectAccount,
+                onThemeChanged = onThemeChanged,
+                onSelectTab = { activeTabId = it.id },
+                onError = { error = accountErrorMessage(it) },
+            )
+        }
     }
 }
 
@@ -581,17 +614,19 @@ private fun ActiveForumWorkspace(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pendingFileChooser = remember {
-        mutableStateOf<ValueCallback<Array<Uri>>?>(null)
-    }
-    val fileChooserLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-        pendingFileChooser.value?.onReceiveValue(
-            WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data),
-        )
-        pendingFileChooser.value = null
-    }
+    val pendingFileChooser =
+        remember {
+            mutableStateOf<ValueCallback<Array<Uri>>?>(null)
+        }
+    val fileChooserLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            pendingFileChooser.value?.onReceiveValue(
+                WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data),
+            )
+            pendingFileChooser.value = null
+        }
     var showTabs by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var tabError by remember { mutableStateOf<String?>(null) }
@@ -603,83 +638,90 @@ private fun ActiveForumWorkspace(
 
     fun openInNewTab(rawUrl: String) {
         when (val target = DomainPolicy.classify(rawUrl)) {
-            NavigationTarget.Blocked -> Unit
+            NavigationTarget.Blocked -> {
+                Unit
+            }
+
             is NavigationTarget.External -> {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(rawUrl)))
             }
-            is NavigationTarget.Internal -> scope.launch {
-                val path = buildString {
-                    append(target.uri.rawPath.ifBlank { "/" })
-                    target.uri.rawQuery?.let { append('?').append(it) }
-                    target.uri.rawFragment?.let { append('#').append(it) }
+
+            is NavigationTarget.Internal -> {
+                scope.launch {
+                    val path =
+                        buildString {
+                            append(target.uri.rawPath.ifBlank { "/" })
+                            target.uri.rawQuery?.let { append('?').append(it) }
+                            target.uri.rawFragment?.let { append('#').append(it) }
+                        }
+                    runCatching { tabRepository.create(account.id, path) }
+                        .onSuccess {
+                            tabError = null
+                            onSelectTab(it)
+                        }.onFailure {
+                            tabError = it.message
+                            showTabs = true
+                        }
                 }
-                runCatching { tabRepository.create(account.id, path) }
-                    .onSuccess {
-                        tabError = null
-                        onSelectTab(it)
-                    }
-                    .onFailure {
-                        tabError = it.message
-                        showTabs = true
-                    }
             }
         }
     }
 
-    val host = remember(account.id, domain, activeTab.id) {
-        webViewPool.getOrCreate(activeTab.id) {
-            lateinit var createdHost: WebViewHost
-            createdHost = WebViewHost(
-                context = context,
-                account = account,
-                accessToken = currentAccessToken,
-                onExternalNavigation = { url ->
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                },
-                onBridgeMessage = { message ->
-                    scope.launch {
-                        handleBridgeMessage(
-                            message = message,
-                            account = account,
-                            domain = domain,
-                            auth = auth,
-                            accounts = accounts,
-                            diagnostics = diagnostics,
-                            host = createdHost,
-                            onAuthFailure = onError,
-                            onThemeChanged = onThemeChanged,
-                        )
-                    }
-                },
-                onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
-                onTitleChanged = { title ->
-                    scope.launch { tabRepository.updateTitle(activeTab.id, title) }
-                },
-                onOpenNewTab = ::openInNewTab,
-                onLongPressLink = { pendingLongPressUrl = it },
-                onMainFrameError = {
-                    pageErrors[activeTab.id] = it
-                    if (it != null) diagnostics.record(DiagnosticEvent.WEBVIEW_MAIN_FRAME_ERROR)
-                },
-                onShowFileChooser = { callback, parameters ->
-                    pendingFileChooser.value?.onReceiveValue(null)
-                    pendingFileChooser.value = callback
-                    runCatching { fileChooserLauncher.launch(parameters.createIntent()) }
-                        .onFailure {
-                        pendingFileChooser.value?.onReceiveValue(null)
-                        pendingFileChooser.value = null
-                        diagnostics.record(DiagnosticEvent.FILE_CHOOSER_FAILED)
-                        }
-                        .isSuccess
-                },
-                onDownloadFailure = {
-                    diagnostics.record(DiagnosticEvent.DOWNLOAD_FAILED)
-                    Toast.makeText(context, "下载未能开始，请稍后重试。", Toast.LENGTH_SHORT).show()
-                },
-            )
-            createdHost.also { it.load(domain, activeTab.path, activeTab.scrollY) }
+    val host =
+        remember(account.id, domain, activeTab.id) {
+            webViewPool.getOrCreate(activeTab.id) {
+                lateinit var createdHost: WebViewHost
+                createdHost =
+                    WebViewHost(
+                        context = context,
+                        account = account,
+                        accessToken = currentAccessToken,
+                        onExternalNavigation = { url ->
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        },
+                        onBridgeMessage = { message ->
+                            scope.launch {
+                                handleBridgeMessage(
+                                    message = message,
+                                    account = account,
+                                    domain = domain,
+                                    auth = auth,
+                                    accounts = accounts,
+                                    diagnostics = diagnostics,
+                                    host = createdHost,
+                                    onAuthFailure = onError,
+                                    onThemeChanged = onThemeChanged,
+                                )
+                            }
+                        },
+                        onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
+                        onTitleChanged = { title ->
+                            scope.launch { tabRepository.updateTitle(activeTab.id, title) }
+                        },
+                        onOpenNewTab = ::openInNewTab,
+                        onLongPressLink = { pendingLongPressUrl = it },
+                        onMainFrameError = {
+                            pageErrors[activeTab.id] = it
+                            if (it != null) diagnostics.record(DiagnosticEvent.WEBVIEW_MAIN_FRAME_ERROR)
+                        },
+                        onShowFileChooser = { callback, parameters ->
+                            pendingFileChooser.value?.onReceiveValue(null)
+                            pendingFileChooser.value = callback
+                            runCatching { fileChooserLauncher.launch(parameters.createIntent()) }
+                                .onFailure {
+                                    pendingFileChooser.value?.onReceiveValue(null)
+                                    pendingFileChooser.value = null
+                                    diagnostics.record(DiagnosticEvent.FILE_CHOOSER_FAILED)
+                                }.isSuccess
+                        },
+                        onDownloadFailure = {
+                            diagnostics.record(DiagnosticEvent.DOWNLOAD_FAILED)
+                            Toast.makeText(context, "下载未能开始，请稍后重试。", Toast.LENGTH_SHORT).show()
+                        },
+                    )
+                createdHost.also { it.load(domain, activeTab.path, activeTab.scrollY) }
+            }
         }
-    }
 
     LaunchedEffect(accessToken) {
         currentAccessToken = accessToken
@@ -733,15 +775,20 @@ private fun ActiveForumWorkspace(
                 shadowElevation = 2.dp,
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding()
-                        .padding(start = 10.dp, top = 4.dp, end = 10.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(start = 10.dp, top = 4.dp, end = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Surface(
                         onClick = { host.goBack() },
-                        modifier = Modifier.size(width = 48.dp, height = 40.dp)
-                            .semantics { contentDescription = "后退" },
+                        modifier =
+                            Modifier
+                                .size(width = 48.dp, height = 40.dp)
+                                .semantics { contentDescription = "后退" },
                         shape = RoundedCornerShape(11.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -756,8 +803,10 @@ private fun ActiveForumWorkspace(
                     }
                     Surface(
                         onClick = { host.goForward() },
-                        modifier = Modifier.size(width = 48.dp, height = 40.dp)
-                            .semantics { contentDescription = "前进" },
+                        modifier =
+                            Modifier
+                                .size(width = 48.dp, height = 40.dp)
+                                .semantics { contentDescription = "前进" },
                         shape = RoundedCornerShape(11.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -772,20 +821,22 @@ private fun ActiveForumWorkspace(
                     }
                     Surface(
                         onClick = { showTabs = true },
-                        modifier = Modifier.size(width = 48.dp, height = 40.dp).semantics {
-                            contentDescription = "标签，共 ${tabs.size} 个"
-                        },
+                        modifier =
+                            Modifier.size(width = 48.dp, height = 40.dp).semantics {
+                                contentDescription = "标签，共 ${tabs.size} 个"
+                            },
                         shape = RoundedCornerShape(11.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Box(
-                                modifier = Modifier.size(width = 28.dp, height = 30.dp).border(
-                                    width = 2.dp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    shape = RoundedCornerShape(6.dp),
-                                ),
+                                modifier =
+                                    Modifier.size(width = 28.dp, height = 30.dp).border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        shape = RoundedCornerShape(6.dp),
+                                    ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
@@ -798,9 +849,10 @@ private fun ActiveForumWorkspace(
                     }
                     Surface(
                         onClick = { showSettings = true },
-                        modifier = Modifier.weight(1f).height(40.dp).semantics {
-                            contentDescription = "当前饼干 ${account.binggan}，打开设置"
-                        },
+                        modifier =
+                            Modifier.weight(1f).height(40.dp).semantics {
+                                contentDescription = "当前饼干 ${account.binggan}，打开设置"
+                            },
                         shape = RoundedCornerShape(13.dp),
                         color = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -855,8 +907,7 @@ private fun ActiveForumWorkspace(
                             tabError = null
                             onSelectTab(it)
                             showTabs = false
-                        }
-                        .onFailure { tabError = it.message }
+                        }.onFailure { tabError = it.message }
                 }
             },
             onClose = { tab ->
@@ -884,8 +935,7 @@ private fun ActiveForumWorkspace(
                         .onSuccess {
                             preferences.setDomain(selected)
                             showSettings = false
-                        }
-                        .onFailure { settingsError = accountErrorMessage(it) }
+                        }.onFailure { settingsError = accountErrorMessage(it) }
                 }
             },
             onSelectAccount = {
@@ -914,7 +964,10 @@ private fun ActiveForumWorkspace(
 }
 
 @Composable
-internal fun ActiveTabView(tabId: String, view: View) {
+internal fun ActiveTabView(
+    tabId: String,
+    view: View,
+) {
     key(tabId) {
         AndroidView(
             factory = { view },
@@ -961,15 +1014,18 @@ private suspend fun handleBridgeMessage(
 ) {
     val json = runCatching { JSONObject(message) }.getOrNull() ?: return
     when (json.optString("type")) {
-        "authExpired" -> runCatching {
-            auth.refresh(account.id, domain)
-            checkNotNull(accounts.decryptedTokens(account.id)?.accessToken)
-        }.onSuccess(host::updateAccessToken)
-            .onFailure {
-                diagnostics.record(DiagnosticEvent.AUTH_REFRESH_FAILED)
-                host.dispatchAuthRefreshFailed()
-                onAuthFailure(it)
-            }
+        "authExpired" -> {
+            runCatching {
+                auth.refresh(account.id, domain)
+                checkNotNull(accounts.decryptedTokens(account.id)?.accessToken)
+            }.onSuccess(host::updateAccessToken)
+                .onFailure {
+                    diagnostics.record(DiagnosticEvent.AUTH_REFRESH_FAILED)
+                    host.dispatchAuthRefreshFailed()
+                    onAuthFailure(it)
+                }
+        }
+
         "themeChanged" -> {
             val payload = json.optJSONObject("payload")
             val themeName = payload?.optString("name").orEmpty()
@@ -992,18 +1048,26 @@ private fun parseCssColor(rawColor: String): Color? {
     val hex = rawColor.removePrefix("#")
     return runCatching {
         when (hex.length) {
-            6 -> Color(
-                red = hex.substring(0, 2).toInt(16),
-                green = hex.substring(2, 4).toInt(16),
-                blue = hex.substring(4, 6).toInt(16),
-            )
-            8 -> Color(
-                red = hex.substring(0, 2).toInt(16),
-                green = hex.substring(2, 4).toInt(16),
-                blue = hex.substring(4, 6).toInt(16),
-                alpha = hex.substring(6, 8).toInt(16),
-            )
-            else -> error("Unsupported CSS color")
+            6 -> {
+                Color(
+                    red = hex.substring(0, 2).toInt(16),
+                    green = hex.substring(2, 4).toInt(16),
+                    blue = hex.substring(4, 6).toInt(16),
+                )
+            }
+
+            8 -> {
+                Color(
+                    red = hex.substring(0, 2).toInt(16),
+                    green = hex.substring(2, 4).toInt(16),
+                    blue = hex.substring(4, 6).toInt(16),
+                    alpha = hex.substring(6, 8).toInt(16),
+                )
+            }
+
+            else -> {
+                error("Unsupported CSS color")
+            }
         }
     }.getOrNull()
 }
@@ -1029,13 +1093,15 @@ private fun TabSheet(
                 Card(
                     onClick = { onSelect(tab) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (tab.id == activeTab.id) {
-                            MaterialTheme.colorScheme.background
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                if (tab.id == activeTab.id) {
+                                    MaterialTheme.colorScheme.background
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                        ),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
@@ -1091,8 +1157,12 @@ private fun SettingsSheet(
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
-            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp).padding(bottom = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (!BuildConfig.DEBUG) {
@@ -1138,7 +1208,10 @@ private fun SettingsSheet(
 }
 
 @Composable
-private fun ReleaseDetails(release: MobileReleaseInfo, context: android.content.Context) {
+private fun ReleaseDetails(
+    release: MobileReleaseInfo,
+    context: android.content.Context,
+) {
     val hasUpdate = release.versionCode > BuildConfig.VERSION_CODE
     Text(
         if (hasUpdate) "发现新版本 ${release.versionName}" else "已是最新版本",
@@ -1260,18 +1333,24 @@ private fun AddAccountSheet(
         Column(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f).padding(horizontal = 24.dp),
         ) {
-            Text("添加账号", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text("添加饼干", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FilterChip(
                     selected = action == AccountAction.LOGIN,
-                    onClick = { action = AccountAction.LOGIN; error = null },
-                    label = { Text("登录已有饼干") },
+                    onClick = {
+                        action = AccountAction.LOGIN
+                        error = null
+                    },
+                    label = { Text("导入已有饼干") },
                     enabled = !submitting,
                 )
                 FilterChip(
                     selected = action == AccountAction.REGISTER,
-                    onClick = { action = AccountAction.REGISTER; error = null },
+                    onClick = {
+                        action = AccountAction.REGISTER
+                        error = null
+                    },
                     label = { Text("领取新饼干") },
                     enabled = !submitting,
                 )
@@ -1284,9 +1363,11 @@ private fun AddAccountSheet(
                 if (action == AccountAction.LOGIN) {
                     OutlinedTextField(
                         value = binggan,
-                        onValueChange = { binggan = it; error = null },
+                        onValueChange = {
+                            binggan = it
+                            error = null
+                        },
                         label = { Text("饼干") },
-                        supportingText = { Text("区分大小写，请输入完整内容") },
                         singleLine = true,
                         enabled = !submitting,
                         modifier = Modifier.fillMaxWidth(),
@@ -1294,16 +1375,20 @@ private fun AddAccountSheet(
                     )
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; error = null },
-                        label = { Text("密码（如已设置）") },
+                        onValueChange = {
+                            password = it
+                            error = null
+                        },
+                        label = { Text("密码（可留空）") },
                         singleLine = true,
                         enabled = !submitting,
                         modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = if (passwordVisible) {
-                            VisualTransformation.None
-                        } else {
-                            PasswordVisualTransformation()
-                        },
+                        visualTransformation =
+                            if (passwordVisible) {
+                                VisualTransformation.None
+                            } else {
+                                PasswordVisualTransformation()
+                            },
                         trailingIcon = {
                             TextButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Text(if (passwordVisible) "隐藏" else "显示")
@@ -1313,37 +1398,32 @@ private fun AddAccountSheet(
                         keyboardActions = KeyboardActions(onDone = { submit() }),
                     )
                 } else {
-                    Surface(
-                        color = Biscuit.copy(alpha = 0.28f),
-                        shape = RoundedCornerShape(18.dp),
-                    ) {
-                        Text(
-                            "这里是私人论坛小火锅，欢迎来玩！\n" +
-                                "QQ小火锅避难群：156840110\n" +
-                                "使用前需要在下面领取或者导入饼干喔",
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
                     when {
-                        registrationStatusLoading -> Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-                            Text("正在检查是否可以领取…")
+                        registrationStatusLoading -> {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                                Text("正在检查是否可以领取…")
+                            }
                         }
-                        registrationStatusError != null -> InlineMessage(registrationStatusError!!)
+
+                        registrationStatusError != null -> {
+                            InlineMessage(registrationStatusError!!)
+                        }
+
                         registrationStatus != null -> {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 registrationStatusMessages(registrationStatus!!).forEach { message ->
                                     Text(
                                         message,
-                                        color = if (registrationStatus!!.canRegister) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        },
+                                        color =
+                                            if (registrationStatus!!.canRegister) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            },
                                     )
                                 }
                             }
@@ -1383,8 +1463,9 @@ private fun AddAccountSheet(
             Spacer(Modifier.height(12.dp))
             Button(
                 onClick = { submit() },
-                enabled = !submitting && !accountLimitReached &&
-                    (action == AccountAction.LOGIN || registrationStatus?.canRegister == true),
+                enabled =
+                    !submitting && !accountLimitReached &&
+                        (action == AccountAction.LOGIN || registrationStatus?.canRegister == true),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
                 if (submitting) {
@@ -1398,7 +1479,7 @@ private fun AddAccountSheet(
                 } else {
                     Text(
                         if (action == AccountAction.LOGIN) {
-                            "登录并保存"
+                            "导入并保存"
                         } else if (registrationStatus?.canRegister == true) {
                             "领取饼干开放中！"
                         } else {
@@ -1433,9 +1514,13 @@ private fun registrationStatusMessages(status: RegistrationStatus): List<String>
     return messages
 }
 
-private fun formatRegistrationTime(instant: Instant, includeTime: Boolean = true): String {
+private fun formatRegistrationTime(
+    instant: Instant,
+    includeTime: Boolean = true,
+): String {
     val pattern = if (includeTime) "yyyy年M月d日 HH:mm" else "yyyy年M月d日"
-    return DateTimeFormatter.ofPattern(pattern)
+    return DateTimeFormatter
+        .ofPattern(pattern)
         .withZone(ZoneId.systemDefault())
         .format(instant)
 }
@@ -1446,10 +1531,11 @@ private fun InlineMessage(message: String) {
         text = message,
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
-            .padding(14.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
+                .padding(14.dp),
     )
 }
 
@@ -1479,14 +1565,13 @@ internal fun UnsupportedWebViewScreen(missingFeatures: List<String>) {
     }
 }
 
-private fun accountErrorMessage(throwable: Throwable): String {
-    return when (throwable) {
+private fun accountErrorMessage(throwable: Throwable): String =
+    when (throwable) {
         is MobileApiException -> throwable.message
         is SsaidUnavailableException -> throwable.message.orEmpty()
         is AccountLimitException -> throwable.message.orEmpty()
         is IOException -> "无法连接服务器。请检查网络，或切换域名后重试。"
         else -> "账号操作没有完成，请稍后重试。"
     }
-}
 
 private val APP_THEME_NAMES = setOf("light", "sfw", "dark", "green", "blue")
