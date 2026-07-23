@@ -19,7 +19,6 @@ class EncryptedSessionMapperTest {
                 accessExpiresAt = Instant.EPOCH,
                 refreshToken = "refresh-secret",
                 idleExpiresAt = Instant.EPOCH,
-                absoluteExpiresAt = Instant.EPOCH,
             ),
         )
 

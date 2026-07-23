@@ -16,7 +16,6 @@ data class AccountEntity(
     val cachedThemeName: String?,
     val accessExpiresAtMillis: Long,
     val idleExpiresAtMillis: Long,
-    val absoluteExpiresAtMillis: Long,
     val lastUsedAtMillis: Long,
 )
 

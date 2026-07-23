@@ -66,7 +66,6 @@ class ProcessRecreationTest {
         accessExpiresAt = Instant.ofEpochMilli(1_000),
         refreshToken = "refresh-token",
         idleExpiresAt = Instant.ofEpochMilli(2_000),
-        absoluteExpiresAt = Instant.ofEpochMilli(3_000),
     )
 
     private class TestCipher : TokenCipher {

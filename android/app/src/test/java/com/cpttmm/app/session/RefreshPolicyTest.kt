@@ -59,7 +59,6 @@ class RefreshPolicyTest {
         cachedThemeName = null,
         accessExpiresAtMillis = expiresAt,
         idleExpiresAtMillis = Long.MAX_VALUE,
-        absoluteExpiresAtMillis = Long.MAX_VALUE,
         lastUsedAtMillis = now,
     )
 }

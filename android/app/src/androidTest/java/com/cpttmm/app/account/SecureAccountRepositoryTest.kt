@@ -126,7 +126,6 @@ class SecureAccountRepositoryTest {
             accessExpiresAt = Instant.ofEpochMilli(1_000),
             refreshToken = "refresh-$binggan",
             idleExpiresAt = Instant.ofEpochMilli(2_000),
-            absoluteExpiresAt = Instant.ofEpochMilli(3_000),
         )
     }
 

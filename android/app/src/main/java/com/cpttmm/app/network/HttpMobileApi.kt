@@ -168,7 +168,6 @@ class HttpMobileApi : MobileApi {
             accessExpiresAt = Instant.parse(data.getString("access_expires_at")),
             refreshToken = data.getString("refresh_token"),
             idleExpiresAt = Instant.parse(data.getString("idle_expires_at")),
-            absoluteExpiresAt = Instant.parse(data.getString("absolute_expires_at")),
         )
     }
 

@@ -8,5 +8,4 @@ data class MobileSessionData(
     val accessExpiresAt: Instant,
     val refreshToken: String,
     val idleExpiresAt: Instant,
-    val absoluteExpiresAt: Instant,
 )

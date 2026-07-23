@@ -18,7 +18,6 @@ class MobileSession extends Model
         'app_version',
         'last_used_at',
         'idle_expires_at',
-        'absolute_expires_at',
         'revoked_at',
     ];
 
@@ -30,7 +29,6 @@ class MobileSession extends Model
     protected $casts = [
         'last_used_at' => 'datetime',
         'idle_expires_at' => 'datetime',
-        'absolute_expires_at' => 'datetime',
         'revoked_at' => 'datetime',
     ];
 

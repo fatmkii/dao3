@@ -15,8 +15,6 @@ class MobileSessionService
 
     private const IDLE_DAYS = 30;
 
-    private const ABSOLUTE_DAYS = 180;
-
     public function create(User $user, string $installationId, string $deviceName, string $appVersion): array
     {
         return DB::transaction(function () use ($user, $installationId, $deviceName, $appVersion) {
@@ -30,7 +28,6 @@ class MobileSessionService
                 'app_version' => $appVersion,
                 'last_used_at' => $now,
                 'idle_expires_at' => $now->addDays(self::IDLE_DAYS),
-                'absolute_expires_at' => $now->addDays(self::ABSOLUTE_DAYS),
             ]);
 
             return $this->sessionPayload($session, $secret);
@@ -53,7 +50,7 @@ class MobileSessionService
             }
 
             $now = CarbonImmutable::now();
-            if ($session->idle_expires_at->lte($now) || $session->absolute_expires_at->lte($now)) {
+            if ($session->idle_expires_at->lte($now)) {
                 $this->revoke($session);
 
                 return null;
@@ -124,7 +121,6 @@ class MobileSessionService
             'access_expires_at' => $accessExpiresAt->toIso8601String(),
             'refresh_token' => $session->id.'.'.$refreshSecret,
             'idle_expires_at' => $session->idle_expires_at->toIso8601String(),
-            'absolute_expires_at' => $session->absolute_expires_at->toIso8601String(),
         ];
     }
 

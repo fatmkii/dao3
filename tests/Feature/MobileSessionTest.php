@@ -46,7 +46,7 @@ class MobileSessionTest extends TestCase
         $this->assertSame($session->id, $accessToken->mobile_session_id);
         $this->assertTrue($accessToken->expires_at->equalTo(CarbonImmutable::now()->addHour()));
         $this->assertTrue($session->idle_expires_at->equalTo(CarbonImmutable::now()->addDays(30)));
-        $this->assertTrue($session->absolute_expires_at->equalTo(CarbonImmutable::now()->addDays(180)));
+        $this->assertArrayNotHasKey('absolute_expires_at', $data);
         Bus::assertDispatched(ProcessUserActive::class);
     }
 
@@ -141,20 +141,26 @@ class MobileSessionTest extends TestCase
         $this->assertNotNull(MobileSession::firstOrFail()->revoked_at);
     }
 
-    public function test_absolute_expiry_cannot_be_extended_by_refresh(): void
+    public function test_active_session_has_no_absolute_expiry_and_idle_expiry_slides_on_refresh(): void
     {
+        $startedAt = CarbonImmutable::parse('2026-07-18 10:00:00');
+        CarbonImmutable::setTestNow($startedAt);
         $refreshToken = $this->login()['refresh_token'];
-        MobileSession::firstOrFail()->update([
-            'idle_expires_at' => now()->addDay(),
-            'absolute_expires_at' => now()->subSecond(),
-        ]);
 
-        $this->postJson('/api/mobile/token/refresh', ['refresh_token' => $refreshToken])
-            ->assertUnauthorized()
-            ->assertJson(['code' => ResponseCode::USER_UNAUTHORIZED]);
+        foreach (range(1, 7) as $cycle) {
+            CarbonImmutable::setTestNow($startedAt->addDays(29 * $cycle));
+            $data = $this->postJson('/api/mobile/token/refresh', ['refresh_token' => $refreshToken])
+                ->assertOk()
+                ->assertJson(['code' => ResponseCode::SUCCESS])
+                ->json('data');
+            $this->assertNotSame($refreshToken, $data['refresh_token']);
+            $refreshToken = $data['refresh_token'];
+        }
 
-        $this->assertNotNull(MobileSession::firstOrFail()->revoked_at);
-        $this->assertDatabaseMissing('personal_access_tokens', ['client_type' => 'android']);
+        $session = MobileSession::firstOrFail();
+        $this->assertNull($session->revoked_at);
+        $this->assertTrue($session->idle_expires_at->equalTo(CarbonImmutable::now()->addDays(30)));
+        $this->assertArrayNotHasKey('absolute_expires_at', $data);
     }
 
     public function test_logout_is_idempotent_and_does_not_revoke_other_tokens(): void

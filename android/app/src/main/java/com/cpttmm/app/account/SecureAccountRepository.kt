@@ -36,7 +36,6 @@ class SecureAccountRepository(
                 cachedThemeName = existing?.cachedThemeName,
                 accessExpiresAtMillis = session.accessExpiresAt.toEpochMilli(),
                 idleExpiresAtMillis = session.idleExpiresAt.toEpochMilli(),
-                absoluteExpiresAtMillis = session.absoluteExpiresAt.toEpochMilli(),
                 lastUsedAtMillis = nowMillis(),
             ),
         )

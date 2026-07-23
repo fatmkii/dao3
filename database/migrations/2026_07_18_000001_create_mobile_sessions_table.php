@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('app_version', 50);
             $table->timestamp('last_used_at');
             $table->timestamp('idle_expires_at');
-            $table->timestamp('absolute_expires_at');
             $table->timestamp('revoked_at')->nullable();
             $table->timestamps();
 

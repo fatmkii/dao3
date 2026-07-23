@@ -63,7 +63,6 @@ class WebViewTitleTest {
         cachedThemeName = null,
         accessExpiresAtMillis = Long.MAX_VALUE,
         idleExpiresAtMillis = Long.MAX_VALUE,
-        absoluteExpiresAtMillis = Long.MAX_VALUE,
         lastUsedAtMillis = 0,
     )
 }
