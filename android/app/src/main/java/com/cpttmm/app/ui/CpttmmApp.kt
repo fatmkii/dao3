@@ -79,6 +79,7 @@ import com.cpttmm.app.R
 import com.cpttmm.app.account.AccountLimitException
 import com.cpttmm.app.account.BrowserTabRepository
 import com.cpttmm.app.account.MobileAuthCoordinator
+import com.cpttmm.app.account.MobileSessionUnavailableException
 import com.cpttmm.app.account.PendingRevocationWorker
 import com.cpttmm.app.account.SecureAccountRepository
 import com.cpttmm.app.account.SsaidUnavailableException
@@ -145,6 +146,7 @@ fun CpttmmApp(
         var showAccountSheet by remember { mutableStateOf(false) }
         var showAccountSwitcher by remember { mutableStateOf(false) }
         var accountToRemove by remember { mutableStateOf<AccountEntity?>(null) }
+        var accountToReauthenticate by remember { mutableStateOf<AccountEntity?>(null) }
         var activeAccountId by remember { mutableStateOf<String?>(null) }
         val activeAccount = accountList.firstOrNull { it.id == activeAccountId }
 
@@ -172,6 +174,12 @@ fun CpttmmApp(
                 onWebViewHostChanged = onWebViewHostChanged,
                 onWebViewPoolChanged = onWebViewPoolChanged,
                 onSelectAccount = { showAccountSwitcher = true },
+                onSessionExpired = {
+                    accountToReauthenticate = activeAccount
+                    activeAccountId = null
+                    showAccountSwitcher = false
+                    showAccountSheet = true
+                },
                 onThemeChanged = { name, primaryColor, backgroundColor ->
                     nativeTheme = NativeThemePalette(name, primaryColor, backgroundColor)
                 },
@@ -182,13 +190,22 @@ fun CpttmmApp(
             AddAccountSheet(
                 domain = domain,
                 accountLimitReached = accountList.size >= 5,
+                reauthentication = accountToReauthenticate != null,
+                initialBinggan = accountToReauthenticate?.binggan.orEmpty(),
+                initialMessage = accountToReauthenticate?.let {
+                    "${it.binggan} 的登录状态已过期，请重新登录。"
+                },
                 onDomainChange = { selected -> scope.launch { preferences.setDomain(selected) } },
-                onDismiss = { showAccountSheet = false },
+                onDismiss = {
+                    showAccountSheet = false
+                    accountToReauthenticate = null
+                },
                 onLogin = { binggan, password -> auth.login(binggan, password) },
                 onRegister = { auth.register() },
                 loadRegistrationStatus = { auth.registrationStatus(domain) },
                 onCompleted = { registeredAccountId ->
                     showAccountSheet = false
+                    accountToReauthenticate = null
                     if (registeredAccountId != null) activeAccountId = registeredAccountId
                 },
             )
@@ -204,6 +221,7 @@ fun CpttmmApp(
                 },
                 onAdd = {
                     showAccountSwitcher = false
+                    accountToReauthenticate = null
                     showAccountSheet = true
                 },
                 onRemove = {
@@ -522,6 +540,7 @@ private fun ForumWorkspace(
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
     onSelectAccount: () -> Unit,
+    onSessionExpired: () -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
 ) {
     val tabFlow = remember(tabs, account.id) { tabs.observe(account.id) }
@@ -546,7 +565,10 @@ private fun ForumWorkspace(
         error = null
         runCatching { auth.accessTokenForWebView(account, domain) }
             .onSuccess { accessToken = it }
-            .onFailure { error = accountErrorMessage(it) }
+            .onFailure {
+                if (it is MobileSessionUnavailableException) onSessionExpired()
+                else error = accountErrorMessage(it)
+            }
     }
 
     when {
@@ -584,9 +606,13 @@ private fun ForumWorkspace(
                 onWebViewHostChanged = onWebViewHostChanged,
                 onWebViewPoolChanged = onWebViewPoolChanged,
                 onSelectAccount = onSelectAccount,
+                onSessionExpired = onSessionExpired,
                 onThemeChanged = onThemeChanged,
                 onSelectTab = { activeTabId = it.id },
-                onError = { error = accountErrorMessage(it) },
+                onError = {
+                    if (it is MobileSessionUnavailableException) onSessionExpired()
+                    else error = accountErrorMessage(it)
+                },
             )
         }
     }
@@ -608,6 +634,7 @@ private fun ActiveForumWorkspace(
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
     onSelectAccount: () -> Unit,
+    onSessionExpired: () -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
     onSelectTab: (BrowserTabEntity) -> Unit,
     onError: (Throwable) -> Unit,
@@ -745,7 +772,10 @@ private fun ActiveForumWorkspace(
             currentAccessToken = refreshedToken
             webViewPool.updateAccessToken(refreshedToken)
             webViewPool.activate(activeTab.id, tabs.associate { it.id to it.lastUsedAtMillis })
-        }.onFailure(onError)
+        }.onFailure {
+            if (it is MobileSessionUnavailableException) onSessionExpired()
+            else onError(it)
+        }
     }
     DisposableEffect(host) {
         onWebViewHostChanged(host)
@@ -886,7 +916,10 @@ private fun ActiveForumWorkspace(
                         scope.launch {
                             runCatching { auth.accessTokenForWebView(account, alternative) }
                                 .onSuccess { preferences.setDomain(alternative) }
-                                .onFailure { pageErrors[activeTab.id] = accountErrorMessage(it) }
+                                .onFailure {
+                                    if (it is MobileSessionUnavailableException) onSessionExpired()
+                                    else pageErrors[activeTab.id] = accountErrorMessage(it)
+                                }
                         }
                     },
                 )
@@ -939,7 +972,10 @@ private fun ActiveForumWorkspace(
                         .onSuccess {
                             preferences.setDomain(selected)
                             showSettings = false
-                        }.onFailure { settingsError = accountErrorMessage(it) }
+                        }.onFailure {
+                            if (it is MobileSessionUnavailableException) onSessionExpired()
+                            else settingsError = accountErrorMessage(it)
+                        }
                 }
             },
             onSelectAccount = {
@@ -1273,6 +1309,9 @@ private enum class AccountAction {
 private fun AddAccountSheet(
     domain: AppDomain,
     accountLimitReached: Boolean,
+    reauthentication: Boolean = false,
+    initialBinggan: String = "",
+    initialMessage: String? = null,
     onDomainChange: (AppDomain) -> Unit,
     onDismiss: () -> Unit,
     onLogin: suspend (String, String?) -> String,
@@ -1283,14 +1322,16 @@ private fun AddAccountSheet(
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var action by remember { mutableStateOf(AccountAction.LOGIN) }
-    var binggan by remember { mutableStateOf("") }
+    var binggan by remember(initialBinggan) { mutableStateOf(initialBinggan) }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var submitting by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var error by remember(initialMessage) { mutableStateOf(initialMessage) }
     var registrationStatus by remember(domain) { mutableStateOf<RegistrationStatus?>(null) }
     var registrationStatusLoading by remember(domain) { mutableStateOf(false) }
     var registrationStatusError by remember(domain) { mutableStateOf<String?>(null) }
+    val accountActionBlocked =
+        accountLimitReached && !(reauthentication && action == AccountAction.LOGIN)
 
     LaunchedEffect(action, domain) {
         if (action != AccountAction.REGISTER) return@LaunchedEffect
@@ -1303,7 +1344,7 @@ private fun AddAccountSheet(
     }
 
     fun submit() {
-        if (submitting || accountLimitReached) return
+        if (submitting || accountActionBlocked) return
         if (action == AccountAction.REGISTER && registrationStatus?.canRegister != true) return
         if (action == AccountAction.LOGIN && binggan.isBlank()) {
             error = "请输入完整饼干后再登录。"
@@ -1334,7 +1375,11 @@ private fun AddAccountSheet(
         Column(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f).padding(horizontal = 24.dp),
         ) {
-            Text("添加饼干", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text(
+                if (reauthentication) "重新登录饼干" else "添加饼干",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
             Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FilterChip(
@@ -1353,7 +1398,7 @@ private fun AddAccountSheet(
                         error = null
                     },
                     label = { Text("领取新饼干") },
-                    enabled = !submitting,
+                    enabled = !submitting && !accountLimitReached,
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -1432,7 +1477,7 @@ private fun AddAccountSheet(
                     }
                 }
 
-                if (accountLimitReached) {
+                if (accountActionBlocked) {
                     InlineMessage("已达到 5 个账号上限，请先移除一个账号。")
                 } else if (error != null) {
                     InlineMessage(error!!)
@@ -1465,7 +1510,7 @@ private fun AddAccountSheet(
             Button(
                 onClick = { submit() },
                 enabled =
-                    !submitting && !accountLimitReached &&
+                    !submitting && !accountActionBlocked &&
                         (action == AccountAction.LOGIN || registrationStatus?.canRegister == true),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
@@ -1569,6 +1614,7 @@ internal fun UnsupportedWebViewScreen(missingFeatures: List<String>) {
 private fun accountErrorMessage(throwable: Throwable): String =
     when (throwable) {
         is MobileApiException -> throwable.message
+        is MobileSessionUnavailableException -> throwable.message.orEmpty()
         is SsaidUnavailableException -> throwable.message.orEmpty()
         is AccountLimitException -> throwable.message.orEmpty()
         is IOException -> "无法连接服务器。请检查网络，或切换域名后重试。"

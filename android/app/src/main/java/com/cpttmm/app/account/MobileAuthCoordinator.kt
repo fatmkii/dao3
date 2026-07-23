@@ -5,6 +5,7 @@ import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.common.SingleFlight
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileApi
+import com.cpttmm.app.network.MobileApiException
 import com.cpttmm.app.network.MobileReleaseInfo
 import com.cpttmm.app.network.RegistrationStatus
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
@@ -52,11 +53,14 @@ class MobileAuthCoordinator(
     suspend fun refresh(accountId: String, domain: AppDomain): String {
         return refreshFlights.run(accountId) {
             val tokens = accounts.decryptedTokens(accountId) ?: throw MissingAccountSecretsException()
-            runCatching { accounts.saveSession(api.refresh(domain, tokens.refreshToken)) }
-                .getOrElse { failure ->
-                    accounts.invalidateSession(accountId)
-                    throw failure
-                }
+            try {
+                accounts.saveSession(api.refresh(domain, tokens.refreshToken))
+            } catch (failure: Exception) {
+                if (!failure.isTerminalRefreshFailure()) throw failure
+
+                accounts.invalidateSession(accountId)
+                throw MobileSessionExpiredException(failure)
+            }
         }
     }
 
@@ -79,4 +83,19 @@ class MobileAuthCoordinator(
 
 class SsaidUnavailableException : IllegalStateException("无法读取 Android 设备标识，请改用网页版领取或联系管理员")
 
-class MissingAccountSecretsException : IllegalStateException("账号凭据不存在，请重新登录")
+open class MobileSessionUnavailableException(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
+
+class MobileSessionExpiredException(cause: Throwable) :
+    MobileSessionUnavailableException("移动会话已失效，请重新登录", cause)
+
+class MissingAccountSecretsException :
+    MobileSessionUnavailableException("账号凭据不存在，请重新登录")
+
+internal fun Throwable.isTerminalRefreshFailure(): Boolean =
+    this is MobileApiException && (code == HTTP_UNAUTHORIZED || code == MOBILE_SESSION_UNAUTHORIZED)
+
+private const val HTTP_UNAUTHORIZED = 401
+private const val MOBILE_SESSION_UNAUTHORIZED = 21401
