@@ -9,6 +9,8 @@ import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileApi
 import com.cpttmm.app.network.MobileReleaseInfo
 import com.cpttmm.app.network.RegistrationStatus
+import com.cpttmm.app.preferences.GlobalPreferencesRepository
+import com.cpttmm.app.registration.RegistrationDeviceIdProvider
 import com.cpttmm.app.session.MobileSessionData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -119,6 +121,32 @@ class SecureAccountRepositoryTest {
         }
     }
 
+    @Test
+    fun refreshReturnsAndPersistsTheNewAccessToken() = runBlocking {
+        withContext(Dispatchers.IO) {
+            val accountId = repository.saveSession(session("cookie"))
+            val refreshed = session("cookie").copy(
+                accessToken = "refreshed-access",
+                refreshToken = "refreshed-refresh",
+            )
+            val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+            val auth = MobileAuthCoordinator(
+                api = RecordingApi(refreshedSession = refreshed),
+                accounts = repository,
+                preferences = GlobalPreferencesRepository(context),
+                registrationDeviceId = RegistrationDeviceIdProvider(context),
+            )
+
+            val accessToken = auth.refresh(accountId, AppDomain.PRIMARY)
+
+            assertEquals("refreshed-access", accessToken)
+            assertEquals(
+                AccountTokens("refreshed-access", "refreshed-refresh"),
+                repository.decryptedTokens(accountId),
+            )
+        }
+    }
+
     private fun session(binggan: String): MobileSessionData {
         return MobileSessionData(
             binggan = binggan,
@@ -137,7 +165,10 @@ class SecureAccountRepositoryTest {
             ciphertext.removeSuffix(":" + accountId).reversed()
     }
 
-    private class RecordingApi(private val failLogout: Boolean = false) : MobileApi {
+    private class RecordingApi(
+        private val failLogout: Boolean = false,
+        private val refreshedSession: MobileSessionData? = null,
+    ) : MobileApi {
         val logouts = mutableListOf<Pair<AppDomain, String>>()
 
         override suspend fun login(
@@ -160,7 +191,7 @@ class SecureAccountRepositoryTest {
         override suspend fun registrationStatus(domain: AppDomain): RegistrationStatus = error("not used")
 
         override suspend fun refresh(domain: AppDomain, refreshToken: String): MobileSessionData =
-            error("not used")
+            refreshedSession ?: error("not used")
 
         override suspend fun logout(domain: AppDomain, refreshToken: String) {
             if (failLogout) error("offline")

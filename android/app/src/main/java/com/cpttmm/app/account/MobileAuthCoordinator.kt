@@ -54,7 +54,9 @@ class MobileAuthCoordinator(
         return refreshFlights.run(accountId) {
             val tokens = accounts.decryptedTokens(accountId) ?: throw MissingAccountSecretsException()
             try {
-                accounts.saveSession(api.refresh(domain, tokens.refreshToken))
+                val refreshedSession = api.refresh(domain, tokens.refreshToken)
+                accounts.saveSession(refreshedSession)
+                refreshedSession.accessToken
             } catch (failure: Exception) {
                 if (!failure.isTerminalRefreshFailure()) throw failure
 
