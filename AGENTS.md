@@ -113,4 +113,4 @@ Android 虚拟机运行在 Windows 宿主机上。为避免同时运行两套 AD
 ./scripts/android-debug.sh <device-serial>
 ```
 
-脚本会设置 Vite 所需的 `reverse tcp:5173 tcp:5173`，使用 WSL Gradle 构建 APK，将 APK 路径转换为 Windows 路径后交给 Windows ADB 安装并启动。Reverb 根据页面主机名直接连接 `192.168.1.210:8080`，不需要反向映射 8080。
+脚本使用 WSL Gradle 构建 APK，将 APK 路径转换为 Windows 路径后交给 Windows ADB 安装并启动。Vite 和 Reverb 均根据页面主机名直接连接 `192.168.1.210:5173` 和 `192.168.1.210:8080`，不需要 ADB 反向映射。

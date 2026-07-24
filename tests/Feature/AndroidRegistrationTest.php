@@ -120,6 +120,7 @@ class AndroidRegistrationTest extends TestCase
             ->assertJson(['code' => ResponseCode::USER_REGISTER_FAIL]);
         $this->assertDatabaseCount('users', 5);
         $this->assertSame(5, $device->fresh()->claim_count);
+        $this->assertSame(-2, Redis::ttl('reg_record_10.10.1.6'));
     }
 
     public function test_ip_cooldown_is_shared_across_android_devices(): void

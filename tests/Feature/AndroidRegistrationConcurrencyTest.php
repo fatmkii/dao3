@@ -33,8 +33,15 @@ class AndroidRegistrationConcurrencyTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_two_concurrent_fifth_claims_cannot_both_succeed(): void
-    {
+    /**
+     * @dataProvider concurrentClaimProvider
+     */
+    public function test_concurrent_claims_cannot_both_succeed(
+        int $initialClaimCount,
+        array $ips,
+        int $expectedClaimCount,
+        bool $expectedBanned,
+    ): void {
         if (! function_exists('pcntl_fork')) {
             $this->markTestSkipped('pcntl is required for the concurrency check');
         }
@@ -49,7 +56,7 @@ class AndroidRegistrationConcurrencyTest extends TestCase
         DB::table('global_setting')->where('key', 'new_binggan')->update(['value' => json_encode(true)]);
         AndroidRegistrationDevice::create([
             'device_key' => hash_hmac('sha256', $digest, $hmacKey),
-            'claim_count' => 4,
+            'claim_count' => $initialClaimCount,
         ]);
         Redis::del('reg_record_10.20.0.1', 'reg_record_10.20.0.2');
         Bus::fake([ProcessUserCreatedLocation::class]);
@@ -60,7 +67,7 @@ class AndroidRegistrationConcurrencyTest extends TestCase
         $startAt = microtime(true) + 0.5;
         $children = [];
         $errorFiles = [];
-        foreach ([1, 2] as $index) {
+        foreach ($ips as $index => $ip) {
             $errorFile = tempnam(sys_get_temp_dir(), 'android-registration-concurrency-');
             $this->assertNotFalse($errorFile);
             $pid = pcntl_fork();
@@ -73,7 +80,7 @@ class AndroidRegistrationConcurrencyTest extends TestCase
                 try {
                     app(AndroidRegistrationService::class)->register(
                         $digest,
-                        '10.20.0.'.$index,
+                        $ip,
                         'concurrent-install-'.$index,
                         'Concurrent Test',
                         '0.1.0',
@@ -103,10 +110,18 @@ class AndroidRegistrationConcurrencyTest extends TestCase
         array_map('unlink', $errorFiles);
         $this->assertSame([0, 2], $exitCodes, implode("\n", $errors));
         $device = AndroidRegistrationDevice::firstOrFail();
-        $this->assertSame(5, $device->claim_count);
-        $this->assertTrue($device->is_banned);
+        $this->assertSame($expectedClaimCount, $device->claim_count);
+        $this->assertSame($expectedBanned, $device->is_banned);
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseCount('mobile_sessions', 1);
 
+    }
+
+    public static function concurrentClaimProvider(): array
+    {
+        return [
+            'device fifth-claim limit' => [4, ['10.20.0.1', '10.20.0.2'], 5, true],
+            'same IP cooldown' => [0, ['10.20.0.1', '10.20.0.1'], 1, false],
+        ];
     }
 }

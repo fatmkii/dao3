@@ -7,6 +7,7 @@ use App\Exceptions\RegistrationException;
 use App\Models\AndroidRegistrationDevice;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class AndroidRegistrationService
 {
@@ -32,51 +33,59 @@ class AndroidRegistrationService
             );
         }
 
-        if (($days = $this->registration->ipCooldownDays($ip)) !== null) {
+        $cooldownReservation = $this->registration->reserveIpCooldown($ip);
+        if ($cooldownReservation === null) {
+            $days = $this->registration->ipCooldownDays($ip) ?? 1;
             throw new RegistrationException(
                 ResponseCode::USER_REGISTER_FAIL,
                 ResponseCode::$codeMap[ResponseCode::USER_REGISTER_FAIL].'，你只能在'.$days.'天后再领取饼干。',
             );
         }
 
-        $deviceKey = $this->deviceKey($clientDigest);
-        $result = DB::transaction(function () use ($deviceKey, $ip, $installationId, $deviceName, $appVersion) {
-            AndroidRegistrationDevice::query()->insertOrIgnore([
-                'device_key' => $deviceKey,
-                'claim_count' => 0,
-                'is_banned' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $device = AndroidRegistrationDevice::query()
-                ->where('device_key', $deviceKey)
-                ->lockForUpdate()
-                ->firstOrFail();
+        try {
+            $deviceKey = $this->deviceKey($clientDigest);
+            $result = DB::transaction(function () use ($deviceKey, $ip, $installationId, $deviceName, $appVersion) {
+                AndroidRegistrationDevice::query()->insertOrIgnore([
+                    'device_key' => $deviceKey,
+                    'claim_count' => 0,
+                    'is_banned' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $device = AndroidRegistrationDevice::query()
+                    ->where('device_key', $deviceKey)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            if ($device->is_banned || $device->claim_count >= self::MAX_CLAIMS) {
-                throw new RegistrationException(
-                    ResponseCode::USER_REGISTER_FAIL,
-                    '此 Android 设备领取饼干的次数已经达到上限。',
-                );
-            }
+                if ($device->is_banned || $device->claim_count >= self::MAX_CLAIMS) {
+                    throw new RegistrationException(
+                        ResponseCode::USER_REGISTER_FAIL,
+                        '此 Android 设备领取饼干的次数已经达到上限。',
+                    );
+                }
 
-            $user = $this->registration->createUser($ip, $deviceKey);
-            $newCount = $device->claim_count + 1;
-            $device->forceFill([
-                'claim_count' => $newCount,
-                'is_banned' => $newCount >= self::MAX_CLAIMS,
-                'banned_at' => $newCount >= self::MAX_CLAIMS ? now() : null,
-            ])->save();
+                $user = $this->registration->createUser($ip, $deviceKey);
+                $newCount = $device->claim_count + 1;
+                $device->forceFill([
+                    'claim_count' => $newCount,
+                    'is_banned' => $newCount >= self::MAX_CLAIMS,
+                    'banned_at' => $newCount >= self::MAX_CLAIMS ? now() : null,
+                ])->save();
 
-            return [
-                'user' => $user,
-                'session' => $this->sessions->create($user, $installationId, $deviceName, $appVersion),
-            ];
-        }, 3);
+                return [
+                    'user' => $user,
+                    'session' => $this->sessions->create($user, $installationId, $deviceName, $appVersion),
+                ];
+            }, 3);
 
-        $this->registration->complete($result['user'], $ip);
+            $this->registration->complete($result['user'], $ip);
 
-        return $result['session'];
+            return $result['session'];
+        } catch (Throwable $exception) {
+            $this->registration->cancelIpCooldownReservation($ip, $cooldownReservation);
+
+            throw $exception;
+        }
     }
 
     private function deviceKey(string $clientDigest): string

@@ -12,6 +12,8 @@ class UserRegistrationService
 {
     private const IP_COOLDOWN_SECONDS = 7 * 24 * 3600;
 
+    private const IP_COOLDOWN_RESERVATION_SECONDS = 300;
+
     private const NEW_USER_SECONDS = 24 * 3600;
 
     private const BINGGAN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnprstuvwxyz1234567890';
@@ -31,6 +33,35 @@ class UserRegistrationService
         }
 
         return intval(Redis::ttl($key) / 86400) + 1;
+    }
+
+    public function reserveIpCooldown(string $ip): ?string
+    {
+        $reservation = bin2hex(random_bytes(16));
+        $reserved = Redis::set(
+            'reg_record_'.$ip,
+            $reservation,
+            'EX',
+            self::IP_COOLDOWN_RESERVATION_SECONDS,
+            'NX',
+        );
+
+        return $reserved ? $reservation : null;
+    }
+
+    public function cancelIpCooldownReservation(string $ip, string $reservation): void
+    {
+        Redis::eval(
+            <<<'LUA'
+if redis.call('get', KEYS[1]) == ARGV[1] then
+    return redis.call('del', KEYS[1])
+end
+return 0
+LUA,
+            1,
+            'reg_record_'.$ip,
+            $reservation,
+        );
     }
 
     public function createUser(string $ip, ?string $registrationReference = null): User
