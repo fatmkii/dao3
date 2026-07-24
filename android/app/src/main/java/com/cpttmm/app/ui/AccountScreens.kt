@@ -47,8 +47,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.R
 import com.cpttmm.app.account.AccountAliasPolicy
@@ -66,7 +68,7 @@ internal fun AccountSwitcherSheet(
     onDismiss: () -> Unit,
 ) {
     var editingAccountId by remember { mutableStateOf<String?>(null) }
-    var aliasInput by remember { mutableStateOf("") }
+    var aliasInput by remember { mutableStateOf(TextFieldValue()) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -106,7 +108,11 @@ internal fun AccountSwitcherSheet(
                                         keyboardController?.hide()
                                     } else {
                                         editingAccountId = account.id
-                                        aliasInput = account.alias
+                                        aliasInput =
+                                            TextFieldValue(
+                                                text = account.alias,
+                                                selection = TextRange(0, account.alias.length),
+                                            )
                                     }
                                 },
                                 modifier =
@@ -124,7 +130,7 @@ internal fun AccountSwitcherSheet(
                             TextButton(onClick = { onRemove(account) }) { Text("移除") }
                         }
                         if (editingAccountId == account.id) {
-                            val aliasError = AccountAliasPolicy.validationError(aliasInput)
+                            val aliasError = AccountAliasPolicy.validationError(aliasInput.text)
                             HorizontalDivider()
                             Row(
                                 modifier =
@@ -159,7 +165,7 @@ internal fun AccountSwitcherSheet(
                                         KeyboardActions(
                                             onDone = {
                                                 if (aliasError == null) {
-                                                    onAliasChange(account, aliasInput)
+                                                    onAliasChange(account, aliasInput.text)
                                                     editingAccountId = null
                                                     keyboardController?.hide()
                                                 }
@@ -169,7 +175,7 @@ internal fun AccountSwitcherSheet(
                                 Spacer(Modifier.width(4.dp))
                                 TextButton(
                                     onClick = {
-                                        onAliasChange(account, aliasInput)
+                                        onAliasChange(account, aliasInput.text)
                                         editingAccountId = null
                                         keyboardController?.hide()
                                     },
@@ -181,11 +187,13 @@ internal fun AccountSwitcherSheet(
                     }
                 }
             }
-            Button(
-                onClick = onAdd,
-                enabled = accounts.size < 5,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) { Text(if (accounts.size < 5) "添加饼干" else "已达到 5 个饼干上限") }
+            if (editingAccountId == null) {
+                Button(
+                    onClick = onAdd,
+                    enabled = accounts.size < 5,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Text(if (accounts.size < 5) "添加饼干" else "已达到 5 个饼干上限") }
+            }
         }
     }
 }
