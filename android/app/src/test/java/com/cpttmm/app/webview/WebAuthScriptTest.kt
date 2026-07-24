@@ -26,4 +26,14 @@ class WebAuthScriptTest {
         assertFalse(script.contains("Refresh"))
         assertFalse(script.contains("Binggan"))
     }
+
+    @Test
+    fun `document start script reports history api navigation`() {
+        val script = WebAuthScript.documentStart("binggan", "access-token")
+
+        assertTrue(script.contains("navigationChanged"))
+        assertTrue(script.contains("pushState"))
+        assertTrue(script.contains("replaceState"))
+        assertTrue(script.contains("popstate"))
+    }
 }

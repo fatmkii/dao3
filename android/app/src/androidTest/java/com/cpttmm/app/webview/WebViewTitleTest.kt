@@ -4,7 +4,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.webkit.WebViewFeature
+import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.data.local.AccountEntity
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -30,6 +32,7 @@ class WebViewTitleTest {
                 onExternalNavigation = {},
                 onBridgeMessage = {},
                 onSaveState = {},
+                onPathChanged = {},
                 onTitleChanged = { title ->
                     if (title == "实时标题") titleChanged.countDown()
                 },
@@ -51,6 +54,54 @@ class WebViewTitleTest {
 
         try {
             assertTrue(titleChanged.await(5, TimeUnit.SECONDS))
+        } finally {
+            instrumentation.runOnMainSync { host.destroy(saveState = false) }
+        }
+    }
+
+    @Test
+    fun reportsHistoryApiPathChangesImmediately() {
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val pathChanged = CountDownLatch(1)
+        var reportedPath: String? = null
+        lateinit var host: WebViewHost
+
+        instrumentation.runOnMainSync {
+            host = WebViewHost(
+                context = ApplicationProvider.getApplicationContext(),
+                account = account(),
+                accessToken = "access-token",
+                onExternalNavigation = {},
+                onBridgeMessage = {},
+                onSaveState = {},
+                onPathChanged = { path ->
+                    if (path == "/thread/1?page=2#reply-3") {
+                        reportedPath = path
+                        pathChanged.countDown()
+                    }
+                },
+                onTitleChanged = {},
+                onOpenNewTab = {},
+                onLongPressLink = {},
+                onMainFrameError = {},
+                onShowFileChooser = { _, _ -> false },
+                onDownloadFailure = {},
+            )
+            host.view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                "<html><body><script>" +
+                    "history.pushState({}, '', '/thread/1?page=2#reply-3')" +
+                    "</script></body></html>",
+                "text/html",
+                "UTF-8",
+                null,
+            )
+        }
+
+        try {
+            assertTrue(pathChanged.await(5, TimeUnit.SECONDS))
+            assertEquals("/thread/1?page=2#reply-3", reportedPath)
         } finally {
             instrumentation.runOnMainSync { host.destroy(saveState = false) }
         }

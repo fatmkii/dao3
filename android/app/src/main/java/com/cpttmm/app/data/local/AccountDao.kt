@@ -72,6 +72,11 @@ interface AccountDao {
     suspend fun updateTabTitle(tabId: String, accountId: String, title: String)
 
     @Query(
+        "UPDATE browser_tabs SET path = :path WHERE id = :tabId AND accountId = :accountId AND path != :path",
+    )
+    suspend fun updateTabPath(tabId: String, accountId: String, path: String)
+
+    @Query(
         """
         UPDATE browser_tabs
         SET accountId = :accountId, path = :path, title = :title, scrollY = 0,

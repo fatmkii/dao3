@@ -270,6 +270,9 @@ private fun ActiveForumWorkspace(
                             }
                         },
                         onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
+                        onPathChanged = { path ->
+                            scope.launch { tabRepository.updatePath(activeTab, path) }
+                        },
                         onTitleChanged = { title ->
                             scope.launch { tabRepository.updateTitle(activeTab, title) }
                         },

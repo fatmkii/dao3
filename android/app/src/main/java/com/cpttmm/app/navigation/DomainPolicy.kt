@@ -54,6 +54,15 @@ object DomainPolicy {
         )
     }
 
+    fun internalPath(rawUrl: String): String? {
+        val target = classify(rawUrl) as? NavigationTarget.Internal ?: return null
+        return buildString {
+            append(target.uri.rawPath.ifBlank { "/" })
+            target.uri.rawQuery?.let { append('?').append(it) }
+            target.uri.rawFragment?.let { append('#').append(it) }
+        }
+    }
+
     private fun sameOrigin(uri: URI, origin: URI): Boolean =
         uri.scheme.equals(origin.scheme, ignoreCase = true) &&
             uri.host.equals(origin.host, ignoreCase = true) &&

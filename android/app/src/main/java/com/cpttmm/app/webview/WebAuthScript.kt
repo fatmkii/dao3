@@ -26,6 +26,19 @@ object WebAuthScript {
         if (dispatchUpdate) {
             append("window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));")
         }
+        append(
+            """
+            (()=>{if(window.__cpttmmNavigationObserver)return;
+            window.__cpttmmNavigationObserver=true;
+            const notify=()=>window.CpttmmAndroid?.postMessage(JSON.stringify(
+            {type:'navigationChanged',payload:{url:location.href}}));
+            for(const method of ['pushState','replaceState']){
+            const original=history[method];
+            history[method]=function(){const result=original.apply(this,arguments);notify();return result;};}
+            window.addEventListener('popstate',notify);
+            window.addEventListener('hashchange',notify);})();
+            """.trimIndent().replace("\n", ""),
+        )
         append("void 0;")
     }
 

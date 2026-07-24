@@ -33,6 +33,10 @@ class BrowserTabRepository(
         if (title.isNotBlank()) dao.updateTabTitle(tab.id, tab.accountId, title)
     }
 
+    suspend fun updatePath(tab: BrowserTabEntity, path: String) {
+        dao.updateTabPath(tab.id, tab.accountId, normalizedPath(path))
+    }
+
     suspend fun save(tab: BrowserTabEntity, state: RestorableWebViewState) {
         dao.updateTabState(
             tabId = tab.id,

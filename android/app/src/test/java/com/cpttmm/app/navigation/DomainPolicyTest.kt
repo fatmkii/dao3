@@ -25,6 +25,18 @@ class DomainPolicyTest {
     }
 
     @Test
+    fun `extracts the current path from internal navigation`() {
+        val origin = DomainPolicy.home(AppDomain.PRIMARY).toString().trimEnd('/')
+
+        assertEquals(
+            "/thread/1?page=2#reply-3",
+            DomainPolicy.internalPath("$origin/thread/1?page=2#reply-3"),
+        )
+        assertEquals("/", DomainPolicy.internalPath(origin))
+        assertEquals(null, DomainPolicy.internalPath("https://example.com/thread/1"))
+    }
+
+    @Test
     fun `sends other https hosts outside the app`() {
         assertTrue(DomainPolicy.classify("https://example.com/") is NavigationTarget.External)
     }

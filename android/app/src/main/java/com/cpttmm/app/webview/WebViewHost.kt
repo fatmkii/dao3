@@ -24,6 +24,7 @@ import com.cpttmm.app.data.local.AccountEntity
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.navigation.DomainPolicy
 import com.cpttmm.app.navigation.NavigationTarget
+import org.json.JSONObject
 
 data class RestorableWebViewState(
     val path: String,
@@ -38,6 +39,7 @@ class WebViewHost(
     private val onExternalNavigation: (String) -> Unit,
     private val onBridgeMessage: (String) -> Unit,
     private val onSaveState: (RestorableWebViewState) -> Unit,
+    private val onPathChanged: (String) -> Unit,
     private val onTitleChanged: (String) -> Unit,
     private val onOpenNewTab: (String) -> Unit,
     private val onLongPressLink: (String) -> Unit,
@@ -77,6 +79,7 @@ class WebViewHost(
         view.webViewClient = object : WebViewClient() {
             override fun onPageStarted(webView: WebView, url: String, favicon: Bitmap?) {
                 onMainFrameError(null)
+                DomainPolicy.internalPath(url)?.let(onPathChanged)
             }
 
             override fun onPageFinished(webView: WebView, url: String) {
@@ -84,6 +87,10 @@ class WebViewHost(
                     pendingScrollY = null
                     webView.scrollTo(0, scrollY)
                 }
+            }
+
+            override fun doUpdateVisitedHistory(webView: WebView, url: String, isReload: Boolean) {
+                DomainPolicy.internalPath(url)?.let(onPathChanged)
             }
 
             override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
@@ -158,7 +165,7 @@ class WebViewHost(
             DomainPolicy.trustedOrigins,
         ) { _: WebView, message: WebMessageCompat, _, isMainFrame: Boolean, _ ->
             if (isMainFrame) {
-                message.data?.let(onBridgeMessage)
+                message.data?.let(::handleBridgeMessage)
             }
         }
     }
@@ -279,6 +286,16 @@ class WebViewHost(
         }
     }
 
+    private fun handleBridgeMessage(message: String) {
+        val json = runCatching { JSONObject(message) }.getOrNull()
+        if (json?.optString("type") == "navigationChanged") {
+            val url = json.optJSONObject("payload")?.optString("url").orEmpty()
+            DomainPolicy.internalPath(url)?.let(onPathChanged)
+            return
+        }
+        onBridgeMessage(message)
+    }
+
     private fun saveRestorableState() {
         val state = currentRestorableState() ?: return
         onSaveState(state)
@@ -286,12 +303,7 @@ class WebViewHost(
 
     private fun currentRestorableState(): RestorableWebViewState? {
         val current = view.url ?: return null
-        val target = DomainPolicy.classify(current) as? NavigationTarget.Internal ?: return null
-        val path = buildString {
-            append(target.uri.rawPath.ifBlank { "/" })
-            target.uri.rawQuery?.let { append('?').append(it) }
-            target.uri.rawFragment?.let { append('#').append(it) }
-        }
+        val path = DomainPolicy.internalPath(current) ?: return null
         return RestorableWebViewState(
             path = path,
             title = view.title.orEmpty(),
