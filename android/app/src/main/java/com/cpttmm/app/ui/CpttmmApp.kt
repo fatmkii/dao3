@@ -138,6 +138,9 @@ fun CpttmmApp(
                     showAccountSwitcher = false
                     accountToRemove = it
                 },
+                onAliasChange = { account, alias ->
+                    scope.launch { accounts.updateAlias(account.id, alias) }
+                },
                 onDismiss = { showAccountSwitcher = false },
             )
         }

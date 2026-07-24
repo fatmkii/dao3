@@ -230,26 +230,28 @@ internal fun AddAccountSheet(
                     InlineMessage(error!!)
                 }
 
-                if (!BuildConfig.DEBUG) {
-                    HorizontalDivider()
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("访问域名", style = MaterialTheme.typography.labelLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            AppDomain.entries.forEach { candidate ->
-                                FilterChip(
-                                    selected = domain == candidate,
-                                    onClick = { onDomainChange(candidate) },
-                                    label = { Text(candidate.host) },
-                                    enabled = !submitting,
-                                )
-                            }
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("访问域名", style = MaterialTheme.typography.labelLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        AppDomain.entries.forEach { candidate ->
+                            FilterChip(
+                                selected = domain == candidate,
+                                onClick = { onDomainChange(candidate) },
+                                label = { Text(candidate.host) },
+                                enabled = !submitting && !BuildConfig.DEBUG,
+                            )
                         }
-                        Text(
-                            "加载失败时可手动切换，应用不会自动重放请求。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
+                    Text(
+                        if (BuildConfig.DEBUG) {
+                            "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
+                        } else {
+                            "加载失败时可手动切换，应用不会自动重放请求。"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 Spacer(Modifier.height(4.dp))
             }

@@ -427,7 +427,7 @@ private fun ActiveForumWorkspace(
                         onClick = { showSettings = true },
                         modifier =
                             Modifier.weight(1f).height(40.dp).semantics {
-                                contentDescription = "当前饼干 ${account.binggan}，打开设置"
+                                contentDescription = "当前饼干别名 ${account.alias}，打开设置"
                             },
                         shape = RoundedCornerShape(13.dp),
                         color = Color.Transparent,
@@ -437,7 +437,7 @@ private fun ActiveForumWorkspace(
                             modifier = Modifier.padding(horizontal = 14.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(account.binggan, maxLines = 1, fontWeight = FontWeight.Medium)
+                            Text(account.alias, maxLines = 1, fontWeight = FontWeight.Medium)
                         }
                     }
                 }

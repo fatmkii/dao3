@@ -20,7 +20,9 @@ class CpttmmApplication : Application() {
     private val tokenCipher by lazy { AndroidKeystoreTokenCipher() }
 
     val database: AppDatabase by lazy {
-        Room.databaseBuilder(this, AppDatabase::class.java, "cpttmm.db").build()
+        Room.databaseBuilder(this, AppDatabase::class.java, "cpttmm.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     val preferences: GlobalPreferencesRepository by lazy {

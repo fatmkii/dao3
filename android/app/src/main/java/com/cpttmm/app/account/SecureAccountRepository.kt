@@ -32,6 +32,7 @@ class SecureAccountRepository(
             AccountEntity(
                 id = accountId,
                 binggan = session.binggan,
+                alias = existing?.alias ?: AccountAliasPolicy.nextDefaultAlias(dao.accountAliases()),
                 profileName = profileName,
                 cachedThemeName = existing?.cachedThemeName,
                 accessExpiresAtMillis = session.accessExpiresAt.toEpochMilli(),
@@ -55,6 +56,10 @@ class SecureAccountRepository(
 
     suspend fun updateCachedTheme(accountId: String, themeName: String) {
         dao.updateCachedTheme(accountId, themeName)
+    }
+
+    suspend fun updateAlias(accountId: String, alias: String) {
+        dao.updateAlias(accountId, AccountAliasPolicy.requireValid(alias))
     }
 
     suspend fun invalidateSession(accountId: String) {

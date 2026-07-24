@@ -55,6 +55,7 @@ class RefreshPolicyTest {
     private fun account(expiresAt: Long) = AccountEntity(
         id = "account-id",
         binggan = "cookie",
+        alias = "饼干#1",
         profileName = "profile-random",
         cachedThemeName = null,
         accessExpiresAtMillis = expiresAt,

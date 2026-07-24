@@ -52,6 +52,8 @@ class DomainPolicyTest {
         assumeTrue(BuildConfig.DEBUG)
 
         val localOrigin = BuildConfig.DEVELOPMENT_SERVER_ORIGIN.trimEnd('/')
+        assertEquals(localOrigin, DomainPolicy.home(AppDomain.PRIMARY).toString().trimEnd('/'))
+        assertEquals(localOrigin, DomainPolicy.home(AppDomain.FALLBACK).toString().trimEnd('/'))
         assertTrue(DomainPolicy.classify("$localOrigin/thread/1") is NavigationTarget.Internal)
         assertEquals(NavigationTarget.Blocked, DomainPolicy.classify("http://127.0.0.2/thread/1"))
         assertTrue(DomainPolicy.classify(BuildConfig.PRODUCTION_PRIMARY_ORIGIN) is NavigationTarget.External)

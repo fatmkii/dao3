@@ -12,6 +12,7 @@ import androidx.room.PrimaryKey
 data class AccountEntity(
     @PrimaryKey val id: String,
     val binggan: String,
+    val alias: String,
     val profileName: String,
     val cachedThemeName: String?,
     val accessExpiresAtMillis: Long,

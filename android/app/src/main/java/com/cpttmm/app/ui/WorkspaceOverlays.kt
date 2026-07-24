@@ -134,25 +134,28 @@ internal fun SettingsSheet(
                     .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            if (!BuildConfig.DEBUG) {
-                Text("访问域名", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AppDomain.entries.forEach { candidate ->
-                        FilterChip(
-                            selected = candidate == domain,
-                            onClick = { onDomainChange(candidate) },
-                            label = { Text(candidate.host) },
-                        )
-                    }
+            Text("访问域名", style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppDomain.entries.forEach { candidate ->
+                    FilterChip(
+                        selected = candidate == domain,
+                        onClick = { onDomainChange(candidate) },
+                        label = { Text(candidate.host) },
+                        enabled = !BuildConfig.DEBUG,
+                    )
                 }
-                Text(
-                    "切换前会先检查当前登录状态；应用不会自动重放失败请求。",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
             }
+            Text(
+                if (BuildConfig.DEBUG) {
+                    "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
+                } else {
+                    "切换前会先检查当前登录状态；应用不会自动重放失败请求。"
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
             if (error != null) InlineMessage(error)
-            if (!BuildConfig.DEBUG) HorizontalDivider()
+            HorizontalDivider()
             Button(
                 onClick = onSelectAccount,
                 modifier = Modifier.fillMaxWidth().height(52.dp),

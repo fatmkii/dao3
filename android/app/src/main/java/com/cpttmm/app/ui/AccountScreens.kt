@@ -2,15 +2,19 @@ package com.cpttmm.app.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -18,8 +22,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,13 +33,25 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.R
+import com.cpttmm.app.account.AccountAliasPolicy
 import com.cpttmm.app.data.local.AccountEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,8 +62,18 @@ internal fun AccountSwitcherSheet(
     onSelect: (AccountEntity) -> Unit,
     onAdd: () -> Unit,
     onRemove: (AccountEntity) -> Unit,
+    onAliasChange: (AccountEntity, String) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var editingAccountId by remember { mutableStateOf<String?>(null) }
+    var aliasInput by remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(editingAccountId) {
+        if (editingAccountId != null) focusRequester.requestFocus()
+    }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp),
@@ -66,12 +94,90 @@ internal fun AccountSwitcherSheet(
                                 },
                         ),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(account.binggan, modifier = Modifier.weight(1f).padding(vertical = 16.dp))
-                        TextButton(onClick = { onRemove(account) }) { Text("移除") }
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    if (editingAccountId == account.id) {
+                                        editingAccountId = null
+                                        keyboardController?.hide()
+                                    } else {
+                                        editingAccountId = account.id
+                                        aliasInput = account.alias
+                                    }
+                                },
+                                modifier =
+                                    Modifier.height(48.dp).semantics {
+                                        contentDescription = "别名 ${account.alias}，修改别名"
+                                    },
+                            ) {
+                                Text(account.alias, maxLines = 1)
+                            }
+                            Text(
+                                account.binggan,
+                                modifier = Modifier.weight(1f).padding(vertical = 16.dp),
+                                maxLines = 1,
+                            )
+                            TextButton(onClick = { onRemove(account) }) { Text("移除") }
+                        }
+                        if (editingAccountId == account.id) {
+                            val aliasError = AccountAliasPolicy.validationError(aliasInput)
+                            HorizontalDivider()
+                            Row(
+                                modifier =
+                                    Modifier.fillMaxWidth()
+                                        .padding(start = 12.dp, end = 8.dp, bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    "修改别名",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    maxLines = 1,
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                OutlinedTextField(
+                                    value = aliasInput,
+                                    onValueChange = { aliasInput = it },
+                                    modifier =
+                                        Modifier.weight(1f)
+                                            .focusRequester(focusRequester)
+                                            .testTag("alias-input-${account.id}"),
+                                    singleLine = true,
+                                    isError = aliasError != null,
+                                    placeholder = { Text("最多5中文或10英文") },
+                                    supportingText =
+                                        if (aliasError == null) {
+                                            null
+                                        } else {
+                                            { Text(aliasError) }
+                                        },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions =
+                                        KeyboardActions(
+                                            onDone = {
+                                                if (aliasError == null) {
+                                                    onAliasChange(account, aliasInput)
+                                                    editingAccountId = null
+                                                    keyboardController?.hide()
+                                                }
+                                            },
+                                        ),
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                TextButton(
+                                    onClick = {
+                                        onAliasChange(account, aliasInput)
+                                        editingAccountId = null
+                                        keyboardController?.hide()
+                                    },
+                                    enabled = aliasError == null,
+                                    modifier = Modifier.height(48.dp),
+                                ) { Text("确定") }
+                            }
+                        }
                     }
                 }
             }

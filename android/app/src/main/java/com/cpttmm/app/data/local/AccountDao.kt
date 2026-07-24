@@ -14,8 +14,14 @@ interface AccountDao {
     @Query("SELECT COUNT(*) FROM accounts")
     suspend fun accountCount(): Int
 
+    @Query("SELECT alias FROM accounts")
+    suspend fun accountAliases(): List<String>
+
     @Query("SELECT * FROM accounts WHERE binggan = :binggan LIMIT 1")
     suspend fun accountByBinggan(binggan: String): AccountEntity?
+
+    @Query("UPDATE accounts SET alias = :alias WHERE id = :accountId")
+    suspend fun updateAlias(accountId: String, alias: String)
 
     @Query("UPDATE accounts SET cachedThemeName = :themeName WHERE id = :accountId")
     suspend fun updateCachedTheme(accountId: String, themeName: String)

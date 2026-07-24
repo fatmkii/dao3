@@ -70,6 +70,33 @@ class SecureAccountRepositoryTest {
     }
 
     @Test
+    fun assignsUpdatesAndPreservesAccountAliases() = runBlocking {
+        withContext(Dispatchers.IO) {
+            repository.saveSession(session("cookie-1"))
+            val first = database.accountDao().accountByBinggan("cookie-1")!!
+            assertEquals("饼干#1", first.alias)
+
+            repository.saveSession(session("cookie-2"))
+            val second = database.accountDao().accountByBinggan("cookie-2")!!
+            assertEquals("饼干#2", second.alias)
+
+            repository.updateAlias(first.id, "  常用  ")
+            repository.updateAlias(second.id, "常用")
+            assertEquals("常用", database.accountDao().accountByBinggan("cookie-1")?.alias)
+            assertEquals("常用", database.accountDao().accountByBinggan("cookie-2")?.alias)
+
+            repository.saveSession(session("cookie-3"))
+            assertEquals(
+                "饼干#1",
+                database.accountDao().accountByBinggan("cookie-3")?.alias,
+            )
+
+            repository.saveSession(session("cookie-1").copy(accessToken = "refreshed"))
+            assertEquals("常用", database.accountDao().accountByBinggan("cookie-1")?.alias)
+        }
+    }
+
+    @Test
     fun pendingRevocationIsDeletedOnlyAfterServerLogoutSucceeds() = runBlocking {
         withContext(Dispatchers.IO) {
             val accountId = repository.saveSession(session("cookie"))

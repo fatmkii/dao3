@@ -59,6 +59,7 @@ class WebViewTitleTest {
     private fun account() = AccountEntity(
         id = UUID.randomUUID().toString(),
         binggan = "TitleTest",
+        alias = "饼干#1",
         profileName = "title-${UUID.randomUUID()}",
         cachedThemeName = null,
         accessExpiresAtMillis = Long.MAX_VALUE,
