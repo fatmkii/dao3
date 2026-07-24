@@ -105,11 +105,68 @@ jobs:
             --arg version_name "$VERSION_NAME" \
             --argjson version_code "$VERSION_CODE" \
             --rawfile notes release-notes.md \
-            --arg apk_url "https://cpttmm.com/downloads/android/$APK_NAME" \
+            --arg apk_url "https://cpttmm.oss-cn-shenzhen.aliyuncs.com/android/$APK_NAME" \
             --arg github_url "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
             --arg sha256 "$sha256" \
             '{version_name: $version_name, version_code: $version_code, notes: $notes, apk_url: $apk_url, github_url: $github_url, sha256: $sha256}' \
             > dist/version.json
+
+      - name: Install ossutil
+        env:
+          OSSUTIL_VERSION: "2.3.0"
+          OSSUTIL_SHA256: 3ae4d9fc85a7a6e9f5654d1599766f1a3a42a3692870887b5ae9338d582ef65a
+        run: |
+          archive="$RUNNER_TEMP/ossutil.zip"
+          install_dir="$RUNNER_TEMP/ossutil"
+          curl --fail --location --silent --show-error \
+            --output "$archive" \
+            "https://gosspublic.alicdn.com/ossutil/v2/$OSSUTIL_VERSION/ossutil-$OSSUTIL_VERSION-linux-amd64.zip"
+          printf '%s  %s\n' "$OSSUTIL_SHA256" "$archive" | sha256sum --check
+          unzip -q "$archive" -d "$install_dir"
+          binary_dir="$install_dir/ossutil-$OSSUTIL_VERSION-linux-amd64"
+          chmod 0755 "$binary_dir/ossutil"
+          echo "$binary_dir" >> "$GITHUB_PATH"
+          "$binary_dir/ossutil" version
+
+      - name: Upload APK files to OSS
+        env:
+          APK_NAME: ${{ steps.version.outputs.apk_name }}
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          OSS_REGION: cn-shenzhen
+          OSS_ENDPOINT: https://oss-cn-shenzhen.aliyuncs.com
+        run: |
+          versioned_object="oss://cpttmm/android/$APK_NAME"
+          latest_object="oss://cpttmm/android/cpttmm-latest.apk"
+          versioned_url="https://cpttmm.oss-cn-shenzhen.aliyuncs.com/android/$APK_NAME"
+          latest_url="https://cpttmm.oss-cn-shenzhen.aliyuncs.com/android/cpttmm-latest.apk"
+
+          ossutil cp "dist/$APK_NAME" "$versioned_object" \
+            --acl public-read \
+            --cache-control "public, max-age=31536000, immutable" \
+            --content-disposition "attachment; filename=\"$APK_NAME\"" \
+            --content-type application/vnd.android.package-archive \
+            --force
+          ossutil cp "dist/$APK_NAME" "$latest_object" \
+            --acl public-read \
+            --cache-control no-cache \
+            --content-disposition "attachment; filename=\"$APK_NAME\"" \
+            --content-type application/vnd.android.package-archive \
+            --force
+
+          local_size="$(stat --format=%s "dist/$APK_NAME")"
+          for url in "$versioned_url" "$latest_url"; do
+            headers="$(mktemp)"
+            curl --fail --silent --show-error --head --retry 3 \
+              --dump-header "$headers" \
+              --output /dev/null \
+              "$url"
+            remote_size="$(awk 'BEGIN { IGNORECASE = 1 } /^content-length:/ { gsub(/\r/, "", $2); value = $2 } END { print value }' "$headers")"
+            if [[ "$remote_size" != "$local_size" ]]; then
+              echo "Unexpected Content-Length for $url: expected $local_size, got $remote_size" >&2
+              exit 1
+            fi
+          done
 
       - name: Upload release files to production server
         uses: appleboy/scp-action@v0.1.7
@@ -118,7 +175,7 @@ jobs:
           port: ${{ secrets.PROD_PORT }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          source: dist/*
+          source: dist/version.json,dist/apk.sha256
           target: /tmp/cpttmm-android-release
           strip_components: 1
 
@@ -133,7 +190,6 @@ jobs:
             set -e
             destination=/data/wwwroot/v3.cpttmm.com/shared/downloads/android
             mkdir -p "$destination"
-            install -m 0644 "/tmp/cpttmm-android-release/${{ steps.version.outputs.apk_name }}" "$destination/${{ steps.version.outputs.apk_name }}"
             install -m 0644 /tmp/cpttmm-android-release/version.json "$destination/version.json"
             install -m 0644 /tmp/cpttmm-android-release/apk.sha256 "$destination/apk.sha256"
             rm -rf /tmp/cpttmm-android-release
