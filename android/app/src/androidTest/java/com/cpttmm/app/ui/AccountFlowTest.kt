@@ -26,7 +26,7 @@ class AccountFlowTest {
             "添加另一个饼干"
         }
         composeRule.onNodeWithText(addAccountLabel).performClick()
-        composeRule.onNodeWithText("登录已有饼干").assertIsDisplayed()
+        composeRule.onNodeWithText("导入已有饼干").assertIsDisplayed()
         composeRule.onNodeWithText("饼干").assertIsDisplayed()
 
         composeRule.onNodeWithText("领取新饼干").performClick()

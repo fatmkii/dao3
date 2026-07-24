@@ -10,7 +10,7 @@ class WebViewPoolTest {
     fun `keeps active and two most recently used hosts`() {
         val pool = WebViewPool<FakeHost>()
         val hosts = (1..4).associate { index ->
-            index.toString() to pool.getOrCreate(index.toString()) { FakeHost() }
+            index.toString() to pool.getOrCreate(index.toString(), "account") { FakeHost() }
         }
 
         pool.activate(
@@ -29,9 +29,9 @@ class WebViewPoolTest {
     @Test
     fun `memory trim destroys every background host`() {
         val pool = WebViewPool<FakeHost>()
-        val first = pool.getOrCreate("first") { FakeHost() }
-        val second = pool.getOrCreate("second") { FakeHost() }
-        val active = pool.getOrCreate("active") { FakeHost() }
+        val first = pool.getOrCreate("first", "account") { FakeHost() }
+        val second = pool.getOrCreate("second", "account") { FakeHost() }
+        val active = pool.getOrCreate("active", "account") { FakeHost() }
         pool.activate("active", emptyMap())
 
         pool.trimToActive()
@@ -44,7 +44,7 @@ class WebViewPoolTest {
     @Test
     fun `closing a tab can skip state persistence`() {
         val pool = WebViewPool<FakeHost>()
-        val host = pool.getOrCreate("closed") { FakeHost() }
+        val host = pool.getOrCreate("closed", "account") { FakeHost() }
 
         pool.remove("closed", saveState = false)
 
@@ -56,8 +56,8 @@ class WebViewPoolTest {
     fun `resumes active host after every background host is paused`() {
         val events = mutableListOf<String>()
         val pool = WebViewPool<FakeHost>()
-        pool.getOrCreate("active") { FakeHost("active", events) }
-        pool.getOrCreate("background") { FakeHost("background", events) }
+        pool.getOrCreate("active", "account") { FakeHost(name = "active", events = events) }
+        pool.getOrCreate("background", "account") { FakeHost(name = "background", events = events) }
 
         pool.activate("active", emptyMap())
 
@@ -65,18 +65,30 @@ class WebViewPoolTest {
     }
 
     @Test
-    fun `updates access token in every pooled host`() {
+    fun `updates access token only in hosts for the selected account`() {
         val pool = WebViewPool<FakeHost>()
-        val first = pool.getOrCreate("first") { FakeHost() }
-        val second = pool.getOrCreate("second") { FakeHost() }
+        val first = pool.getOrCreate("first", "first-account") { FakeHost("first-account") }
+        val second = pool.getOrCreate("second", "second-account") { FakeHost("second-account") }
 
-        pool.updateAccessToken("refreshed-token")
+        pool.updateAccessToken("first-account", "refreshed-token")
 
         assertEquals("refreshed-token", first.accessToken)
-        assertEquals("refreshed-token", second.accessToken)
+        assertEquals(null, second.accessToken)
+    }
+
+    @Test
+    fun `replaces a tab host when its account changes`() {
+        val pool = WebViewPool<FakeHost>()
+        val old = pool.getOrCreate("tab", "old") { FakeHost("old") }
+        val replacement = pool.getOrCreate("tab", "new") { FakeHost("new") }
+
+        assertTrue(old.destroyed)
+        assertEquals(false, old.savedOnDestroy)
+        assertEquals("new", replacement.accountId)
     }
 
     private class FakeHost(
+        override val accountId: String = "account",
         private val name: String = "host",
         private val events: MutableList<String>? = null,
     ) : PooledWebViewHost {

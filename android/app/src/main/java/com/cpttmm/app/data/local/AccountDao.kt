@@ -35,17 +35,57 @@ interface AccountDao {
     @Query("SELECT * FROM pending_revocations ORDER BY createdAtMillis")
     suspend fun pendingRevocations(): List<PendingRevocationEntity>
 
-    @Query("SELECT * FROM browser_tabs WHERE accountId = :accountId ORDER BY lastUsedAtMillis DESC")
-    fun observeTabs(accountId: String): Flow<List<BrowserTabEntity>>
+    @Query("SELECT * FROM browser_tabs ORDER BY lastUsedAtMillis DESC")
+    fun observeTabs(): Flow<List<BrowserTabEntity>>
 
-    @Query("SELECT * FROM browser_tabs WHERE accountId = :accountId ORDER BY lastUsedAtMillis DESC")
-    suspend fun tabs(accountId: String): List<BrowserTabEntity>
+    @Query("SELECT * FROM browser_tabs ORDER BY lastUsedAtMillis DESC")
+    suspend fun tabs(): List<BrowserTabEntity>
 
-    @Query("SELECT COUNT(*) FROM browser_tabs WHERE accountId = :accountId")
-    suspend fun tabCount(accountId: String): Int
+    @Query("SELECT * FROM browser_tabs WHERE accountId = :accountId ORDER BY lastUsedAtMillis DESC LIMIT 1")
+    suspend fun latestTab(accountId: String): BrowserTabEntity?
 
-    @Query("UPDATE browser_tabs SET title = :title WHERE id = :tabId AND title != :title")
-    suspend fun updateTabTitle(tabId: String, title: String)
+    @Query("SELECT COUNT(*) FROM browser_tabs")
+    suspend fun tabCount(): Int
+
+    @Query("UPDATE browser_tabs SET lastUsedAtMillis = :lastUsedAtMillis WHERE id = :tabId")
+    suspend fun markTabUsed(tabId: String, lastUsedAtMillis: Long)
+
+    @Query(
+        """
+        UPDATE browser_tabs
+        SET path = :path, title = :title, scrollY = :scrollY, lastUsedAtMillis = :lastUsedAtMillis
+        WHERE id = :tabId AND accountId = :accountId
+        """,
+    )
+    suspend fun updateTabState(
+        tabId: String,
+        accountId: String,
+        path: String,
+        title: String,
+        scrollY: Int,
+        lastUsedAtMillis: Long,
+    )
+
+    @Query(
+        "UPDATE browser_tabs SET title = :title WHERE id = :tabId AND accountId = :accountId AND title != :title",
+    )
+    suspend fun updateTabTitle(tabId: String, accountId: String, title: String)
+
+    @Query(
+        """
+        UPDATE browser_tabs
+        SET accountId = :accountId, path = :path, title = :title, scrollY = 0,
+            lastUsedAtMillis = :lastUsedAtMillis
+        WHERE id = :tabId
+        """,
+    )
+    suspend fun switchTabAccount(
+        tabId: String,
+        accountId: String,
+        path: String,
+        title: String,
+        lastUsedAtMillis: Long,
+    )
 
     @Upsert
     suspend fun upsertAccount(account: AccountEntity)
@@ -67,4 +107,7 @@ interface AccountDao {
 
     @Delete
     suspend fun deleteTab(tab: BrowserTabEntity)
+
+    @Query("DELETE FROM browser_tabs WHERE accountId = :accountId")
+    suspend fun deleteTabs(accountId: String)
 }

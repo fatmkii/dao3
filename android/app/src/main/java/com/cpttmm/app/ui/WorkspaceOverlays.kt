@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.account.MobileAuthCoordinator
 import com.cpttmm.app.data.local.BrowserTabEntity
+import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileReleaseInfo
 
@@ -46,6 +47,7 @@ import com.cpttmm.app.network.MobileReleaseInfo
 @Composable
 internal fun TabSheet(
     tabs: List<BrowserTabEntity>,
+    accountAliases: Map<String, String>,
     activeTab: BrowserTabEntity,
     error: String?,
     onSelect: (BrowserTabEntity) -> Unit,
@@ -73,9 +75,18 @@ internal fun TabSheet(
                         ),
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        TextButton(
+                            onClick = { onSelect(tab) },
+                            modifier = Modifier.height(48.dp),
+                        ) {
+                            Text(
+                                accountAliases[tab.accountId].orEmpty(),
+                                maxLines = 1,
+                            )
+                        }
                         Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
                             Text(tab.title, maxLines = 1, fontWeight = FontWeight.Medium)
                             Text(
@@ -94,10 +105,16 @@ internal fun TabSheet(
             if (error != null) InlineMessage(error)
             Button(
                 onClick = onCreate,
-                enabled = tabs.size < 10,
+                enabled = tabs.size < WorkspacePolicy.MAX_TABS,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
-                Text(if (tabs.size < 10) "新建标签" else "已达到 10 个标签上限")
+                Text(
+                    if (tabs.size < WorkspacePolicy.MAX_TABS) {
+                        "新建标签"
+                    } else {
+                        "已达到 ${WorkspacePolicy.MAX_TABS} 个标签上限"
+                    },
+                )
             }
         }
     }

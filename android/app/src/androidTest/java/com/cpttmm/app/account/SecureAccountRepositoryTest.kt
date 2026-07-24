@@ -72,7 +72,7 @@ class SecureAccountRepositoryTest {
     @Test
     fun assignsUpdatesAndPreservesAccountAliases() = runBlocking {
         withContext(Dispatchers.IO) {
-            repository.saveSession(session("cookie-1"))
+            assertTrue(repository.saveSession(session("cookie-1")).isNew)
             val first = database.accountDao().accountByBinggan("cookie-1")!!
             assertEquals("饼干#1", first.alias)
 
@@ -91,15 +91,65 @@ class SecureAccountRepositoryTest {
                 database.accountDao().accountByBinggan("cookie-3")?.alias,
             )
 
-            repository.saveSession(session("cookie-1").copy(accessToken = "refreshed"))
+            assertFalse(repository.saveSession(session("cookie-1").copy(accessToken = "refreshed")).isNew)
             assertEquals("常用", database.accountDao().accountByBinggan("cookie-1")?.alias)
+        }
+    }
+
+    @Test
+    fun tabsAreGloballyLimitedAndCanSwitchAccountsWithoutStaleStateOverwrite() = runBlocking {
+        withContext(Dispatchers.IO) {
+            val firstAccount = repository.saveSession(session("first")).accountId
+            val secondAccount = repository.saveSession(session("second")).accountId
+            val tabs = BrowserTabRepository(database, nowMillis = { 500L })
+            val firstTab = tabs.create(firstAccount, "/thread/1")
+            repeat(9) { tabs.create(if (it % 2 == 0) firstAccount else secondAccount) }
+
+            try {
+                tabs.create(secondAccount)
+                fail("The global eleventh tab must be rejected")
+            } catch (_: TabLimitException) {
+                // Expected.
+            }
+
+            val switched = tabs.switchAccount(firstTab, secondAccount, "/thread/1")
+            tabs.save(
+                firstTab,
+                com.cpttmm.app.webview.RestorableWebViewState(
+                    path = "/stale",
+                    title = "旧页面",
+                    scrollY = 999,
+                ),
+            )
+            val stored = database.accountDao().tabs().first { it.id == firstTab.id }
+
+            assertEquals(secondAccount, switched.accountId)
+            assertEquals(secondAccount, stored.accountId)
+            assertEquals("/thread/1", stored.path)
+            assertEquals("小火锅", stored.title)
+            assertEquals(0, stored.scrollY)
+        }
+    }
+
+    @Test
+    fun closingCurrentTabReturnsTheMostRecentlyUsedGlobalTab() = runBlocking {
+        withContext(Dispatchers.IO) {
+            var now = 1L
+            val firstAccount = repository.saveSession(session("first")).accountId
+            val secondAccount = repository.saveSession(session("second")).accountId
+            val tabs = BrowserTabRepository(database, nowMillis = { now++ })
+            val older = tabs.create(firstAccount)
+            val current = tabs.create(secondAccount)
+
+            assertEquals(older.id, tabs.close(current)?.id)
+            assertNull(tabs.close(older))
         }
     }
 
     @Test
     fun pendingRevocationIsDeletedOnlyAfterServerLogoutSucceeds() = runBlocking {
         withContext(Dispatchers.IO) {
-            val accountId = repository.saveSession(session("cookie"))
+            val accountId = repository.saveSession(session("cookie")).accountId
             val account = database.accountDao().accountByBinggan("cookie")!!
             repository.removeOffline(account)
             val api = RecordingApi()
@@ -120,7 +170,7 @@ class SecureAccountRepositoryTest {
     @Test
     fun failedServerLogoutKeepsEncryptedRevocationQueued() = runBlocking {
         withContext(Dispatchers.IO) {
-            val accountId = repository.saveSession(session("cookie"))
+            val accountId = repository.saveSession(session("cookie")).accountId
             repository.removeOffline(database.accountDao().accountByBinggan("cookie")!!)
             val processor = PendingRevocationProcessor(
                 database = database,
@@ -139,7 +189,7 @@ class SecureAccountRepositoryTest {
     @Test
     fun invalidatingAnUncertainRefreshRemovesBothLocalTokens() = runBlocking {
         withContext(Dispatchers.IO) {
-            val accountId = repository.saveSession(session("cookie"))
+            val accountId = repository.saveSession(session("cookie")).accountId
 
             repository.invalidateSession(accountId)
 
@@ -151,7 +201,7 @@ class SecureAccountRepositoryTest {
     @Test
     fun refreshReturnsAndPersistsTheNewAccessToken() = runBlocking {
         withContext(Dispatchers.IO) {
-            val accountId = repository.saveSession(session("cookie"))
+            val accountId = repository.saveSession(session("cookie")).accountId
             val refreshed = session("cookie").copy(
                 accessToken = "refreshed-access",
                 refreshToken = "refreshed-refresh",

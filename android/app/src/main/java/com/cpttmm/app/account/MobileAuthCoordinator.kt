@@ -22,7 +22,7 @@ class MobileAuthCoordinator(
 ) {
     private val refreshFlights = SingleFlight<String, String>()
 
-    suspend fun login(binggan: String, password: String?): String {
+    suspend fun login(binggan: String, password: String?): SavedAccount {
         val session = api.login(
             domain = preferences.domain.first(),
             binggan = binggan,
@@ -35,7 +35,7 @@ class MobileAuthCoordinator(
         return accounts.saveSession(session)
     }
 
-    suspend fun register(): String {
+    suspend fun register(): SavedAccount {
         val digest = registrationDeviceId.digestOrNull() ?: throw SsaidUnavailableException()
         val session = api.register(
             domain = preferences.domain.first(),

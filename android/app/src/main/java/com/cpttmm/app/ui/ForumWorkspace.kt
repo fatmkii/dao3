@@ -31,7 +31,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateMapOf
@@ -72,7 +71,10 @@ import org.json.JSONObject
 @Composable
 internal fun ForumWorkspace(
     account: AccountEntity,
+    accountList: List<AccountEntity>,
     domain: AppDomain,
+    tabList: List<BrowserTabEntity>,
+    activeTab: BrowserTabEntity,
     auth: MobileAuthCoordinator,
     accounts: SecureAccountRepository,
     tabs: BrowserTabRepository,
@@ -81,26 +83,15 @@ internal fun ForumWorkspace(
     foregroundGeneration: Int,
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
-    onSelectAccount: () -> Unit,
-    onSessionExpired: () -> Unit,
+    onSelectTab: (BrowserTabEntity?) -> Unit,
+    onAddAccount: () -> Unit,
+    onRemoveAccount: (AccountEntity) -> Unit,
+    onSessionExpired: (AccountEntity) -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
 ) {
-    val tabFlow = remember(tabs, account.id) { tabs.observe(account.id) }
-    val tabList by tabFlow.collectAsState(initial = emptyList())
-    var activeTabId by remember(account.id) { mutableStateOf<String?>(null) }
     var accessToken by remember(account.id, domain) { mutableStateOf<String?>(null) }
     var error by remember(account.id, domain) { mutableStateOf<String?>(null) }
     var retryGeneration by remember(account.id, domain) { mutableStateOf(0) }
-
-    LaunchedEffect(account.id) {
-        val initial = tabs.ensureInitial(account.id)
-        if (activeTabId == null) activeTabId = initial.id
-    }
-    LaunchedEffect(tabList) {
-        if (activeTabId == null && tabList.isNotEmpty()) {
-            activeTabId = tabList.first().id
-        }
-    }
 
     LaunchedEffect(account.id, domain, retryGeneration) {
         accessToken = null
@@ -108,63 +99,48 @@ internal fun ForumWorkspace(
         runCatching { auth.accessTokenForWebView(account, domain) }
             .onSuccess { accessToken = it }
             .onFailure {
-                if (it is MobileSessionUnavailableException) onSessionExpired()
+                if (it is MobileSessionUnavailableException) onSessionExpired(account)
                 else error = accountErrorMessage(it)
             }
     }
 
-    when {
-        error != null -> {
-            WorkspaceMessage(
-                title = "论坛暂时无法打开",
-                message = error.orEmpty(),
-                actionLabel = "重试",
-                onAction = { retryGeneration += 1 },
-                onSelectAccount = onSelectAccount,
-            )
-        }
-
-        accessToken == null || tabList.isEmpty() || tabList.none { it.id == activeTabId } -> {
-            WorkspaceMessage(
-                title = "正在准备工作区",
-                message = "正在检查登录状态，然后再恢复网页网络活动。",
-                onSelectAccount = onSelectAccount,
-            )
-        }
-
-        else -> {
-            ActiveForumWorkspace(
-                account = account,
-                domain = domain,
-                accessToken = accessToken!!,
-                tabs = tabList,
-                activeTab = tabList.first { it.id == activeTabId },
-                tabRepository = tabs,
-                auth = auth,
-                accounts = accounts,
-                preferences = preferences,
-                diagnostics = diagnostics,
-                foregroundGeneration = foregroundGeneration,
-                onWebViewHostChanged = onWebViewHostChanged,
-                onWebViewPoolChanged = onWebViewPoolChanged,
-                onSelectAccount = onSelectAccount,
-                onSessionExpired = onSessionExpired,
-                onThemeChanged = onThemeChanged,
-                onSelectTab = { activeTabId = it.id },
-                onError = {
-                    if (it is MobileSessionUnavailableException) onSessionExpired()
-                    else error = accountErrorMessage(it)
-                },
-            )
-        }
-    }
+    ActiveForumWorkspace(
+        account = account,
+        accountList = accountList,
+        domain = domain,
+        accessToken = accessToken,
+        loadingError = error,
+        onRetry = { retryGeneration += 1 },
+        tabs = tabList,
+        activeTab = activeTab,
+        tabRepository = tabs,
+        auth = auth,
+        accounts = accounts,
+        preferences = preferences,
+        diagnostics = diagnostics,
+        foregroundGeneration = foregroundGeneration,
+        onWebViewHostChanged = onWebViewHostChanged,
+        onWebViewPoolChanged = onWebViewPoolChanged,
+        onAddAccount = onAddAccount,
+        onRemoveAccount = onRemoveAccount,
+        onSessionExpired = onSessionExpired,
+        onThemeChanged = onThemeChanged,
+        onSelectTab = onSelectTab,
+        onError = {
+            if (it is MobileSessionUnavailableException) onSessionExpired(account)
+            else error = accountErrorMessage(it)
+        },
+    )
 }
 
 @Composable
 private fun ActiveForumWorkspace(
     account: AccountEntity,
+    accountList: List<AccountEntity>,
     domain: AppDomain,
-    accessToken: String,
+    accessToken: String?,
+    loadingError: String?,
+    onRetry: () -> Unit,
     tabs: List<BrowserTabEntity>,
     activeTab: BrowserTabEntity,
     tabRepository: BrowserTabRepository,
@@ -175,10 +151,11 @@ private fun ActiveForumWorkspace(
     foregroundGeneration: Int,
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
-    onSelectAccount: () -> Unit,
-    onSessionExpired: () -> Unit,
+    onAddAccount: () -> Unit,
+    onRemoveAccount: (AccountEntity) -> Unit,
+    onSessionExpired: (AccountEntity) -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
-    onSelectTab: (BrowserTabEntity) -> Unit,
+    onSelectTab: (BrowserTabEntity?) -> Unit,
     onError: (Throwable) -> Unit,
 ) {
     val context = LocalContext.current
@@ -198,12 +175,37 @@ private fun ActiveForumWorkspace(
         }
     var showTabs by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showAccountSwitcher by remember { mutableStateOf(false) }
     var tabError by remember { mutableStateOf<String?>(null) }
     var settingsError by remember { mutableStateOf<String?>(null) }
     var pendingLongPressUrl by remember { mutableStateOf<String?>(null) }
     var currentAccessToken by remember(account.id, domain) { mutableStateOf(accessToken) }
-    val pageErrors = remember(account.id, domain) { mutableStateMapOf<String, String?>() }
-    val webViewPool = remember(account.id, domain) { WebViewPool<WebViewHost>() }
+    val pageErrors = remember(domain) { mutableStateMapOf<String, String?>() }
+    val webViewPool = remember(domain) { WebViewPool<WebViewHost>() }
+
+    LaunchedEffect(tabs) {
+        webViewPool.retainTabs(tabs.mapTo(mutableSetOf()) { it.id })
+    }
+    DisposableEffect(webViewPool) {
+        onWebViewPoolChanged(webViewPool)
+        onDispose {
+            pendingFileChooser.value?.onReceiveValue(null)
+            pendingFileChooser.value = null
+            onWebViewPoolChanged(null)
+            webViewPool.destroyAll()
+        }
+    }
+
+    if (accessToken == null) {
+        WorkspaceMessage(
+            title = if (loadingError == null) "正在准备工作区" else "论坛暂时无法打开",
+            message = loadingError ?: "正在检查登录状态，然后再恢复网页网络活动。",
+            actionLabel = if (loadingError == null) null else "重试",
+            onAction = onRetry,
+            onSelectAccount = { onSelectTab(null) },
+        )
+        return
+    }
 
     fun openInNewTab(rawUrl: String) {
         when (val target = DomainPolicy.classify(rawUrl)) {
@@ -238,13 +240,13 @@ private fun ActiveForumWorkspace(
 
     val host =
         remember(account.id, domain, activeTab.id) {
-            webViewPool.getOrCreate(activeTab.id) {
+            webViewPool.getOrCreate(activeTab.id, account.id) {
                 lateinit var createdHost: WebViewHost
                 createdHost =
                     WebViewHost(
                         context = context,
                         account = account,
-                        accessToken = currentAccessToken,
+                        accessToken = currentAccessToken ?: accessToken,
                         onExternalNavigation = { url ->
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         },
@@ -260,7 +262,7 @@ private fun ActiveForumWorkspace(
                                     host = createdHost,
                                     onAccessTokenRefreshed = { refreshedToken ->
                                         currentAccessToken = refreshedToken
-                                        webViewPool.updateAccessToken(refreshedToken)
+                                        webViewPool.updateAccessToken(account.id, refreshedToken)
                                     },
                                     onAuthFailure = onError,
                                     onThemeChanged = onThemeChanged,
@@ -269,7 +271,7 @@ private fun ActiveForumWorkspace(
                         },
                         onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
                         onTitleChanged = { title ->
-                            scope.launch { tabRepository.updateTitle(activeTab.id, title) }
+                            scope.launch { tabRepository.updateTitle(activeTab, title) }
                         },
                         onOpenNewTab = ::openInNewTab,
                         onLongPressLink = { pendingLongPressUrl = it },
@@ -296,9 +298,9 @@ private fun ActiveForumWorkspace(
             }
         }
 
-    LaunchedEffect(accessToken) {
+    LaunchedEffect(account.id, accessToken) {
         currentAccessToken = accessToken
-        webViewPool.updateAccessToken(accessToken)
+        webViewPool.updateAccessToken(account.id, accessToken)
     }
     LaunchedEffect(host) {
         webViewPool.activate(activeTab.id, tabs.associate { it.id to it.lastUsedAtMillis })
@@ -312,10 +314,10 @@ private fun ActiveForumWorkspace(
             )
         }.onSuccess { refreshedToken ->
             currentAccessToken = refreshedToken
-            webViewPool.updateAccessToken(refreshedToken)
+            webViewPool.updateAccessToken(account.id, refreshedToken)
             webViewPool.activate(activeTab.id, tabs.associate { it.id to it.lastUsedAtMillis })
         }.onFailure {
-            if (it is MobileSessionUnavailableException) onSessionExpired()
+            if (it is MobileSessionUnavailableException) onSessionExpired(account)
             else onError(it)
         }
     }
@@ -326,20 +328,12 @@ private fun ActiveForumWorkspace(
             host.pause()
         }
     }
-    DisposableEffect(webViewPool) {
-        onWebViewPoolChanged(webViewPool)
-        onDispose {
-            pendingFileChooser.value?.onReceiveValue(null)
-            pendingFileChooser.value = null
-            onWebViewPoolChanged(null)
-            webViewPool.destroyAll()
-        }
-    }
 
     BackHandler {
         when {
             showTabs -> showTabs = false
             showSettings -> showSettings = false
+            showAccountSwitcher -> showAccountSwitcher = false
             !host.goBack() -> (context as? Activity)?.moveTaskToBack(true)
         }
     }
@@ -459,7 +453,7 @@ private fun ActiveForumWorkspace(
                             runCatching { auth.accessTokenForWebView(account, alternative) }
                                 .onSuccess { preferences.setDomain(alternative) }
                                 .onFailure {
-                                    if (it is MobileSessionUnavailableException) onSessionExpired()
+                                    if (it is MobileSessionUnavailableException) onSessionExpired(account)
                                     else pageErrors[activeTab.id] = accountErrorMessage(it)
                                 }
                         }
@@ -472,6 +466,7 @@ private fun ActiveForumWorkspace(
     if (showTabs) {
         TabSheet(
             tabs = tabs,
+            accountAliases = accountList.associate { it.id to it.alias },
             activeTab = activeTab,
             error = tabError,
             onSelect = {
@@ -494,7 +489,9 @@ private fun ActiveForumWorkspace(
                     webViewPool.remove(tab.id, saveState = false)
                     pageErrors.remove(tab.id)
                     val next = tabRepository.close(tab)
-                    if (tab.id == activeTab.id) onSelectTab(next)
+                    if (tab.id == activeTab.id) {
+                        onSelectTab(next ?: tabRepository.ensureForAccount(account.id))
+                    }
                 }
             },
             onDismiss = { showTabs = false },
@@ -515,16 +512,52 @@ private fun ActiveForumWorkspace(
                             preferences.setDomain(selected)
                             showSettings = false
                         }.onFailure {
-                            if (it is MobileSessionUnavailableException) onSessionExpired()
+                            if (it is MobileSessionUnavailableException) onSessionExpired(account)
                             else settingsError = accountErrorMessage(it)
                         }
                 }
             },
             onSelectAccount = {
                 showSettings = false
-                onSelectAccount()
+                showAccountSwitcher = true
             },
             onDismiss = { showSettings = false },
+        )
+    }
+    if (showAccountSwitcher) {
+        AccountSwitcherSheet(
+            accounts = accountList,
+            activeAccount = account,
+            onSelect = { selected ->
+                if (selected.id == account.id) {
+                    showAccountSwitcher = false
+                } else {
+                    val path = host.restorableState()?.path ?: activeTab.path
+                    webViewPool.remove(activeTab.id, saveState = false)
+                    scope.launch {
+                        runCatching {
+                            tabRepository.switchAccount(activeTab, selected.id, path)
+                        }.onSuccess {
+                            onSelectTab(it)
+                            showAccountSwitcher = false
+                        }.onFailure {
+                            settingsError = it.message
+                        }
+                    }
+                }
+            },
+            onAdd = {
+                showAccountSwitcher = false
+                onAddAccount()
+            },
+            onRemove = {
+                showAccountSwitcher = false
+                onRemoveAccount(it)
+            },
+            onAliasChange = { selected, alias ->
+                scope.launch { accounts.updateAlias(selected.id, alias) }
+            },
+            onDismiss = { showAccountSwitcher = false },
         )
     }
     pendingLongPressUrl?.let { url ->

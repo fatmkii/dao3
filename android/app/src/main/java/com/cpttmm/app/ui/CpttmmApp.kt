@@ -12,14 +12,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.cpttmm.app.account.BrowserTabRepository
 import com.cpttmm.app.account.MobileAuthCoordinator
 import com.cpttmm.app.account.PendingRevocationWorker
+import com.cpttmm.app.account.SavedAccount
 import com.cpttmm.app.account.SecureAccountRepository
 import com.cpttmm.app.data.local.AccountEntity
 import com.cpttmm.app.diagnostics.DiagnosticLogger
+import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.webview.WebProfileCleaner
@@ -54,27 +57,68 @@ fun CpttmmApp(
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
         var showAccountSheet by remember { mutableStateOf(false) }
-        var showAccountSwitcher by remember { mutableStateOf(false) }
         var accountToRemove by remember { mutableStateOf<AccountEntity?>(null) }
         var accountToReauthenticate by remember { mutableStateOf<AccountEntity?>(null) }
-        var activeAccountId by remember { mutableStateOf<String?>(null) }
-        val activeAccount = accountList.firstOrNull { it.id == activeAccountId }
+        val tabFlow = remember(tabs) { tabs.observe() }
+        val tabList by tabFlow.collectAsState(initial = emptyList())
+        var activeTabId by remember { mutableStateOf<String?>(null) }
+        val activeTab = tabList.firstOrNull { it.id == activeTabId }
+        val activeAccount = accountList.firstOrNull { it.id == activeTab?.accountId }
+        val currentActiveTab by rememberUpdatedState(activeTab)
+        val currentAccountList by rememberUpdatedState(accountList)
 
         LaunchedEffect(activeAccount?.id) {
             nativeTheme = defaultNativeThemePalette(activeAccount?.cachedThemeName)
         }
 
-        if (activeAccount == null) {
+        fun activateAccount(account: AccountEntity) {
+            scope.launch {
+                runCatching { tabs.ensureForAccount(account.id) }
+                    .onSuccess { activeTabId = it.id }
+            }
+        }
+
+        fun handleSavedAccount(saved: SavedAccount) {
+            scope.launch {
+                val selectedTab =
+                    if (saved.isNew && tabList.size >= WorkspacePolicy.MAX_TABS && activeTab != null) {
+                        tabs.switchAccount(activeTab, saved.accountId, "/")
+                    } else {
+                        tabs.ensureForAccount(saved.accountId)
+                    }
+                activeTabId = selectedTab.id
+            }
+        }
+
+        fun handleSessionExpired(account: AccountEntity) {
+            WebProfileCleaner.clearAndDeleteWhenReleased(account.profileName)
+            scope.launch {
+                var next = tabs.deleteForAccount(account.id)
+                if (next == null) {
+                    currentAccountList.firstOrNull { it.id != account.id }?.let {
+                        next = tabs.ensureForAccount(it.id)
+                    }
+                }
+                if (currentActiveTab?.accountId == account.id) activeTabId = next?.id
+                accountToReauthenticate = account
+                showAccountSheet = true
+            }
+        }
+
+        if (activeAccount == null || activeTab == null) {
             AccountHome(
                 accounts = accountList,
                 onAddAccount = { showAccountSheet = true },
-                onSelectAccount = { activeAccountId = it.id },
+                onSelectAccount = ::activateAccount,
                 onRemoveAccount = { accountToRemove = it },
             )
         } else {
             ForumWorkspace(
                 account = activeAccount,
+                accountList = accountList,
                 domain = domain,
+                tabList = tabList,
+                activeTab = activeTab,
                 auth = auth,
                 accounts = accounts,
                 tabs = tabs,
@@ -83,13 +127,13 @@ fun CpttmmApp(
                 foregroundGeneration = foregroundGeneration,
                 onWebViewHostChanged = onWebViewHostChanged,
                 onWebViewPoolChanged = onWebViewPoolChanged,
-                onSelectAccount = { showAccountSwitcher = true },
-                onSessionExpired = {
-                    accountToReauthenticate = activeAccount
-                    activeAccountId = null
-                    showAccountSwitcher = false
+                onSelectTab = { activeTabId = it?.id },
+                onAddAccount = {
+                    accountToReauthenticate = null
                     showAccountSheet = true
                 },
+                onRemoveAccount = { accountToRemove = it },
+                onSessionExpired = ::handleSessionExpired,
                 onThemeChanged = { name, primaryColor, backgroundColor ->
                     nativeTheme = NativeThemePalette(name, primaryColor, backgroundColor)
                 },
@@ -113,35 +157,11 @@ fun CpttmmApp(
                 onLogin = { binggan, password -> auth.login(binggan, password) },
                 onRegister = { auth.register() },
                 loadRegistrationStatus = { auth.registrationStatus(domain) },
-                onCompleted = { registeredAccountId ->
+                onCompleted = { savedAccount ->
                     showAccountSheet = false
                     accountToReauthenticate = null
-                    if (registeredAccountId != null) activeAccountId = registeredAccountId
+                    handleSavedAccount(savedAccount)
                 },
-            )
-        }
-
-        if (showAccountSwitcher && activeAccount != null) {
-            AccountSwitcherSheet(
-                accounts = accountList,
-                activeAccount = activeAccount,
-                onSelect = {
-                    activeAccountId = it.id
-                    showAccountSwitcher = false
-                },
-                onAdd = {
-                    showAccountSwitcher = false
-                    accountToReauthenticate = null
-                    showAccountSheet = true
-                },
-                onRemove = {
-                    showAccountSwitcher = false
-                    accountToRemove = it
-                },
-                onAliasChange = { account, alias ->
-                    scope.launch { accounts.updateAlias(account.id, alias) }
-                },
-                onDismiss = { showAccountSwitcher = false },
             )
         }
 
@@ -149,12 +169,25 @@ fun CpttmmApp(
             AlertDialog(
                 onDismissRequest = { accountToRemove = null },
                 title = { Text("移除饼干？") },
-                text = { Text("将立即清除 ${account.binggan} 的本地工作区，并在联网后撤销这台设备的登录会话。") },
+                text = {
+                    val tabCount = tabList.count { it.accountId == account.id }
+                    Text(
+                        "将立即关闭 ${account.binggan} 的 $tabCount 个标签并清除本地数据，" +
+                            "联网后撤销这台设备的登录会话。",
+                    )
+                },
                 confirmButton = {
                     TextButton(onClick = {
                         accountToRemove = null
                         WebProfileCleaner.clearAndDeleteWhenReleased(account.profileName)
                         scope.launch {
+                            var next = tabs.deleteForAccount(account.id)
+                            if (next == null) {
+                                currentAccountList.firstOrNull { it.id != account.id }?.let {
+                                    next = tabs.ensureForAccount(it.id)
+                                }
+                            }
+                            if (currentActiveTab?.accountId == account.id) activeTabId = next?.id
                             accounts.removeOffline(account)
                             PendingRevocationWorker.enqueue(context)
                         }

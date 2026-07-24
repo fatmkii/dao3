@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.BuildConfig
+import com.cpttmm.app.account.SavedAccount
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.RegistrationStatus
 import kotlinx.coroutines.launch
@@ -61,10 +62,10 @@ internal fun AddAccountSheet(
     initialMessage: String? = null,
     onDomainChange: (AppDomain) -> Unit,
     onDismiss: () -> Unit,
-    onLogin: suspend (String, String?) -> String,
-    onRegister: suspend () -> String,
+    onLogin: suspend (String, String?) -> SavedAccount,
+    onRegister: suspend () -> SavedAccount,
     loadRegistrationStatus: suspend () -> RegistrationStatus,
-    onCompleted: (String?) -> Unit,
+    onCompleted: (SavedAccount) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -100,14 +101,14 @@ internal fun AddAccountSheet(
         scope.launch {
             submitting = true
             error = null
-            runCatching<String?> {
+            runCatching {
                 if (action == AccountAction.LOGIN) {
                     onLogin(binggan.trim(), password.ifBlank { null })
                 } else {
                     onRegister()
                 }
-            }.onSuccess { registeredAccountId ->
-                onCompleted(registeredAccountId)
+            }.onSuccess { savedAccount ->
+                onCompleted(savedAccount)
             }.onFailure { throwable ->
                 error = accountErrorMessage(throwable)
             }

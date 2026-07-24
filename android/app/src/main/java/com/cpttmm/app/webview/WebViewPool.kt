@@ -3,6 +3,7 @@ package com.cpttmm.app.webview
 import com.cpttmm.app.model.WorkspacePolicy
 
 interface PooledWebViewHost {
+    val accountId: String
     fun pause()
     fun resume()
     fun updateAccessToken(accessToken: String)
@@ -13,8 +14,13 @@ class WebViewPool<T : PooledWebViewHost> {
     private val hosts = linkedMapOf<String, T>()
     private var activeTabId: String? = null
 
-    fun getOrCreate(tabId: String, factory: () -> T): T =
-        hosts.getOrPut(tabId, factory)
+    fun getOrCreate(tabId: String, accountId: String, factory: () -> T): T {
+        hosts[tabId]?.let { existing ->
+            if (existing.accountId == accountId) return existing
+            remove(tabId, saveState = false)
+        }
+        return factory().also { hosts[tabId] = it }
+    }
 
     fun activate(tabId: String, lastUsedAtMillis: Map<String, Long>) {
         activeTabId = tabId
@@ -30,13 +36,21 @@ class WebViewPool<T : PooledWebViewHost> {
         }
     }
 
-    fun updateAccessToken(accessToken: String) {
-        hosts.values.forEach { it.updateAccessToken(accessToken) }
+    fun updateAccessToken(accountId: String, accessToken: String) {
+        hosts.values
+            .filter { it.accountId == accountId }
+            .forEach { it.updateAccessToken(accessToken) }
     }
 
     fun remove(tabId: String, saveState: Boolean) {
         hosts.remove(tabId)?.destroy(saveState)
         if (activeTabId == tabId) activeTabId = null
+    }
+
+    fun retainTabs(tabIds: Set<String>) {
+        hosts.keys.filterNot(tabIds::contains).toList().forEach { tabId ->
+            remove(tabId, saveState = false)
+        }
     }
 
     fun trimToActive() {

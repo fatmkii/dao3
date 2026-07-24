@@ -21,7 +21,7 @@ class SecureAccountRepository(
 
     fun observeAccounts(): Flow<List<AccountEntity>> = dao.observeAccounts()
 
-    suspend fun saveSession(session: MobileSessionData): String = database.withTransaction {
+    suspend fun saveSession(session: MobileSessionData): SavedAccount = database.withTransaction {
         val existing = dao.accountByBinggan(session.binggan)
         if (existing == null && !WorkspacePolicy.canAddAccount(dao.accountCount())) {
             throw AccountLimitException()
@@ -42,7 +42,7 @@ class SecureAccountRepository(
         )
         dao.upsertSecrets(sessionMapper.secrets(accountId, session))
 
-        accountId
+        SavedAccount(accountId = accountId, isNew = existing == null)
     }
 
     suspend fun decryptedTokens(accountId: String): AccountTokens? {
@@ -89,6 +89,11 @@ class SecureAccountRepository(
 data class AccountTokens(
     val accessToken: String,
     val refreshToken: String,
+)
+
+data class SavedAccount(
+    val accountId: String,
+    val isNew: Boolean,
 )
 
 class AccountLimitException : IllegalStateException("最多只能保存 5 个饼干")

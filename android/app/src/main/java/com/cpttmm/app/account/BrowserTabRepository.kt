@@ -14,53 +14,87 @@ class BrowserTabRepository(
 ) {
     private val dao = database.accountDao()
 
-    fun observe(accountId: String): Flow<List<BrowserTabEntity>> = dao.observeTabs(accountId)
+    fun observe(): Flow<List<BrowserTabEntity>> = dao.observeTabs()
 
-    suspend fun ensureInitial(accountId: String): BrowserTabEntity = database.withTransaction {
-        dao.tabs(accountId).firstOrNull() ?: newTab(accountId, "/").also { dao.upsertTab(it) }
+    suspend fun ensureForAccount(accountId: String): BrowserTabEntity = database.withTransaction {
+        dao.latestTab(accountId) ?: createInTransaction(accountId, "/")
     }
 
     suspend fun create(accountId: String, path: String = "/"): BrowserTabEntity =
         database.withTransaction {
-            if (!WorkspacePolicy.canAddTab(dao.tabCount(accountId))) {
-                throw TabLimitException()
-            }
-            newTab(accountId, path).also { dao.upsertTab(it) }
+            createInTransaction(accountId, path)
         }
 
     suspend fun markUsed(tab: BrowserTabEntity) {
-        dao.upsertTab(tab.copy(lastUsedAtMillis = nowMillis()))
+        dao.markTabUsed(tab.id, nowMillis())
     }
 
-    suspend fun updateTitle(tabId: String, title: String) {
-        if (title.isNotBlank()) dao.updateTabTitle(tabId, title)
+    suspend fun updateTitle(tab: BrowserTabEntity, title: String) {
+        if (title.isNotBlank()) dao.updateTabTitle(tab.id, tab.accountId, title)
     }
 
     suspend fun save(tab: BrowserTabEntity, state: RestorableWebViewState) {
-        dao.upsertTab(
-            tab.copy(
-                path = state.path,
-                title = state.title.ifBlank { tab.title },
-                scrollY = state.scrollY,
-                lastUsedAtMillis = nowMillis(),
-            ),
+        dao.updateTabState(
+            tabId = tab.id,
+            accountId = tab.accountId,
+            path = state.path,
+            title = state.title.ifBlank { tab.title },
+            scrollY = state.scrollY,
+            lastUsedAtMillis = nowMillis(),
         )
     }
 
-    suspend fun close(tab: BrowserTabEntity): BrowserTabEntity = database.withTransaction {
+    suspend fun switchAccount(
+        tab: BrowserTabEntity,
+        accountId: String,
+        path: String,
+    ): BrowserTabEntity = database.withTransaction {
+        val switched = tab.copy(
+            accountId = accountId,
+            path = normalizedPath(path),
+            title = DEFAULT_TITLE,
+            scrollY = 0,
+            lastUsedAtMillis = nowMillis(),
+        )
+        dao.switchTabAccount(
+            tabId = switched.id,
+            accountId = switched.accountId,
+            path = switched.path,
+            title = switched.title,
+            lastUsedAtMillis = switched.lastUsedAtMillis,
+        )
+        switched
+    }
+
+    suspend fun close(tab: BrowserTabEntity): BrowserTabEntity? = database.withTransaction {
         dao.deleteTab(tab)
-        dao.tabs(tab.accountId).firstOrNull()
-            ?: newTab(tab.accountId, "/").also { dao.upsertTab(it) }
+        dao.tabs().firstOrNull()
+    }
+
+    suspend fun deleteForAccount(accountId: String): BrowserTabEntity? = database.withTransaction {
+        dao.deleteTabs(accountId)
+        dao.tabs().firstOrNull()
     }
 
     private fun newTab(accountId: String, path: String): BrowserTabEntity = BrowserTabEntity(
         id = UUID.randomUUID().toString(),
         accountId = accountId,
-        path = path.takeIf { it.startsWith('/') } ?: "/",
-        title = "小火锅",
+        path = normalizedPath(path),
+        title = DEFAULT_TITLE,
         scrollY = 0,
         lastUsedAtMillis = nowMillis(),
     )
+
+    private suspend fun createInTransaction(accountId: String, path: String): BrowserTabEntity {
+        if (!WorkspacePolicy.canAddTab(dao.tabCount())) throw TabLimitException()
+        return newTab(accountId, path).also { dao.upsertTab(it) }
+    }
+
+    private fun normalizedPath(path: String): String = path.takeIf { it.startsWith('/') } ?: "/"
+
+    private companion object {
+        const val DEFAULT_TITLE = "小火锅"
+    }
 }
 
-class TabLimitException : IllegalStateException("每个饼干最多打开 10 个标签")
+class TabLimitException : IllegalStateException("最多打开 10 个标签")

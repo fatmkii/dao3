@@ -27,9 +27,9 @@ class ProcessRecreationTest {
 
             val firstDatabase = database(context, databaseName)
             val accounts = SecureAccountRepository(firstDatabase, TestCipher())
-            val accountId = accounts.saveSession(session())
+            val accountId = accounts.saveSession(session()).accountId
             val tabs = BrowserTabRepository(firstDatabase, nowMillis = { 123L })
-            val tab = tabs.ensureInitial(accountId)
+            val tab = tabs.ensureForAccount(accountId)
             tabs.save(
                 tab,
                 RestorableWebViewState(
@@ -38,13 +38,13 @@ class ProcessRecreationTest {
                     scrollY = 640,
                 ),
             )
-            tabs.updateTitle(tab.id, "实时标题")
+            tabs.updateTitle(tab, "实时标题")
             firstDatabase.close()
 
             val reopenedDatabase = database(context, databaseName)
             val reopenedAccounts = SecureAccountRepository(reopenedDatabase, TestCipher())
             val account = reopenedDatabase.accountDao().accountByBinggan("ProcessCookie")
-            val restoredTab = reopenedDatabase.accountDao().tabs(accountId).single()
+            val restoredTab = reopenedDatabase.accountDao().tabs().single()
 
             assertEquals(accountId, account?.id)
             assertEquals("access-token", reopenedAccounts.decryptedTokens(accountId)?.accessToken)

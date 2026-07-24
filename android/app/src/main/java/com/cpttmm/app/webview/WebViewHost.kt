@@ -48,6 +48,7 @@ class WebViewHost(
     ) -> Boolean,
     private val onDownloadFailure: () -> Unit,
 ) : PooledWebViewHost {
+    override val accountId: String = account.id
     val view: WebView = WebView(context)
 
     private var documentStartScript: ScriptHandler? = null
@@ -216,6 +217,8 @@ class WebViewHost(
         profile.geolocationPermissions.clearAll()
     }
 
+    fun restorableState(): RestorableWebViewState? = currentRestorableState()
+
     override fun pause() {
         if (destroyed) return
         saveRestorableState()
@@ -277,19 +280,22 @@ class WebViewHost(
     }
 
     private fun saveRestorableState() {
-        val current = view.url ?: return
-        val target = DomainPolicy.classify(current) as? NavigationTarget.Internal ?: return
+        val state = currentRestorableState() ?: return
+        onSaveState(state)
+    }
+
+    private fun currentRestorableState(): RestorableWebViewState? {
+        val current = view.url ?: return null
+        val target = DomainPolicy.classify(current) as? NavigationTarget.Internal ?: return null
         val path = buildString {
             append(target.uri.rawPath.ifBlank { "/" })
             target.uri.rawQuery?.let { append('?').append(it) }
             target.uri.rawFragment?.let { append('#').append(it) }
         }
-        onSaveState(
-            RestorableWebViewState(
-                path = path,
-                title = view.title.orEmpty(),
-                scrollY = view.scrollY,
-            ),
+        return RestorableWebViewState(
+            path = path,
+            title = view.title.orEmpty(),
+            scrollY = view.scrollY,
         )
     }
 
