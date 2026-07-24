@@ -23,7 +23,6 @@ if [[ $("$windows_adb" -s "$device" get-state 2>/dev/null | tr -d '\r') != "devi
     exit 1
 fi
 
-"$windows_adb" -s "$device" reverse tcp:5173 tcp:5173
 "$repo_root/android/gradlew" -p "$repo_root/android" assembleDebug
 "$windows_adb" -s "$device" install -r "$windows_apk"
 "$windows_adb" -s "$device" shell am start \
