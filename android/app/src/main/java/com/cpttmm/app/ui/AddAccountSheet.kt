@@ -225,7 +225,7 @@ internal fun AddAccountSheet(
                 }
 
                 if (accountActionBlocked) {
-                    InlineMessage("已达到 5 个账号上限，请先移除一个账号。")
+                    InlineMessage("已达到 5 个饼干上限，请先移除一个饼干。")
                 } else if (error != null) {
                     InlineMessage(error!!)
                 }

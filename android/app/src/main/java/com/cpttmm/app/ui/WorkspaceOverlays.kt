@@ -224,7 +224,7 @@ internal fun WorkspaceMessage(
                 CircularProgressIndicator()
             }
             TextButton(onClick = onSelectAccount, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                Text("返回账号列表")
+                Text("返回饼干列表")
             }
         }
     }

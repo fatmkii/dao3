@@ -63,4 +63,4 @@ class BrowserTabRepository(
     )
 }
 
-class TabLimitException : IllegalStateException("每个账号最多打开 10 个标签")
+class TabLimitException : IllegalStateException("每个饼干最多打开 10 个标签")

@@ -19,11 +19,11 @@ class AccountFlowTest {
     fun addAccountSheetProgressivelyDisclosesLoginAndRegistration() {
         assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
         val addAccountLabel = if (
-            composeRule.onAllNodesWithText("添加账号").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("添加饼干").fetchSemanticsNodes().isNotEmpty()
         ) {
-            "添加账号"
+            "添加饼干"
         } else {
-            "添加另一个账号"
+            "添加另一个饼干"
         }
         composeRule.onNodeWithText(addAccountLabel).performClick()
         composeRule.onNodeWithText("登录已有饼干").assertIsDisplayed()

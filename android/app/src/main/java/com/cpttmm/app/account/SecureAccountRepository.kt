@@ -86,4 +86,4 @@ data class AccountTokens(
     val refreshToken: String,
 )
 
-class AccountLimitException : IllegalStateException("最多只能保存 5 个账号")
+class AccountLimitException : IllegalStateException("最多只能保存 5 个饼干")

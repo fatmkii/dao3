@@ -51,7 +51,7 @@ internal fun AccountSwitcherSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("切换账号", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text("切换饼干", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             accounts.forEach { account ->
                 Card(
                     onClick = { onSelect(account) },
@@ -79,7 +79,7 @@ internal fun AccountSwitcherSheet(
                 onClick = onAdd,
                 enabled = accounts.size < 5,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) { Text(if (accounts.size < 5) "添加账号" else "已达到 5 个账号上限") }
+            ) { Text(if (accounts.size < 5) "添加饼干" else "已达到 5 个饼干上限") }
         }
     }
 }
@@ -184,7 +184,7 @@ private fun AccountList(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("选择账号", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text("选择饼干", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         accounts.forEach { account ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -218,7 +218,7 @@ private fun AccountList(
             enabled = accounts.size < 5,
             modifier = Modifier.fillMaxWidth().height(52.dp),
         ) {
-            Text(if (accounts.size < 5) "添加另一个账号" else "已达到 5 个账号上限")
+            Text(if (accounts.size < 5) "添加另一个饼干" else "已达到 5 个饼干上限")
         }
     }
 }

@@ -145,7 +145,7 @@ fun CpttmmApp(
         accountToRemove?.let { account ->
             AlertDialog(
                 onDismissRequest = { accountToRemove = null },
-                title = { Text("移除账号？") },
+                title = { Text("移除饼干？") },
                 text = { Text("将立即清除 ${account.binggan} 的本地工作区，并在联网后撤销这台设备的登录会话。") },
                 confirmButton = {
                     TextButton(onClick = {
