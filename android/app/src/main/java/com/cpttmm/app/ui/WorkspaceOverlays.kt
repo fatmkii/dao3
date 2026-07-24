@@ -190,14 +190,6 @@ internal fun SettingsSheet(
                 onClick = onSelectAccount,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) { Text("切换饼干：$currentBinggan", maxLines = 1) }
-            TextButton(
-                onClick = {
-                    context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse("https://${domain.host}/privacy/android")),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-            ) { Text("Android 隐私说明") }
             HorizontalDivider()
             Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             when {
