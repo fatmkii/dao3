@@ -72,6 +72,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             buildConfigField("String", "DEVELOPMENT_SERVER_ORIGIN", "\"\"")
             signingConfig = signingConfigs.findByName("release")
             proguardFiles(
