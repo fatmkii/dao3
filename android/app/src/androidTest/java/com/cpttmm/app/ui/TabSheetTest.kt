@@ -3,6 +3,7 @@ package com.cpttmm.app.ui
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import com.cpttmm.app.data.local.BrowserTabEntity
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,6 +38,31 @@ class TabSheetTest {
         composeRule.onNodeWithText("备用").assertExists()
         composeRule.onNodeWithText("/thread/1").assertExists()
         composeRule.onNodeWithText("/thread/2").assertExists()
+    }
+
+    @Test
+    fun showsTheActiveTabLast() {
+        val active = tab("active", "account-one", "/active")
+        val other = tab("other", "account-two", "/other")
+
+        composeRule.setContent {
+            CpttmmTheme(defaultNativeThemePalette(null)) {
+                TabSheet(
+                    tabs = listOf(active, other),
+                    accountAliases = emptyMap(),
+                    activeTab = active,
+                    error = null,
+                    onSelect = {},
+                    onCreate = {},
+                    onClose = {},
+                    onDismiss = {},
+                )
+            }
+        }
+
+        val activeTop = composeRule.onNodeWithText("/active").fetchSemanticsNode().boundsInRoot.top
+        val otherTop = composeRule.onNodeWithText("/other").fetchSemanticsNode().boundsInRoot.top
+        assertTrue(activeTop > otherTop)
     }
 
     private fun tab(id: String, accountId: String, path: String) =

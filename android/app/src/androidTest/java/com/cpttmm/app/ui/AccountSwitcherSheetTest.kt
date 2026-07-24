@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.text.TextRange
 import com.cpttmm.app.data.local.AccountEntity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -54,11 +55,38 @@ class AccountSwitcherSheetTest {
         composeRule.onNodeWithText("添加饼干").assertExists()
     }
 
-    private fun account() =
+    @Test
+    fun showsTheActiveAccountLast() {
+        val active = account(id = "active", alias = "当前")
+        val other = account(id = "other", alias = "其他")
+
+        composeRule.setContent {
+            CpttmmTheme(defaultNativeThemePalette(null)) {
+                AccountSwitcherSheet(
+                    accounts = listOf(active, other),
+                    activeAccount = active,
+                    onSelect = {},
+                    onAdd = {},
+                    onRemove = {},
+                    onAliasChange = { _, _ -> },
+                    onDismiss = {},
+                )
+            }
+        }
+
+        val activeTop = composeRule.onNodeWithText("当前").fetchSemanticsNode().boundsInRoot.top
+        val otherTop = composeRule.onNodeWithText("其他").fetchSemanticsNode().boundsInRoot.top
+        assertTrue(activeTop > otherTop)
+    }
+
+    private fun account(
+        id: String = "account-id",
+        alias: String = "饼干#1",
+    ) =
         AccountEntity(
-            id = "account-id",
+            id = id,
             binggan = "SecretCookie",
-            alias = "饼干#1",
+            alias = alias,
             profileName = "profile",
             cachedThemeName = null,
             accessExpiresAtMillis = Long.MAX_VALUE,

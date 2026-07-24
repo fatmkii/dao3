@@ -2,6 +2,7 @@ package com.cpttmm.app.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.BuildConfig
@@ -60,14 +63,24 @@ internal fun TabSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            tabs.forEach { tab ->
+            tabs.sortedBy { it.id == activeTab.id }.forEach { tab ->
+                val isActive = tab.id == activeTab.id
                 Card(
                     onClick = { onSelect(tab) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().semantics { selected = isActive },
+                    border =
+                        if (isActive) {
+                            BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            )
+                        } else {
+                            null
+                        },
                     colors =
                         CardDefaults.cardColors(
                             containerColor =
-                                if (tab.id == activeTab.id) {
+                                if (isActive) {
                                     MaterialTheme.colorScheme.background
                                 } else {
                                     MaterialTheme.colorScheme.surface
