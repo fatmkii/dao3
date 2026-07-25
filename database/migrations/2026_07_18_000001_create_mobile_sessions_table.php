@@ -15,8 +15,8 @@ return new class extends Migration
             $table->char('refresh_token_hash', 64);
             $table->string('device_name', 100);
             $table->string('app_version', 50);
-            $table->timestamp('last_used_at');
-            $table->timestamp('idle_expires_at');
+            $table->dateTime('last_used_at');
+            $table->dateTime('idle_expires_at');
             $table->timestamp('revoked_at')->nullable();
             $table->timestamps();
 
