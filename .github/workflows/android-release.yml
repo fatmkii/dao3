@@ -105,7 +105,7 @@ jobs:
             --arg version_name "$VERSION_NAME" \
             --argjson version_code "$VERSION_CODE" \
             --rawfile notes release-notes.md \
-            --arg apk_url "https://cpttmm.com/downloads/android/$APK_NAME" \
+            --arg apk_url "https://cpttmm.com/android/$APK_NAME" \
             --arg github_url "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
             --arg sha256 "$sha256" \
             '{version_name: $version_name, version_code: $version_code, notes: $notes, apk_url: $apk_url, github_url: $github_url, sha256: $sha256}' \
@@ -131,11 +131,23 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
             set -e
-            destination=/data/wwwroot/v3.cpttmm.com/shared/downloads/android
-            mkdir -p "$destination"
-            install -m 0644 "/tmp/cpttmm-android-release/${{ steps.version.outputs.apk_name }}" "$destination/${{ steps.version.outputs.apk_name }}"
-            install -m 0644 /tmp/cpttmm-android-release/version.json "$destination/version.json"
-            install -m 0644 /tmp/cpttmm-android-release/apk.sha256 "$destination/apk.sha256"
+            app_dir=/data/wwwroot/v3.cpttmm.com
+            apk_destination="$app_dir/shared/android"
+            metadata_destination="$app_dir/shared/downloads/android"
+            public_android="$app_dir/current/public/android"
+
+            mkdir -p "$apk_destination" "$metadata_destination"
+            if [ -e "$public_android" ] && [ ! -L "$public_android" ]; then
+              echo "$public_android exists and is not a symlink" >&2
+              exit 1
+            fi
+            rm -f "$public_android"
+            ln -sfn "$apk_destination" "$public_android"
+
+            install -m 0644 "/tmp/cpttmm-android-release/${{ steps.version.outputs.apk_name }}" "$apk_destination/${{ steps.version.outputs.apk_name }}"
+            install -m 0644 "/tmp/cpttmm-android-release/${{ steps.version.outputs.apk_name }}" "$apk_destination/cpttmm-latest.apk"
+            install -m 0644 /tmp/cpttmm-android-release/version.json "$metadata_destination/version.json"
+            install -m 0644 /tmp/cpttmm-android-release/apk.sha256 "$metadata_destination/apk.sha256"
             rm -rf /tmp/cpttmm-android-release
 
       - name: Create GitHub release

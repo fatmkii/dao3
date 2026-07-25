@@ -211,21 +211,11 @@ private fun ReleaseDetails(
         if (hasUpdate) "发现新版本 ${release.versionName}" else "已是最新版本",
         fontWeight = FontWeight.SemiBold,
     )
-    if (release.notes.isNotBlank()) Text(release.notes)
-    if (release.sha256.isNotBlank()) {
-        Text("APK SHA-256\n${release.sha256}", style = MaterialTheme.typography.bodySmall)
-    }
     if (hasUpdate && release.apkUrl.startsWith("https://")) {
         Button(
             onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.apkUrl))) },
             modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) { Text("从官网下载") }
-    }
-    if (hasUpdate && release.githubUrl.startsWith("https://")) {
-        TextButton(
-            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.githubUrl))) },
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-        ) { Text("打开 GitHub 镜像") }
+        ) { Text("下载最新版") }
     }
 }
 

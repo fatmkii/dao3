@@ -106,7 +106,9 @@ jobs:
             ln -sfn "$SHARED_DIR/.env" "$RELEASE_DIR/.env"
             rm -rf "$RELEASE_DIR/storage"
             ln -sfn "$SHARED_DIR/storage" "$RELEASE_DIR/storage"
-            mkdir -p "$SHARED_DIR/downloads"
+            mkdir -p "$SHARED_DIR/android" "$SHARED_DIR/downloads"
+            rm -rf "$RELEASE_DIR/public/android"
+            ln -sfn "$SHARED_DIR/android" "$RELEASE_DIR/public/android"
             rm -rf "$RELEASE_DIR/public/downloads"
             ln -sfn "$SHARED_DIR/downloads" "$RELEASE_DIR/public/downloads"
 
