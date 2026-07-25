@@ -179,7 +179,7 @@ internal fun SettingsSheet(
                 if (BuildConfig.DEBUG) {
                     "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
                 } else {
-                    "切换前会先检查当前登录状态；应用不会自动重放失败请求。"
+                    "如果网络链接有问题请尝试更换网址；不会切换已登录的饼干；"
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
