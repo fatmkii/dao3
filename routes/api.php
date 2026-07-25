@@ -1,23 +1,23 @@
 <?php
 
-use App\Http\Controllers\API\AdminActivesController;
 use App\Http\Controllers\API\AccuseController;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\CommonController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\ForumController;
-use App\Http\Controllers\API\PostController;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\ThreadController;
-use App\Http\Controllers\API\HongbaoController;
-use App\Http\Controllers\API\HongbaoPostController;
-use App\Http\Controllers\API\BattleController;
+use App\Http\Controllers\API\AdminActivesController;
 use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\BattleController;
+use App\Http\Controllers\API\CommonController;
 use App\Http\Controllers\API\CrowdController;
 use App\Http\Controllers\API\EmojiConstestController;
+use App\Http\Controllers\API\ForumController;
 use App\Http\Controllers\API\GambleController;
+use App\Http\Controllers\API\HongbaoController;
+use App\Http\Controllers\API\HongbaoPostController;
+use App\Http\Controllers\API\MobileSessionController;
+use App\Http\Controllers\API\PostController;
+use App\Http\Controllers\API\ThreadController;
+use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\VoteController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,13 +30,21 @@ use App\Http\Controllers\API\VoteController;
 |
 */
 
+Route::prefix('mobile')->group(function () {
+    Route::get('/version', [MobileSessionController::class, 'version']);
+    Route::get('/registration-status', [MobileSessionController::class, 'registrationStatus']);
+    Route::post('/login', [MobileSessionController::class, 'login'])->middleware('throttle:login');
+    Route::post('/register', [MobileSessionController::class, 'register']);
+    Route::post('/token/refresh', [MobileSessionController::class, 'refresh']);
+    Route::post('/logout', [MobileSessionController::class, 'logout']);
+});
+
 //Auth系列
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->Middleware('throttle:login')->withoutMiddleware('auth:sanctum'); //导入饼干
     Route::post('/logout', [AuthController::class, 'logout']); //退出饼干
     Route::post('/set_password', [AuthController::class, 'set_password'])->middleware('CheckBinggan:create');   //设定饼干密码
 });
-
 
 //User系列
 Route::prefix('user')->middleware('auth:sanctum')->group(function () {
@@ -101,8 +109,6 @@ Route::prefix('accuses')->middleware('auth:sanctum')->group(function () {
     Route::put('/{accuse}/uncertain', [AccuseController::class, 'uncertain']);
 });
 
-
-
 //Forum系列
 Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ForumController::class, 'index'])->withoutMiddleware('auth:sanctum'); //查看板块列表
@@ -147,7 +153,6 @@ Route::prefix('crowds')->middleware('auth:sanctum')->group(function () {
     Route::post('/repeal', [CrowdController::class, 'repeal']);  //中止众筹（只能由管理员操作）
 });
 
-
 //IncomeStatement系列
 Route::prefix('income')->middleware('auth:sanctum')->group(function () {
     Route::post('/show_day', [UserController::class, 'income_show_day'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
@@ -155,7 +160,6 @@ Route::prefix('income')->middleware('auth:sanctum')->group(function () {
     Route::post('/show_day_v2', [UserController::class, 'income_show_day_v2'])->middleware('CheckBinggan:show'); //查看olo收益表（当日）
     Route::get('/show_sum_v2', [UserController::class, 'income_show_sum_v2'])->middleware('CheckBinggan:show'); //查看olo收益表（合计）
 });
-
 
 //Hongbao系列
 Route::prefix('hongbao')->middleware('auth:sanctum')->group(function () {
@@ -190,7 +194,6 @@ Route::prefix('emoji_contest')->middleware('auth:sanctum')->group(function () {
     Route::get('/show_user_votes', [EmojiConstestController::class, 'show_user_votes'])->middleware('CheckBinggan:show'); //查询用户的投票结果
     Route::post('/user_vote', [EmojiConstestController::class, 'user_vote'])->middleware('CheckBinggan:create'); //用户投票
 });
-
 
 //各种杂项
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']); //已废弃

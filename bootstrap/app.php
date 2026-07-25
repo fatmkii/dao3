@@ -13,6 +13,24 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
+$redactedRequestData = static function (Request $request): array {
+    $data = $request->all();
+    foreach ([
+        'registration_device_digest',
+        'installation_id',
+        'refresh_token',
+        'password',
+        'password_confirmation',
+        'old_password',
+        'new_password',
+    ] as $key) {
+        if (array_key_exists($key, $data)) {
+            $data[$key] = '[REDACTED]';
+        }
+    }
+
+    return $data;
+};
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,15 +56,23 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/loudspeaker/create'),
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function (Exceptions $exceptions) use ($redactedRequestData) {
 
-        $exceptions->render(function (RouteNotFoundException $e, $request) {
-            Log::error('request', ['request' => $request]);
+        $exceptions->render(function (RouteNotFoundException $e, Request $request) {
+            Log::error('Route not found', [
+                'method' => $request->method(),
+                'request_url' => $request->url(),
+                'request_ip' => $request->ip(),
+            ]);
         });
 
-        $exceptions->render(function (QueryException $e, Request $request) {
+        $exceptions->render(function (QueryException $e, Request $request) use ($redactedRequestData) {
             $error_timestamp = Carbon::now()->toDateTimeString();
-            Log::error($e, ['request_url' => $request->url(), 'request_data' => $request->all(), 'request_ip' => $request->ip()]);
+            Log::error($e, [
+                'request_url' => $request->url(),
+                'request_data' => $redactedRequestData($request),
+                'request_ip' => $request->ip(),
+            ]);
             return response()->json([
                 'code' => ResponseCode::DATABASE_FAILED,
                 'message' => sprintf('%s，请重试或联络管理员。时间戳:%s', ResponseCode::$codeMap[ResponseCode::DATABASE_FAILED], $error_timestamp),

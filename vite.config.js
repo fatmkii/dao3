@@ -83,7 +83,13 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             host: '0.0.0.0',
             port: 5173,
             hmr: {
-                host: 'localhost',
+                host: '192.168.1.210',
+            },
+            cors: {
+                origin: [
+                    'http://192.168.1.210',
+                    'http://dao3.test',
+                ],
             },
         }
     }

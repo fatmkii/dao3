@@ -106,9 +106,14 @@ jobs:
             ln -sfn "$SHARED_DIR/.env" "$RELEASE_DIR/.env"
             rm -rf "$RELEASE_DIR/storage"
             ln -sfn "$SHARED_DIR/storage" "$RELEASE_DIR/storage"
+            mkdir -p "$SHARED_DIR/downloads"
+            rm -rf "$RELEASE_DIR/public/downloads"
+            ln -sfn "$SHARED_DIR/downloads" "$RELEASE_DIR/public/downloads"
 
             cd "$RELEASE_DIR"
             "$PHP_BIN" artisan config:cache
+            "$PHP_BIN" artisan android:check-config
+            "$PHP_BIN" artisan migrate --force
             "$PHP_BIN" artisan route:cache
             "$PHP_BIN" artisan view:cache
             "$PHP_BIN" artisan storage:link || true

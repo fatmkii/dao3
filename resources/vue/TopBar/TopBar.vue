@@ -12,11 +12,11 @@
             :options="userOptions">
             <img src="/ui/user-center.png" @mouseenter="refreshUserData" class="img-icon">
         </n-dropdown>
-        <f-button type="primary" v-if="!userStore.userDataLoading && !userStore.userLoginStatus"
+        <f-button type="primary" v-if="!isAndroidApp && !userStore.userDataLoading && !userStore.userLoginStatus"
             @click="LoginModalCom?.show">
             导入饼干
         </f-button>
-        <template v-if="!userStore.userDataLoading && !userStore.userLoginStatus">
+        <template v-if="!isAndroidApp && !userStore.userDataLoading && !userStore.userLoginStatus">
             <LoginModal ref="LoginModalCom" @submit-register="callRegisterHintModal" />
             <RegisterHintModal ref="registerHintModalCom" />
         </template>
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { userLogoutPoster } from '@/api/methods/auth';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
 import { userLogout } from '@/js/func/logout';
 import { renderIcon } from '@/js/func/renderIcon';
 import { useCommonStore } from '@/stores/common';
@@ -46,6 +47,7 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const router = useRouter()
 const route = useRoute()
+const { isAndroidApp } = useAndroidAppBridge()
 const LoginModalCom = ref<InstanceType<typeof LoginModal> | null>(null)
 const registerHintModalCom = ref<InstanceType<typeof RegisterHintModal> | null>(null)
 
@@ -151,19 +153,22 @@ const userOptions = computed(() => {
                 onClick: () => router.push('/accuse')
             }
         },
-        {
+    ]
+
+    if (!isAndroidApp.value) {
+        arr.push({
             label: '退出饼干',
             key: 'logout',
             icon: renderIcon(LogoutIcon, { size: '1.25rem' }),
             props: {
                 onClick: logoutHandle
             }
-        }
-    ]
+        })
+    }
 
     //如果是管理员，则加入管理中新选项
     if (userStore.admin.isForumAdmin) {
-        arr.splice(arr.length - 1, 0, {
+        arr.splice(isAndroidApp.value ? arr.length : arr.length - 1, 0, {
             label: '管理中心',
             key: 'admin',
             icon: renderIcon(Admin, { size: '1.25rem' }),
@@ -206,7 +211,7 @@ function callRegisterHintModal() {
 
 
 onMounted(() => {
-    if (!(localStorage.getItem('Binggan') && localStorage.getItem('Token')) && route.path == '/') {
+    if (!isAndroidApp.value && !(localStorage.getItem('Binggan') && localStorage.getItem('Token')) && route.path == '/') {
         //当没有localstorage没有登录信息，且路由在首页时，自动弹出登录modal
         LoginModalCom.value?.show()
     }

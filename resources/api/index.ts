@@ -1,7 +1,34 @@
 import { createAlova } from 'alova';
+import type { Method } from 'alova';
 import GlobalFetch from 'alova/GlobalFetch';
 import VueHook from 'alova/vue';
 import { useCommonStore } from '@/stores/common';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
+
+async function recoverAndroidAuthentication(method: Method) {
+    const { isAndroidApp, requestAuthRefresh } = useAndroidAppBridge()
+    if (!isAndroidApp.value) return { handled: false as const }
+
+    if (method.meta?.androidAuthRetried) {
+        return { handled: false as const }
+    }
+
+    const canRetry = method.type === 'GET' ||
+        method.type === 'HEAD' ||
+        method.meta?.androidAuthRetry === true
+    if (!canRetry) {
+        requestAuthRefresh().catch(() => undefined)
+        window.$message.warning('登录状态正在恢复。为避免重复提交，请确认操作结果后手动重试。', {
+            closable: true,
+            duration: 5000,
+        })
+        return { handled: false as const }
+    }
+
+    await requestAuthRefresh()
+    method.meta = { ...method.meta, androidAuthRetried: true }
+    return { handled: true as const, data: await method.send(true) }
+}
 
 //通用的alova实例
 export const commonAlova = createAlova({
@@ -24,7 +51,11 @@ export const commonAlova = createAlova({
                 commonStore.requestErrorCode = response.status
 
                 if (response.status == 401) {
-                    commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
+                    const recovery = await recoverAndroidAuthentication(method)
+                    if (recovery.handled) return recovery.data
+                    if (!useAndroidAppBridge().isAndroidApp.value) {
+                        commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
+                    }
                     throw new Error(response.statusText, { cause: { code: response.status } });
                 }
 
@@ -45,7 +76,11 @@ export const commonAlova = createAlova({
                 commonStore.requestErrorCode = json.code
 
                 if (json.code == 21499) {
-                    commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
+                    const recovery = await recoverAndroidAuthentication(method)
+                    if (recovery.handled) return recovery.data
+                    if (!useAndroidAppBridge().isAndroidApp.value) {
+                        commonStore.unauthModalShow = true //弹出饼干需要重新导入的modal
+                    }
                     throw new Error(json.message, { cause: { code: json.code } });
                 }
 
@@ -139,5 +174,3 @@ export const nonJsonAlova = createAlova({
     errorLogger: process.env.NODE_ENV === 'development',
     cacheLogger: process.env.NODE_ENV === 'development'
 });
-
-

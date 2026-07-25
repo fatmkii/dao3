@@ -14,12 +14,13 @@
                 <component :is="Component" />
             </KeepAlive>
         </router-view>
-        <UnauthModal />
+        <UnauthModal v-if="!isAndroidApp" />
     </n-config-provider>
 </template>
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores/common';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
 import { useThemeStore } from '@/stores/theme';
 import { useUserStore } from '@/stores/user';
 import DialogApi from '@/vue/Components/DialogApi.vue';
@@ -27,7 +28,7 @@ import MessageApi from '@/vue/Components/MessageApi.vue';
 import TopBar from '@/vue/TopBar/TopBar.vue';
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
 import UnauthModal from './Modals/UnauthModal.vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 //加载主题相关的store
 const themeStore = useThemeStore()
@@ -38,6 +39,24 @@ const userStore = useUserStore()
 
 //一般设定的store
 const commonStore = useCommonStore()
+const { isAndroidApp, notifyThemeChanged } = useAndroidAppBridge()
+
+watch(
+    () => [
+        themeStore.themeName,
+        themeStore.themeColor.sidebarColor,
+        themeStore.themeColor.topBarBackgroudColor,
+    ] as const,
+    ([name, primaryColor, backgroundColor]) => {
+        notifyThemeChanged({
+            name,
+            isDark: name === 'dark',
+            primaryColor,
+            backgroundColor,
+        })
+    },
+    { immediate: true },
+)
 
 //表情包背景色
 const emojiBackGroundColor = computed(() =>

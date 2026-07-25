@@ -1,5 +1,10 @@
 <template>
-    <n-card title="定制饼干" size="small">
+    <n-card title="定制饼干" size="small" v-if="isAndroidApp">
+        <n-flex vertical>
+            <span>Android版暂时不可用定制饼干功能,请在网页操作</span>
+        </n-flex>
+    </n-card>
+    <n-card title="定制饼干" size="small" v-else>
         <n-flex vertical>
             <!-- 说明 -->
             <div>
@@ -61,11 +66,13 @@ import { NCard, NFlex, NForm, NFormItem, NSwitch, NText, type FormInst, type For
 import { ref } from 'vue'
 import { userLogoutPoster } from '@/api/methods/auth';
 import { userLogout } from '@/js/func/logout';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
 const formRef = ref<FormInst | null>(null)
+const { isAndroidApp } = useAndroidAppBridge()
 
 
 //输入数据

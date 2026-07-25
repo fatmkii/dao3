@@ -22,9 +22,10 @@ import { useUserStore } from '@/stores/user'
 import { NDivider, NFlex, NTabPane, NTabs, useThemeVars } from 'naive-ui'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { DndProvider } from 'vue3-dnd'
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 import { TabBank, TabChara, TabCommon, TabCustom, TabEmojis, TabIncome, TabLevelup, TabMedal, TabPassword, TabPingbici, UserCard } from './index'
 
 //基础数据
@@ -34,6 +35,7 @@ const forumsStore = useForumsStore()
 const route = useRoute()
 const router = useRouter()
 const themeVars = useThemeVars()
+const { isAndroidApp } = useAndroidAppBridge()
 const tabValue = ref<string>()
 
 //设置浏览器标题

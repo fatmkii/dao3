@@ -1,0 +1,39 @@
+name: Android Dependency Submission
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "android/**"
+      - ".github/workflows/android-dependency-submission.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-dependency-submission-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v6
+        with:
+          build-root-directory: android
+          dependency-graph: generate-and-submit
+          validate-wrappers: true

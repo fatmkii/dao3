@@ -8,5 +8,8 @@ declare global {
         Pusher: typeof Pusher
         $dialog: DialogApi
         $message: MessageApi
+        CpttmmAndroid?: {
+            postMessage(message: string): void
+        }
     }
 }

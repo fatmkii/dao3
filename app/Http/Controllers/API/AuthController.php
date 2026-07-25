@@ -7,11 +7,15 @@ use Illuminate\Http\Request;
 use App\Common\ResponseCode;
 use App\Models\User;
 use App\Jobs\ProcessUserActive;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\MobileSessionService;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly MobileSessionService $sessions)
+    {
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -20,7 +24,7 @@ class AuthController extends Controller
         ]);
 
         $binggan  = $request->binggan;
-        $user = User::where(DB::raw('BINARY `binggan`'), $binggan)->first(); //用DB::raw区分大小写
+        $user = User::findByBinggan($binggan);
         if (!$user) {
             return response()->json([
                 'code' => ResponseCode::USER_NOT_FOUND,
@@ -29,8 +33,7 @@ class AuthController extends Controller
         }
 
         if (
-            $user->password != null &&
-            $user->password != hash('sha256', $request->password . config('app.password_salt'))
+            !$user->passwordMatches($request->password)
         ) {
             return response()->json([
                 'code' => ResponseCode::USER_PASSWORD_ERROR,
@@ -50,25 +53,7 @@ class AuthController extends Controller
             );
         }
 
-        switch ($user->admin) {
-            case 0: //非管理员
-                $token = $user->createToken($binggan, ['normal'])->plainTextToken;
-                break;
-            case 1: //专岛管理员
-                $token = $user->createToken($binggan, ['forum_admin'])->plainTextToken;
-                break;
-            case 10: //一般管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin'])->plainTextToken;
-                break;
-            case 20: //高级管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin', 'senior_admin'])->plainTextToken;
-                break;
-            case 99: //超级管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin', 'senior_admin', 'super_admin'])->plainTextToken;
-                break;
-            default:
-                $token = $user->createToken($binggan, ['normal'])->plainTextToken;
-        }
+        $token = $user->createToken($binggan, $user->tokenAbilities())->plainTextToken;
 
         ProcessUserActive::dispatch(
             [
@@ -180,25 +165,7 @@ class AuthController extends Controller
         }
 
         //为管理员颁发token
-        switch ($user->admin) {
-            case 0: //非管理员
-                $token = $user->createToken($binggan, ['normal'])->plainTextToken;
-                break;
-            case 1: //专岛管理员
-                $token = $user->createToken($binggan, ['forum_admin'])->plainTextToken;
-                break;
-            case 10: //一般管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin'])->plainTextToken;
-                break;
-            case 20: //高级管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin', 'senior_admin'])->plainTextToken;
-                break;
-            case 99: //超级管理员
-                $token = $user->createToken($binggan, ['forum_admin', 'admin', 'senior_admin', 'super_admin'])->plainTextToken;
-                break;
-            default:
-                $token = $user->createToken($binggan, ['normal'])->plainTextToken;
-        }
+        $token = $user->createToken($binggan, $user->tokenAbilities())->plainTextToken;
 
         ProcessUserActive::dispatch(
             [
@@ -241,8 +208,7 @@ class AuthController extends Controller
         // }
 
         if (
-            $user->password != null &&
-            $user->password != hash('sha256', $request->old_password . config('app.password_salt'))
+            !$user->passwordMatches($request->old_password)
         ) {
             return response()->json([
                 'code' => ResponseCode::USER_PASSWORD_ERROR,
@@ -254,12 +220,18 @@ class AuthController extends Controller
         $user->password = hash('sha256', $request->new_password . config('app.password_salt'));
         $user->save();
 
+        $currentToken = $user->currentAccessToken();
+        $retainedSessionId = $currentToken?->client_type === 'android'
+            ? $currentToken->mobile_session_id
+            : null;
+        $this->sessions->revokeForUserExcept($user, $retainedSessionId);
+
         ProcessUserActive::dispatch(
             [
                 'binggan' => $user->binggan,
                 'user_id' => $user->id,
                 'active' => '用户更新了密码',
-                'content' => 'hash: ' . $user->password,
+                'content' => '密码已更新',
             ]
         );
 

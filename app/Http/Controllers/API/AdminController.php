@@ -18,6 +18,7 @@ use App\Models\Thread;
 use App\Models\User;
 use App\Models\UserMedal;
 use App\Services\AccuseHandlingService;
+use App\Services\MobileSessionService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -30,6 +31,10 @@ class AdminController extends Controller
     private const DELETED_POST_PENALTY_REDIS_PREFIX = 'deleted_post_penalty_count_';
     private const DELETED_POST_PENALTY_TTL = 24 * 3600;
     private const DELETED_POST_PENALTY_THRESHOLD = 5;
+
+    public function __construct(private readonly MobileSessionService $sessions)
+    {
+    }
 
     public function thread_delete(Request $request)
     {
@@ -606,8 +611,11 @@ class AdminController extends Controller
             ]);
         }
 
-        $user_to_ban->is_banned = true;
-        $user_to_ban->save();
+        DB::transaction(function () use ($user_to_ban) {
+            $user_to_ban->is_banned = true;
+            $user_to_ban->save();
+            $this->sessions->revokeAllForUser($user_to_ban);
+        });
 
         // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
         // ProcessUserActive::dispatch(
@@ -713,6 +721,9 @@ class AdminController extends Controller
             $msg = sprintf('该饼干已封禁%d天。', $user_to_lock->locked_count * 3);
         }
         $user_to_lock->save();
+        if ($user_to_lock->is_banned) {
+            $this->sessions->revokeAllForUser($user_to_lock);
+        }
 
         // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
         // ProcessUserActive::dispatch(
