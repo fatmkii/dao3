@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('android_registration_devices', function (Blueprint $table) {
             $table->id();
-            $table->char('device_key', 64)->unique();
+            $table->char('device_key', 64)->charset('ascii')->collation('ascii_bin')->unique();
             $table->unsignedTinyInteger('claim_count')->default(0);
             $table->boolean('is_banned')->default(false);
             $table->timestamp('banned_at')->nullable();

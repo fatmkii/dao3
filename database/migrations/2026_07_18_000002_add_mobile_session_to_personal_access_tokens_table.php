@@ -9,7 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('personal_access_tokens', function (Blueprint $table) {
-            $table->uuid('mobile_session_id')->nullable()->after('tokenable_id');
+            $table->uuid('mobile_session_id')
+                ->charset('ascii')
+                ->collation('ascii_bin')
+                ->nullable()
+                ->after('tokenable_id');
             $table->string('client_type', 20)->default('web')->after('mobile_session_id');
             $table->foreign('mobile_session_id')->references('id')->on('mobile_sessions')->cascadeOnDelete();
             $table->index(['mobile_session_id', 'client_type']);
