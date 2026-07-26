@@ -45,6 +45,7 @@ class CpttmmApplication : Application() {
             accounts = accounts,
             preferences = preferences,
             registrationDeviceId = RegistrationDeviceIdProvider(this),
+            failureReporter = diagnostics,
         )
     }
 

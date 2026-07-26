@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.account.AccountLimitException
+import com.cpttmm.app.account.AccountOperationException
 import com.cpttmm.app.account.MobileSessionUnavailableException
 import com.cpttmm.app.account.SsaidUnavailableException
 import com.cpttmm.app.network.MobileApiException
@@ -95,6 +96,7 @@ internal fun UnsupportedWebViewScreen(missingFeatures: List<String>) {
 
 internal fun accountErrorMessage(throwable: Throwable): String =
     when (throwable) {
+        is AccountOperationException -> "账号操作没有完成，请稍后重试。诊断编号：${throwable.incident.id}"
         is MobileApiException -> throwable.message
         is MobileSessionUnavailableException -> throwable.message.orEmpty()
         is SsaidUnavailableException -> throwable.message.orEmpty()
@@ -102,3 +104,6 @@ internal fun accountErrorMessage(throwable: Throwable): String =
         is IOException -> "无法连接服务器。请检查网络，或切换域名后重试。"
         else -> "账号操作没有完成，请稍后重试。"
     }
+
+internal fun accountDiagnosticText(throwable: Throwable): String? =
+    (throwable as? AccountOperationException)?.incident?.copyText

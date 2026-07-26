@@ -7,10 +7,16 @@ class EncryptedSessionMapper(
     private val cipher: TokenCipher,
 ) {
     fun secrets(accountId: String, session: MobileSessionData): AccountSecretEntity {
-        return AccountSecretEntity(
-            accountId = accountId,
-            encryptedAccessToken = cipher.encrypt(session.accessToken, accountId),
-            encryptedRefreshToken = cipher.encrypt(session.refreshToken, accountId),
-        )
+        try {
+            return AccountSecretEntity(
+                accountId = accountId,
+                encryptedAccessToken = cipher.encrypt(session.accessToken, accountId),
+                encryptedRefreshToken = cipher.encrypt(session.refreshToken, accountId),
+            )
+        } catch (failure: Exception) {
+            throw TokenEncryptionException(failure)
+        }
     }
 }
+
+class TokenEncryptionException(cause: Throwable) : IllegalStateException("Token encryption failed", cause)
