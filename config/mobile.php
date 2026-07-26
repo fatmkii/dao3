@@ -11,6 +11,7 @@ return [
         'version_code' => (int) env('ANDROID_LATEST_VERSION_CODE', 1),
         'notes' => env('ANDROID_RELEASE_NOTES', ''),
         'apk_url' => env('ANDROID_APK_URL', ''),
+        'backup_apk_url' => env('ANDROID_BACKUP_APK_URL', ''),
         'github_url' => env('ANDROID_GITHUB_RELEASE_URL', ''),
         'sha256' => env('ANDROID_APK_SHA256', ''),
     ],

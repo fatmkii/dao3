@@ -105,11 +105,62 @@ jobs:
             --arg version_name "$VERSION_NAME" \
             --argjson version_code "$VERSION_CODE" \
             --rawfile notes release-notes.md \
-            --arg apk_url "https://cpttmm.com/android/$APK_NAME" \
+            --arg apk_url "https://cpttmm.vip/android/$APK_NAME" \
+            --arg backup_apk_url "https://cpttmm.com/android/$APK_NAME" \
             --arg github_url "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
             --arg sha256 "$sha256" \
-            '{version_name: $version_name, version_code: $version_code, notes: $notes, apk_url: $apk_url, github_url: $github_url, sha256: $sha256}' \
+            '{version_name: $version_name, version_code: $version_code, notes: $notes, apk_url: $apk_url, backup_apk_url: $backup_apk_url, github_url: $github_url, sha256: $sha256}' \
             > dist/version.json
+
+      - name: Upload APK files to Cloudflare R2
+        env:
+          APK_NAME: ${{ steps.version.outputs.apk_name }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_ACCESS_SECRET }}
+          AWS_DEFAULT_REGION: auto
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          test -n "$AWS_ACCESS_KEY_ID"
+          test -n "$AWS_SECRET_ACCESS_KEY"
+          test -n "$R2_BUCKET"
+          test -n "$R2_ENDPOINT"
+          aws --version
+
+          versioned_key="android/$APK_NAME"
+          latest_key="android/cpttmm-latest.apk"
+          versioned_url="https://cpttmm.vip/$versioned_key"
+          latest_url="https://cpttmm.vip/$latest_key"
+
+          aws s3 cp "dist/$APK_NAME" "s3://$R2_BUCKET/$versioned_key" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --content-disposition "attachment; filename=\"$APK_NAME\"" \
+            --content-type application/vnd.android.package-archive \
+            --no-progress
+          aws s3 cp "dist/$APK_NAME" "s3://$R2_BUCKET/$latest_key" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --cache-control no-cache \
+            --content-disposition "attachment; filename=\"$APK_NAME\"" \
+            --content-type application/vnd.android.package-archive \
+            --no-progress
+
+          local_size="$(stat --format=%s "dist/$APK_NAME")"
+          for key in "$versioned_key" "$latest_key"; do
+            remote_size="$(aws s3api head-object \
+              --bucket "$R2_BUCKET" \
+              --key "$key" \
+              --endpoint-url "$R2_ENDPOINT" \
+              --query ContentLength \
+              --output text)"
+            if [[ "$remote_size" != "$local_size" ]]; then
+              echo "Unexpected R2 object size for $key: expected $local_size, got $remote_size" >&2
+              exit 1
+            fi
+          done
+
+          curl --fail --silent --show-error --head --retry 3 --output /dev/null "$versioned_url"
+          curl --fail --silent --show-error --head --retry 3 --output /dev/null "$latest_url"
 
       - name: Upload release files to production server
         uses: appleboy/scp-action@v0.1.7

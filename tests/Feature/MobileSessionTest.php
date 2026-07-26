@@ -184,7 +184,8 @@ class MobileSessionTest extends TestCase
             'version_name' => '1.2.3',
             'version_code' => 123,
             'notes' => '修复登录问题',
-            'apk_url' => 'https://cpttmm.com/download/android.apk',
+            'apk_url' => 'https://cpttmm.vip/android/cpttmm-1.2.3.apk',
+            'backup_apk_url' => 'https://cpttmm.com/android/cpttmm-1.2.3.apk',
             'github_url' => 'https://github.com/example/releases/tag/android-v1.2.3',
             'sha256' => str_repeat('a', 64),
         ]]);
@@ -197,7 +198,8 @@ class MobileSessionTest extends TestCase
                     'version_name' => '1.2.3',
                     'version_code' => 123,
                     'notes' => '修复登录问题',
-                    'apk_url' => 'https://cpttmm.com/download/android.apk',
+                    'apk_url' => 'https://cpttmm.vip/android/cpttmm-1.2.3.apk',
+                    'backup_apk_url' => 'https://cpttmm.com/android/cpttmm-1.2.3.apk',
                     'github_url' => 'https://github.com/example/releases/tag/android-v1.2.3',
                     'sha256' => str_repeat('a', 64),
                 ],
@@ -211,7 +213,8 @@ class MobileSessionTest extends TestCase
             'version_name' => '2.0.1',
             'version_code' => 2000001,
             'notes' => '自动生成的发布说明',
-            'apk_url' => 'https://cpttmm.com/downloads/android/app.apk',
+            'apk_url' => 'https://cpttmm.vip/android/cpttmm-2.0.1.apk',
+            'backup_apk_url' => 'https://cpttmm.com/android/cpttmm-2.0.1.apk',
             'github_url' => 'https://github.com/example/release',
             'sha256' => str_repeat('b', 64),
             'unexpected' => 'must not leak',
@@ -224,6 +227,8 @@ class MobileSessionTest extends TestCase
                 ->assertJsonPath('data.version_name', '2.0.1')
                 ->assertJsonPath('data.version_code', 2000001)
                 ->assertJsonPath('data.notes', '自动生成的发布说明')
+                ->assertJsonPath('data.apk_url', 'https://cpttmm.vip/android/cpttmm-2.0.1.apk')
+                ->assertJsonPath('data.backup_apk_url', 'https://cpttmm.com/android/cpttmm-2.0.1.apk')
                 ->assertJsonMissingPath('data.unexpected');
         } finally {
             unlink($manifestPath);

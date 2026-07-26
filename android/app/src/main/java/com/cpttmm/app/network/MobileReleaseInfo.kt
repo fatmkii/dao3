@@ -5,6 +5,6 @@ data class MobileReleaseInfo(
     val versionCode: Int,
     val notes: String,
     val apkUrl: String,
-    val githubUrl: String,
+    val backupApkUrl: String,
     val sha256: String,
 )

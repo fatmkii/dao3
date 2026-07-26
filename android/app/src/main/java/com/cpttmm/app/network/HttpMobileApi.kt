@@ -72,7 +72,7 @@ class HttpMobileApi : MobileApi {
             versionCode = data.getInt("version_code"),
             notes = data.optString("notes"),
             apkUrl = data.optString("apk_url"),
-            githubUrl = data.optString("github_url"),
+            backupApkUrl = data.optString("backup_apk_url"),
             sha256 = data.optString("sha256"),
         )
     }

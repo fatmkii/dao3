@@ -215,7 +215,18 @@ private fun ReleaseDetails(
         Button(
             onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.apkUrl))) },
             modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) { Text("下载最新版") }
+        ) { Text("Cloudflare下载") }
+    }
+    if (hasUpdate &&
+        release.backupApkUrl.startsWith("https://") &&
+        release.backupApkUrl != release.apkUrl
+    ) {
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.backupApkUrl)))
+            },
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+        ) { Text("备用下载") }
     }
 }
 
