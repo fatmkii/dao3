@@ -46,6 +46,10 @@ class MobileSessionTest extends TestCase
         $this->assertSame($session->id, $accessToken->mobile_session_id);
         $this->assertTrue($accessToken->expires_at->equalTo(CarbonImmutable::now()->addHour()));
         $this->assertTrue($session->idle_expires_at->equalTo(CarbonImmutable::now()->addDays(30)));
+        $this->assertMatchesRegularExpression('/Z$/', $data['access_expires_at']);
+        $this->assertMatchesRegularExpression('/Z$/', $data['idle_expires_at']);
+        $this->assertTrue(CarbonImmutable::parse($data['access_expires_at'])->equalTo(CarbonImmutable::now()->addHour()));
+        $this->assertTrue(CarbonImmutable::parse($data['idle_expires_at'])->equalTo(CarbonImmutable::now()->addDays(30)));
         $this->assertArrayNotHasKey('absolute_expires_at', $data);
         Bus::assertDispatched(ProcessUserActive::class);
     }
@@ -105,6 +109,8 @@ class MobileSessionTest extends TestCase
             ->json('data');
 
         $this->assertNotSame($oldRefresh, $newData['refresh_token']);
+        $this->assertMatchesRegularExpression('/Z$/', $newData['access_expires_at']);
+        $this->assertMatchesRegularExpression('/Z$/', $newData['idle_expires_at']);
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $oldMobileTokenId]);
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $webTokenId, 'client_type' => 'web']);
         $this->assertDatabaseHas('personal_access_tokens', [

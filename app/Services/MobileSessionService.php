@@ -118,9 +118,9 @@ class MobileSessionService
         return [
             'binggan' => $session->user->binggan,
             'access_token' => $newToken->plainTextToken,
-            'access_expires_at' => $accessExpiresAt->toIso8601String(),
+            'access_expires_at' => $accessExpiresAt->utc()->toIso8601ZuluString(),
             'refresh_token' => $session->id.'.'.$refreshSecret,
-            'idle_expires_at' => $session->idle_expires_at->toIso8601String(),
+            'idle_expires_at' => $session->idle_expires_at->utc()->toIso8601ZuluString(),
         ];
     }
 
