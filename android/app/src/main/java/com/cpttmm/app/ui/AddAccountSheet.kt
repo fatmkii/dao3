@@ -1,7 +1,5 @@
 package com.cpttmm.app.ui
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -72,7 +69,6 @@ internal fun AddAccountSheet(
     onCompleted: (SavedAccount) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var action by remember { mutableStateOf(AccountAction.LOGIN) }
     var binggan by remember(initialBinggan) { mutableStateOf(initialBinggan) }
@@ -80,8 +76,6 @@ internal fun AddAccountSheet(
     var passwordVisible by remember { mutableStateOf(false) }
     var submitting by remember { mutableStateOf(false) }
     var error by remember(initialMessage) { mutableStateOf(initialMessage) }
-    var diagnosticText by remember { mutableStateOf<String?>(null) }
-    var diagnosticCopied by remember { mutableStateOf(false) }
     var registrationStatus by remember(domain) { mutableStateOf<RegistrationStatus?>(null) }
     var registrationStatusLoading by remember(domain) { mutableStateOf(false) }
     var registrationStatusError by remember(domain) { mutableStateOf<String?>(null) }
@@ -108,8 +102,6 @@ internal fun AddAccountSheet(
         scope.launch {
             submitting = true
             error = null
-            diagnosticText = null
-            diagnosticCopied = false
             var savedAccount: SavedAccount? = null
             try {
                 if (action == AccountAction.LOGIN) {
@@ -121,7 +113,6 @@ internal fun AddAccountSheet(
                 throw failure
             } catch (throwable: Throwable) {
                 error = accountErrorMessage(throwable)
-                diagnosticText = accountDiagnosticText(throwable)
             } finally {
                 submitting = false
             }
@@ -148,7 +139,6 @@ internal fun AddAccountSheet(
                     onClick = {
                         action = AccountAction.LOGIN
                         error = null
-                        diagnosticText = null
                     },
                     label = { Text("导入已有饼干") },
                     enabled = !submitting,
@@ -158,7 +148,6 @@ internal fun AddAccountSheet(
                     onClick = {
                         action = AccountAction.REGISTER
                         error = null
-                        diagnosticText = null
                     },
                     label = { Text("领取新饼干") },
                     enabled = !submitting && !accountLimitReached,
@@ -175,7 +164,6 @@ internal fun AddAccountSheet(
                         onValueChange = {
                             binggan = it
                             error = null
-                            diagnosticText = null
                         },
                         label = { Text("饼干") },
                         singleLine = true,
@@ -188,7 +176,6 @@ internal fun AddAccountSheet(
                         onValueChange = {
                             password = it
                             error = null
-                            diagnosticText = null
                         },
                         label = { Text("密码（可留空）") },
                         singleLine = true,
@@ -245,21 +232,7 @@ internal fun AddAccountSheet(
                 if (accountActionBlocked) {
                     InlineMessage("已达到 5 个饼干上限，请先移除一个饼干。")
                 } else if (error != null) {
-                    Column {
-                        InlineMessage(error!!)
-                        diagnosticText?.let { report ->
-                            TextButton(
-                                onClick = {
-                                    context.getSystemService(ClipboardManager::class.java).setPrimaryClip(
-                                        ClipData.newPlainText("账号诊断信息", report),
-                                    )
-                                    diagnosticCopied = true
-                                },
-                            ) {
-                                Text(if (diagnosticCopied) "诊断信息已复制" else "复制诊断信息")
-                            }
-                        }
-                    }
+                    InlineMessage(error!!)
                 }
 
                 HorizontalDivider()

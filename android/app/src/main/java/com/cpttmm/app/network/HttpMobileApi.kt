@@ -162,17 +162,13 @@ class HttpMobileApi : MobileApi {
     }
 
     private fun session(data: JSONObject): MobileSessionData {
-        try {
-            return MobileSessionData(
-                binggan = data.getString("binggan"),
-                accessToken = data.getString("access_token"),
-                accessExpiresAt = Instant.parse(data.getString("access_expires_at")),
-                refreshToken = data.getString("refresh_token"),
-                idleExpiresAt = Instant.parse(data.getString("idle_expires_at")),
-            )
-        } catch (failure: Exception) {
-            throw MobileSessionParseException(failure)
-        }
+        return MobileSessionData(
+            binggan = data.getString("binggan"),
+            accessToken = data.getString("access_token"),
+            accessExpiresAt = Instant.parse(data.getString("access_expires_at")),
+            refreshToken = data.getString("refresh_token"),
+            idleExpiresAt = Instant.parse(data.getString("idle_expires_at")),
+        )
     }
 
     private fun invalidResponseMessage(response: String): String =
@@ -188,5 +184,3 @@ class HttpMobileApi : MobileApi {
         const val MISSING_MOBILE_API_MESSAGE = "服务器尚未部署 Android 接口，请稍后重试。"
     }
 }
-
-class MobileSessionParseException(cause: Throwable) : IllegalStateException("Mobile session response parsing failed", cause)

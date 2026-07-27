@@ -3,60 +3,49 @@ package com.cpttmm.app.account
 import android.os.Build
 import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.common.SingleFlight
-import com.cpttmm.app.diagnostics.AccountFailureReporter
-import com.cpttmm.app.diagnostics.AccountOperationStage
-import com.cpttmm.app.diagnostics.DiagnosticIncident
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileApi
 import com.cpttmm.app.network.MobileApiException
 import com.cpttmm.app.network.MobileReleaseInfo
-import com.cpttmm.app.network.MobileSessionParseException
 import com.cpttmm.app.network.RegistrationStatus
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.registration.RegistrationDeviceIdProvider
-import com.cpttmm.app.session.MobileSessionData
 import com.cpttmm.app.session.RefreshPolicy
-import com.cpttmm.app.session.TokenEncryptionException
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
-import java.io.IOException
 
 class MobileAuthCoordinator(
     private val api: MobileApi,
     private val accounts: SecureAccountRepository,
     private val preferences: GlobalPreferencesRepository,
     private val registrationDeviceId: RegistrationDeviceIdProvider,
-    private val failureReporter: AccountFailureReporter = AccountFailureReporter.NONE,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     private val refreshFlights = SingleFlight<String, String>()
 
     suspend fun login(binggan: String, password: String?): SavedAccount {
-        val domain = preferences.domain.first()
-        return requestAndSave(domain) {
-            api.login(
-                domain = domain,
-                binggan = binggan,
-                password = password,
-                installationId = preferences.installationId(),
-                deviceName = Build.MODEL,
-                appVersion = BuildConfig.VERSION_NAME,
-            )
-        }
+        val session = api.login(
+            domain = preferences.domain.first(),
+            binggan = binggan,
+            password = password,
+            installationId = preferences.installationId(),
+            deviceName = Build.MODEL,
+            appVersion = BuildConfig.VERSION_NAME,
+        )
+
+        return accounts.saveSession(session)
     }
 
     suspend fun register(): SavedAccount {
         val digest = registrationDeviceId.digestOrNull() ?: throw SsaidUnavailableException()
-        val domain = preferences.domain.first()
-        return requestAndSave(domain) {
-            api.register(
-                domain = domain,
-                registrationDeviceDigest = digest,
-                installationId = preferences.installationId(),
-                deviceName = Build.MODEL,
-                appVersion = BuildConfig.VERSION_NAME,
-            )
-        }
+        val session = api.register(
+            domain = preferences.domain.first(),
+            registrationDeviceDigest = digest,
+            installationId = preferences.installationId(),
+            deviceName = Build.MODEL,
+            appVersion = BuildConfig.VERSION_NAME,
+        )
+
+        return accounts.saveSession(session)
     }
 
     suspend fun registrationStatus(domain: AppDomain): RegistrationStatus = api.registrationStatus(domain)
@@ -91,56 +80,7 @@ class MobileAuthCoordinator(
     }
 
     suspend fun releaseInfo(domain: AppDomain): MobileReleaseInfo = api.version(domain)
-
-    private suspend fun requestAndSave(
-        domain: AppDomain,
-        request: suspend () -> MobileSessionData,
-    ): SavedAccount {
-        val session = try {
-            request()
-        } catch (failure: CancellationException) {
-            throw failure
-        } catch (failure: MobileApiException) {
-            throw failure
-        } catch (failure: IOException) {
-            throw failure
-        } catch (failure: Exception) {
-            val stage = if (failure is MobileSessionParseException) {
-                AccountOperationStage.RESPONSE_PARSE
-            } else {
-                AccountOperationStage.API_REQUEST
-            }
-            throw diagnosed(stage, domain, failure)
-        }
-
-        try {
-            return accounts.saveSession(session)
-        } catch (failure: CancellationException) {
-            throw failure
-        } catch (failure: AccountLimitException) {
-            throw failure
-        } catch (failure: Exception) {
-            val stage = if (failure is TokenEncryptionException) {
-                AccountOperationStage.TOKEN_ENCRYPT
-            } else {
-                AccountOperationStage.DATABASE_SAVE
-            }
-            throw diagnosed(stage, domain, failure)
-        }
-    }
-
-    private fun diagnosed(
-        stage: AccountOperationStage,
-        domain: AppDomain,
-        failure: Throwable,
-    ): AccountOperationException =
-        AccountOperationException(failureReporter.record(stage, domain, failure), failure)
 }
-
-class AccountOperationException(
-    val incident: DiagnosticIncident,
-    cause: Throwable,
-) : IllegalStateException("Account operation failed", cause)
 
 class SsaidUnavailableException : IllegalStateException("无法读取 Android 设备标识，请改用网页版领取或联系管理员")
 
