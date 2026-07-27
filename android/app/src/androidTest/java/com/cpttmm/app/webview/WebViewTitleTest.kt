@@ -141,7 +141,7 @@ class WebViewTitleTest {
                     "</script></body></html>",
                 "text/html",
                 "UTF-8",
-                null,
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
             )
         }
 
