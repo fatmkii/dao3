@@ -198,8 +198,8 @@ private fun ActiveForumWorkspace(
 
     if (accessToken == null) {
         WorkspaceMessage(
-            title = if (loadingError == null) "正在准备工作区" else "论坛暂时无法打开",
-            message = loadingError ?: "正在检查登录状态，然后再恢复网页网络活动。",
+            title = if (loadingError == null) "锅底准备中···" else "小火锅暂时无法打开",
+            message = loadingError ?: "正在检查登录状态，请稍候。",
             actionLabel = if (loadingError == null) null else "重试",
             onAction = onRetry,
             onSelectAccount = { onSelectTab(null) },
