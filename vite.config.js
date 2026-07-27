@@ -89,6 +89,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                 origin: [
                     'http://192.168.1.210',
                     'http://dao3.test',
+                    'http://dao3-2.test',
                 ],
             },
         }
