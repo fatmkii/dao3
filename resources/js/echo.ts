@@ -62,12 +62,12 @@ class echoInstance {
         }
     }
 
-    get isConnected() {
-        if (this._echoConnector instanceof Echo) {
-            return true
-        } else {
-            return false
-        }
+    get hasConnector() {
+        return this._echoConnector instanceof Echo
+    }
+
+    get isSocketConnected() {
+        return this.pusher?.connection.state === 'connected'
     }
 
     get pusher() {

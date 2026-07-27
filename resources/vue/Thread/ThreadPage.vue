@@ -81,7 +81,8 @@
             <n-flex :align="'center'" style="margin-top: 8px;">
                 <f-button type="primary" :loading="postsListFetching" :disabled="postsListFetching"
                     @click="handleFetchPostsList(true)">刷新</f-button>
-                <n-switch v-model:value="postListening" :disabled="!isLastPage || postListenShowNextPage">
+                <n-switch :value="postListeningReady" :loading="postListeningStarting"
+                    :disabled="!isLastPage || postListenShowNextPage" @update:value="handlePostListeningToggle">
                     <template #checked>
                         涮锅中
                     </template>
@@ -228,7 +229,7 @@ import { useStorage } from '@vueuse/core'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
-import { computed, h, nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
+import { computed, h, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
@@ -451,13 +452,13 @@ postsListOnSuccess((event) => {
             const query = { ...route.query }
             delete query.foolday
             router.replace({ query })
-            
+
             window.$dialog.warning({
                 title: '锅底混乱了！',
                 content: '群星回到了它应有的位置，小火锅的时空出现了混乱……似乎跳转到别的地方了',
                 positiveText: '确定',
                 negativeText: '咒姐别闹了',
-                onPositiveClick: () => {},
+                onPositiveClick: () => { },
                 onNegativeClick: () => {
                     noFoolday2026.value = true
                 }
@@ -603,41 +604,191 @@ function handleSearchClear() {
 
 
 //自动涮锅功能（广播系统）
-const postListening = ref<boolean>(false)
-const postListenShowNextPage = ref<boolean>(false)
+// requested 表示用户仍希望运行；ready 只有在 WS 已连接、频道已订阅且当前页已补拉后才为 true。
+const postListeningRequested = shallowRef(false)
+const postListeningReady = shallowRef(false)
+const postListeningStarting = computed(() => postListeningRequested.value && !postListeningReady.value)
+const postListenShowNextPage = shallowRef(false)
 const isLastPage = computed(() => props.page === (postsListLoading.value ? props.page : postsListData.value.posts_data.lastPage))
 const echo = useEcho()
+let postChannelSubscribed = false
+let postBroadcastDuringReconcile = false
+let postReconcilePromise: Promise<boolean> | null = null
+let postListeningFailureShown = false
+// 每次启停都会推进代数，用来丢弃上一轮异步请求的迟到响应。
+let postListeningGeneration = 0
+let postConnectionStateHandler: ((states: { previous: string, current: string }) => void) | null = null
 interface broadcastNewPost {
     post_id: number,
     thread_id: number,
     post_floor: number,
 }
+type postListeningDiagnosticStage =
+    'WS_STATE' |
+    'BROADCAST_RX' |
+    'POST_FETCH_START' |
+    'POST_FETCH_OK' |
+    'POST_FETCH_ERROR' |
+    'PAGE_RECONCILE_START' |
+    'PAGE_RECONCILE_OK' |
+    'PAGE_RECONCILE_ERROR'
+
+function logPostListening(stage: postListeningDiagnosticStage, details: Record<string, unknown> = {}) {
+    console.debug('[auto-refresh]', stage, details)
+}
+
+function postListeningErrorMessage(error: unknown) {
+    return error instanceof Error ? error.message : 'unknown error'
+}
+
+function stopPostListening() {
+    postListeningGeneration += 1
+    postListeningRequested.value = false
+    postListeningReady.value = false
+    postChannelSubscribed = false
+    postBroadcastDuringReconcile = false
+    postReconcilePromise = null
+
+    const connection = echo.pusher?.connection
+    if (connection && postConnectionStateHandler) {
+        connection.unbind('state_change', postConnectionStateHandler)
+    }
+    postConnectionStateHandler = null
+
+    if (echo.hasConnector) {
+        echo.disconnect()
+    }
+}
+
+function failPostListening() {
+    stopPostListening()
+    if (!postListeningFailureShown) {
+        postListeningFailureShown = true
+        window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
+    }
+}
+
+async function fetchCurrentPageForReconcile(reason: string): Promise<boolean> {
+    // 恢复时只复用当前页接口，不追赶后续页，避免一次补拉数千条回复。
+    const requestParams = { ...postsListParams.value }
+    const requestGeneration = postListeningGeneration
+    logPostListening('PAGE_RECONCILE_START', {
+        reason,
+        thread_id: requestParams.threadId,
+        page: requestParams.page,
+    })
+
+    try {
+        const refreshedData = await postsListGetter(requestParams).send(true)
+        // 请求期间如果用户关闭涮锅或路由发生变化，不再把旧数据写回页面。
+        if (!postListeningRequested.value ||
+            postListeningGeneration !== requestGeneration ||
+            props.threadId !== requestParams.threadId ||
+            props.page !== requestParams.page ||
+            props.search !== requestParams.searchContent
+        ) {
+            return false
+        }
+
+        postsListData.value = refreshedData
+        await nextTick()
+        PostItemComs.value.forEach((element: InstanceType<typeof PostItem>) => {
+            element.refreshBattleData()
+        })
+        logPostListening('PAGE_RECONCILE_OK', {
+            reason,
+            thread_id: requestParams.threadId,
+            page: requestParams.page,
+            last_page: refreshedData.posts_data.lastPage,
+        })
+
+        if (refreshedData.posts_data.lastPage > requestParams.page) {
+            // 新回复已经进入下一页：保留当前页边界，交给用户主动翻页。
+            postListenShowNextPage.value = true
+            stopPostListening()
+            return false
+        }
+
+        postListeningReady.value = echo.isSocketConnected && postChannelSubscribed
+        return true
+    } catch (error) {
+        logPostListening('PAGE_RECONCILE_ERROR', {
+            reason,
+            thread_id: requestParams.threadId,
+            page: requestParams.page,
+            error: postListeningErrorMessage(error),
+        })
+        failPostListening()
+        return false
+    }
+}
+
+function reconcileCurrentPage(reason: string): Promise<boolean> {
+    if (!postListeningRequested.value) return Promise.resolve(false)
+    // 所有恢复来源共享同一个补拉任务，防止重连和前台事件造成并发请求。
+    if (postReconcilePromise) return postReconcilePromise
+
+    const reconcile = async () => {
+        let success: boolean
+        do {
+            postBroadcastDuringReconcile = false
+            success = await fetchCurrentPageForReconcile(reason)
+            // 补拉过程中收到广播时，当前响应可能恰好未包含它，成功后再校准一次。
+        } while (success && postBroadcastDuringReconcile && postListeningRequested.value)
+        return success
+    }
+    const promise = reconcile().finally(() => {
+        if (postReconcilePromise === promise) postReconcilePromise = null
+    })
+    postReconcilePromise = promise
+    return promise
+}
+
 function listenNewPost(response: broadcastNewPost) {//执行监听的回调
+    logPostListening('BROADCAST_RX', {
+        thread_id: response.thread_id,
+        post_id: response.post_id,
+        post_floor: response.post_floor,
+    })
+    if (!postListeningRequested.value) return
     if (response.post_floor >= props.page * 200) {
         //如果新回复通知中，楼层号大于本页的，则关闭监听并显示翻页选项
-        postListening.value = false;
-        postListenShowNextPage.value = true;
+        postListenShowNextPage.value = true
+        stopPostListening()
+    } else if (postReconcilePromise) {
+        postBroadcastDuringReconcile = true
     } else {
         //否则，请求新回复数据
         const postExist = postsListData.value.posts_data.data.find((post) => post.id === response.post_id)
         if (!postExist) {
             //如果post_id不存在，才去获取新数据
-            getPostDataAndPush(response.thread_id, response.post_id);
+            void getPostDataAndPush(response.thread_id, response.post_id)
         }
     }
 }
-function getPostDataAndPush(threadId: number, postId: number) {//获取单个回复数据并插入到数据中
+async function getPostDataAndPush(threadId: number, postId: number) {//获取单个回复数据并插入到数据中
+    const requestGeneration = postListeningGeneration
     const params: postParams = {
         binggan: userStore.binggan!,
         post_id: postId,
         thread_id: threadId,
     }
-    postGetter(params).then((postData: postData) => {
+    logPostListening('POST_FETCH_START', { thread_id: threadId, post_id: postId })
+    try {
+        const postData = await postGetter(params).send(true)
+        logPostListening('POST_FETCH_OK', { thread_id: threadId, post_id: postId })
+        if (!postListeningRequested.value ||
+            postListeningGeneration !== requestGeneration ||
+            postsListData.value.posts_data.data.some((post) => post.id === postId)
+        ) {
+            return
+        }
         postsListData.value.posts_data.data.push(postData)
+        postsListData.value.posts_data.data.sort((left, right) => left.floor - right.floor)
         if (commonStore.userCustom.hongbaoThenStop && postData.hongbao_id !== null) {
             //如果刷出来红包，并且启动了“自动涮锅遇到红包暂停”功能，则停止自动涮锅
             window.$message.info('有红包！停止涮锅！（个人中心开启了红包自动停止涮锅）')
-            postListening.value = false
+            stopPostListening()
         }
         const scrollTopNow =
             document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
@@ -648,37 +799,79 @@ function getPostDataAndPush(threadId: number, postId: number) {//获取单个回
                     document.body.clientHeight - scrollTopNow;
             }
         });
-    })
-}
-watch(postListening, (value) => {//开关广播监听
-    if (value === true) {
-        try {
-            handleFetchPostsList(false)
-            echo.connect()
-            echo.channel("thread_" + props.threadId)
-                .listen("NewPost", (response: broadcastNewPost) => listenNewPost(response))
-            echo.pusher?.connection.bind("state_change", (states: { previous: string, current: string }) => {
-                if (states.current === 'unavailable') {
-                    window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
-                    postListening.value = false
-                }
-            })
-        } catch (error) {
-            window.$message.error('嗷……服务器的自动涮锅服务好像出问题了，暂时不能使用')
-            postListening.value = false
-        }
-    } else {
-        if (echo.isConnected) {
-            echo.disconnect()
-        }
+    } catch (error) {
+        logPostListening('POST_FETCH_ERROR', {
+            thread_id: threadId,
+            post_id: postId,
+            error: postListeningErrorMessage(error),
+        })
+        // 广播已收到但详情接口失败时，用当前页补拉兜底，避免静默漏帖。
+        await reconcileCurrentPage('post-fetch-error')
     }
-})
+}
+function startPostListening() {
+    if (postListeningRequested.value) return
+    postListeningGeneration += 1
+    postListeningRequested.value = true
+    postListeningReady.value = false
+    postListenShowNextPage.value = false
+    postListeningFailureShown = false
+
+    try {
+        echo.connect()
+        const channel = echo.channel("thread_" + props.threadId)
+        channel
+            .listen("NewPost", (response: broadcastNewPost) => listenNewPost(response))
+            .subscribed(() => {
+                if (!postListeningRequested.value) return
+                postChannelSubscribed = true
+                // 首次订阅和断线重订阅都会经过这里，用补拉弥补连接空窗期。
+                void reconcileCurrentPage('subscribed')
+            })
+            .error(() => failPostListening())
+
+        postConnectionStateHandler = (states: { previous: string, current: string }) => {
+            logPostListening('WS_STATE', states)
+            if (states.current !== 'connected') {
+                // 短暂断线只进入加载态，仍保留用户的开启意图并等待自动重连。
+                postListeningReady.value = false
+                postChannelSubscribed = false
+            }
+            if (states.current === 'unavailable' || states.current === 'failed') {
+                failPostListening()
+            }
+        }
+        echo.pusher?.connection.bind('state_change', postConnectionStateHandler)
+    } catch (error) {
+        logPostListening('WS_STATE', {
+            previous: 'initializing',
+            current: 'failed',
+            error: postListeningErrorMessage(error),
+        })
+        failPostListening()
+    }
+}
+
+function handlePostListeningToggle(value: boolean) {
+    if (value) startPostListening()
+    else stopPostListening()
+}
+
+function handleAndroidForeground() {
+    if (!postListeningRequested.value) return
+    postListeningReady.value = false
+    // 仅 Android 原生容器发送此事件；普通网页的 visibilitychange 不触发补拉。
+    void reconcileCurrentPage('android-foreground')
+}
+
+onMounted(() => window.addEventListener('cpttmm:foreground', handleAndroidForeground))
+onUnmounted(() => window.removeEventListener('cpttmm:foreground', handleAndroidForeground))
 onDeactivated(() => {
-    postListening.value = false
+    stopPostListening()
 })
 watch([() => props.threadId, () => props.page, () => props.search],//路由变化时停止自动涮锅
     () => {
-        postListening.value = false
+        stopPostListening()
         postListenShowNextPage.value = false
     }
 )
