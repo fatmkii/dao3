@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 
 interface BridgeMessage {
     type: string;
@@ -227,6 +227,132 @@ test.describe('Android App bridge', () => {
             return messages.filter((message) => message.type === 'authExpired').length;
         }).toBe(1);
         await expect(page.getByAltText('需要饼干才能进入喔')).toBeHidden();
+    });
+
+    test('reconciles the current page once when Android returns to foreground', async ({ page }) => {
+        await mockAuthenticatedUser(page);
+        await page.route('**/api/forums/', (route) => route.fulfill({
+            json: { code: 200, message: 'success', data: [forum] },
+        }));
+        await page.route('**/api/loudspeaker/show**', (route) => route.fulfill({
+            json: { code: 200, message: 'success', data: [] },
+        }));
+
+        let threadRequestCount = 0;
+        let lastPage = 1;
+        const threadData = {
+            id: 123,
+            sub_id: 0,
+            forum_id: 1,
+            vote_question_id: null,
+            gamble_question_id: null,
+            crowd_id: null,
+            hongbao_id: null,
+            nickname: null,
+            title: '自动涮锅测试主题',
+            sub_title: '',
+            random_heads_group: 1,
+            posts_num: 1,
+            title_color: null,
+            anti_jingfen: false,
+            nissin_date: null,
+            has_nissined: false,
+            can_battle: false,
+            is_delay: false,
+            locked_by_coin: 0,
+            is_private: false,
+            created_at: '2026-07-27 12:00:00',
+            updated_at: '2026-07-27 12:00:00',
+        };
+        const post = {
+            id: 1000,
+            created_at: '2026-07-27 12:00:00',
+            is_deleted: 0,
+            thread_id: 123,
+            battle_id: null,
+            hongbao_id: null,
+            floor: 0,
+            random_head: 0,
+            created_by_admin: 0,
+            content: '当前页内容',
+            nickname: '测试用户',
+            is_your_post: false,
+            hongbao_data: null,
+        };
+        await page.route('**/api/threads/123**', async (route) => {
+            threadRequestCount += 1;
+            await route.fulfill({
+                json: {
+                    code: 200,
+                    message: 'success',
+                    data: {
+                        forum_data: forum,
+                        thread_data: threadData,
+                        posts_data: { currentPage: 1, lastPage, data: [post] },
+                        your_post_floors: [],
+                        watermark_string: 'test-watermark',
+                    },
+                },
+            });
+        });
+        let reverbSocket: WebSocketRoute | undefined;
+        let postRequestCount = 0;
+        await page.route('**/api/posts/1001**', (route) => {
+            postRequestCount += 1;
+            return route.fulfill({
+                status: 500,
+                json: { code: 500, message: 'temporary failure' },
+            });
+        });
+        await page.routeWebSocket(/\/app\//, (webSocket) => {
+            reverbSocket = webSocket;
+            webSocket.send(JSON.stringify({
+                event: 'pusher:connection_established',
+                data: JSON.stringify({ socket_id: '1.1', activity_timeout: 120 }),
+            }));
+            webSocket.onMessage((message) => {
+                const event = JSON.parse(String(message));
+                if (event.event !== 'pusher:subscribe') return;
+                webSocket.send(JSON.stringify({
+                    event: 'pusher_internal:subscription_succeeded',
+                    channel: event.data.channel,
+                    data: '{}',
+                }));
+            });
+        });
+
+        await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+        await expect(page.getByText('自动涮锅测试主题')).toBeVisible();
+        const autoRefreshSwitch = page.getByRole('switch');
+        await autoRefreshSwitch.click();
+        await expect(autoRefreshSwitch).toBeChecked();
+        const requestsAfterStart = threadRequestCount;
+
+        reverbSocket?.send(JSON.stringify({
+            event: 'NewPost',
+            channel: 'thread_123',
+            data: JSON.stringify({ post_id: 1001, thread_id: 123, post_floor: 1 }),
+        }));
+        await expect.poll(() => postRequestCount).toBe(1);
+        await expect.poll(() => threadRequestCount).toBe(requestsAfterStart + 1);
+        await expect(autoRefreshSwitch).toBeChecked();
+        const requestsAfterPostFetchRecovery = threadRequestCount;
+
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await page.evaluate(() => new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }));
+        expect(threadRequestCount).toBe(requestsAfterPostFetchRecovery);
+
+        lastPage = 3;
+        await page.evaluate(() => {
+            window.dispatchEvent(new CustomEvent('cpttmm:foreground'));
+            window.dispatchEvent(new CustomEvent('cpttmm:foreground'));
+        });
+        await expect.poll(() => threadRequestCount).toBe(requestsAfterPostFetchRecovery + 1);
+        await expect(page.getByRole('link', { name: '回帖已经翻页、点击前往' })).toBeVisible();
+        await expect(autoRefreshSwitch).not.toBeChecked();
+        await expect(page.getByText('当前页内容')).toBeVisible();
     });
 
     test('hides custom-account creation in the Android app', async ({ page }) => {

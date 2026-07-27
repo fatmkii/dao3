@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onPostResume() {
         super.onPostResume()
+        activeWebViewHost?.resumeForActivity()
         foregroundGeneration.intValue += 1
     }
 

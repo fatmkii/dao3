@@ -107,6 +107,56 @@ class WebViewTitleTest {
         }
     }
 
+    @Test
+    fun dispatchesForegroundEventWhenActivityWebViewResumes() {
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val pageReady = CountDownLatch(1)
+        val foregroundReceived = CountDownLatch(1)
+        lateinit var host: WebViewHost
+
+        instrumentation.runOnMainSync {
+            host = WebViewHost(
+                context = ApplicationProvider.getApplicationContext(),
+                account = account(),
+                accessToken = "access-token",
+                onExternalNavigation = {},
+                onBridgeMessage = {},
+                onSaveState = {},
+                onPathChanged = {},
+                onTitleChanged = { title ->
+                    if (title == "ready") pageReady.countDown()
+                    if (title == "foreground") foregroundReceived.countDown()
+                },
+                onOpenNewTab = {},
+                onLongPressLink = {},
+                onMainFrameError = {},
+                onShowFileChooser = { _, _ -> false },
+                onDownloadFailure = {},
+            )
+            host.view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                "<html><head><title>ready</title></head><body><script>" +
+                    "window.addEventListener('cpttmm:foreground',()=>document.title='foreground')" +
+                    "</script></body></html>",
+                "text/html",
+                "UTF-8",
+                null,
+            )
+        }
+
+        try {
+            assertTrue(pageReady.await(5, TimeUnit.SECONDS))
+            instrumentation.runOnMainSync {
+                host.pauseForActivity()
+                host.resumeForActivity()
+            }
+            assertTrue(foregroundReceived.await(5, TimeUnit.SECONDS))
+        } finally {
+            instrumentation.runOnMainSync { host.destroy(saveState = false) }
+        }
+    }
+
     private fun account() = AccountEntity(
         id = UUID.randomUUID().toString(),
         binggan = "TitleTest",

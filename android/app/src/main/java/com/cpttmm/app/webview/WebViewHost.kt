@@ -238,6 +238,18 @@ class WebViewHost(
         view.pauseTimers()
     }
 
+    fun resumeForActivity() {
+        if (destroyed) return
+        resume()
+        val currentUrl = view.url
+        if (currentUrl != null && DomainPolicy.classify(currentUrl) is NavigationTarget.Internal) {
+            view.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent('cpttmm:foreground'));void 0;",
+                null,
+            )
+        }
+    }
+
     override fun resume() {
         if (destroyed) return
         view.resumeTimers()
