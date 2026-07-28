@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.os.Message
+import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -51,7 +52,12 @@ class WebViewHost(
     private val onDownloadFailure: () -> Unit,
 ) : PooledWebViewHost {
     override val accountId: String = account.id
-    val view: WebView = WebView(context)
+    val view: WebView = WebView(context).apply {
+        layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
 
     private var documentStartScript: ScriptHandler? = null
     private var destroyed = false

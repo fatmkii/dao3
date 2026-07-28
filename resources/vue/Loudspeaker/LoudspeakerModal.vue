@@ -2,7 +2,7 @@
     <n-modal v-model:show="showThis" display-directive="if">
         <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="大喇叭列表" closable @close="showThis = false"
             size="small">
-            <n-flex vertical :size="[0, 12]" class="loudspeaker-content" style="max-height:75vh;overflow-y:auto;">
+            <n-flex vertical :size="[0, 12]" class="loudspeaker-content" :style="loudspeakerContentStyle">
                 <!-- 大喇叭本体 -->
                 <component v-for="(loudspeaker, index) in loudspeakerData" :key="loudspeaker.id"
                     :is="loudspeaker.thread_id ? 'router-link' : 'span'"
@@ -28,14 +28,20 @@
 import { type loudspeakerData } from '@/api/methods/loudspeaker';
 import { useCommonStore } from '@/stores/common';
 import { FButton } from '@custom';
+import { useWindowSize } from '@vueuse/core';
 import { NCard, NFlex, NModal, useThemeVars } from 'naive-ui';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 //基础数据
 const commonStore = useCommonStore()
 const themeVars = useThemeVars()
 const router = useRouter()
+const { height: windowHeight } = useWindowSize()
+const loudspeakerContentStyle = computed(() => ({
+    maxHeight: `${Math.floor(windowHeight.value * 0.75)}px`,
+    overflowY: 'auto',
+}))
 
 //组件props
 interface Props {
