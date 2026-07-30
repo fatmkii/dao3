@@ -12,24 +12,31 @@
 
 <body>
     <div class="container">
-        <div style="height: 200px; width:400px;">
-            小火锅维护中……
-            <br>
-            {{ config('app.maintenance.message') }}
-        </div>
+        小火锅维护中……
+        <br>
+        {{ config('app.maintenance.message') }}
     </div>
 </body>
 
 <style>
-    .container {
-        height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    html,
+    body {
+        height: 100%;
+        margin: 0;
     }
 
     body {
-        background-color: #f3fdf3FF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f3fdf3;
+    }
+
+    .container {
+        box-sizing: border-box;
+        width: min(400px, calc(100% - 32px));
+        padding: 24px;
+        text-align: center;
     }
 </style>
 
