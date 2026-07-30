@@ -31,6 +31,7 @@
                     :index="index" @click="emojiImgClick(index)" @move-card="moveCard"
                     @delete-emoji="deleteEmojiHandle" />
             </n-flex>
+            <EmojiDragLayer v-if="commonStore.isMobile" />
             <!-- 垃圾桶 -->
             <div :ref="dropTrash" class="emoji-trash" :style="{ backgroundColor: backgroundColor }">
                 <n-text :depth="3">拖到这里删除</n-text>
@@ -72,8 +73,10 @@
 
 import { myEmojisSetPoster, type myEmojisSetParams } from '@/api/methods/user'
 import emojiData from '@/data/emojiData'
+import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import Emoji from '@/vue/UserCenter/Dnd/Emoji.vue'
+import EmojiDragLayer from '@/vue/UserCenter/Dnd/EmojiDragLayer.vue'
 import { FButton } from '@custom'
 import { TrashCan } from '@vicons/carbon'
 import { toRefs } from '@vueuse/core'
@@ -85,6 +88,7 @@ import ExportEmojiModal from './Modal/ExportEmojiModal.vue'
 
 //基础数据
 const userStore = useUserStore()
+const commonStore = useCommonStore()
 const themeVars = useThemeVars()
 const ExportEmojiModalCom = ref<InstanceType<typeof ExportEmojiModal> | null>(null)
 

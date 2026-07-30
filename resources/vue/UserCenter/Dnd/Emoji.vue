@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 interface DragItem {
   index: number
-  type: string
+  emojiSrc: string
 }
 
 const card = ref<HTMLDivElement>()
@@ -92,7 +92,10 @@ const [dropCollect, drop] = useDrop<
 const [collect, drag] = useDrag({
   type: 'emojiImg',
   item: () => {
-    return { index: props.index }
+    return {
+      index: props.index,
+      emojiSrc: props.emojiSrc,
+    }
   },
   collect: (monitor: any) => ({
     isDragging: monitor.isDragging(),
