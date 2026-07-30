@@ -393,6 +393,24 @@ private fun ActiveForumWorkspace(
                         }
                     }
                     Surface(
+                        onClick = { host.reload() },
+                        modifier =
+                            Modifier
+                                .size(width = 48.dp, height = 40.dp)
+                                .semantics { contentDescription = "刷新当前页面" },
+                        shape = RoundedCornerShape(11.dp),
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.refresh),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                    }
+                    Surface(
                         onClick = { showTabs = true },
                         modifier =
                             Modifier.size(width = 48.dp, height = 40.dp).semantics {
@@ -523,6 +541,11 @@ private fun ActiveForumWorkspace(
             onSelectAccount = {
                 showSettings = false
                 showAccountSwitcher = true
+            },
+            onClearWebCache = {
+                showSettings = false
+                pageErrors[activeTab.id] = null
+                host.clearResourceCacheAndReload()
             },
             onDismiss = { showSettings = false },
         )

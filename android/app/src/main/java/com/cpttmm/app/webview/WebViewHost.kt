@@ -222,6 +222,12 @@ class WebViewHost(
         if (!destroyed) view.reload()
     }
 
+    fun clearResourceCacheAndReload() {
+        if (destroyed) return
+        view.clearCache(true)
+        view.reload()
+    }
+
     fun clearProfileData() {
         if (destroyed) return
         val profile = WebViewCompat.getProfile(view)

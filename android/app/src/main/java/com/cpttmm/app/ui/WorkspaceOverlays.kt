@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -142,6 +144,7 @@ internal fun SettingsSheet(
     error: String?,
     onDomainChange: (AppDomain) -> Unit,
     onSelectAccount: () -> Unit,
+    onClearWebCache: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -190,6 +193,21 @@ internal fun SettingsSheet(
                 onClick = onSelectAccount,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) { Text("切换饼干：$currentBinggan", maxLines = 1) }
+            HorizontalDivider()
+            FilledTonalButton(
+                onClick = onClearWebCache,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors =
+                    ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+            ) { Text("清理网页缓存") }
+            Text(
+                "不会删除已导入饼干",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
             HorizontalDivider()
             Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             when {
