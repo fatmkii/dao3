@@ -40,7 +40,8 @@
                 </n-icon>
             </div>
         </n-card>
-        <!-- 追加表情包功能 -->
+
+        <!-- 追加自定义表情包功能 -->
         <n-card title="待追加的表情包" size="small" class="dash-line" v-if="showAppendEmoji">
             <template #header-extra>
                 <n-flex size="small">
@@ -49,12 +50,33 @@
                 </n-flex>
             </template>
             <n-flex size="small">
-                <div class="emoji-box" v-for="( emojiSrc, key, index ) in appendEmojiInputArray">
+                <div class="emoji-box" v-for="(emojiSrc, key) in appendEmojiInputArray">
                     <img :src="emojiSrc" class="emoji-in-box">
                 </div>
             </n-flex>
             <n-input type="textarea" v-model:value="appendEmojiInput" placeholder="在这里贴网址追加表情包。可以一次多个，每行一个。"
                 style="border-radius: 10px; margin-top: 6px; " :autosize="{ minRows: 3, maxRows: 5 }" />
+        </n-card>
+
+        <!-- 追加官方表情包的功能 -->
+        <n-card title="收藏官方表情包" size="small" class="dash-line" v-if="showAppendEmoji">
+            <template #header-extra>
+                <n-flex size="small">
+                    <f-button type="default" @click="showAppendEmoji = false;">关闭</f-button>
+                </n-flex>
+            </template>
+            <n-tabs v-model:value="officialEmojiGroup" type="line" animated
+                :size="commonStore.isMobile ? 'small' : 'medium'">
+                <n-tab-pane v-for="emojiGroup in emojiData" :key="emojiGroup.id" :name="emojiGroup.id"
+                    :tab="emojiGroup.name">
+                    <n-flex size="small">
+                        <div v-for="emojiSrc in emojiGroup.emojis" :key="emojiSrc" class="emoji-box"
+                            @click="appendOfficialEmoji(emojiSrc)">
+                            <img :src="emojiSrc" class="emoji-in-box">
+                        </div>
+                    </n-flex>
+                </n-tab-pane>
+            </n-tabs>
         </n-card>
 
         <!-- 提交按钮和其他显示 -->
@@ -81,8 +103,8 @@ import { FButton } from '@custom'
 import { TrashCan } from '@vicons/carbon'
 import { toRefs } from '@vueuse/core'
 import { useRequest } from 'alova'
-import { NCard, NCheckbox, NCheckboxGroup, NFlex, NIcon, NInput, NText, NSwitch, useThemeVars } from 'naive-ui'
-import { computed, ref, unref, watch } from 'vue'
+import { NCard, NCheckbox, NCheckboxGroup, NFlex, NIcon, NInput, NSwitch, NTabPane, NTabs, NText, useThemeVars } from 'naive-ui'
+import { computed, ref, shallowRef, unref, watch } from 'vue'
 import { useDrop } from 'vue3-dnd'
 import ExportEmojiModal from './Modal/ExportEmojiModal.vue'
 
@@ -163,6 +185,13 @@ function appendEmojiHandle() {
     const appendArray = appendEmojiInputArray.value.map((item, index) => ({ emojiSrc: item, id: index + emojiListInput.value.length }))
     emojiListInput.value = emojiListInput.value.concat(appendArray)
     appendEmojiInput.value = ''
+}
+
+//追加官方表情包
+const officialEmojiGroup = shallowRef<number>(-1)
+function appendOfficialEmoji(emojiSrc: string) {
+    const nextId = Math.max(-1, ...emojiListInput.value.map(item => item.id)) + 1
+    emojiListInput.value.push({ emojiSrc, id: nextId })
 }
 
 //去除重复的表情包
