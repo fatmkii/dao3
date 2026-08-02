@@ -15,7 +15,7 @@
             <div>QQ小火锅避难群：<n-text type="info">156840110</n-text></div>
             <div>小火锅有5个网址：<n-text type="info">cpttmm.com, www.cpttmm.com, cpttmm.love, www.cpttmm.love,
                     v2.cpttmm.com</n-text>(v2尽量不要用)</div>
-            <div>Android版APP：<a href="https://cpttmm.vip/android" target="_blank">点击下载</a> </div>
+            <div>Android版APP：<a href="https://cpttmm.vip/android/cpttmm-latest.apk" target="_blank">点击下载</a> </div>
         </n-card>
         <!-- 板块列表 -->
         <n-flex justify="center" vertical :size="1">
