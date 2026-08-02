@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\User;
+use Illuminate\Support\Str;
 
 class MyEmoji extends Model
 {
@@ -26,8 +26,17 @@ class MyEmoji extends Model
 
     protected $casts = [
         'emoji_excluded' => 'array',
-        'emojis' => 'array'
+        'emojis' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (MyEmoji $myEmoji): void {
+            if (! $myEmoji->exists || $myEmoji->isDirty('emojis')) {
+                $myEmoji->version = (string) Str::uuid();
+            }
+        });
+    }
 
     public function user()
     {
