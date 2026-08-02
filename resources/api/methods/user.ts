@@ -21,12 +21,17 @@ interface userData {
         title_pingbici: string[]
     },
     my_emoji: string[],
+    my_emoji_version?: string | null,
     emoji_excluded: number[]
 }
-const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
+type userDataResponse = Omit<userData, 'my_emoji'> & {
+    my_emoji?: string[],
+}
+const userDataGetter = (binggan: string, myEmojiVersionOnly = false) => commonAlova.Post<userDataResponse>(
     '/api/user/show',
     {
-        binggan: binggan
+        binggan: binggan,
+        my_emoji_version_only: myEmojiVersionOnly,
     },
     {
         //第三个参数是config
@@ -44,6 +49,20 @@ const userDataGetter = (binggan: string) => commonAlova.Post<userData>(
             'deletePostDeleter', 'recoverPostPutter',
             'newThreadPoster', 'threadChangeColorPoster', 'delayThreadDeleter',
         ]
+    }
+)
+
+interface myEmojiData {
+    my_emoji_version: string | null,
+    my_emoji: string[],
+}
+const myEmojiDataGetter = () => commonAlova.Get<myEmojiData>(
+    'api/user/my_emoji',
+    {
+        name: 'myEmojiDataGetter',
+        params: {},
+        localCache: null,
+        hitSource: [],
     }
 )
 
@@ -552,7 +571,8 @@ const setUserCharaPoster = (params: setUserCharaParams) => {
 }
 
 export {
-    userDataGetter, userData, userRegisterPoster, userRewardParams, userRewardPoster,
+    userDataGetter, userData, userDataResponse, myEmojiDataGetter, myEmojiData,
+    userRegisterPoster, userRewardParams, userRewardPoster,
     waterUnlockPoster, waterUnlockParams, myEmojisSetPoster, myEmojisSetParams, myEmojisAddPoster, myEmojisAddParams,
     pingbiciSetParams, pingbiciSetPoster,
     checkRegisterRecordGetter, checkRegisterRecordData, incomeDataGetter, incomeSumDataGetter, incomeData, incomeParams,

@@ -84,7 +84,7 @@
             <n-text :depth="3" style="font-size: 0.875rem;">上面所有变更都要提交后才生效喔</n-text>
             <f-button @click="exportAllEmoji">导出</f-button>
             <f-button @click="emojiSetHandle" type="primary" :loading="myEmojisSetLoading"
-                :disabled="myEmojisSetLoading">提交</f-button>
+                :disabled="myEmojisSetLoading || userStore.userDataLoading || !userStore.myEmojiReady">提交</f-button>
         </n-flex>
 
         <ExportEmojiModal ref="ExportEmojiModalCom" />
@@ -132,14 +132,13 @@ function setEmojiListInput(value: string[] | null) {
         emojiListInput.value = []
     }
 }
-if (userStore.userLoginStatus === true) {
-    //初始化数据
-    setEmojiListInput(userStore.userData.my_emoji)
-}
-watch(() => userStore.userDataLoading, (value) => {
-    //监听userDataLoading，当用户数据重新读取时，把新数据更新到emojiListInput
-    if (value === false) setEmojiListInput(userStore.userData.my_emoji)
-})
+watch(
+    [() => userStore.myEmojiReady, () => userStore.userData.my_emoji] as const,
+    ([ready, emojis]) => {
+        if (ready) setEmojiListInput(emojis)
+    },
+    { immediate: true },
+)
 
 //拖拽功能
 const moveCard = (dragIndex: number, hoverIndex: number) => {

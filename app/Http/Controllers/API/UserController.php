@@ -75,6 +75,7 @@ class UserController extends Controller
     {
         $request->validate([
             'binggan' => 'required|string',
+            'my_emoji_version_only' => 'sometimes|boolean',
         ]);
 
         $user = $request->user(); //从sanctum的token获得饼干
@@ -126,13 +127,18 @@ class UserController extends Controller
             $user->append('admin_forums');
         }
 
-        //如果没有存emojis，则返回[]（不然前端会报错）
-        $my_emoji = $user->MyEmoji;
+        //版本模式不读取可能很大的emojis字段
+        $my_emoji_version_only = $request->boolean('my_emoji_version_only');
+        $my_emoji = $my_emoji_version_only
+            ? $user->MyEmoji()->select('version', 'emoji_excluded')->first()
+            : $user->MyEmoji;
         if ($my_emoji) {
-            $my_emoji_data = $my_emoji->emojis ?: [];
+            $my_emoji_data = $my_emoji_version_only ? null : ($my_emoji->emojis ?: []);
+            $my_emoji_version = $my_emoji->version;
             $emoji_excluded = $my_emoji->emoji_excluded ?: [];
         } else {
             $my_emoji_data = [];
+            $my_emoji_version = null;
             $emoji_excluded = [];
         }
 
@@ -159,19 +165,37 @@ class UserController extends Controller
         $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
         $user_medal_record->check_national_day();
 
-        return response()->json(
-            [
-                'code' => ResponseCode::SUCCESS,
-                'message' => '饼干认证成功，欢迎回来',
-                'data' => [
-                    'binggan' => $user,
-                    'pingbici' => $pingbici_data,
-                    'my_emoji' => $my_emoji_data,
-                    'emoji_excluded' => $emoji_excluded,
-                    'my_battle_chara' => $my_battle_chara,
-                ],
+        $data = [
+            'binggan' => $user,
+            'pingbici' => $pingbici_data,
+            'my_emoji_version' => $my_emoji_version,
+            'emoji_excluded' => $emoji_excluded,
+            'my_battle_chara' => $my_battle_chara,
+        ];
+
+        if (! $my_emoji_version_only) {
+            $data['my_emoji'] = $my_emoji_data;
+        }
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '饼干认证成功，欢迎回来',
+            'data' => $data,
+        ]);
+    }
+
+    public function my_emoji_show(Request $request)
+    {
+        $my_emoji = $request->user()->MyEmoji;
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '已获取我的表情包',
+            'data' => [
+                'my_emoji_version' => $my_emoji?->version,
+                'my_emoji' => $my_emoji?->emojis ?: [],
             ],
-        );
+        ]);
     }
 
     public function create(Request $request)
