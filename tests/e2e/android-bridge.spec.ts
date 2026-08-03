@@ -323,6 +323,28 @@ test.describe('Android App bridge', () => {
 
         await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
         await expect(page.getByText('自动涮锅测试主题')).toBeVisible();
+        const contentInput = page.locator('#content-input');
+        await contentInput.evaluate((element) => {
+            const textarea = element as HTMLTextAreaElement;
+            textarea.getBoundingClientRect = () => ({
+                x: 0,
+                y: window.innerHeight,
+                top: window.innerHeight,
+                right: 300,
+                bottom: window.innerHeight + 150,
+                left: 0,
+                width: 300,
+                height: 150,
+                toJSON: () => ({}),
+            });
+            textarea.scrollIntoView = () => {
+                textarea.dataset.scrolledAfterResize = 'true';
+            };
+        });
+        await contentInput.focus();
+        await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+        await expect.poll(() => contentInput.getAttribute('data-scrolled-after-resize')).toBe('true');
+
         const autoRefreshSwitch = page.getByRole('switch');
         await autoRefreshSwitch.click();
         await expect(autoRefreshSwitch).toBeChecked();

@@ -10,14 +10,22 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imeAnimationTarget
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +33,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -133,6 +143,7 @@ internal fun ForumWorkspace(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActiveForumWorkspace(
     account: AccountEntity,
@@ -341,12 +352,23 @@ private fun ActiveForumWorkspace(
         }
     }
 
+    val shouldShowBottomBar = WindowInsets.imeAnimationTarget.getBottom(LocalDensity.current) == 0
     Scaffold(
+        contentWindowInsets =
+            ScaffoldDefaults.contentWindowInsets.only(
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
+            ),
         bottomBar = {
             Surface(
+                modifier =
+                    Modifier.animateContentSize(
+                        animationSpec = tween(durationMillis = 220),
+                        alignment = Alignment.BottomCenter,
+                    ),
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp,
-            ) {
+            ) bottomBarContent@{
+                if (!shouldShowBottomBar) return@bottomBarContent
                 Row(
                     modifier =
                         Modifier
@@ -612,7 +634,7 @@ internal fun ActiveTabView(
     key(tabId) {
         AndroidView(
             factory = { view },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().imePadding(),
         )
     }
 }

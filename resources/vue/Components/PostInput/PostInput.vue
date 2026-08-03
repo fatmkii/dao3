@@ -101,8 +101,8 @@
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder" :rows="inputRows"
             ref="contentInputDom" :style="inputStyle" :input-props="{ id: 'content-input' }" :disabled="userIsLocked || disabled"
-            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="isTyping = false"
-            @focus="isTyping = true" />
+            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="handleContentBlur"
+            @focus="handleContentFocus" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
             <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
@@ -140,6 +140,7 @@
 <script setup lang="ts">
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import RollModal from '@/vue/Components/PostInput/RollModal.vue'
@@ -150,7 +151,7 @@ import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as E
 import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
-import { computed, h, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
 import DrawerModal from './DrawerModal.vue'
@@ -162,6 +163,7 @@ import PingbiciModal from './PingbiciModal.vue'
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const { isAndroidApp } = useAndroidAppBridge()
 
 const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件引用
 
@@ -430,6 +432,50 @@ function resetContent() {
 
 //确认输入框是否在输入中，并且向父组件返回
 const isTyping = ref<boolean>(false)
+let focusedContentInput: HTMLTextAreaElement | null = null
+let inputVisibilityFrame: number | null = null
+
+function ensureContentInputVisible() {
+    if (!focusedContentInput || document.activeElement !== focusedContentInput) return
+    if (inputVisibilityFrame !== null) cancelAnimationFrame(inputVisibilityFrame)
+
+    inputVisibilityFrame = requestAnimationFrame(() => {
+        inputVisibilityFrame = null
+        if (!focusedContentInput || document.activeElement !== focusedContentInput) return
+
+        const viewport = window.visualViewport
+        const viewportTop = viewport?.offsetTop ?? 0
+        const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight)
+        const inputRect = focusedContentInput.getBoundingClientRect()
+        if (inputRect.top < viewportTop || inputRect.bottom > viewportBottom) {
+            focusedContentInput.scrollIntoView({ behavior: 'auto', block: 'center' })
+        }
+    })
+}
+
+function removeInputViewportListeners() {
+    window.removeEventListener('resize', ensureContentInputVisible)
+    window.visualViewport?.removeEventListener('resize', ensureContentInputVisible)
+}
+
+function handleContentFocus(event: FocusEvent) {
+    isTyping.value = true
+    if (!isAndroidApp.value || !(event.target instanceof HTMLTextAreaElement)) return
+
+    focusedContentInput = event.target
+    window.addEventListener('resize', ensureContentInputVisible)
+    window.visualViewport?.addEventListener('resize', ensureContentInputVisible)
+}
+
+function handleContentBlur() {
+    isTyping.value = false
+    removeInputViewportListeners()
+    focusedContentInput = null
+    if (inputVisibilityFrame !== null) cancelAnimationFrame(inputVisibilityFrame)
+    inputVisibilityFrame = null
+}
+
+onBeforeUnmount(handleContentBlur)
 
 defineExpose({ quoteHandle, isTyping, resetInput })
 
