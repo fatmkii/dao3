@@ -52,7 +52,7 @@ class WebViewHost(
     private val onDownloadFailure: () -> Unit,
 ) : PooledWebViewHost {
     override val accountId: String = account.id
-    val view: WebView = WebView(context).apply {
+    val view: WebView = DraggableScrollbarWebView(context).apply {
         layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
