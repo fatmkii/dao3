@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { useCommonStore, type imgHostType } from '@/stores/common'
+import { useCommonStore, type imgHostWebType } from '@/stores/common'
 import { FButton } from '@custom'
 import { NUpload, type UploadCustomRequestOptions } from 'naive-ui'
 import { onMounted, onUnmounted, ref, computed } from 'vue'
@@ -42,16 +42,16 @@ const emit = defineEmits<{
 }>()
 
 //根据不同图床选择不同的配置方法
-const imgHostList1 = ['mjj', 'imgbb', 'freeimage', 'picgo', 'tutu']
-const imgHostList2 = ['imge', 'imgtbl', 'imgimg', 'helloimg', 'picui', 'imgwang']
+const imgHostList1: imgHostWebType[] = ['imgbb', 'freeimage']
+const imgHostList2: imgHostWebType[] = ['imgimg', 'picui']
 const hostType = computed<number>(() => {
     if (props.forumId === 419) {
         return 0
     }
-    if (imgHostList1.includes(commonStore.userCustom.imgHost)) {
+    if (imgHostList1.includes(commonStore.userCustom.imgHostWeb)) {
         return 1
     }
-    if (imgHostList2.includes(commonStore.userCustom.imgHost)) {
+    if (imgHostList2.includes(commonStore.userCustom.imgHostWeb)) {
         return 2
     }
     return 1
@@ -98,20 +98,12 @@ const selfBuildImgHostRequest = ({
 }
 
 //免费图床配置（类型1的，使用chevereto的）
-function setImguploadPlugin(station: imgHostType) {
+function setImguploadPlugin(station: imgHostWebType) {
     //手动载入插图插件
     var body = document.getElementsByTagName("body")[0];
     var pup = document.createElement("script");
     pup.setAttribute("id", "image-upload-js");
     var button = document.getElementById('upload-button');
-    if (station == 'mjj') {
-        pup.setAttribute("async", 'true');
-        pup.setAttribute("data-mode", "manual");
-        pup.setAttribute("src", "https://mjj.today/sdk/pup.js");
-        pup.setAttribute("data-url", "https://mjj.today/upload");
-        pup.setAttribute("data-auto-insert", "html-embed");
-        button?.setAttribute("data-chevereto-pup-trigger", "")
-    }
     if (station == 'imgbb') {
         pup.setAttribute("async", 'true');
         pup.setAttribute("data-mode", "manual");
@@ -128,37 +120,16 @@ function setImguploadPlugin(station: imgHostType) {
         pup.setAttribute("data-auto-insert", "html-embed-medium");
         button?.setAttribute("data-chevereto-pup-trigger", "")
     }
-    if (station == 'picgo') {
-        pup.setAttribute("async", 'true');
-        pup.setAttribute("data-mode", "manual");
-        pup.setAttribute("src", "https://www.picgo.net/sdk/pup.js");
-        pup.setAttribute("data-url", "https://www.picgo.net/upload");
-        pup.setAttribute("data-auto-insert", "html-embed");
-        button?.setAttribute("data-chevereto-pup-trigger", "")
-    }
-    //tutu图床它的后台返回url有问题
-    // if (station == 'tutu') {
-    //     pup.setAttribute("async", 'true');
-    //     pup.setAttribute("data-mode", "manual");
-    //     pup.setAttribute("src", "https://tutu.to/sdk/pup.js");
-    //     pup.setAttribute("data-url", "https://tutu.to/upload");
-    //     pup.setAttribute("data-auto-insert", "html-embed");
-    //     button?.setAttribute("data-chevereto-pup-trigger", "")
-    // }
     body.appendChild(pup);
 }
 
 //免费图床配置（类型2的，使用不知道什么框架的）
 const imgHostType2Url = computed<string>(() => {
     const urlMap: { [key: string]: string } = {
-        'imge': 'https://imge.cc/api/v1/upload',
-        'imgtbl': 'https://imgtbl.com/api/v1/upload',
         'imgimg': 'https://imgimg.cc/api/v1/upload',
-        'helloimg': 'https://www.helloimg.com/api/v1/upload',
         'picui': 'https://picui.cn/api/v1/upload',
-        'imgwang': 'https://img.wang/api/v1/upload',
     }
-    return urlMap[commonStore.userCustom.imgHost] || ""
+    return urlMap[commonStore.userCustom.imgHostWeb] || ""
 
 })
 const imgHostType2Request = ({
@@ -208,8 +179,8 @@ function removeImguploadPlugin() {
 }
 
 onMounted(() => {
-    if (imgHostList1.includes(commonStore.userCustom.imgHost)) {
-        setImguploadPlugin(commonStore.userCustom.imgHost)
+    if (imgHostList1.includes(commonStore.userCustom.imgHostWeb)) {
+        setImguploadPlugin(commonStore.userCustom.imgHostWeb)
     }
 })
 

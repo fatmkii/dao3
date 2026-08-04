@@ -4,11 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.view.View
-import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -75,6 +75,9 @@ import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.session.RefreshPolicy
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
+import com.cpttmm.app.webview.PendingWebFileChooser
+import com.cpttmm.app.webview.WebFileChooserRoute
+import com.cpttmm.app.webview.webFileChooserRoute
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -171,18 +174,20 @@ private fun ActiveForumWorkspace(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pendingFileChooser =
-        remember {
-            mutableStateOf<ValueCallback<Array<Uri>>?>(null)
+    val pendingFileChooser = remember { PendingWebFileChooser<Array<Uri>>() }
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickVisualMedia(),
+        ) { uri ->
+            pendingFileChooser.complete(uri?.let { arrayOf(it) })
         }
     val fileChooserLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.StartActivityForResult(),
         ) { result ->
-            pendingFileChooser.value?.onReceiveValue(
+            pendingFileChooser.complete(
                 WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data),
             )
-            pendingFileChooser.value = null
         }
     var showTabs by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
@@ -201,8 +206,7 @@ private fun ActiveForumWorkspace(
     DisposableEffect(webViewPool) {
         onWebViewPoolChanged(webViewPool)
         onDispose {
-            pendingFileChooser.value?.onReceiveValue(null)
-            pendingFileChooser.value = null
+            pendingFileChooser.clear()
             onWebViewPoolChanged(null)
             webViewPool.destroyAll()
         }
@@ -296,12 +300,24 @@ private fun ActiveForumWorkspace(
                             if (it != null) diagnostics.record(DiagnosticEvent.WEBVIEW_MAIN_FRAME_ERROR)
                         },
                         onShowFileChooser = { callback, parameters ->
-                            pendingFileChooser.value?.onReceiveValue(null)
-                            pendingFileChooser.value = callback
-                            runCatching { fileChooserLauncher.launch(parameters.createIntent()) }
+                            pendingFileChooser.replace(callback::onReceiveValue)
+                            val route =
+                                webFileChooserRoute(
+                                    acceptTypes = parameters.acceptTypes,
+                                    isSingleOpenRequest = parameters.mode == WebChromeClient.FileChooserParams.MODE_OPEN,
+                                )
+                            runCatching {
+                                when (route) {
+                                    WebFileChooserRoute.PHOTO_PICKER ->
+                                        photoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                        )
+                                    WebFileChooserRoute.GENERIC_CHOOSER ->
+                                        fileChooserLauncher.launch(parameters.createIntent())
+                                }
+                            }
                                 .onFailure {
-                                    pendingFileChooser.value?.onReceiveValue(null)
-                                    pendingFileChooser.value = null
+                                    pendingFileChooser.clear()
                                     diagnostics.record(DiagnosticEvent.FILE_CHOOSER_FAILED)
                                 }.isSuccess
                         },

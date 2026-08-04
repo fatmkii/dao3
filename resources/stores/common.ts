@@ -3,7 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 
-export type imgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg' | 'picui' | 'imgwang'
+export type imgHostWebType = 'imgbb' | 'freeimage' | 'imgimg' | 'picui'
+export type imgHostAndroidType = 'imgimg' | 'picui'
+
+type legacyImgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg' | 'picui' | 'imgwang'
 
 export const useCommonStore = defineStore('commonStore', () => {
 
@@ -92,7 +95,9 @@ export const useCommonStore = defineStore('commonStore', () => {
         version: number, //版本号，方便日后做重置
 
         // 功能选项
-        imgHost: imgHostType,//图床选择
+        imgHostWeb: imgHostWebType,//网页端图床选择
+        imgHostAndroid: imgHostAndroidType,//Android端图床选择
+        imgHost?: legacyImgHostType,//旧版图床选择，仅用于迁移
         hongbaoThenStop: boolean, //自动涮锅时遇到红包停止
         holdPageWhenListening: boolean,//自动涮锅时页面保持不动
         lessToast: boolean,  //减少弹出提示
@@ -126,7 +131,8 @@ export const useCommonStore = defineStore('commonStore', () => {
     const userCustom = useStorage<userCustomType>('user_custom', {
         version: 240505, //版本号，方便日后做重置
         // 功能选项
-        imgHost: 'imgbb',//图床选择
+        imgHostWeb: 'imgbb',//网页端图床选择
+        imgHostAndroid: 'imgimg',//Android端图床选择
         hongbaoThenStop: false, //自动涮锅时遇到红包停止
         holdPageWhenListening: false,//自动涮锅时页面保持不动
         lessToast: false,  //减少弹出提示
@@ -157,6 +163,17 @@ export const useCommonStore = defineStore('commonStore', () => {
         pingbiciIngnoreCase: false, //屏蔽词忽略大小写
     }, localStorage, { mergeDefaults: true })
 
+    //旧版只有一个图床偏好：兼容的值迁移给网页端，Android始终从ImgIMG开始。
+    const legacyImgHost = userCustom.value.imgHost
+    if (legacyImgHost !== undefined) {
+        const webImgHosts: imgHostWebType[] = ['imgbb', 'freeimage', 'imgimg', 'picui']
+        userCustom.value.imgHostWeb = webImgHosts.includes(legacyImgHost as imgHostWebType)
+            ? legacyImgHost as imgHostWebType
+            : 'imgbb'
+        userCustom.value.imgHostAndroid = 'imgimg'
+        delete userCustom.value.imgHost
+    }
+
 
     //重置userCustom
     function userCustomReset() {
@@ -168,6 +185,8 @@ export const useCommonStore = defineStore('commonStore', () => {
             negativeText: '取消',
             onPositiveClick: () => {
                 //不知道为何直接赋值会失去响应性？
+                userCustom.value.imgHostWeb = 'imgbb'
+                userCustom.value.imgHostAndroid = 'imgimg'
                 userCustom.value.quoteMax = 3
                 userCustom.value.foldMaxLine = 16
                 userCustom.value.lineHeightPost = 28
@@ -191,4 +210,3 @@ export const useCommonStore = defineStore('commonStore', () => {
     return { unauthModalShow, requestErrorCode, isMobile, clientWidth, showTopbarNav, bannerHeight, isDouble11, isOctober, isOctober1st, isFoolday, userCustom, modalMaxWidth, userCustomReset }
 
 })
-

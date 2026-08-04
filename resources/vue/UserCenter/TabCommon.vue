@@ -12,9 +12,9 @@
                         <n-divider dashed style="margin-top: 8px;margin-bottom: 8px;">
                             <n-text depth="3" style="font-size: 0.875rem;">功能选项 </n-text>
                         </n-divider>
-                        <n-form-item label="图床选择" path="loudspeakerPosition">
-                            <n-select v-model:value="userInput.imgHost" :options="imgHostOptions"
-                                :menu-props="{ style: { borderRadius: '10px' } }" />
+                        <n-form-item label="图床选择" :path="isAndroidApp ? 'imgHostAndroid' : 'imgHostWeb'">
+                            <n-select v-model:value="imgHostInput" :options="imgHostOptions"
+                                data-testid="image-host-select" :menu-props="{ style: { borderRadius: '10px' } }" />
                         </n-form-item>
                         <n-form-item label="自动涮锅时遇红包停止" path="hongbaoThenStop">
                             <n-switch v-model:value="userInput.hongbaoThenStop" />
@@ -175,9 +175,12 @@ import ThreadList from '@/vue/Forum/ThreadList.vue';
 import PostItem from '@/vue/Thread/PostItem/PostItem.vue';
 import { FButton } from '@custom';
 import { NCard, NDivider, NFlex, NForm, NFormItem, NGi, NGrid, NInputNumber, NPopover, NSelect, NSwitch, NText } from 'naive-ui';
+import { computed } from 'vue';
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
 
 //基础数据
 const commonStore = useCommonStore()
+const { isAndroidApp } = useAndroidAppBridge()
 
 //收集表单的输入数据， 最后返回给父组件
 const userInput = commonStore.userCustom
@@ -189,18 +192,31 @@ const loudspeakerPositionOptions = [
     { value: 'bottom', label: '放在底部' },
 ]
 //图床选项
-const imgHostOptions = [
-    { value: 'imgbb', label: '(推荐)imgbb' },
-    { value: 'freeimage', label: 'freeimage' },
-    // { value: 'imge', label: 'imge' },   “没有可用储存”
-    // { value: 'imgtbl', label: '(已停用)imgtbl' }, 关闭了游客上传
-    // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好
-    { value: 'imgimg', label: 'imgimg' },
-    { value: 'helloimg', label: 'helloimg' },
-    { value: 'picui', label: 'picui' },
-    { value: 'imgwang', label: 'ImgWang' },
-    { value: 'picgo', label: '(要注册)picgo' }, //要注册
-]
+const imgHostInput = computed({
+    get: () => isAndroidApp.value
+        ? userInput.imgHostAndroid
+        : userInput.imgHostWeb,
+    set: (value) => {
+        if (isAndroidApp.value) userInput.imgHostAndroid = value as typeof userInput.imgHostAndroid
+        else userInput.imgHostWeb = value as typeof userInput.imgHostWeb
+    },
+})
+const imgHostOptions = computed(() => isAndroidApp.value
+    ? [
+        { value: 'picui', label: 'picui' },
+        { value: 'imgimg', label: 'imgimg' },
+    ]
+    : [
+        { value: 'imgbb', label: '(推荐)imgbb' },
+        { value: 'freeimage', label: 'Freeimage' },
+        { value: 'imgimg', label: 'imgimg' },
+        { value: 'picui', label: 'picui' },
+        // { value: 'imge', label: 'imge' },   “没有可用储存”
+        // { value: 'imgtbl', label: '(已停用)imgtbl' }, 关闭了游客上传
+        // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好
+        // { value: 'picgo', label: '(要注册)picgo' }, //要注册
+    ],
+)
 
 //实时预览用的虚拟postData
 const postDataForPreview = {

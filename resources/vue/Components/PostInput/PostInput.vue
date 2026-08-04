@@ -101,11 +101,16 @@
         <!-- 输入框 -->
         <n-input v-model:value="contentInput" type="textarea" :placeholder="textareaPlaceHolder" :rows="inputRows"
             ref="contentInputDom" :style="inputStyle" :input-props="{ id: 'content-input' }" :disabled="userIsLocked || disabled"
-            @change="contentInputChange" @keyup.ctrl.enter="handleCommit($event)" @blur="handleContentBlur"
+            @update:value="rememberContentSelectionAfterInput"
+            @change="contentInputChange" @input="rememberContentSelection" @click="rememberContentSelection"
+            @keyup="rememberContentSelection" @keyup.ctrl.enter="handleCommit($event)" @blur="handleContentBlur"
+            @select="rememberContentSelection"
             @focus="handleContentFocus" />
         <!-- 提交按钮等 -->
         <n-flex justify="end" :align="'center'">
-            <ImageUpload :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
+            <AndroidImageUpload v-if="isAndroidApp" :user-is-locked="userIsLocked" :forum-id="forumId"
+                :thread-id="threadId" @insert-image="insertImageHandle" />
+            <ImageUpload v-else :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
             <n-popover v-if="mode === 'thread'" placement="bottom-start" trigger="hover"
                 :disabled="commonStore.isMobile">
@@ -151,7 +156,8 @@ import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as E
 import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
-import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, h, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import AndroidImageUpload from './AndroidImageUpload.vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
 import DrawerModal from './DrawerModal.vue'
@@ -316,27 +322,39 @@ function dropdownSelect(name: 'draw' | 'mute') {
 //监控管理员自动设置昵称
 watch(postWithAdmin, (value) => nicknameInput.value = value ? '管理员' : '= =')
 
-//在光标处插入的功能函数
-function getCaretPosition(element: HTMLTextAreaElement): number {// 获取光标位置的辅助函数
-    return element.selectionStart != null ? element.selectionStart : 0;
+//在最后一次选区插入，避免异步上传期间丢失光标位置。
+const lastContentSelection = shallowRef({ start: 0, end: 0 })
+function rememberContentSelection(event: Event) {
+    if (!(event.target instanceof HTMLTextAreaElement)) return
+    lastContentSelection.value = {
+        start: event.target.selectionStart ?? 0,
+        end: event.target.selectionEnd ?? event.target.selectionStart ?? 0,
+    }
 }
-function insertTextAtCursor(element: HTMLTextAreaElement, text: string): void {
-    const caretPos = getCaretPosition(element);
-    const currentValue = element.value;
-    const newValue =
-        currentValue.substring(0, caretPos) + text + currentValue.substring(caretPos);
-    contentInput.value = newValue
-    setTimeout(() => {
-        // 移动光标到插入内容的后面
-        element.selectionStart = caretPos + text.length;
-        element.selectionEnd = caretPos + text.length;
-    }, 0);
+function rememberContentSelectionAfterInput() {
+    void nextTick(() => {
+        const textarea = document.getElementById('content-input')
+        if (textarea instanceof HTMLTextAreaElement) {
+            lastContentSelection.value = {
+                start: textarea.selectionStart ?? contentInput.value.length,
+                end: textarea.selectionEnd ?? textarea.selectionStart ?? contentInput.value.length,
+            }
+        }
+    })
 }
 function insertTextAtCursorAndLog(text: string) {
     const contentInputTextarea = document.getElementById('content-input') as HTMLTextAreaElement
-    insertTextAtCursor(contentInputTextarea, text)
+    const currentValue = contentInput.value
+    const start = Math.min(lastContentSelection.value.start, currentValue.length)
+    const end = Math.min(Math.max(lastContentSelection.value.end, start), currentValue.length)
+    const caretPosition = start + text.length
+    contentInput.value = currentValue.substring(0, start) + text + currentValue.substring(end)
+    lastContentSelection.value = { start: caretPosition, end: caretPosition }
     contentInputChange()//记录一次输入历史
-    contentInputTextarea.focus()//返回焦点
+    void nextTick(() => {
+        contentInputTextarea.focus()//返回焦点
+        contentInputTextarea.setSelectionRange(caretPosition, caretPosition)
+    })
 }
 
 //清空内容
@@ -467,7 +485,8 @@ function handleContentFocus(event: FocusEvent) {
     window.visualViewport?.addEventListener('resize', ensureContentInputVisible)
 }
 
-function handleContentBlur() {
+function handleContentBlur(event?: FocusEvent) {
+    if (event) rememberContentSelection(event)
     isTyping.value = false
     removeInputViewportListeners()
     focusedContentInput = null
