@@ -363,10 +363,12 @@ private fun ActiveForumWorkspace(
         bottomBar = {
             Surface(
                 modifier =
-                    Modifier.animateContentSize(
-                        animationSpec = tween(durationMillis = 220),
-                        alignment = Alignment.BottomCenter,
-                    ),
+                    Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(
+                            animationSpec = tween(durationMillis = 220),
+                            alignment = Alignment.BottomCenter,
+                        ),
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp,
             ) bottomBarContent@{
