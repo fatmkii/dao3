@@ -55,12 +55,12 @@ class OfflineErrorPageTest {
     fun unsupportedWebViewBlocksAppAndOffersUpdate() {
         composeRule.setContent {
             MaterialTheme {
-                UnsupportedWebViewScreen(listOf("MULTI_PROFILE"))
+                UnsupportedWebViewScreen(listOf("WEB_MESSAGE_LISTENER"))
             }
         }
 
         composeRule.onNodeWithText("需要更新 Android System WebView").assertIsDisplayed()
-        composeRule.onNodeWithText("MULTI_PROFILE").assertIsDisplayed()
+        composeRule.onNodeWithText("WEB_MESSAGE_LISTENER").assertIsDisplayed()
         composeRule.onNodeWithText("更新 Android System WebView").assertIsDisplayed()
     }
 }

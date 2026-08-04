@@ -87,7 +87,7 @@ class AccountSwitcherSheetTest {
             id = id,
             binggan = "SecretCookie",
             alias = alias,
-            profileName = "profile",
+            storageNamespace = "profile",
             cachedThemeName = null,
             accessExpiresAtMillis = Long.MAX_VALUE,
             idleExpiresAtMillis = Long.MAX_VALUE,

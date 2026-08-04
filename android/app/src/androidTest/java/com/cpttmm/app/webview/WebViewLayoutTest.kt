@@ -16,7 +16,7 @@ import java.util.UUID
 class WebViewLayoutTest {
     @Test
     fun fillsTheAndroidViewContainer() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         lateinit var host: WebViewHost
 
@@ -50,7 +50,7 @@ class WebViewLayoutTest {
         id = UUID.randomUUID().toString(),
         binggan = "LayoutTest",
         alias = "饼干#1",
-        profileName = "layout-${UUID.randomUUID()}",
+        storageNamespace = "layout-${UUID.randomUUID()}",
         cachedThemeName = null,
         accessExpiresAtMillis = Long.MAX_VALUE,
         idleExpiresAtMillis = Long.MAX_VALUE,

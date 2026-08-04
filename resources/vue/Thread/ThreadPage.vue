@@ -226,6 +226,7 @@ import { ArrowDown as Down, ArrowUp as Up } from '@vicons/fa'
 import { ArrowCircleLeft48Regular as Back } from '@vicons/fluent'
 import { EllipsisHorizontal as Dropdown, SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 import { useFetcher, useRequest, useWatcher } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDropdown, NEllipsis, NFlex, NIcon, NPopover, NSpin, NSwitch, NTag, NText, NTooltip, type DropdownOption } from 'naive-ui'
@@ -245,7 +246,8 @@ const userStore = useUserStore()
 const commonStore = useCommonStore()
 const route = useRoute()
 const router = useRouter()
-const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false) //愚人节彩蛋开关
+const scopedStorage = getScopedLocalStorage()
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false, scopedStorage) //愚人节彩蛋开关
 const postInputCom = ref<InstanceType<typeof PostInput> | null>(null)//输入框组件的ref
 const PostItemComs = ref<InstanceType<typeof PostItem>[]>([]) //回复内容的组件，但注意这里ref不包括第0楼
 const VoteComponentCom = ref<InstanceType<typeof VoteComponent> | null>(null)//输入框组件的ref
@@ -301,19 +303,19 @@ const nissinTTL = computed(() => {
 //屏蔽选项下拉框
 const superAdminMode = ref<boolean>(false) //超级管理员模式
 const adminMode = ref<boolean>(false) //管理员模式（暂时只有屏蔽代码功能）
-const noVideoMode = useStorage<boolean>('no_video_mode', false) //音频视频
-const noImageMode = useStorage<boolean>('no_image_mode', false)//图片
-const noEmojiMode = useStorage<boolean>('no_emoji_mode', false)//一般表情包
-const noCustomEmojiMode = useStorage<boolean>('no_custom_emoji_mode', false) //自定义表情包
-const noHeadMode = useStorage<boolean>('no_head_mode', false) //头像
-const noBattleMode = useStorage<boolean>('no_battle_mode', false) //大乱斗
-const noRollMode = useStorage<boolean>('no_roll_mode', false) //roll点
-const noRewardMode = useStorage<boolean>('no_reward_mode', false) //打赏
-const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false) //红包结果
-const noHongbaoPicMode = useStorage<boolean>('no_hongbao_pic_mode', false) //红包封面
-const noMentionMode = useStorage<boolean>('no_mention_mode', false) //@提醒功能
-const useUrlMode = useStorage<boolean>('use_url_mode', false) //自动转换超链接（实验性）
-const noPailouMode = useStorage<boolean>('no_pailou_mode', false) //无内容排楼
+const noVideoMode = useStorage<boolean>('no_video_mode', false, scopedStorage) //音频视频
+const noImageMode = useStorage<boolean>('no_image_mode', false, scopedStorage)//图片
+const noEmojiMode = useStorage<boolean>('no_emoji_mode', false, scopedStorage)//一般表情包
+const noCustomEmojiMode = useStorage<boolean>('no_custom_emoji_mode', false, scopedStorage) //自定义表情包
+const noHeadMode = useStorage<boolean>('no_head_mode', false, scopedStorage) //头像
+const noBattleMode = useStorage<boolean>('no_battle_mode', false, scopedStorage) //大乱斗
+const noRollMode = useStorage<boolean>('no_roll_mode', false, scopedStorage) //roll点
+const noRewardMode = useStorage<boolean>('no_reward_mode', false, scopedStorage) //打赏
+const noHongbaoMode = useStorage<boolean>('no_hongbao_mode', false, scopedStorage) //红包结果
+const noHongbaoPicMode = useStorage<boolean>('no_hongbao_pic_mode', false, scopedStorage) //红包封面
+const noMentionMode = useStorage<boolean>('no_mention_mode', false, scopedStorage) //@提醒功能
+const useUrlMode = useStorage<boolean>('use_url_mode', false, scopedStorage) //自动转换超链接（实验性）
+const noPailouMode = useStorage<boolean>('no_pailou_mode', false, scopedStorage) //无内容排楼
 
 const refList = computed(() => {
     const checkboxArray = [//用于批量生成checkbox

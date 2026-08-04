@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 class WebViewTitleTest {
     @Test
     fun reportsDocumentTitleChangesImmediately() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val titleChanged = CountDownLatch(1)
         lateinit var host: WebViewHost
@@ -60,8 +60,8 @@ class WebViewTitleTest {
     }
 
     @Test
-    fun reportsHistoryApiPathChangesImmediately() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+    fun reportsVueRouterPathChangesFromTheBridge() {
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val pathChanged = CountDownLatch(1)
         var reportedPath: String? = null
@@ -91,7 +91,10 @@ class WebViewTitleTest {
             host.view.loadDataWithBaseURL(
                 BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
                 "<html><body><script>" +
-                    "history.pushState({}, '', '/thread/1?page=2#reply-3')" +
+                    "window.CpttmmAndroid.postMessage(JSON.stringify({" +
+                    "type:'navigationChanged',payload:{url:'" +
+                    BuildConfig.DEVELOPMENT_SERVER_ORIGIN +
+                    "/thread/1?page=2#reply-3'}}))" +
                     "</script></body></html>",
                 "text/html",
                 "UTF-8",
@@ -109,7 +112,7 @@ class WebViewTitleTest {
 
     @Test
     fun dispatchesForegroundEventWhenActivityWebViewResumes() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE))
+        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val pageReady = CountDownLatch(1)
         val foregroundReceived = CountDownLatch(1)
@@ -161,7 +164,7 @@ class WebViewTitleTest {
         id = UUID.randomUUID().toString(),
         binggan = "TitleTest",
         alias = "饼干#1",
-        profileName = "title-${UUID.randomUUID()}",
+        storageNamespace = "title-${UUID.randomUUID()}",
         cachedThemeName = null,
         accessExpiresAtMillis = Long.MAX_VALUE,
         idleExpiresAtMillis = Long.MAX_VALUE,

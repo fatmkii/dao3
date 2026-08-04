@@ -3,13 +3,14 @@ import { defineStore } from 'pinia'
 import { useRequest } from 'alova';
 import { myEmojiDataGetter, userDataGetter, type myEmojiData, type userData, type userDataResponse } from '@/api/methods/user';
 import { readMyEmojiCache, writeMyEmojiCache } from '@/js/func/myEmojiCache';
+import { getAccessToken, getBinggan } from '@/js/androidAuth';
 
 export const useUserStore = defineStore('userStore', () => {
 
     const userLoginStatus = shallowRef<boolean>(false)
 
-    const binggan = localStorage.getItem('Binggan')
-    const token = localStorage.getItem('Token')
+    const binggan = getBinggan()
+    const token = getAccessToken()
 
     // 表情包是可能达到30k字符的大字段，独立于普通用户数据保存和更新。
     // shallowRef只在替换整个数组时触发更新，避免为大量URL创建深层响应式代理。

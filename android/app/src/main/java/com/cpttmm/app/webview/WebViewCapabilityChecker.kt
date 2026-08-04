@@ -17,8 +17,6 @@ class WebViewCapabilityChecker(
 
     companion object {
         val REQUIRED_FEATURES = listOf(
-            WebViewFeature.MULTI_PROFILE,
-            WebViewFeature.DOCUMENT_START_SCRIPT,
             WebViewFeature.WEB_MESSAGE_LISTENER,
         )
     }

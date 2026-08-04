@@ -70,6 +70,7 @@ import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
 import { FButton } from '@custom'
 import { useStorage } from '@vueuse/core'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 import { useRequest } from 'alova'
 import { NCard, NFlex, NText, useThemeVars } from 'naive-ui'
 import { useRouter } from 'vue-router'
@@ -81,7 +82,7 @@ const themeVars = useThemeVars()
 const router = useRouter()
 
 //愚人节彩蛋开关
-const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false)
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false, getScopedLocalStorage())
 
 //愚人节拦截函数
 function handleFooldayJump(e: Event, currentThread: threadData, type: 'title' | 'page') {

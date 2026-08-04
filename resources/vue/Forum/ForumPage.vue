@@ -85,6 +85,7 @@ import LoudspeakerComponent from '@/vue/Loudspeaker/LoudspeakerComponent.vue'
 import { FButton, FCheckbox, FInput } from '@custom'
 import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 import { useFetcher, useWatcher } from 'alova'
 import { NCarousel, NCheckboxGroup, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NTag } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
@@ -120,13 +121,14 @@ const bannersShuffled = computed(() => shuffleArray(forumsStore.forumData(props.
 document.title = forumsStore.forumData(props.forumId)?.name ?? '小火锅'
 
 //隐藏版头
-const hideBanner = useStorage<boolean>('banner_hiden', false)
+const scopedStorage = getScopedLocalStorage()
+const hideBanner = useStorage<boolean>('banner_hiden', false, scopedStorage)
 
 //新窗口打开(
-const newWindowToPost = useStorage<boolean>('new_window_to_post', false)
+const newWindowToPost = useStorage<boolean>('new_window_to_post', false, scopedStorage)
 
 //关闭愚人节彩蛋
-const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false)
+const noFoolday2026 = useStorage<boolean>('no_foolday_2026', false, scopedStorage)
 
 //功能选项下拉框
 function renderFuncOptions() {
@@ -173,7 +175,7 @@ const funcOptions = [
 ]
 
 //筛选功能
-const subtitlesIncluded = useStorage<(string | number)[]>('subtitles_included', subtitles)
+const subtitlesIncluded = useStorage<(string | number)[]>('subtitles_included', subtitles, scopedStorage)
 const subtitlesExcluded = computed(() => subtitles.filter(item => !subtitlesIncluded.value!.includes(item)))
 
 //筛选选项下拉框

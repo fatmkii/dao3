@@ -5,6 +5,8 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from '@/routes/routes.js';
 import root_component from '@/vue/App.vue'
+import AndroidBootstrapError from '@/vue/AndroidBootstrapError.vue'
+import { initializeAndroidAuth } from '@/js/androidAuth'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -13,11 +15,23 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.tz.setDefault("Asia/Shanghai") //设置默认时区为UTC+8
 
-const pinia = createPinia()
-const app = createApp({})
+async function start() {
+    try {
+        await initializeAndroidAuth()
+    } catch {
+        createApp(AndroidBootstrapError, {
+            onRetry: () => window.location.reload(),
+        }).mount('#app')
+        return
+    }
 
-app.component('app', root_component)
+    const pinia = createPinia()
+    const app = createApp({})
 
-app.use(router)
-app.use(pinia)
-app.mount('#app')
+    app.component('app', root_component)
+    app.use(router)
+    app.use(pinia)
+    app.mount('#app')
+}
+
+void start()

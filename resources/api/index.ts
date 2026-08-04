@@ -4,6 +4,7 @@ import GlobalFetch from 'alova/GlobalFetch';
 import VueHook from 'alova/vue';
 import { useCommonStore } from '@/stores/common';
 import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge';
+import { getAccessToken } from '@/js/androidAuth';
 
 async function recoverAndroidAuthentication(method: Method) {
     const { isAndroidApp, requestAuthRefresh } = useAndroidAppBridge()
@@ -36,7 +37,7 @@ export const commonAlova = createAlova({
     requestAdapter: GlobalFetch(),
     beforeRequest: (method) => {
         method.config.headers.Accept = 'application/json';
-        const token = localStorage.getItem('Token')
+        const token = getAccessToken()
         if (token) {
             method.config.headers.Authorization = 'Bearer ' + token
         }
