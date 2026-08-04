@@ -139,6 +139,7 @@ internal fun TabSheet(
 @Composable
 internal fun SettingsSheet(
     currentBinggan: String,
+    currentOlo: Long,
     domain: AppDomain,
     auth: MobileAuthCoordinator,
     error: String?,
@@ -193,6 +194,11 @@ internal fun SettingsSheet(
                 onClick = onSelectAccount,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) { Text("切换饼干：$currentBinggan", maxLines = 1) }
+            Text(
+                "现有olo:$currentOlo",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
             HorizontalDivider()
             FilledTonalButton(
                 onClick = onClearWebCache,

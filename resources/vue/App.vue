@@ -39,7 +39,7 @@ const userStore = useUserStore()
 
 //一般设定的store
 const commonStore = useCommonStore()
-const { isAndroidApp, notifyThemeChanged } = useAndroidAppBridge()
+const { isAndroidApp, notifyThemeChanged, notifyOloChanged } = useAndroidAppBridge()
 
 watch(
     () => [
@@ -55,6 +55,12 @@ watch(
             backgroundColor,
         })
     },
+    { immediate: true },
+)
+
+watch(
+    () => userStore.userData.binggan.coin,
+    notifyOloChanged,
     { immediate: true },
 )
 

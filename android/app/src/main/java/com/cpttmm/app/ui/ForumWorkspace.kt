@@ -189,6 +189,7 @@ private fun ActiveForumWorkspace(
     var showAccountSwitcher by remember { mutableStateOf(false) }
     var tabError by remember { mutableStateOf<String?>(null) }
     var settingsError by remember { mutableStateOf<String?>(null) }
+    var currentOlo by remember(account.id) { mutableStateOf(0L) }
     var pendingLongPressUrl by remember { mutableStateOf<String?>(null) }
     var currentAccessToken by remember(account.id, domain) { mutableStateOf(accessToken) }
     val pageErrors = remember(domain) { mutableStateMapOf<String, String?>() }
@@ -277,6 +278,7 @@ private fun ActiveForumWorkspace(
                                     },
                                     onAuthFailure = onError,
                                     onThemeChanged = onThemeChanged,
+                                    onOloChanged = { currentOlo = it },
                                 )
                             }
                         },
@@ -543,6 +545,7 @@ private fun ActiveForumWorkspace(
     if (showSettings) {
         SettingsSheet(
             currentBinggan = account.binggan,
+            currentOlo = currentOlo,
             domain = domain,
             auth = auth,
             error = settingsError,
@@ -650,6 +653,7 @@ private suspend fun handleBridgeMessage(
     onAccessTokenRefreshed: (String) -> Unit,
     onAuthFailure: (Throwable) -> Unit,
     onThemeChanged: (String, Color, Color) -> Unit,
+    onOloChanged: (Long) -> Unit,
 ) {
     val json = runCatching { JSONObject(message) }.getOrNull() ?: return
     when (json.optString("type")) {
@@ -677,6 +681,11 @@ private suspend fun handleBridgeMessage(
                     backgroundColor ?: defaults.backgroundColor,
                 )
             }
+        }
+
+        "oloChanged" -> {
+            val amount = json.optJSONObject("payload")?.optLong("amount", -1L) ?: -1L
+            if (amount >= 0L) onOloChanged(amount)
         }
     }
 }

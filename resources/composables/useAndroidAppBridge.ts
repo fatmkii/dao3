@@ -9,6 +9,7 @@ export interface AndroidThemePayload {
 
 type BridgeMessage =
     | { type: 'themeChanged', payload: AndroidThemePayload }
+    | { type: 'oloChanged', payload: { amount: number } }
     | { type: 'authExpired' }
 
 const isAndroidApp = shallowRef(typeof window !== 'undefined' && Boolean(window.CpttmmAndroid))
@@ -47,6 +48,10 @@ export function useAndroidAppBridge() {
         postMessage({ type: 'themeChanged', payload })
     }
 
+    function notifyOloChanged(amount: number) {
+        postMessage({ type: 'oloChanged', payload: { amount } })
+    }
+
     function requestAuthRefresh(): Promise<void> {
         if (!isAndroidApp.value) return Promise.reject(new Error('当前不在 Android App 中'))
         if (pendingRefresh) return pendingRefresh
@@ -69,6 +74,7 @@ export function useAndroidAppBridge() {
     return {
         isAndroidApp: readonly(isAndroidApp),
         notifyThemeChanged,
+        notifyOloChanged,
         requestAuthRefresh,
     }
 }
