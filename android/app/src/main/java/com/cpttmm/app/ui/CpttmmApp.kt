@@ -25,7 +25,6 @@ import com.cpttmm.app.diagnostics.DiagnosticLogger
 import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
-import com.cpttmm.app.webview.WebProfileCleaner
 import com.cpttmm.app.webview.WebViewCapability
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
@@ -91,7 +90,6 @@ fun CpttmmApp(
         }
 
         fun handleSessionExpired(account: AccountEntity) {
-            WebProfileCleaner.clearAndDeleteWhenReleased(account.profileName)
             scope.launch {
                 var next = tabs.deleteForAccount(account.id)
                 if (next == null) {
@@ -179,8 +177,8 @@ fun CpttmmApp(
                 confirmButton = {
                     TextButton(onClick = {
                         accountToRemove = null
-                        WebProfileCleaner.clearAndDeleteWhenReleased(account.profileName)
                         scope.launch {
+                            preferences.queueStorageCleanup(account.storageNamespace)
                             var next = tabs.deleteForAccount(account.id)
                             if (next == null) {
                                 currentAccountList.firstOrNull { it.id != account.id }?.let {

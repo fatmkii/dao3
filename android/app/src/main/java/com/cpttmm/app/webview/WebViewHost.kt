@@ -16,8 +16,7 @@ import android.webkit.WebResourceError
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.webkit.ProfileStore
-import androidx.webkit.ScriptHandler
+import androidx.webkit.JavaScriptReplyProxy
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
 import com.cpttmm.app.BuildConfig
@@ -33,12 +32,18 @@ data class RestorableWebViewState(
     val scrollY: Int,
 )
 
+data class WebBridgeMessage(
+    val data: String,
+    val sourceOrigin: String,
+    val reply: (String) -> Unit,
+)
+
 class WebViewHost(
     context: Context,
-    private val account: AccountEntity,
+    account: AccountEntity,
     accessToken: String,
     private val onExternalNavigation: (String) -> Unit,
-    private val onBridgeMessage: (String) -> Unit,
+    private val onBridgeMessage: (WebBridgeMessage) -> Unit,
     private val onSaveState: (RestorableWebViewState) -> Unit,
     private val onPathChanged: (String) -> Unit,
     private val onTitleChanged: (String) -> Unit,
@@ -59,20 +64,17 @@ class WebViewHost(
         )
     }
 
-    private var documentStartScript: ScriptHandler? = null
+    private var currentAccessToken = accessToken
     private var destroyed = false
     private var pendingScrollY: Int? = null
 
     init {
-        configure(accessToken)
+        configure()
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun configure(accessToken: String) {
+    private fun configure() {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
-        ProfileStore.getInstance().getOrCreateProfile(account.profileName)
-        WebViewCompat.setProfile(view, account.profileName)
-
         view.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -132,7 +134,6 @@ class WebViewHost(
             ): Boolean {
                 if (!isUserGesture) return false
                 val popup = WebView(webView.context)
-                WebViewCompat.setProfile(popup, account.profileName)
                 popup.webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(
                         popupView: WebView,
@@ -164,14 +165,15 @@ class WebViewHost(
             }
         }
 
-        installDocumentStartScript(accessToken)
         WebViewCompat.addWebMessageListener(
             view,
             BRIDGE_NAME,
             DomainPolicy.trustedOrigins,
-        ) { _: WebView, message: WebMessageCompat, _, isMainFrame: Boolean, _ ->
+        ) { _: WebView, message: WebMessageCompat, sourceOrigin, isMainFrame: Boolean, replyProxy ->
             if (isMainFrame) {
-                message.data?.let(::handleBridgeMessage)
+                message.data?.let { data ->
+                    handleBridgeMessage(data, sourceOrigin.toString(), replyProxy)
+                }
             }
         }
     }
@@ -188,12 +190,14 @@ class WebViewHost(
 
     override fun updateAccessToken(accessToken: String) {
         if (destroyed) return
-        installDocumentStartScript(accessToken)
+        currentAccessToken = accessToken
         val currentUrl = view.url
         if (currentUrl != null && DomainPolicy.classify(currentUrl) is NavigationTarget.Internal) {
             view.evaluateJavascript(WebAuthScript.update(accessToken), null)
         }
     }
+
+    fun accessToken(): String = currentAccessToken
 
     fun dispatchAuthRefreshFailed() {
         if (destroyed) return
@@ -226,14 +230,6 @@ class WebViewHost(
         if (destroyed) return
         view.clearCache(true)
         view.reload()
-    }
-
-    fun clearProfileData() {
-        if (destroyed) return
-        val profile = WebViewCompat.getProfile(view)
-        profile.cookieManager.removeAllCookies { profile.cookieManager.flush() }
-        profile.webStorage.deleteAllData()
-        profile.geolocationPermissions.clearAll()
     }
 
     fun restorableState(): RestorableWebViewState? = currentRestorableState()
@@ -276,8 +272,6 @@ class WebViewHost(
         if (destroyed) return
         destroyed = true
         if (saveState) saveRestorableState()
-        documentStartScript?.remove()
-        documentStartScript = null
         setOnVerticalScrollChangedListener(null)
         WebViewCompat.removeWebMessageListener(view, BRIDGE_NAME)
         view.webViewClient = WebViewClient()
@@ -285,15 +279,6 @@ class WebViewHost(
         view.stopLoading()
         view.removeAllViews()
         view.destroy()
-    }
-
-    private fun installDocumentStartScript(accessToken: String) {
-        documentStartScript?.remove()
-        documentStartScript = WebViewCompat.addDocumentStartJavaScript(
-            view,
-            WebAuthScript.documentStart(account.binggan, accessToken),
-            DomainPolicy.trustedOrigins,
-        )
     }
 
     private fun handleNavigation(webView: WebView, rawUrl: String): Boolean {
@@ -315,14 +300,24 @@ class WebViewHost(
         }
     }
 
-    private fun handleBridgeMessage(message: String) {
+    private fun handleBridgeMessage(
+        message: String,
+        sourceOrigin: String,
+        replyProxy: JavaScriptReplyProxy,
+    ) {
         val json = runCatching { JSONObject(message) }.getOrNull()
         if (json?.optString("type") == "navigationChanged") {
             val url = json.optJSONObject("payload")?.optString("url").orEmpty()
             DomainPolicy.internalPath(url)?.let(onPathChanged)
             return
         }
-        onBridgeMessage(message)
+        onBridgeMessage(
+            WebBridgeMessage(
+                data = message,
+                sourceOrigin = sourceOrigin,
+                reply = replyProxy::postMessage,
+            ),
+        )
     }
 
     private fun saveRestorableState() {
@@ -355,9 +350,7 @@ class WebViewHost(
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
         userAgent?.takeIf { it.isNotBlank() }?.let { request.addRequestHeader("User-Agent", it) }
-        WebViewCompat.getProfile(view).cookieManager.getCookie(url)
-            ?.takeIf { it.isNotBlank() }
-            ?.let { request.addRequestHeader("Cookie", it) }
+        request.addRequestHeader("Authorization", "Bearer $currentAccessToken")
         val manager = view.context.getSystemService(DownloadManager::class.java)
         manager.enqueue(request)
     }

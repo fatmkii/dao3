@@ -155,6 +155,7 @@ import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vi
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
 import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import AndroidImageUpload from './AndroidImageUpload.vue'
@@ -262,7 +263,7 @@ const nicknameInputStyle = computed(() => {
 
 //“功能”选项下拉框
 const showPreview = ref<boolean>(false) //实时预览
-const emojiAutoHide = useStorage<boolean>('emoji_auto_hide', false) //表情包自动收起
+const emojiAutoHide = useStorage<boolean>('emoji_auto_hide', false, getScopedLocalStorage()) //表情包自动收起
 function renderFuncOptions() {
     let options = [
         h(FCheckbox, {

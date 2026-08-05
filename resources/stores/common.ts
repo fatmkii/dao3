@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 
 export type imgHostWebType = 'imgbb' | 'freeimage' | 'imgimg' | 'picui'
 export type imgHostAndroidType = 'imgimg' | 'picui'
@@ -161,7 +162,7 @@ export const useCommonStore = defineStore('commonStore', () => {
         // 其他选项
         hidePingbiciFloor: false, //完全隐藏屏蔽词楼层
         pingbiciIngnoreCase: false, //屏蔽词忽略大小写
-    }, localStorage, { mergeDefaults: true })
+    }, getScopedLocalStorage(), { mergeDefaults: true })
 
     //旧版只有一个图床偏好：兼容的值迁移给网页端，Android始终从ImgIMG开始。
     const legacyImgHost = userCustom.value.imgHost

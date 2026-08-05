@@ -1,45 +1,28 @@
 package com.cpttmm.app.webview
 
 object WebAuthScript {
-    fun documentStart(binggan: String, accessToken: String): String = buildScript(
-        binggan = binggan,
-        accessToken = accessToken,
-        dispatchUpdate = false,
-    )
-
-    fun update(accessToken: String): String = buildString {
-        append("localStorage.setItem('Token',")
-        append(javaScriptString(accessToken))
-        append(");window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));void 0;")
-    }
-
-    private fun buildScript(
+    fun bootstrapMessage(
+        storageNamespace: String,
         binggan: String,
         accessToken: String,
-        dispatchUpdate: Boolean,
+        pendingStorageNamespaces: Set<String>,
     ): String = buildString {
-        append("localStorage.setItem('Binggan',")
-        append(javaScriptString(binggan))
-        append(");localStorage.setItem('Token',")
-        append(javaScriptString(accessToken))
-        append(");")
-        if (dispatchUpdate) {
-            append("window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));")
+        append("{\"type\":\"authBootstrap\",\"payload\":{")
+        append("\"storageNamespace\":").append(javaScriptString(storageNamespace))
+        append(",\"binggan\":").append(javaScriptString(binggan))
+        append(",\"accessToken\":").append(javaScriptString(accessToken))
+        append(",\"pendingStorageNamespaces\":[")
+        pendingStorageNamespaces.forEachIndexed { index, namespace ->
+            if (index > 0) append(',')
+            append(javaScriptString(namespace))
         }
-        append(
-            """
-            (()=>{if(window.__cpttmmNavigationObserver)return;
-            window.__cpttmmNavigationObserver=true;
-            const notify=()=>window.CpttmmAndroid?.postMessage(JSON.stringify(
-            {type:'navigationChanged',payload:{url:location.href}}));
-            for(const method of ['pushState','replaceState']){
-            const original=history[method];
-            history[method]=function(){const result=original.apply(this,arguments);notify();return result;};}
-            window.addEventListener('popstate',notify);
-            window.addEventListener('hashchange',notify);})();
-            """.trimIndent().replace("\n", ""),
-        )
-        append("void 0;")
+        append("]}}")
+    }
+
+    fun update(accessToken: String): String = buildString {
+        append("window.dispatchEvent(new CustomEvent('cpttmm:auth-updated',{detail:{accessToken:")
+        append(javaScriptString(accessToken))
+        append("}}));void 0;")
     }
 
     private fun javaScriptString(value: String): String = buildString {

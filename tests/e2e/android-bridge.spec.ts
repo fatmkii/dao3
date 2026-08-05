@@ -41,31 +41,67 @@ const userData = {
     emoji_excluded: [],
 };
 
-async function installAndroidBridge(page: Page) {
-    await page.addInitScript(() => {
-        localStorage.setItem('Binggan', 'android_binggan');
-        localStorage.setItem('Token', 'expired-token');
-
+async function installAndroidBridge(page: Page, options: {
+    storageNamespace?: string;
+    binggan?: string;
+    accessToken?: string;
+    pendingStorageNamespaces?: string[];
+    replyToBootstrap?: boolean;
+} = {}) {
+    await page.addInitScript((bootstrapOptions) => {
         const bridgeWindow = window as Window & {
             __bridgeMessages: BridgeMessage[];
-            CpttmmAndroid: { postMessage(message: string): void };
+            CpttmmAndroid: {
+                postMessage(message: string): void;
+                addEventListener(type: string, listener: (event: MessageEvent) => void): void;
+                removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
+            };
         };
+        const listeners = new Set<(event: MessageEvent) => void>();
         bridgeWindow.__bridgeMessages = [];
         bridgeWindow.CpttmmAndroid = {
+            addEventListener(_type, listener) {
+                listeners.add(listener);
+            },
+            removeEventListener(_type, listener) {
+                listeners.delete(listener);
+            },
             postMessage(serialized) {
                 const message = JSON.parse(serialized) as BridgeMessage;
                 bridgeWindow.__bridgeMessages.push(message);
+                if (message.type === 'authBootstrapRequested' &&
+                    bootstrapOptions.replyToBootstrap !== false &&
+                    localStorage.getItem('__skipBootstrap') !== 'true') {
+                    const dispatchBootstrap = () => listeners.forEach((listener) => listener(new MessageEvent('message', {
+                        data: JSON.stringify({
+                            type: 'authBootstrap',
+                            payload: {
+                                storageNamespace: bootstrapOptions.storageNamespace ?? 'account-one',
+                                binggan: bootstrapOptions.binggan ?? 'android_binggan',
+                                accessToken: bootstrapOptions.accessToken ?? 'expired-token',
+                                pendingStorageNamespaces: JSON.parse(
+                                    localStorage.getItem('__pendingNamespaces') ??
+                                    JSON.stringify(bootstrapOptions.pendingStorageNamespaces ?? []),
+                                ),
+                            },
+                        }),
+                    })));
+                    const delay = Number(localStorage.getItem('__bootstrapDelayMs') ?? 0);
+                    if (delay > 0) window.setTimeout(dispatchBootstrap, delay);
+                    else queueMicrotask(dispatchBootstrap);
+                }
                 if (message.type === 'authExpired') {
                     if (localStorage.getItem('__androidRefreshFails') === 'true') {
                         window.dispatchEvent(new CustomEvent('cpttmm:auth-refresh-failed'));
                     } else {
-                        localStorage.setItem('Token', 'refreshed-token');
-                        window.dispatchEvent(new CustomEvent('cpttmm:auth-updated'));
+                        window.dispatchEvent(new CustomEvent('cpttmm:auth-updated', {
+                            detail: { accessToken: 'refreshed-token' },
+                        }));
                     }
                 }
             },
         };
-    });
+    }, options);
 }
 
 async function mockAuthenticatedUser(page: Page) {
@@ -91,6 +127,10 @@ test.describe('Android App bridge', () => {
         await page.goto('/', { waitUntil: 'domcontentloaded' });
 
         await expect(page.getByRole('button', { name: '导入饼干' })).toBeHidden();
+        await expect.poll(() => page.evaluate(() => ({
+            token: localStorage.getItem('Token'),
+            binggan: localStorage.getItem('Binggan'),
+        }))).toEqual({ token: null, binggan: null });
         await expect.poll(async () => {
             const messages = await bridgeMessages(page);
             return messages.find((message) => message.type === 'themeChanged');
@@ -100,6 +140,89 @@ test.describe('Android App bridge', () => {
                 name: 'green',
                 isDark: false,
             },
+        });
+    });
+
+    test('waits for bootstrap before the first authenticated request', async ({ page }) => {
+        let userRequestCount = 0;
+        await page.addInitScript(() => localStorage.setItem('__bootstrapDelayMs', '250'));
+        await page.route('**/api/user/show', (route) => {
+            userRequestCount += 1;
+            return route.fulfill({ json: { code: 200, message: 'success', data: userData } });
+        });
+
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        expect(userRequestCount).toBe(0);
+        await expect.poll(() => userRequestCount).toBe(1);
+        const messages = await bridgeMessages(page);
+        expect(messages[0]).toEqual({ type: 'authBootstrapRequested' });
+    });
+
+    test('shows retry UI when bootstrap times out', async ({ page }) => {
+        await page.clock.install({ time: new Date('2026-08-04T12:00:00Z') });
+        await page.addInitScript(() => localStorage.setItem('__skipBootstrap', 'true'));
+
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await page.clock.fastForward(10_001);
+
+        await expect(page.getByRole('heading', { name: '初始化失败' })).toBeVisible();
+        await expect(page.getByRole('button', { name: '重试' })).toBeVisible();
+    });
+
+    test('isolates tokens and settings between two pages in one browser context', async ({ page, context }) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('cpttmm:account-one:theme', 'dark');
+            localStorage.setItem('cpttmm:account-two:theme', 'green');
+        });
+        const secondPage = await context.newPage();
+        await installAndroidBridge(secondPage, {
+            storageNamespace: 'account-two',
+            binggan: 'second_binggan',
+            accessToken: 'token-two',
+        });
+
+        let firstAuthorization = '';
+        let secondAuthorization = '';
+        await page.route('**/api/user/show', (route) => {
+            firstAuthorization = route.request().headers().authorization ?? '';
+            return route.fulfill({ json: { code: 200, message: 'success', data: userData } });
+        });
+        await secondPage.route('**/api/user/show', (route) => {
+            secondAuthorization = route.request().headers().authorization ?? '';
+            return route.fulfill({ json: { code: 200, message: 'success', data: userData } });
+        });
+
+        await Promise.all([
+            page.goto('/', { waitUntil: 'domcontentloaded' }),
+            secondPage.goto('/', { waitUntil: 'domcontentloaded' }),
+        ]);
+
+        await expect.poll(() => firstAuthorization).toBe('Bearer expired-token');
+        await expect.poll(() => secondAuthorization).toBe('Bearer token-two');
+        await expect.poll(async () => (await bridgeMessages(page))
+            .find((message) => message.type === 'themeChanged')?.payload?.name).toBe('dark');
+        await expect.poll(async () => (await bridgeMessages(secondPage))
+            .find((message) => message.type === 'themeChanged')?.payload?.name).toBe('green');
+    });
+
+    test('cleans pending namespaces without touching the active account', async ({ page }) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('cpttmm:removed-account:theme', 'dark');
+            localStorage.setItem('cpttmm:account-one:theme', 'green');
+            localStorage.setItem('__pendingNamespaces', JSON.stringify(['removed-account']));
+        });
+        await mockAuthenticatedUser(page);
+
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+        await expect.poll(() => page.evaluate(() => ({
+            removed: localStorage.getItem('cpttmm:removed-account:theme'),
+            active: localStorage.getItem('cpttmm:account-one:theme'),
+        }))).toEqual({ removed: null, active: 'green' });
+        const messages = await bridgeMessages(page);
+        expect(messages).toContainEqual({
+            type: 'storageCleanupCompleted',
+            payload: { storageNamespaces: ['removed-account'] },
         });
     });
 

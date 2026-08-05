@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
 
 const routes = [
     { path: '/', name: 'Homepage', component: () => import('@/vue/Home/Home.vue') },
@@ -68,6 +69,10 @@ const router = createRouter({
         }
         return { top: 0 }
     },
+})
+
+router.afterEach((to) => {
+    useAndroidAppBridge().notifyNavigationChanged(window.location.origin + to.fullPath)
 })
 
 

@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 
 @Entity(
     tableName = "accounts",
@@ -13,7 +14,7 @@ data class AccountEntity(
     @PrimaryKey val id: String,
     val binggan: String,
     val alias: String,
-    val profileName: String,
+    @ColumnInfo(name = "profileName") val storageNamespace: String,
     val cachedThemeName: String?,
     val accessExpiresAtMillis: Long,
     val idleExpiresAtMillis: Long,

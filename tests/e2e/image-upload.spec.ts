@@ -24,13 +24,32 @@ const userData = {
 
 async function installAndroidBridge(page: Page, userCustom?: Record<string, unknown>) {
     await page.addInitScript((storedUserCustom) => {
-        localStorage.setItem('Binggan', 'android_binggan');
-        localStorage.setItem('Token', 'android-token');
-        if (storedUserCustom && localStorage.getItem('user_custom') === null) {
-            localStorage.setItem('user_custom', JSON.stringify(storedUserCustom));
+        const storageKey = 'cpttmm:image-upload:user_custom';
+        if (storedUserCustom && localStorage.getItem(storageKey) === null) {
+            localStorage.setItem(storageKey, JSON.stringify(storedUserCustom));
         }
-        (window as Window & { CpttmmAndroid: { postMessage(message: string): void } }).CpttmmAndroid = {
-            postMessage() {},
+        const listeners = new Set<(event: MessageEvent) => void>();
+        (window as Window & { CpttmmAndroid: {
+            postMessage(message: string): void;
+            addEventListener(type: string, listener: (event: MessageEvent) => void): void;
+            removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
+        } }).CpttmmAndroid = {
+            addEventListener(_type, listener) { listeners.add(listener); },
+            removeEventListener(_type, listener) { listeners.delete(listener); },
+            postMessage(serialized) {
+                if (JSON.parse(serialized).type !== 'authBootstrapRequested') return;
+                queueMicrotask(() => listeners.forEach((listener) => listener(new MessageEvent('message', {
+                    data: JSON.stringify({
+                        type: 'authBootstrap',
+                        payload: {
+                            storageNamespace: 'image-upload',
+                            binggan: 'android_binggan',
+                            accessToken: 'android-token',
+                            pendingStorageNamespaces: [],
+                        },
+                    }),
+                }))));
+            },
         };
     }, userCustom);
 }
@@ -141,7 +160,11 @@ async function selectGeneralSettings(page: Page) {
 }
 
 function storedUserCustom(page: Page) {
-    return page.evaluate(() => JSON.parse(localStorage.getItem('user_custom') ?? '{}'));
+    return page.evaluate(() => JSON.parse(
+        localStorage.getItem('cpttmm:image-upload:user_custom') ??
+        localStorage.getItem('user_custom') ??
+        '{}',
+    ));
 }
 
 function multipartText(request: Request) {

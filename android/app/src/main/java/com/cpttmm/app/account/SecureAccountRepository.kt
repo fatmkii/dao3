@@ -27,13 +27,13 @@ class SecureAccountRepository(
             throw AccountLimitException()
         }
         val accountId = existing?.id ?: UUID.randomUUID().toString()
-        val profileName = existing?.profileName ?: "profile-${UUID.randomUUID()}"
+        val storageNamespace = existing?.storageNamespace ?: "storage-${UUID.randomUUID()}"
         dao.upsertAccount(
             AccountEntity(
                 id = accountId,
                 binggan = session.binggan,
                 alias = existing?.alias ?: AccountAliasPolicy.nextDefaultAlias(dao.accountAliases()),
-                profileName = profileName,
+                storageNamespace = storageNamespace,
                 cachedThemeName = existing?.cachedThemeName,
                 accessExpiresAtMillis = session.accessExpiresAt.toEpochMilli(),
                 idleExpiresAtMillis = session.idleExpiresAt.toEpochMilli(),

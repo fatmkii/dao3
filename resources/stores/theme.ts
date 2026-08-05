@@ -3,9 +3,10 @@ import { darkTheme, GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { computed, readonly } from 'vue'
 import { lightThemeOverrides, sfwThemeOverrides, darkThemeOverrides, greenThemeOverrides, blueThemeOverrides, lightThemeColors, sfwThemeColors, darkThemeColors, greenThemeColors, blueThemeColors } from '@/data/theme'
 import { useStorage } from '@vueuse/core'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 
 export const useThemeStore = defineStore('themeStore', () => {
-    const themeName = useStorage<string>('theme', 'green') //用来标记当前状态的
+    const themeName = useStorage<string>('theme', 'green', getScopedLocalStorage()) //用来标记当前状态的
 
     function themeChange(name: string) {
         themeName.value = name

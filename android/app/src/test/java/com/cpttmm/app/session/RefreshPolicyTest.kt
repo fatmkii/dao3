@@ -56,7 +56,7 @@ class RefreshPolicyTest {
         id = "account-id",
         binggan = "cookie",
         alias = "饼干#1",
-        profileName = "profile-random",
+        storageNamespace = "profile-random",
         cachedThemeName = null,
         accessExpiresAtMillis = expiresAt,
         idleExpiresAtMillis = Long.MAX_VALUE,

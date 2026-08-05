@@ -80,6 +80,8 @@ import com.cpttmm.app.navigation.NavigationTarget
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.session.RefreshPolicy
 import com.cpttmm.app.webview.WebViewHost
+import com.cpttmm.app.webview.WebBridgeMessage
+import com.cpttmm.app.webview.WebAuthScript
 import com.cpttmm.app.webview.WebViewPool
 import com.cpttmm.app.webview.PendingWebFileChooser
 import com.cpttmm.app.webview.WebFileChooserRoute
@@ -294,6 +296,7 @@ private fun ActiveForumWorkspace(
                                     domain = domain,
                                     auth = auth,
                                     accounts = accounts,
+                                    preferences = preferences,
                                     diagnostics = diagnostics,
                                     host = createdHost,
                                     onAccessTokenRefreshed = { refreshedToken ->
@@ -727,11 +730,12 @@ internal fun ActiveTabView(
 }
 
 private suspend fun handleBridgeMessage(
-    message: String,
+    message: WebBridgeMessage,
     account: AccountEntity,
     domain: AppDomain,
     auth: MobileAuthCoordinator,
     accounts: SecureAccountRepository,
+    preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
     host: WebViewHost,
     onAccessTokenRefreshed: (String) -> Unit,
@@ -739,8 +743,31 @@ private suspend fun handleBridgeMessage(
     onThemeChanged: (String, Color, Color) -> Unit,
     onOloChanged: (Long) -> Unit,
 ) {
-    val json = runCatching { JSONObject(message) }.getOrNull() ?: return
+    val json = runCatching { JSONObject(message.data) }.getOrNull() ?: return
     when (json.optString("type")) {
+        "authBootstrapRequested" -> {
+            val pendingNamespaces = preferences.pendingStorageNamespaces(message.sourceOrigin)
+            message.reply(
+                WebAuthScript.bootstrapMessage(
+                    storageNamespace = account.storageNamespace,
+                    binggan = account.binggan,
+                    accessToken = host.accessToken(),
+                    pendingStorageNamespaces = pendingNamespaces,
+                ),
+            )
+        }
+
+        "storageCleanupCompleted" -> {
+            val namespacesJson = json.optJSONObject("payload")
+                ?.optJSONArray("storageNamespaces") ?: return
+            val namespaces = buildSet {
+                for (index in 0 until namespacesJson.length()) {
+                    namespacesJson.optString(index).takeIf(String::isNotBlank)?.let(::add)
+                }
+            }
+            preferences.completeStorageCleanup(message.sourceOrigin, namespaces)
+        }
+
         "authExpired" -> {
             runCatching { auth.refresh(account.id, domain) }
                 .onSuccess(onAccessTokenRefreshed)

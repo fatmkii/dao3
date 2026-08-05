@@ -7,16 +7,18 @@ import org.junit.Test
 
 class WebViewCapabilityCheckerTest {
     @Test
-    fun `accepts webview only when every required feature exists`() {
-        assertTrue(WebViewCapabilityChecker { true }.check().isSupported)
+    fun `accepts webview when message listener is supported`() {
+        val result = WebViewCapabilityChecker { it == WebViewCapabilityChecker.REQUIRED_FEATURES.single() }.check()
+
+        assertTrue(result.isSupported)
+        assertEquals(listOf("WEB_MESSAGE_LISTENER"), WebViewCapabilityChecker.REQUIRED_FEATURES)
     }
 
     @Test
     fun `reports every missing feature`() {
-        val supported = WebViewCapabilityChecker.REQUIRED_FEATURES.first()
-        val result = WebViewCapabilityChecker { it == supported }.check()
+        val result = WebViewCapabilityChecker { false }.check()
 
         assertFalse(result.isSupported)
-        assertEquals(WebViewCapabilityChecker.REQUIRED_FEATURES.drop(1), result.missingFeatures)
+        assertEquals(WebViewCapabilityChecker.REQUIRED_FEATURES, result.missingFeatures)
     }
 }

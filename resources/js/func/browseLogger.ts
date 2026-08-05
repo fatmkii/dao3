@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { getScopedLocalStorage } from '@/js/androidAuth'
 
 interface browseLogValue {
     [prop: number]: {
@@ -7,13 +8,14 @@ interface browseLogValue {
     } | undefined;
 }
 function useBrowseLogger() {
+    const storage = getScopedLocalStorage()
 
     class browseLogger {
         _defaultValue = {}
         _logData = ref<browseLogValue>(this._defaultValue)
 
         constructor() {
-            const valueRaw = localStorage.getItem('browseLogger')
+            const valueRaw = storage.getItem('browseLogger')
             if (!valueRaw) {
                 this._logData.value = this._defaultValue
             } else {
@@ -25,12 +27,12 @@ function useBrowseLogger() {
                     }
                 }
                 this._logData.value = valueTemp
-                localStorage.setItem('browseLogger', JSON.stringify(this._logData.value)) //将已经过期的浏览记录删除
+                storage.setItem('browseLogger', JSON.stringify(this._logData.value)) //将已经过期的浏览记录删除
             }
         }
 
         reload() {
-            const valueRaw = localStorage.getItem('browseLogger')
+            const valueRaw = storage.getItem('browseLogger')
             if (valueRaw) {
                 this._logData.value = JSON.parse(valueRaw)
             }
@@ -42,7 +44,7 @@ function useBrowseLogger() {
                 expireTime: timestamp,
                 floor: floor
             }
-            localStorage.setItem('browseLogger', JSON.stringify(this._logData.value))
+            storage.setItem('browseLogger', JSON.stringify(this._logData.value))
         }
 
         initThread(threadId: number) {
@@ -64,4 +66,4 @@ function useBrowseLogger() {
     return logger
 }
 
-export { browseLogValue, useBrowseLogger } 
+export { browseLogValue, useBrowseLogger }

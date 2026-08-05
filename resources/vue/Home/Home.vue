@@ -46,6 +46,7 @@ import { useRequest } from 'alova';
 import { NCard, NCarousel, NFlex, NSkeleton, NTag, NText, useThemeVars } from 'naive-ui';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { getScopedLocalStorage } from '@/js/androidAuth';
 
 
 //基础数据
@@ -62,7 +63,8 @@ const homeBannersDataSorted = computed(() => shuffleArray(homeBannersData.value)
 document.title = '小火锅'
 
 //隐藏版头
-const hideBanner = useStorage<boolean>('banner_hiden', false)
+const storage = getScopedLocalStorage()
+const hideBanner = useStorage<boolean>('banner_hiden', false, storage)
 
 
 //外观调整
@@ -81,10 +83,11 @@ const forumCardsContentStyle = computed(() => {
 //收藏板块功能
 const forumFavorites = ref<number[]>([]);
 onMounted(() => {
-    if (localStorage.forums_favorites === undefined) {
-        localStorage.forums_favorites = JSON.stringify([]);
+    const storedFavorites = storage.getItem('forums_favorites')
+    if (storedFavorites === null) {
+        storage.setItem('forums_favorites', JSON.stringify([]));
     } else {
-        forumFavorites.value = JSON.parse(localStorage.forums_favorites);
+        forumFavorites.value = JSON.parse(storedFavorites);
     }
 })
 const forumsDataSorted = computed(() => {
@@ -96,14 +99,14 @@ const forumsDataSorted = computed(() => {
 function favoriteAdd(forumId: number) {
     if (!forumFavorites.value.includes(forumId)) {
         forumFavorites.value.push(forumId);
-        localStorage.forums_favorites = JSON.stringify(forumFavorites.value);
+        storage.setItem('forums_favorites', JSON.stringify(forumFavorites.value));
     }
 }
 function favoriteCancel(forumId: number) {
     const index = forumFavorites.value.indexOf(forumId);
     if (index != -1) {
         forumFavorites.value.splice(index, 1);
-        localStorage.forums_favorites = JSON.stringify(forumFavorites.value);
+        storage.setItem('forums_favorites', JSON.stringify(forumFavorites.value));
     }
 }
 

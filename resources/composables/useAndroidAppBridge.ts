@@ -1,4 +1,5 @@
 import { readonly, shallowRef } from 'vue'
+import { isAndroidApp as detectAndroidApp, updateAndroidAccessToken } from '@/js/androidAuth'
 
 export interface AndroidThemePayload {
     name: string
@@ -10,9 +11,10 @@ export interface AndroidThemePayload {
 type BridgeMessage =
     | { type: 'themeChanged', payload: AndroidThemePayload }
     | { type: 'oloChanged', payload: { amount: number } }
+    | { type: 'navigationChanged', payload: { url: string } }
     | { type: 'authExpired' }
 
-const isAndroidApp = shallowRef(typeof window !== 'undefined' && Boolean(window.CpttmmAndroid))
+const isAndroidApp = shallowRef(detectAndroidApp())
 let pendingRefresh: Promise<void> | null = null
 let resolveRefresh: (() => void) | null = null
 let rejectRefresh: ((reason: Error) => void) | null = null
@@ -37,7 +39,11 @@ function settleRefresh(error?: Error) {
 }
 
 if (typeof window !== 'undefined') {
-    window.addEventListener('cpttmm:auth-updated', () => settleRefresh())
+    window.addEventListener('cpttmm:auth-updated', (event) => {
+        const accessToken = (event as CustomEvent<{ accessToken?: string }>).detail?.accessToken
+        if (accessToken) updateAndroidAccessToken(accessToken)
+        settleRefresh()
+    })
     window.addEventListener('cpttmm:auth-refresh-failed', () => {
         settleRefresh(new Error('原生登录状态刷新失败'))
     })
@@ -50,6 +56,10 @@ export function useAndroidAppBridge() {
 
     function notifyOloChanged(amount: number) {
         postMessage({ type: 'oloChanged', payload: { amount } })
+    }
+
+    function notifyNavigationChanged(url: string) {
+        postMessage({ type: 'navigationChanged', payload: { url } })
     }
 
     function requestAuthRefresh(): Promise<void> {
@@ -75,6 +85,7 @@ export function useAndroidAppBridge() {
         isAndroidApp: readonly(isAndroidApp),
         notifyThemeChanged,
         notifyOloChanged,
+        notifyNavigationChanged,
         requestAuthRefresh,
     }
 }

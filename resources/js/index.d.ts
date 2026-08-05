@@ -10,6 +10,8 @@ declare global {
         $message: MessageApi
         CpttmmAndroid?: {
             postMessage(message: string): void
+            addEventListener?(type: 'message', listener: (event: MessageEvent) => void): void
+            removeEventListener?(type: 'message', listener: (event: MessageEvent) => void): void
         }
     }
 }
