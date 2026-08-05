@@ -68,11 +68,20 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
         strokeWidth = density
     }
     private val hideScrollbar = Runnable { animateScrollbarTo(0f) }
+    private val finishUserScroll = Runnable {
+        userScrollActive = false
+        expectedScrollDirection = 0
+    }
 
     private var scrollbarAlpha = 0f
     private var fadeAnimator: ValueAnimator? = null
     private var draggingScrollbar = false
     private var dragGrabOffset = 0f
+    private var touchInProgress = false
+    private var userScrollActive = false
+    private var lastTouchY = 0f
+    private var expectedScrollDirection = 0
+    private var onVerticalScrollChanged: ((Int, Int, Boolean) -> Unit)? = null
 
     init {
         isVerticalScrollBarEnabled = false
@@ -102,11 +111,42 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
 
     override fun onScrollChanged(left: Int, top: Int, oldLeft: Int, oldTop: Int) {
         super.onScrollChanged(left, top, oldLeft, oldTop)
-        if (!draggingScrollbar && top != oldTop) showScrollbarTemporarily()
+        if (top == oldTop) return
+        if (!draggingScrollbar) showScrollbarTemporarily()
+        val scrollDirection = if (top > oldTop) 1 else -1
+        val userInitiated = userScrollActive && scrollDirection == expectedScrollDirection
+        onVerticalScrollChanged?.invoke(top, oldTop, userInitiated)
+        if (userScrollActive && !touchInProgress) scheduleUserScrollEnd()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                touchInProgress = true
+                userScrollActive = true
+                lastTouchY = event.y
+                expectedScrollDirection = 0
+                removeCallbacks(finishUserScroll)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val fingerDelta = event.y - lastTouchY
+                if (fingerDelta != 0f) {
+                    expectedScrollDirection =
+                        if (draggingScrollbar) {
+                            if (fingerDelta > 0f) 1 else -1
+                        } else {
+                            if (fingerDelta > 0f) -1 else 1
+                        }
+                    lastTouchY = event.y
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                touchInProgress = false
+                scheduleUserScrollEnd()
+            }
+        }
+
         if (draggingScrollbar) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_MOVE -> dragScrollbarTo(event.y)
@@ -129,8 +169,16 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
 
     override fun onDetachedFromWindow() {
         removeCallbacks(hideScrollbar)
+        removeCallbacks(finishUserScroll)
+        touchInProgress = false
+        userScrollActive = false
+        expectedScrollDirection = 0
         fadeAnimator?.cancel()
         super.onDetachedFromWindow()
+    }
+
+    fun setOnVerticalScrollChangedListener(listener: ((Int, Int, Boolean) -> Unit)?) {
+        onVerticalScrollChanged = listener
     }
 
     private fun currentThumb(): ScrollbarThumb? = ScrollbarGeometry.thumb(
@@ -202,8 +250,14 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
         }
     }
 
+    private fun scheduleUserScrollEnd() {
+        removeCallbacks(finishUserScroll)
+        postDelayed(finishUserScroll, USER_SCROLL_END_DELAY_MILLIS)
+    }
+
     private companion object {
         const val SCROLLBAR_HIDE_DELAY_MILLIS = 800L
         const val SCROLLBAR_FADE_DURATION_MILLIS = 200L
+        const val USER_SCROLL_END_DELAY_MILLIS = 150L
     }
 }
