@@ -338,12 +338,18 @@ test.describe('Android App bridge', () => {
                 toJSON: () => ({}),
             });
             textarea.scrollIntoView = () => {
-                textarea.dataset.scrolledAfterResize = 'true';
+                textarea.dataset.scrollCount = String(Number(textarea.dataset.scrollCount ?? 0) + 1);
             };
         });
         await contentInput.focus();
-        await page.evaluate(() => window.dispatchEvent(new Event('resize')));
-        await expect.poll(() => contentInput.getAttribute('data-scrolled-after-resize')).toBe('true');
+        await page.evaluate(() => {
+            window.dispatchEvent(new Event('resize'));
+            window.dispatchEvent(new Event('resize'));
+            window.dispatchEvent(new Event('resize'));
+        });
+        await page.waitForTimeout(50);
+        await expect(contentInput).not.toHaveAttribute('data-scroll-count');
+        await expect.poll(() => contentInput.getAttribute('data-scroll-count')).toBe('1');
 
         const autoRefreshSwitch = page.getByRole('switch');
         await autoRefreshSwitch.click();
