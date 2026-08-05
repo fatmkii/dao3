@@ -452,14 +452,14 @@ function resetContent() {
 //确认输入框是否在输入中，并且向父组件返回
 const isTyping = ref<boolean>(false)
 let focusedContentInput: HTMLTextAreaElement | null = null
-let inputVisibilityFrame: number | null = null
+let inputVisibilityTimeout: number | null = null
 
 function ensureContentInputVisible() {
     if (!focusedContentInput || document.activeElement !== focusedContentInput) return
-    if (inputVisibilityFrame !== null) cancelAnimationFrame(inputVisibilityFrame)
+    if (inputVisibilityTimeout !== null) window.clearTimeout(inputVisibilityTimeout)
 
-    inputVisibilityFrame = requestAnimationFrame(() => {
-        inputVisibilityFrame = null
+    inputVisibilityTimeout = window.setTimeout(() => {
+        inputVisibilityTimeout = null
         if (!focusedContentInput || document.activeElement !== focusedContentInput) return
 
         const viewport = window.visualViewport
@@ -469,7 +469,7 @@ function ensureContentInputVisible() {
         if (inputRect.top < viewportTop || inputRect.bottom > viewportBottom) {
             focusedContentInput.scrollIntoView({ behavior: 'auto', block: 'center' })
         }
-    })
+    }, 100)
 }
 
 function removeInputViewportListeners() {
@@ -491,8 +491,8 @@ function handleContentBlur(event?: FocusEvent) {
     isTyping.value = false
     removeInputViewportListeners()
     focusedContentInput = null
-    if (inputVisibilityFrame !== null) cancelAnimationFrame(inputVisibilityFrame)
-    inputVisibilityFrame = null
+    if (inputVisibilityTimeout !== null) window.clearTimeout(inputVisibilityTimeout)
+    inputVisibilityTimeout = null
 }
 
 onBeforeUnmount(handleContentBlur)

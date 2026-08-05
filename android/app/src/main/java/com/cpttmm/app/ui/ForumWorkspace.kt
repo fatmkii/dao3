@@ -4,14 +4,18 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.view.View
+import android.view.accessibility.AccessibilityManager
 import android.webkit.WebChromeClient
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,9 +50,11 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -199,6 +205,20 @@ private fun ActiveForumWorkspace(
     var currentOlo by remember(account.id) { mutableStateOf(0L) }
     var pendingLongPressUrl by remember { mutableStateOf<String?>(null) }
     var currentAccessToken by remember(account.id, domain) { mutableStateOf(accessToken) }
+    var bottomBarVisible by remember(account.id, domain, activeTab.id) { mutableStateOf(true) }
+    val density = LocalDensity.current
+    val bottomBarScrollBehavior =
+        remember(account.id, domain, activeTab.id, density) {
+            BottomBarScrollBehavior(
+                hideThresholdPx = with(density) { 24.dp.roundToPx() },
+                showThresholdPx = with(density) { 12.dp.roundToPx() },
+            )
+        }
+    val touchExplorationEnabled = rememberTouchExplorationEnabled()
+    val resetBottomBarForNavigation by rememberUpdatedState {
+        bottomBarScrollBehavior.reset()
+        bottomBarVisible = true
+    }
     val pageErrors = remember(domain) { mutableStateMapOf<String, String?>() }
     val webViewPool = remember(domain) { WebViewPool<WebViewHost>() }
 
@@ -291,6 +311,7 @@ private fun ActiveForumWorkspace(
                         },
                         onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
                         onPathChanged = { path ->
+                            resetBottomBarForNavigation()
                             scope.launch { tabRepository.updatePath(activeTab, path) }
                         },
                         onTitleChanged = { title ->
@@ -363,6 +384,27 @@ private fun ActiveForumWorkspace(
             host.pause()
         }
     }
+    DisposableEffect(host, bottomBarScrollBehavior, touchExplorationEnabled) {
+        host.setOnVerticalScrollChangedListener { scrollY, oldScrollY, userInitiated ->
+            if (touchExplorationEnabled) return@setOnVerticalScrollChangedListener
+            when (
+                bottomBarScrollBehavior.onScroll(
+                    scrollY = scrollY,
+                    oldScrollY = oldScrollY,
+                    userInitiated = userInitiated,
+                    bottomBarVisible = bottomBarVisible,
+                )
+            ) {
+                BottomBarVisibilityChange.SHOW -> bottomBarVisible = true
+                BottomBarVisibilityChange.HIDE -> bottomBarVisible = false
+                null -> Unit
+            }
+        }
+        onDispose { host.setOnVerticalScrollChangedListener(null) }
+    }
+    LaunchedEffect(touchExplorationEnabled) {
+        if (touchExplorationEnabled) resetBottomBarForNavigation()
+    }
 
     BackHandler {
         when {
@@ -373,34 +415,38 @@ private fun ActiveForumWorkspace(
         }
     }
 
-    val shouldShowBottomBar = WindowInsets.imeAnimationTarget.getBottom(LocalDensity.current) == 0
+    val shouldShowBottomBarForIme = WindowInsets.imeAnimationTarget.getBottom(density) == 0
     Scaffold(
         contentWindowInsets =
             ScaffoldDefaults.contentWindowInsets.only(
                 WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
             ),
         bottomBar = {
-            Surface(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(
+            if (shouldShowBottomBarForIme) {
+                AnimatedVisibility(
+                    visible = bottomBarVisible || touchExplorationEnabled,
+                    enter =
+                        expandVertically(
                             animationSpec = tween(durationMillis = 220),
-                            alignment = Alignment.BottomCenter,
+                            expandFrom = Alignment.Bottom,
                         ),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp,
-            ) bottomBarContent@{
-                if (!shouldShowBottomBar) return@bottomBarContent
-                Row(
+                    exit =
+                        shrinkVertically(
+                            animationSpec = tween(durationMillis = 180),
+                            shrinkTowards = Alignment.Bottom,
+                        ),
+                ) {
+                    Row(
                     modifier =
                         Modifier
                             .fillMaxWidth()
+                            .shadow(2.dp)
+                            .background(MaterialTheme.colorScheme.surface)
                             .navigationBarsPadding()
                             .padding(start = 10.dp, top = 4.dp, end = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                ) {
+                    ) {
                     Surface(
                         onClick = { host.goBack() },
                         modifier =
@@ -499,6 +545,7 @@ private fun ActiveForumWorkspace(
                         ) {
                             Text(account.alias, maxLines = 1, fontWeight = FontWeight.Medium)
                         }
+                    }
                     }
                 }
             }
@@ -648,6 +695,25 @@ private fun ActiveForumWorkspace(
             },
         )
     }
+}
+
+@Composable
+private fun rememberTouchExplorationEnabled(): Boolean {
+    val context = LocalContext.current
+    val accessibilityManager =
+        remember(context) { context.getSystemService(AccessibilityManager::class.java) }
+    var enabled by remember(accessibilityManager) {
+        mutableStateOf(accessibilityManager.isTouchExplorationEnabled)
+    }
+
+    DisposableEffect(accessibilityManager) {
+        val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled = it }
+        accessibilityManager.addTouchExplorationStateChangeListener(listener)
+        onDispose {
+            accessibilityManager.removeTouchExplorationStateChangeListener(listener)
+        }
+    }
+    return enabled
 }
 
 @Composable

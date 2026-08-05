@@ -234,6 +234,10 @@ class WebViewHost(
 
     fun restorableState(): RestorableWebViewState? = currentRestorableState()
 
+    fun setOnVerticalScrollChangedListener(listener: ((Int, Int, Boolean) -> Unit)?) {
+        (view as DraggableScrollbarWebView).setOnVerticalScrollChangedListener(listener)
+    }
+
     override fun pause() {
         if (destroyed) return
         saveRestorableState()
@@ -268,6 +272,7 @@ class WebViewHost(
         if (destroyed) return
         destroyed = true
         if (saveState) saveRestorableState()
+        setOnVerticalScrollChangedListener(null)
         WebViewCompat.removeWebMessageListener(view, BRIDGE_NAME)
         view.webViewClient = WebViewClient()
         view.webChromeClient = WebChromeClient()
