@@ -1,6 +1,7 @@
 <template>
     <n-flex size="small" vertical>
-        <n-card size="small" :bordered="true" embedded class="hongbao-post-card" :style="backgroundImgStyle">
+        <n-card size="small" :bordered="true" embedded class="hongbao-post-card"
+            :class="{ 'hongbao-post-card--with-cover': useHongbaoPic }" :style="backgroundImgStyle">
             <n-flex vertical :align="'center'">
                 <n-flex :align="'center'" size="small">
                     <n-text style="font-size: 1rem;">{{ keywordTypeName }}</n-text>
@@ -168,7 +169,9 @@ hongbaoPostStoreOnError((event) => {
 .hongbao-post-card {
     max-width: 402px;
     height: 202px;
+}
 
+.hongbao-post-card--with-cover {
     :deep(.n-text) {
         text-shadow:
             -1px -1px 0 white,
