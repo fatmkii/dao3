@@ -3,12 +3,9 @@ package com.cpttmm.app.webview
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.webkit.WebViewFeature
 import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.data.local.AccountEntity
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
@@ -19,7 +16,6 @@ import java.util.concurrent.TimeUnit
 class WebViewTitleTest {
     @Test
     fun reportsDocumentTitleChangesImmediately() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val titleChanged = CountDownLatch(1)
         lateinit var host: WebViewHost
@@ -60,59 +56,7 @@ class WebViewTitleTest {
     }
 
     @Test
-    fun reportsVueRouterPathChangesFromTheBridge() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val pathChanged = CountDownLatch(1)
-        var reportedPath: String? = null
-        lateinit var host: WebViewHost
-
-        instrumentation.runOnMainSync {
-            host = WebViewHost(
-                context = ApplicationProvider.getApplicationContext(),
-                account = account(),
-                accessToken = "access-token",
-                onExternalNavigation = {},
-                onBridgeMessage = {},
-                onSaveState = {},
-                onPathChanged = { path ->
-                    if (path == "/thread/1?page=2#reply-3") {
-                        reportedPath = path
-                        pathChanged.countDown()
-                    }
-                },
-                onTitleChanged = {},
-                onOpenNewTab = {},
-                onLongPressLink = {},
-                onMainFrameError = {},
-                onShowFileChooser = { _, _ -> false },
-                onDownloadFailure = {},
-            )
-            host.view.loadDataWithBaseURL(
-                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
-                "<html><body><script>" +
-                    "window.CpttmmAndroid.postMessage(JSON.stringify({" +
-                    "type:'navigationChanged',payload:{url:'" +
-                    BuildConfig.DEVELOPMENT_SERVER_ORIGIN +
-                    "/thread/1?page=2#reply-3'}}))" +
-                    "</script></body></html>",
-                "text/html",
-                "UTF-8",
-                null,
-            )
-        }
-
-        try {
-            assertTrue(pathChanged.await(5, TimeUnit.SECONDS))
-            assertEquals("/thread/1?page=2#reply-3", reportedPath)
-        } finally {
-            instrumentation.runOnMainSync { host.destroy(saveState = false) }
-        }
-    }
-
-    @Test
     fun dispatchesForegroundEventWhenActivityWebViewResumes() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val pageReady = CountDownLatch(1)
         val foregroundReceived = CountDownLatch(1)

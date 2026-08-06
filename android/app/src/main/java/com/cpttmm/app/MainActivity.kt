@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.webkit.WebViewFeature
 import com.cpttmm.app.ui.CpttmmApp
-import com.cpttmm.app.webview.WebViewCapabilityChecker
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
 
@@ -17,12 +15,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val capability = WebViewCapabilityChecker(WebViewFeature::isFeatureSupported).check()
         val app = application as CpttmmApplication
 
         setContent {
             CpttmmApp(
-                capability = capability,
                 auth = app.auth,
                 accounts = app.accounts,
                 tabs = app.tabs,

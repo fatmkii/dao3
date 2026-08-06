@@ -1,3 +1,8 @@
+import {
+    isAndroidApp as detectAndroidApp,
+    waitForAndroidBridge,
+} from '@/js/androidBridgeTransport'
+
 interface AndroidAuthBootstrap {
     storageNamespace: string
     binggan: string
@@ -15,12 +20,8 @@ const BOOTSTRAP_TIMEOUT_MS = 10_000
 
 let androidAuth: AndroidAuthBootstrap | null = null
 
-function bridge() {
-    return typeof window !== 'undefined' ? window.CpttmmAndroid : undefined
-}
-
 export function isAndroidApp(): boolean {
-    return Boolean(bridge())
+    return detectAndroidApp()
 }
 
 export function getAccessToken(): string | null {
@@ -103,14 +104,14 @@ export function getScopedLocalStorage(): Storage {
 }
 
 export function initializeAndroidAuth(): Promise<void> {
-    const nativeBridge = bridge()
-    if (!nativeBridge) return Promise.resolve()
+    if (!detectAndroidApp()) return Promise.resolve()
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
         const timeout = window.setTimeout(() => {
-            nativeBridge.removeEventListener?.('message', handleMessage)
+            activeBridge?.removeEventListener?.('message', handleMessage)
             reject(new Error('Android 登录信息初始化超时'))
         }, BOOTSTRAP_TIMEOUT_MS)
+        let activeBridge: Awaited<ReturnType<typeof waitForAndroidBridge>>
 
         function handleMessage(event: MessageEvent) {
             const message = typeof event.data === 'string'
@@ -119,13 +120,13 @@ export function initializeAndroidAuth(): Promise<void> {
             if (message.type !== 'authBootstrap' || !message.payload) return
 
             window.clearTimeout(timeout)
-            nativeBridge.removeEventListener?.('message', handleMessage)
+            activeBridge?.removeEventListener?.('message', handleMessage)
             androidAuth = message.payload
 
             const cleaned = message.payload.pendingStorageNamespaces ?? []
             cleaned.forEach(removeNamespace)
             if (cleaned.length > 0) {
-                nativeBridge.postMessage(JSON.stringify({
+                activeBridge?.postMessage(JSON.stringify({
                     type: 'storageCleanupCompleted',
                     payload: { storageNamespaces: cleaned },
                 }))
@@ -133,7 +134,11 @@ export function initializeAndroidAuth(): Promise<void> {
             resolve()
         }
 
-        nativeBridge.addEventListener?.('message', handleMessage)
-        nativeBridge.postMessage(JSON.stringify({ type: 'authBootstrapRequested' }))
+        void waitForAndroidBridge().then((nativeBridge) => {
+            if (!nativeBridge) return
+            activeBridge = nativeBridge
+            nativeBridge.addEventListener?.('message', handleMessage)
+            nativeBridge.postMessage(JSON.stringify({ type: 'authBootstrapRequested' }))
+        })
     })
 }

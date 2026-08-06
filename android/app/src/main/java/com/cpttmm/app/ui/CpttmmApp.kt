@@ -25,7 +25,6 @@ import com.cpttmm.app.diagnostics.DiagnosticLogger
 import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
-import com.cpttmm.app.webview.WebViewCapability
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
 import kotlinx.coroutines.launch
@@ -33,7 +32,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CpttmmApp(
-    capability: WebViewCapability,
     auth: MobileAuthCoordinator,
     accounts: SecureAccountRepository,
     tabs: BrowserTabRepository,
@@ -45,11 +43,6 @@ fun CpttmmApp(
 ) {
     var nativeTheme by remember { mutableStateOf(defaultNativeThemePalette(null)) }
     CpttmmTheme(nativeTheme) {
-        if (!capability.isSupported) {
-            UnsupportedWebViewScreen(capability.missingFeatures)
-            return@CpttmmTheme
-        }
-
         val accountFlow = remember(accounts) { accounts.observeAccounts() }
         val accountList by accountFlow.collectAsState(initial = emptyList())
         val domain by preferences.domain.collectAsState(initial = AppDomain.PRIMARY)

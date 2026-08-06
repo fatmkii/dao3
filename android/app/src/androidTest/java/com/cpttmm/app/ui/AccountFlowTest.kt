@@ -5,9 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.webkit.WebViewFeature
 import com.cpttmm.app.MainActivity
-import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -17,7 +15,6 @@ class AccountFlowTest {
 
     @Test
     fun addAccountSheetProgressivelyDisclosesLoginAndRegistration() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val addAccountLabel = if (
             composeRule.onAllNodesWithText("添加饼干").fetchSemanticsNodes().isNotEmpty()
         ) {
@@ -30,6 +27,6 @@ class AccountFlowTest {
         composeRule.onNodeWithText("饼干").assertIsDisplayed()
 
         composeRule.onNodeWithText("领取新饼干").performClick()
-        composeRule.onNodeWithText("这里是私人论坛小火锅，欢迎来玩！", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("访问域名").assertIsDisplayed()
     }
 }

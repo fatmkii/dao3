@@ -63,6 +63,17 @@ object DomainPolicy {
         }
     }
 
+    fun trustedOrigin(rawUrl: String): String? {
+        val target = classify(rawUrl) as? NavigationTarget.Internal ?: return null
+        val uri = target.uri
+        return buildString {
+            append(uri.scheme.lowercase()).append("://").append(uri.host.lowercase())
+            if (uri.port != -1 && uri.port != effectivePort(URI("${uri.scheme}://${uri.host}"))) {
+                append(':').append(uri.port)
+            }
+        }.takeIf(trustedOrigins::contains)
+    }
+
     private fun sameOrigin(uri: URI, origin: URI): Boolean =
         uri.scheme.equals(origin.scheme, ignoreCase = true) &&
             uri.host.equals(origin.host, ignoreCase = true) &&

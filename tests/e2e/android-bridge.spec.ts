@@ -1,9 +1,9 @@
 import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
-
-interface BridgeMessage {
-    type: string;
-    payload?: Record<string, unknown>;
-}
+import {
+    bridgeMessages,
+    installMessagePortAndroidBridge,
+    legacyAndroidTest,
+} from './fixtures/androidBridge';
 
 const forum = {
     id: 1,
@@ -41,84 +41,15 @@ const userData = {
     emoji_excluded: [],
 };
 
-async function installAndroidBridge(page: Page, options: {
-    storageNamespace?: string;
-    binggan?: string;
-    accessToken?: string;
-    pendingStorageNamespaces?: string[];
-    replyToBootstrap?: boolean;
-} = {}) {
-    await page.addInitScript((bootstrapOptions) => {
-        const bridgeWindow = window as Window & {
-            __bridgeMessages: BridgeMessage[];
-            CpttmmAndroid: {
-                postMessage(message: string): void;
-                addEventListener(type: string, listener: (event: MessageEvent) => void): void;
-                removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
-            };
-        };
-        const listeners = new Set<(event: MessageEvent) => void>();
-        bridgeWindow.__bridgeMessages = [];
-        bridgeWindow.CpttmmAndroid = {
-            addEventListener(_type, listener) {
-                listeners.add(listener);
-            },
-            removeEventListener(_type, listener) {
-                listeners.delete(listener);
-            },
-            postMessage(serialized) {
-                const message = JSON.parse(serialized) as BridgeMessage;
-                bridgeWindow.__bridgeMessages.push(message);
-                if (message.type === 'authBootstrapRequested' &&
-                    bootstrapOptions.replyToBootstrap !== false &&
-                    localStorage.getItem('__skipBootstrap') !== 'true') {
-                    const dispatchBootstrap = () => listeners.forEach((listener) => listener(new MessageEvent('message', {
-                        data: JSON.stringify({
-                            type: 'authBootstrap',
-                            payload: {
-                                storageNamespace: bootstrapOptions.storageNamespace ?? 'account-one',
-                                binggan: bootstrapOptions.binggan ?? 'android_binggan',
-                                accessToken: bootstrapOptions.accessToken ?? 'expired-token',
-                                pendingStorageNamespaces: JSON.parse(
-                                    localStorage.getItem('__pendingNamespaces') ??
-                                    JSON.stringify(bootstrapOptions.pendingStorageNamespaces ?? []),
-                                ),
-                            },
-                        }),
-                    })));
-                    const delay = Number(localStorage.getItem('__bootstrapDelayMs') ?? 0);
-                    if (delay > 0) window.setTimeout(dispatchBootstrap, delay);
-                    else queueMicrotask(dispatchBootstrap);
-                }
-                if (message.type === 'authExpired') {
-                    if (localStorage.getItem('__androidRefreshFails') === 'true') {
-                        window.dispatchEvent(new CustomEvent('cpttmm:auth-refresh-failed'));
-                    } else {
-                        window.dispatchEvent(new CustomEvent('cpttmm:auth-updated', {
-                            detail: { accessToken: 'refreshed-token' },
-                        }));
-                    }
-                }
-            },
-        };
-    }, options);
-}
-
 async function mockAuthenticatedUser(page: Page) {
     await page.route('**/api/user/show', (route) => route.fulfill({
         json: { code: 200, message: 'success', data: userData },
     }));
 }
 
-async function bridgeMessages(page: Page): Promise<BridgeMessage[]> {
-    return page.evaluate(() => (
-        window as Window & { __bridgeMessages: BridgeMessage[] }
-    ).__bridgeMessages);
-}
-
 test.describe('Android App bridge', () => {
     test.beforeEach(async ({ page }) => {
-        await installAndroidBridge(page);
+        await installMessagePortAndroidBridge(page);
     });
 
     test('hides web authentication controls and synchronizes theme', async ({ page }) => {
@@ -141,6 +72,8 @@ test.describe('Android App bridge', () => {
                 isDark: false,
             },
         });
+        await expect.poll(async () => (await bridgeMessages(page)).map(({ type }) => type))
+            .toEqual(expect.arrayContaining(['oloChanged', 'navigationChanged']));
     });
 
     test('waits for bootstrap before the first authenticated request', async ({ page }) => {
@@ -175,7 +108,7 @@ test.describe('Android App bridge', () => {
             localStorage.setItem('cpttmm:account-two:theme', 'green');
         });
         const secondPage = await context.newPage();
-        await installAndroidBridge(secondPage, {
+        await installMessagePortAndroidBridge(secondPage, {
             storageNamespace: 'account-two',
             binggan: 'second_binggan',
             accessToken: 'token-two',
@@ -518,4 +451,16 @@ test.describe('Android App bridge', () => {
         await page.goto('/user-center', { waitUntil: 'domcontentloaded' });
         await expect(page.getByText('定制饼干', { exact: true })).toBeHidden();
     });
+});
+
+legacyAndroidTest('keeps the new web app compatible with the legacy listener bridge', async ({
+    legacyAndroidPage: page,
+}) => {
+    await mockAuthenticatedUser(page);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    await expect(page.getByRole('button', { name: '导入饼干' })).toBeHidden();
+    await expect.poll(async () => (await bridgeMessages(page))[0]?.type)
+        .toBe('authBootstrapRequested');
 });

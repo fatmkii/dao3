@@ -1,5 +1,6 @@
 import { readonly, shallowRef } from 'vue'
 import { isAndroidApp as detectAndroidApp, updateAndroidAccessToken } from '@/js/androidAuth'
+import { currentAndroidBridge } from '@/js/androidBridgeTransport'
 
 export interface AndroidThemePayload {
     name: string
@@ -21,7 +22,7 @@ let rejectRefresh: ((reason: Error) => void) | null = null
 let refreshTimeout: number | null = null
 
 function postMessage(message: BridgeMessage): boolean {
-    const bridge = window.CpttmmAndroid
+    const bridge = currentAndroidBridge()
     if (!bridge) return false
 
     bridge.postMessage(JSON.stringify(message))

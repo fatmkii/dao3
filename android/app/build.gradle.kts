@@ -110,7 +110,6 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("androidx.room:room-ktx:2.8.4")
     implementation("androidx.room:room-runtime:2.8.4")
-    implementation("androidx.webkit:webkit:1.16.0")
     implementation("androidx.work:work-runtime:2.11.2")
 
     ksp("androidx.room:room-compiler:2.8.4")

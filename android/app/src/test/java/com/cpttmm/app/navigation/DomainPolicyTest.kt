@@ -37,6 +37,14 @@ class DomainPolicyTest {
     }
 
     @Test
+    fun `returns only an exact trusted origin for bridge delivery`() {
+        val origin = DomainPolicy.home(AppDomain.PRIMARY).toString().trimEnd('/')
+
+        assertEquals(origin, DomainPolicy.trustedOrigin("$origin/thread/1"))
+        assertEquals(null, DomainPolicy.trustedOrigin("https://example.com/thread/1"))
+    }
+
+    @Test
     fun `sends other https hosts outside the app`() {
         assertTrue(DomainPolicy.classify("https://example.com/") is NavigationTarget.External)
     }

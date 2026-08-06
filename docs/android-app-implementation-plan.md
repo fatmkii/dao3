@@ -6,7 +6,7 @@
 - 仅面向 Android，不为潜在 iOS 版本引入 Compose Multiplatform、Flutter、React Native 或 Capacitor；若未来重新启动 iOS 项目，再单独评估共享范围。
 - Compose 只实现账号列表、标签栏、设置、域名切换、错误页等原生外壳；论坛、帖子、用户中心、菠菜等业务界面继续由现有 Vue 应用唯一实现，避免维护两套业务 UI。
 - WebView 作为独立的 Android View 浏览器组件，通过 `AndroidView` 接入 Compose，由专门的会话/生命周期管理层持有状态，不在 Composable 重组时直接创建或销毁。复杂 WebView 与 Compose 的生命周期不同，必须显式处理状态保存、释放和返回导航。[Compose 中封装 WebView](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/wrap-webview-in-compose)
-- Android 10/API 29 起步，compile/target API 36；启动时强制检查 `MULTI_PROFILE`、`DOCUMENT_START_SCRIPT`、`WEB_MESSAGE_LISTENER`，不支持则引导更新 WebView，仍不支持时阻止进入主界面。
+- Android 10/API 29 起步，compile/target API 36；桥接使用 API 23 起提供的平台 `WebMessagePort`，不再依赖 AndroidX WebKit feature 检查或 WebView 更新阻断页。
 - 每个账号对应独立 WebView Profile 和工作区，最多保存 5 个账号；不提供游客模式。
 - 默认使用 `cpttmm.com`，可全局手动切换到 `cpttmm.love`；加载失败只提示切换，不自动重放请求。`www` 地址规范化到对应裸域，其他域名交系统浏览器。
 - 原生底部工具栏使用左右三角图标提供后退、前进，以圆角数字方块打开标签抽屉，并用带底色的完整 binggan 打开设置；饼干切换入口位于设置页，账号列表使用底部抽屉。外壳主题跟随当前网页主题。
@@ -46,11 +46,11 @@
 - WebView 进入后台标签时暂停媒体与计时活动，休眠、切账号、内存压力或 Activity 销毁时依序保存可恢复状态、解除 client/bridge、停止加载并调用 `destroy()`；不允许后台标签无限保活。
 - 普通点击留在当前标签；`target="_blank"`、`window.open` 和长按“新标签打开”创建标签。达到 10 个时要求先关闭标签。Android 返回键优先关闭抽屉、再执行网页后退；没有网页历史时保留标签并退出到后台。
 - WebView Profile 名使用随机内部 ID，不暴露 binggan。切账号时销毁旧工作区的活 WebView，但保留其 Profile 与标签元数据。
-- 使用受 origin 限制的 `WebMessageListener`，仅允许两个裸域；不使用通配符或 `addJavascriptInterface`。外部网页永远无法获得原生桥。[WebView bridge allowlist](https://developer.android.com/reference/androidx/webkit/WebViewCompat)
-- 在文档启动阶段向受信页面写入现有 `Binggan`/`Token` localStorage；refresh token 永不进入 WebView。access token 更新时同步活 WebView，并触发 `cpttmm:auth-updated` DOM 事件。
-- 新增 `useAndroidAppBridge` Vue composable，作为唯一桥接入口：
-  - 网页到原生：`themeChanged`、`authExpired`。
-  - 原生到网页：`cpttmm:auth-updated`、`cpttmm:auth-refresh-failed`。
+- 使用 `createWebMessageChannel()` 建立双向端口，仅通过精确 target origin 将页面端口交给受信主页面；不使用通配符或 `addJavascriptInterface`。reload、跨文档导航和销毁时关闭旧端口，外部网页无法获得原生桥。
+- 受信页面通过统一的 `authBootstrap` 消息获得账号隔离命名空间、binggan 和 access token；不再把认证数据直接写入未隔离的 localStorage，refresh token 永不进入 WebView。access token 更新时同步活 WebView，并触发 `cpttmm:auth-updated` DOM 事件。
+- `androidBridgeTransport` 统一封装 MessagePort 与兼容期旧 listener，`useAndroidAppBridge` 作为业务层唯一桥接入口：
+  - 网页到原生：`authBootstrapRequested`、`storageCleanupCompleted`、`themeChanged`、`oloChanged`、`navigationChanged`、`authExpired`。
+  - 原生到网页：`authBootstrap` 回复，以及 `cpttmm:auth-updated`、`cpttmm:auth-refresh-failed` DOM 事件。
 - 原生层记录每个账号的 `access_expires_at`，以主动刷新为主：剩余不足 5 分钟时刷新；App 回到前台且剩余不足 10 分钟或已经过期时，在恢复 WebView 网络活动前刷新；创建/唤醒 WebView、切账号或切域名前也先检查。后台定时器不作为唯一刷新保证。
 - App 模式下 Vue 收到 401 时不立即弹出重新导入窗口，而是通过 bridge 请求原生刷新，同一账号等待原生 single-flight 结果；成功后更新 token，`GET`/`HEAD` 最多自动重试一次。`POST`/`PUT`/`PATCH`/`DELETE` 默认不自动重试，提示用户检查结果后手动重试，避免重复发帖、投注或打赏；只有未来具备服务端幂等键的写接口才允许自动重试。
 - refresh token 失效、会话被撤销或原生返回 `cpttmm:auth-refresh-failed` 后，Vue 才显示重新登录状态。普通浏览器继续沿用现有 401 与重新导入流程。
@@ -68,7 +68,7 @@
 ### 当前暂停点：真人实机验真与 APK 功能完善
 
 - 当前实施阶段到代码实现、自动化测试和 API 29/API 36 模拟器验证为止；这些结果作为真人实机验真的基线。
-- 下一阶段先在至少一台定制系统真机上由真人逐项验真，重点检查账号与标签切换、两个域名、图片上传、文件下载、实时通信、管理员页面、前后台恢复、弱网/断网、WebView 能力不足拦截和安装升级流程。
+- 下一阶段先在至少一台定制系统真机上由真人逐项验真，重点检查账号与标签切换、两个域名、图片上传、文件下载、实时通信、管理员页面、前后台恢复、弱网/断网、MessagePort 握手恢复和安装升级流程。
 - 实机验真发现的问题先在本地开发环境修复并回归，继续完善 APK 功能和使用体验；在验真结论与功能范围确认前，不进入生产部署或公开发布流程。
 
 ### 后续发布阶段（暂缓）

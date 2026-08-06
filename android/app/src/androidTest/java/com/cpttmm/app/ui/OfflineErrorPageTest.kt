@@ -51,16 +51,4 @@ class OfflineErrorPageTest {
         assertTrue(composeRule.onAllNodesWithText("切换到 cpttmm.love").fetchSemanticsNodes().isEmpty())
     }
 
-    @Test
-    fun unsupportedWebViewBlocksAppAndOffersUpdate() {
-        composeRule.setContent {
-            MaterialTheme {
-                UnsupportedWebViewScreen(listOf("WEB_MESSAGE_LISTENER"))
-            }
-        }
-
-        composeRule.onNodeWithText("需要更新 Android System WebView").assertIsDisplayed()
-        composeRule.onNodeWithText("WEB_MESSAGE_LISTENER").assertIsDisplayed()
-        composeRule.onNodeWithText("更新 Android System WebView").assertIsDisplayed()
-    }
 }

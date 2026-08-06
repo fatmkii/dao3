@@ -55,6 +55,22 @@ test('home page renders without browser errors', async ({ page }) => {
     expect(browserErrors).toEqual([]);
 });
 
+test('does not treat a MessagePort handshake as Android without the app user agent', async ({ page }) => {
+    await page.addInitScript(() => {
+        window.addEventListener('DOMContentLoaded', () => {
+            const channel = new MessageChannel();
+            window.dispatchEvent(new MessageEvent('message', {
+                data: 'cpttmm:bridge-port-v1',
+                ports: [channel.port2],
+            }));
+        }, { once: true });
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    await expect(page.locator('#app').getByRole('button', { name: '导入饼干' })).toBeVisible();
+});
+
 test('uses the account-scoped my emoji cache when the version matches', async ({ page }) => {
     let myEmojiRequestCount = 0;
 

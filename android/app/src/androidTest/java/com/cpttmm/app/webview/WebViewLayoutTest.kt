@@ -4,10 +4,8 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.webkit.WebViewFeature
 import com.cpttmm.app.data.local.AccountEntity
 import org.junit.Assert.assertEquals
-import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
@@ -16,7 +14,6 @@ import java.util.UUID
 class WebViewLayoutTest {
     @Test
     fun fillsTheAndroidViewContainer() {
-        assumeTrue(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         lateinit var host: WebViewHost
 

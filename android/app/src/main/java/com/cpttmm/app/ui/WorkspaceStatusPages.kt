@@ -1,10 +1,7 @@
 package com.cpttmm.app.ui
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +17,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.account.AccountLimitException
 import com.cpttmm.app.account.MobileSessionUnavailableException
@@ -65,32 +61,6 @@ internal fun InlineMessage(message: String) {
                 .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
                 .padding(14.dp),
     )
-}
-
-@Composable
-internal fun UnsupportedWebViewScreen(missingFeatures: List<String>) {
-    val context = LocalContext.current
-    Box(
-        modifier = Modifier.fillMaxSize().background(WarmCanvas).padding(28.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text("需要更新 Android System WebView", style = MaterialTheme.typography.headlineSmall)
-            Text("当前 WebView 缺少安全运行所需能力，更新后再打开应用。")
-            Text(missingFeatures.joinToString(separator = "\n"))
-            Button(
-                onClick = {
-                    context.startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview"),
-                        ),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) { Text("更新 Android System WebView") }
-        }
-    }
 }
 
 internal fun accountErrorMessage(throwable: Throwable): String =

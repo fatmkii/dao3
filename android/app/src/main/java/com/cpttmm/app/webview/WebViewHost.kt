@@ -11,14 +11,13 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebMessage
+import android.webkit.WebMessagePort
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceError
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.webkit.JavaScriptReplyProxy
-import androidx.webkit.WebMessageCompat
-import androidx.webkit.WebViewCompat
 import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.data.local.AccountEntity
 import com.cpttmm.app.navigation.AppDomain
@@ -67,6 +66,8 @@ class WebViewHost(
     private var currentAccessToken = accessToken
     private var destroyed = false
     private var pendingScrollY: Int? = null
+    private var bridgePort: WebMessagePort? = null
+    private var bridgeReceivedMessage = false
 
     init {
         configure()
@@ -84,13 +85,20 @@ class WebViewHost(
             mediaPlaybackRequiresUserGesture = true
             setSupportMultipleWindows(true)
         }
+        view.settings.userAgentString = "${view.settings.userAgentString} $USER_AGENT_MARKER"
         view.webViewClient = object : WebViewClient() {
             override fun onPageStarted(webView: WebView, url: String, favicon: Bitmap?) {
+                closeBridgePort()
                 onMainFrameError(null)
                 DomainPolicy.internalPath(url)?.let(onPathChanged)
             }
 
+            override fun onPageCommitVisible(webView: WebView, url: String) {
+                establishBridge(webView, url)
+            }
+
             override fun onPageFinished(webView: WebView, url: String) {
+                if (!bridgeReceivedMessage) establishBridge(webView, url)
                 pendingScrollY?.let { scrollY ->
                     pendingScrollY = null
                     webView.scrollTo(0, scrollY)
@@ -162,18 +170,6 @@ class WebViewHost(
                 hit.extra?.let(onLongPressLink) != null
             } else {
                 false
-            }
-        }
-
-        WebViewCompat.addWebMessageListener(
-            view,
-            BRIDGE_NAME,
-            DomainPolicy.trustedOrigins,
-        ) { _: WebView, message: WebMessageCompat, sourceOrigin, isMainFrame: Boolean, replyProxy ->
-            if (isMainFrame) {
-                message.data?.let { data ->
-                    handleBridgeMessage(data, sourceOrigin.toString(), replyProxy)
-                }
             }
         }
     }
@@ -273,7 +269,7 @@ class WebViewHost(
         destroyed = true
         if (saveState) saveRestorableState()
         setOnVerticalScrollChangedListener(null)
-        WebViewCompat.removeWebMessageListener(view, BRIDGE_NAME)
+        closeBridgePort()
         view.webViewClient = WebViewClient()
         view.webChromeClient = WebChromeClient()
         view.stopLoading()
@@ -303,7 +299,7 @@ class WebViewHost(
     private fun handleBridgeMessage(
         message: String,
         sourceOrigin: String,
-        replyProxy: JavaScriptReplyProxy,
+        replyPort: WebMessagePort,
     ) {
         val json = runCatching { JSONObject(message) }.getOrNull()
         if (json?.optString("type") == "navigationChanged") {
@@ -315,9 +311,36 @@ class WebViewHost(
             WebBridgeMessage(
                 data = message,
                 sourceOrigin = sourceOrigin,
-                reply = replyProxy::postMessage,
+                reply = { reply -> replyPort.postMessage(WebMessage(reply)) },
             ),
         )
+    }
+
+    private fun establishBridge(webView: WebView, url: String) {
+        if (destroyed) return
+        val sourceOrigin = DomainPolicy.trustedOrigin(url) ?: return
+        closeBridgePort()
+        val ports = webView.createWebMessageChannel()
+        val nativePort = ports[0]
+        bridgePort = nativePort
+        bridgeReceivedMessage = false
+        nativePort.setWebMessageCallback(object : WebMessagePort.WebMessageCallback() {
+            override fun onMessage(port: WebMessagePort, message: WebMessage) {
+                if (port !== bridgePort || destroyed) return
+                bridgeReceivedMessage = true
+                message.data?.let { handleBridgeMessage(it, sourceOrigin, port) }
+            }
+        })
+        webView.postWebMessage(
+            WebMessage(BRIDGE_HANDSHAKE, arrayOf(ports[1])),
+            Uri.parse(sourceOrigin),
+        )
+    }
+
+    private fun closeBridgePort() {
+        bridgePort?.close()
+        bridgePort = null
+        bridgeReceivedMessage = false
     }
 
     private fun saveRestorableState() {
@@ -356,6 +379,7 @@ class WebViewHost(
     }
 
     companion object {
-        const val BRIDGE_NAME = "CpttmmAndroid"
+        const val USER_AGENT_MARKER = "CpttmmAndroid"
+        const val BRIDGE_HANDSHAKE = "cpttmm:bridge-port-v1"
     }
 }
