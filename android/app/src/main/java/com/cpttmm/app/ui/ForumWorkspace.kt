@@ -1,6 +1,8 @@
 package com.cpttmm.app.ui
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -17,15 +19,20 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -33,9 +40,12 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
@@ -55,9 +65,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -82,12 +96,21 @@ import com.cpttmm.app.session.RefreshPolicy
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebBridgeMessage
 import com.cpttmm.app.webview.WebAuthScript
+import com.cpttmm.app.webview.WebFindResult
 import com.cpttmm.app.webview.WebViewPool
+import com.cpttmm.app.webview.WebHitTarget
+import com.cpttmm.app.webview.WebImageSaveResult
 import com.cpttmm.app.webview.PendingWebFileChooser
 import com.cpttmm.app.webview.WebFileChooserRoute
 import com.cpttmm.app.webview.webFileChooserRoute
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+
+private enum class WorkspaceBottomMode {
+    COLLAPSED,
+    TOOLS,
+    FIND,
+}
 
 @Composable
 internal fun ForumWorkspace(
@@ -198,15 +221,22 @@ private fun ActiveForumWorkspace(
             )
         }
     var showTabs by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
     var showAccountSwitcher by remember { mutableStateOf(false) }
     var tabError by remember { mutableStateOf<String?>(null) }
     var settingsError by remember { mutableStateOf<String?>(null) }
     var currentOlo by remember(account.id) { mutableStateOf(0L) }
-    var pendingLongPressUrl by remember { mutableStateOf<String?>(null) }
+    var pendingLongPressTarget by remember { mutableStateOf<WebHitTarget?>(null) }
     var currentAccessToken by remember(account.id, domain) { mutableStateOf(accessToken) }
     var bottomBarVisible by remember(account.id, domain, activeTab.id) { mutableStateOf(true) }
+    var bottomMode by remember(account.id, domain, activeTab.id) {
+        mutableStateOf(WorkspaceBottomMode.COLLAPSED)
+    }
+    var findQuery by remember(account.id, domain, activeTab.id) { mutableStateOf("") }
+    var findResult by remember(account.id, domain, activeTab.id) {
+        mutableStateOf(WebFindResult(0, 0, true))
+    }
     val density = LocalDensity.current
+    val settingsPanelMaxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
     val bottomBarScrollBehavior =
         remember(account.id, domain, activeTab.id, density) {
             BottomBarScrollBehavior(
@@ -312,13 +342,16 @@ private fun ActiveForumWorkspace(
                         onSaveState = { state -> scope.launch { tabRepository.save(activeTab, state) } },
                         onPathChanged = { path ->
                             resetBottomBarForNavigation()
+                            bottomMode = WorkspaceBottomMode.COLLAPSED
+                            findQuery = ""
+                            findResult = WebFindResult(0, 0, true)
                             scope.launch { tabRepository.updatePath(activeTab, path) }
                         },
                         onTitleChanged = { title ->
                             scope.launch { tabRepository.updateTitle(activeTab, title) }
                         },
                         onOpenNewTab = ::openInNewTab,
-                        onLongPressLink = { pendingLongPressUrl = it },
+                        onLongPressTarget = { pendingLongPressTarget = it },
                         onMainFrameError = {
                             pageErrors[activeTab.id] = it
                             if (it != null) diagnostics.record(DiagnosticEvent.WEBVIEW_MAIN_FRAME_ERROR)
@@ -379,7 +412,9 @@ private fun ActiveForumWorkspace(
     }
     DisposableEffect(host) {
         onWebViewHostChanged(host)
+        host.setOnFindResultListener { findResult = it }
         onDispose {
+            host.setOnFindResultListener(null)
             onWebViewHostChanged(null)
             host.pause()
         }
@@ -409,13 +444,30 @@ private fun ActiveForumWorkspace(
     BackHandler {
         when {
             showTabs -> showTabs = false
-            showSettings -> showSettings = false
             showAccountSwitcher -> showAccountSwitcher = false
+            bottomMode == WorkspaceBottomMode.FIND -> {
+                host.clearFindMatches()
+                findQuery = ""
+                bottomMode = WorkspaceBottomMode.TOOLS
+            }
+            bottomMode == WorkspaceBottomMode.TOOLS -> bottomMode = WorkspaceBottomMode.COLLAPSED
             !host.goBack() -> (context as? Activity)?.moveTaskToBack(true)
         }
     }
 
-    val shouldShowBottomBarForIme = WindowInsets.imeAnimationTarget.getBottom(density) == 0
+    fun withCurrentPage(action: (String) -> Unit) {
+        val url = host.currentUrl()
+        if (url == null) {
+            Toast.makeText(context, "当前页面尚未加载完成。", Toast.LENGTH_SHORT).show()
+        } else {
+            action(url)
+            bottomMode = WorkspaceBottomMode.COLLAPSED
+        }
+    }
+
+    val shouldShowBottomBarForIme =
+        bottomMode == WorkspaceBottomMode.FIND ||
+            WindowInsets.imeAnimationTarget.getBottom(density) == 0
     Scaffold(
         contentWindowInsets =
             ScaffoldDefaults.contentWindowInsets.only(
@@ -424,7 +476,10 @@ private fun ActiveForumWorkspace(
         bottomBar = {
             if (shouldShowBottomBarForIme) {
                 AnimatedVisibility(
-                    visible = bottomBarVisible || touchExplorationEnabled,
+                    visible =
+                        bottomMode != WorkspaceBottomMode.COLLAPSED ||
+                            bottomBarVisible ||
+                            touchExplorationEnabled,
                     enter =
                         expandVertically(
                             animationSpec = tween(durationMillis = 220),
@@ -436,123 +491,148 @@ private fun ActiveForumWorkspace(
                             shrinkTowards = Alignment.Bottom,
                         ),
                 ) {
-                    Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .shadow(2.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .navigationBarsPadding()
-                            .padding(start = 10.dp, top = 4.dp, end = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                    Surface(
-                        onClick = { host.goBack() },
+                    Column(
                         modifier =
                             Modifier
-                                .size(width = 48.dp, height = 40.dp)
-                                .semantics { contentDescription = "后退" },
-                        shape = RoundedCornerShape(11.dp),
-                        color = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
+                                .fillMaxWidth()
+                                .shadow(2.dp)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .navigationBarsPadding()
+                                .then(
+                                    if (bottomMode == WorkspaceBottomMode.FIND) {
+                                        Modifier.imePadding()
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.chevron_left),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                        if (bottomMode == WorkspaceBottomMode.TOOLS) {
+                            SettingsPanel(
+                                currentBinggan = account.binggan,
+                                currentOlo = currentOlo,
+                                domain = domain,
+                                auth = auth,
+                                error = settingsError,
+                                onDomainChange = { selected ->
+                                    if (selected != domain) {
+                                        settingsError = null
+                                        scope.launch {
+                                            runCatching { auth.accessTokenForWebView(account, selected) }
+                                                .onSuccess {
+                                                    preferences.setDomain(selected)
+                                                    bottomMode = WorkspaceBottomMode.COLLAPSED
+                                                }.onFailure {
+                                                    if (it is MobileSessionUnavailableException) {
+                                                        onSessionExpired(account)
+                                                    } else {
+                                                        settingsError = accountErrorMessage(it)
+                                                    }
+                                                }
+                                        }
+                                    }
+                                },
+                                onSelectAccount = {
+                                    bottomMode = WorkspaceBottomMode.COLLAPSED
+                                    showAccountSwitcher = true
+                                },
+                                onClearWebCache = {
+                                    bottomMode = WorkspaceBottomMode.COLLAPSED
+                                    pageErrors[activeTab.id] = null
+                                    host.clearResourceCacheAndReload()
+                                },
+                                modifier = Modifier.heightIn(max = settingsPanelMaxHeight),
+                            )
+                            PageActionsRow(
+                                onFind = { bottomMode = WorkspaceBottomMode.FIND },
+                                onShare = {
+                                    withCurrentPage { url ->
+                                        val text = listOf(host.currentTitle(), url)
+                                            .filter(String::isNotBlank)
+                                            .joinToString("\n")
+                                        val intent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, text)
+                                        }
+                                        runCatching {
+                                            context.startActivity(Intent.createChooser(intent, "分享页面"))
+                                        }.onFailure {
+                                            Toast.makeText(context, "没有可用的分享应用。", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
+                                onCopy = {
+                                    withCurrentPage { url ->
+                                        context.getSystemService(ClipboardManager::class.java)
+                                            .setPrimaryClip(ClipData.newPlainText("页面网址", url))
+                                        Toast.makeText(context, "网址已复制。", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                onOpenExternal = {
+                                    withCurrentPage { url ->
+                                        runCatching {
+                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                        }.onFailure {
+                                            Toast.makeText(context, "没有可用的浏览器。", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
                             )
                         }
-                    }
-                    Surface(
-                        onClick = { host.goForward() },
-                        modifier =
-                            Modifier
-                                .size(width = 48.dp, height = 40.dp)
-                                .semantics { contentDescription = "前进" },
-                        shape = RoundedCornerShape(11.dp),
-                        color = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.chevron_right),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                        if (bottomMode == WorkspaceBottomMode.FIND) {
+                            FindInPageBar(
+                                query = findQuery,
+                                result = findResult,
+                                onQueryChange = {
+                                    findQuery = it
+                                    findResult = WebFindResult(0, 0, it.isBlank())
+                                    host.findAll(it)
+                                },
+                                onPrevious = { host.findNext(false) },
+                                onNext = { host.findNext(true) },
+                                onClose = {
+                                    host.clearFindMatches()
+                                    findQuery = ""
+                                    bottomMode = WorkspaceBottomMode.COLLAPSED
+                                },
+                            )
+                        } else {
+                            WorkspaceNavigationRow(
+                                accountAlias = account.alias,
+                                tabCount = tabs.size,
+                                onBack = { host.goBack() },
+                                onForward = { host.goForward() },
+                                onReload = { host.reload() },
+                                onTabs = { showTabs = true },
+                                onTools = {
+                                    bottomMode =
+                                        if (bottomMode == WorkspaceBottomMode.TOOLS) {
+                                            WorkspaceBottomMode.COLLAPSED
+                                        } else {
+                                            WorkspaceBottomMode.TOOLS
+                                        }
+                                },
                             )
                         }
-                    }
-                    Surface(
-                        onClick = { host.reload() },
-                        modifier =
-                            Modifier
-                                .size(width = 48.dp, height = 40.dp)
-                                .semantics { contentDescription = "刷新当前页面" },
-                        shape = RoundedCornerShape(11.dp),
-                        color = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.refresh),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                            )
-                        }
-                    }
-                    Surface(
-                        onClick = { showTabs = true },
-                        modifier =
-                            Modifier.size(width = 48.dp, height = 40.dp).semantics {
-                                contentDescription = "标签，共 ${tabs.size} 个"
-                            },
-                        shape = RoundedCornerShape(11.dp),
-                        color = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Box(
-                                modifier =
-                                    Modifier.size(width = 28.dp, height = 30.dp).border(
-                                        width = 2.dp,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        shape = RoundedCornerShape(6.dp),
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    tabs.size.toString(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Medium,
-                                )
-                            }
-                        }
-                    }
-                    Surface(
-                        onClick = { showSettings = true },
-                        modifier =
-                            Modifier.weight(1f).height(40.dp).semantics {
-                                contentDescription = "当前饼干别名 ${account.alias}，打开设置"
-                            },
-                        shape = RoundedCornerShape(13.dp),
-                        color = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Box(
-                            modifier = Modifier.padding(horizontal = 14.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(account.alias, maxLines = 1, fontWeight = FontWeight.Medium)
-                        }
-                    }
                     }
                 }
             }
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
-            ActiveTabView(activeTab.id, host.view)
+            ActiveTabView(
+                tabId = activeTab.id,
+                view = host.view,
+                applyImePadding = bottomMode != WorkspaceBottomMode.FIND,
+            )
+            if (bottomMode == WorkspaceBottomMode.TOOLS) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.22f))
+                        .clickable { bottomMode = WorkspaceBottomMode.COLLAPSED }
+                        .semantics { contentDescription = "关闭页面工具" },
+                )
+            }
             pageErrors[activeTab.id]?.let {
                 val alternative = if (domain == AppDomain.PRIMARY) AppDomain.FALLBACK else AppDomain.PRIMARY
                 OfflineErrorPage(
@@ -610,39 +690,6 @@ private fun ActiveForumWorkspace(
             onDismiss = { showTabs = false },
         )
     }
-    if (showSettings) {
-        SettingsSheet(
-            currentBinggan = account.binggan,
-            currentOlo = currentOlo,
-            domain = domain,
-            auth = auth,
-            error = settingsError,
-            onDomainChange = { selected ->
-                if (selected == domain) return@SettingsSheet
-                settingsError = null
-                scope.launch {
-                    runCatching { auth.accessTokenForWebView(account, selected) }
-                        .onSuccess {
-                            preferences.setDomain(selected)
-                            showSettings = false
-                        }.onFailure {
-                            if (it is MobileSessionUnavailableException) onSessionExpired(account)
-                            else settingsError = accountErrorMessage(it)
-                        }
-                }
-            },
-            onSelectAccount = {
-                showSettings = false
-                showAccountSwitcher = true
-            },
-            onClearWebCache = {
-                showSettings = false
-                pageErrors[activeTab.id] = null
-                host.clearResourceCacheAndReload()
-            },
-            onDismiss = { showSettings = false },
-        )
-    }
     if (showAccountSwitcher) {
         AccountSwitcherSheet(
             accounts = accountList,
@@ -679,21 +726,251 @@ private fun ActiveForumWorkspace(
             onDismiss = { showAccountSwitcher = false },
         )
     }
-    pendingLongPressUrl?.let { url ->
+    pendingLongPressTarget?.let { target ->
         AlertDialog(
-            onDismissRequest = { pendingLongPressUrl = null },
-            title = { Text("链接操作") },
-            text = { Text("要在新标签中打开这个链接吗？") },
+            onDismissRequest = { pendingLongPressTarget = null },
+            title = { Text(if (target.imageUrl != null) "图片操作" else "链接操作") },
+            text = {
+                Text(
+                    when {
+                        target.imageUrl != null && target.linkUrl != null ->
+                            "可以保存图片，或在新标签中打开图片指向的链接。"
+                        target.imageUrl != null -> "要将这张图片保存到下载目录吗？"
+                        else -> "要在新标签中打开这个链接吗？"
+                    },
+                )
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    pendingLongPressUrl = null
-                    openInNewTab(url)
-                }) { Text("在新标签打开") }
+                Column(horizontalAlignment = Alignment.End) {
+                    target.imageUrl?.let { imageUrl ->
+                        TextButton(onClick = {
+                            pendingLongPressTarget = null
+                            when (host.saveImage(imageUrl)) {
+                                WebImageSaveResult.STARTED ->
+                                    Toast.makeText(context, "图片已开始下载。", Toast.LENGTH_SHORT).show()
+                                WebImageSaveResult.UNSUPPORTED ->
+                                    Toast.makeText(
+                                        context,
+                                        "暂不支持保存此类图片地址。",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                WebImageSaveResult.FAILED -> Unit
+                            }
+                        }) { Text("保存图片") }
+                    }
+                    target.linkUrl?.let { linkUrl ->
+                        TextButton(onClick = {
+                            pendingLongPressTarget = null
+                            openInNewTab(linkUrl)
+                        }) { Text("在新标签打开") }
+                    }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { pendingLongPressUrl = null }) { Text("取消") }
+                TextButton(onClick = { pendingLongPressTarget = null }) { Text("取消") }
             },
         )
+    }
+}
+
+@Composable
+private fun WorkspaceNavigationRow(
+    accountAlias: String,
+    tabCount: Int,
+    onBack: () -> Unit,
+    onForward: () -> Unit,
+    onReload: () -> Unit,
+    onTabs: () -> Unit,
+    onTools: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 4.dp, end = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        NavigationIconButton("后退", R.drawable.chevron_left, onBack)
+        NavigationIconButton("前进", R.drawable.chevron_right, onForward)
+        NavigationIconButton("刷新当前页面", R.drawable.refresh, onReload)
+        Surface(
+            onClick = onTabs,
+            modifier =
+                Modifier.size(width = 48.dp, height = 40.dp).semantics {
+                    contentDescription = "标签，共 $tabCount 个"
+                },
+            shape = RoundedCornerShape(11.dp),
+            color = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier =
+                        Modifier.size(width = 28.dp, height = 30.dp).border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = RoundedCornerShape(6.dp),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        tabCount.toString(),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+            }
+        }
+        Surface(
+            onClick = onTools,
+            modifier =
+                Modifier.weight(1f).height(40.dp).semantics {
+                    contentDescription = "当前饼干别名 $accountAlias，打开页面工具和设置"
+                },
+            shape = RoundedCornerShape(13.dp),
+            color = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {
+            Box(
+                modifier = Modifier.padding(horizontal = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(accountAlias, maxLines = 1, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavigationIconButton(
+    description: String,
+    icon: Int,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier =
+            Modifier
+                .size(width = 48.dp, height = 40.dp)
+                .semantics { contentDescription = description },
+        shape = RoundedCornerShape(11.dp),
+        color = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PageActionsRow(
+    onFind: () -> Unit,
+    onShare: () -> Unit,
+    onCopy: () -> Unit,
+    onOpenExternal: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        PageActionButton("页内查找", R.drawable.search, onFind)
+        PageActionButton("分享", R.drawable.share, onShare)
+        PageActionButton("复制网址", R.drawable.copy, onCopy)
+        PageActionButton("浏览器打开", R.drawable.open_external, onOpenExternal)
+    }
+}
+
+@Composable
+private fun RowScope.PageActionButton(
+    label: String,
+    icon: Int,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.weight(1f).height(52.dp).semantics { contentDescription = label },
+        shape = RoundedCornerShape(11.dp),
+        color = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(22.dp))
+            Text(label, maxLines = 1, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun FindInPageBar(
+    query: String,
+    result: WebFindResult,
+    onQueryChange: (String) -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val inputState = rememberTextFieldState(query)
+    LaunchedEffect(inputState.text) {
+        val currentQuery = inputState.text.toString()
+        if (currentQuery != query) onQueryChange(currentQuery)
+    }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboard?.show()
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            state = inputState,
+            modifier = Modifier.weight(1f).height(48.dp).focusRequester(focusRequester),
+            placeholder = { Text("在页面中查找") },
+            textStyle = MaterialTheme.typography.bodyLarge,
+            lineLimits = TextFieldLineLimits.SingleLine,
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+        )
+        Text(
+            if (!result.isDoneCounting) {
+                "…"
+            } else if (result.matchCount == 0) {
+                "0/0"
+            } else {
+                "${result.activeMatchOrdinal + 1}/${result.matchCount}"
+            },
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        val canNavigate = query.isNotBlank() && result.matchCount > 0
+        NavigationIconButton(
+            "上一个匹配项",
+            R.drawable.chevron_left,
+            enabled = canNavigate,
+            onClick = onPrevious,
+        )
+        NavigationIconButton(
+            "下一个匹配项",
+            R.drawable.chevron_right,
+            enabled = canNavigate,
+            onClick = onNext,
+        )
+        TextButton(onClick = {
+            keyboard?.hide()
+            onClose()
+        }) { Text("关闭") }
     }
 }
 
@@ -720,11 +997,15 @@ private fun rememberTouchExplorationEnabled(): Boolean {
 internal fun ActiveTabView(
     tabId: String,
     view: View,
+    applyImePadding: Boolean = true,
 ) {
     key(tabId) {
         AndroidView(
             factory = { view },
-            modifier = Modifier.fillMaxSize().imePadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .then(if (applyImePadding) Modifier.imePadding() else Modifier),
         )
     }
 }
