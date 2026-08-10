@@ -1,9 +1,11 @@
 package com.cpttmm.app.webview
 
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cpttmm.app.BuildConfig
+import com.cpttmm.app.MainActivity
 import com.cpttmm.app.data.local.AccountEntity
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -17,16 +19,16 @@ import java.util.concurrent.atomic.AtomicReference
 class WebViewTitleTest {
     @Test
     fun findsAndNavigatesBetweenPageMatches() {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
         val pageReady = CountDownLatch(1)
         val initialResults = CountDownLatch(1)
         val nextResult = CountDownLatch(1)
         val latestResult = AtomicReference<WebFindResult>()
         lateinit var host: WebViewHost
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
 
-        instrumentation.runOnMainSync {
+        scenario.onActivity { activity ->
             host = WebViewHost(
-                context = ApplicationProvider.getApplicationContext(),
+                context = activity,
                 account = account(),
                 accessToken = "access-token",
                 onExternalNavigation = {},
@@ -40,6 +42,7 @@ class WebViewTitleTest {
                 onShowFileChooser = { _, _ -> false },
                 onDownloadFailure = {},
             )
+            activity.setContentView(host.view)
             host.setOnFindResultListener { result ->
                 latestResult.set(result)
                 if (result.isDoneCounting && result.matchCount == 2) {
@@ -49,8 +52,8 @@ class WebViewTitleTest {
             }
             host.view.loadDataWithBaseURL(
                 BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
-                "<html><head><title>find-ready</title></head>" +
-                    "<body>火锅 <span>火锅</span> 米饭</body></html>",
+                "<html><body>火锅 <span>火锅</span> 米饭" +
+                    "<script>document.title='find-ready'</script></body></html>",
                 "text/html",
                 "UTF-8",
                 BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
@@ -59,13 +62,20 @@ class WebViewTitleTest {
 
         try {
             assertTrue(pageReady.await(5, TimeUnit.SECONDS))
-            instrumentation.runOnMainSync { host.findAll("火锅") }
-            assertTrue(initialResults.await(5, TimeUnit.SECONDS))
-            instrumentation.runOnMainSync { host.findNext(true) }
-            assertTrue(nextResult.await(5, TimeUnit.SECONDS))
+            scenario.onActivity { host.findAll("火锅") }
+            assertTrue(
+                "Timed out waiting for initial find result; latest=${latestResult.get()}",
+                initialResults.await(5, TimeUnit.SECONDS),
+            )
+            scenario.onActivity { host.findNext(true) }
+            assertTrue(
+                "Timed out waiting for next find result; latest=${latestResult.get()}",
+                nextResult.await(5, TimeUnit.SECONDS),
+            )
             assertTrue(latestResult.get().activeMatchOrdinal == 1)
         } finally {
-            instrumentation.runOnMainSync { host.destroy(saveState = false) }
+            scenario.onActivity { host.destroy(saveState = false) }
+            scenario.close()
         }
     }
 
