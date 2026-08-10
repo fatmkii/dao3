@@ -169,7 +169,7 @@ class WebViewBridgeTest {
         onPathChanged = {},
         onTitleChanged = onTitleChanged,
         onOpenNewTab = {},
-        onLongPressLink = {},
+        onLongPressTarget = {},
         onMainFrameError = {},
         onShowFileChooser = { _, _ -> false },
         onDownloadFailure = {},

@@ -137,7 +137,7 @@ internal fun TabSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun SettingsSheet(
+internal fun SettingsPanel(
     currentBinggan: String,
     currentOlo: Long,
     domain: AppDomain,
@@ -146,7 +146,7 @@ internal fun SettingsSheet(
     onDomainChange: (AppDomain) -> Unit,
     onSelectAccount: () -> Unit,
     onClearWebCache: () -> Unit,
-    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     var release by remember(domain) { mutableStateOf<MobileReleaseInfo?>(null) }
@@ -158,69 +158,66 @@ internal fun SettingsSheet(
             .onFailure { releaseError = accountErrorMessage(it) }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text("访问域名", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppDomain.entries.forEach { candidate ->
-                    FilterChip(
-                        selected = candidate == domain,
-                        onClick = { onDomainChange(candidate) },
-                        label = { Text(candidate.host) },
-                        enabled = !BuildConfig.DEBUG,
-                    )
-                }
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text("访问域名", style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            AppDomain.entries.forEach { candidate ->
+                FilterChip(
+                    selected = candidate == domain,
+                    onClick = { onDomainChange(candidate) },
+                    label = { Text(candidate.host) },
+                    enabled = !BuildConfig.DEBUG,
+                )
             }
-            Text(
-                if (BuildConfig.DEBUG) {
-                    "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
-                } else {
-                    "如果网络链接有问题请尝试更换网址；不会切换已登录的饼干；"
-                },
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (error != null) InlineMessage(error)
-            HorizontalDivider()
-            Button(
-                onClick = onSelectAccount,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) { Text("切换饼干：$currentBinggan", maxLines = 1) }
-            Text(
-                "现有olo:$currentOlo",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            HorizontalDivider()
-            FilledTonalButton(
-                onClick = onClearWebCache,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors =
-                    ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-            ) { Text("清理网页缓存") }
-            Text(
-                "不会删除已导入饼干",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            HorizontalDivider()
-            Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-            when {
-                release != null -> ReleaseDetails(release!!, context)
-                releaseError != null -> InlineMessage(releaseError!!)
-                else -> CircularProgressIndicator(Modifier.size(28.dp))
-            }
+        }
+        Text(
+            if (BuildConfig.DEBUG) {
+                "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
+            } else {
+                "如果网络链接有问题请尝试更换网址；不会切换已登录的饼干；"
+            },
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        if (error != null) InlineMessage(error)
+        HorizontalDivider()
+        Button(
+            onClick = onSelectAccount,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+        ) { Text("切换饼干：$currentBinggan", maxLines = 1) }
+        Text(
+            "现有olo:$currentOlo",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        HorizontalDivider()
+        FilledTonalButton(
+            onClick = onClearWebCache,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            colors =
+                ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        ) { Text("清理网页缓存") }
+        Text(
+            "不会删除已导入饼干",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        HorizontalDivider()
+        Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+        when {
+            release != null -> ReleaseDetails(release!!, context)
+            releaseError != null -> InlineMessage(releaseError!!)
+            else -> CircularProgressIndicator(Modifier.size(28.dp))
         }
     }
 }

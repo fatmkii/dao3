@@ -6,8 +6,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.view.ViewGroup
+import android.webkit.CookieManager
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -37,6 +40,23 @@ data class WebBridgeMessage(
     val reply: (String) -> Unit,
 )
 
+data class WebFindResult(
+    val activeMatchOrdinal: Int,
+    val matchCount: Int,
+    val isDoneCounting: Boolean,
+)
+
+data class WebHitTarget(
+    val linkUrl: String? = null,
+    val imageUrl: String? = null,
+)
+
+enum class WebImageSaveResult {
+    STARTED,
+    UNSUPPORTED,
+    FAILED,
+}
+
 class WebViewHost(
     context: Context,
     account: AccountEntity,
@@ -47,7 +67,7 @@ class WebViewHost(
     private val onPathChanged: (String) -> Unit,
     private val onTitleChanged: (String) -> Unit,
     private val onOpenNewTab: (String) -> Unit,
-    private val onLongPressLink: (String) -> Unit,
+    private val onLongPressTarget: (WebHitTarget) -> Unit,
     private val onMainFrameError: (String?) -> Unit,
     private val onShowFileChooser: (
         ValueCallback<Array<Uri>>,
@@ -68,6 +88,7 @@ class WebViewHost(
     private var pendingScrollY: Int? = null
     private var bridgePort: WebMessagePort? = null
     private var bridgeReceivedMessage = false
+    private var onFindResult: ((WebFindResult) -> Unit)? = null
 
     init {
         configure()
@@ -164,13 +185,28 @@ class WebViewHost(
         }
         view.setOnLongClickListener {
             val hit = view.hitTestResult
-            if (hit.type == WebView.HitTestResult.SRC_ANCHOR_TYPE ||
-                hit.type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
-            ) {
-                hit.extra?.let(onLongPressLink) != null
-            } else {
-                false
+            when (hit.type) {
+                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+                    hit.extra?.takeIf(String::isNotBlank)?.let { url ->
+                        onLongPressTarget(WebHitTarget(linkUrl = url))
+                    } != null
+                }
+                WebView.HitTestResult.IMAGE_TYPE -> {
+                    hit.extra?.takeIf(String::isNotBlank)?.let { url ->
+                        onLongPressTarget(WebHitTarget(imageUrl = url))
+                    } != null
+                }
+                WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    requestLinkedImageTarget(hit.extra)
+                    true
+                }
+                else -> false
             }
+        }
+        view.setFindListener { activeMatchOrdinal, numberOfMatches, isDoneCounting ->
+            onFindResult?.invoke(
+                WebFindResult(activeMatchOrdinal, numberOfMatches, isDoneCounting),
+            )
         }
     }
 
@@ -228,6 +264,48 @@ class WebViewHost(
         view.reload()
     }
 
+    fun currentUrl(): String? = view.url
+
+    fun currentTitle(): String = view.title.orEmpty()
+
+    fun setOnFindResultListener(listener: ((WebFindResult) -> Unit)?) {
+        onFindResult = listener
+    }
+
+    fun findAll(query: String) {
+        if (destroyed) return
+        if (query.isBlank()) {
+            clearFindMatches()
+        } else {
+            view.findAllAsync(query)
+        }
+    }
+
+    fun findNext(forward: Boolean) {
+        if (!destroyed) view.findNext(forward)
+    }
+
+    fun clearFindMatches() {
+        if (destroyed) return
+        view.clearMatches()
+        onFindResult?.invoke(WebFindResult(0, 0, true))
+    }
+
+    fun saveImage(rawUrl: String): WebImageSaveResult {
+        if (destroyed || !WebDownloadPolicy.isAllowed(rawUrl)) {
+            return WebImageSaveResult.UNSUPPORTED
+        }
+        return runCatching {
+            enqueueDownload(
+                url = rawUrl,
+                userAgent = view.settings.userAgentString,
+                contentDisposition = null,
+                mimeType = null,
+            )
+            WebImageSaveResult.STARTED
+        }.onFailure { onDownloadFailure() }.getOrDefault(WebImageSaveResult.FAILED)
+    }
+
     fun restorableState(): RestorableWebViewState? = currentRestorableState()
 
     fun setOnVerticalScrollChangedListener(listener: ((Int, Int, Boolean) -> Unit)?) {
@@ -269,6 +347,7 @@ class WebViewHost(
         destroyed = true
         if (saveState) saveRestorableState()
         setOnVerticalScrollChangedListener(null)
+        onFindResult = null
         closeBridgePort()
         view.webViewClient = WebViewClient()
         view.webChromeClient = WebChromeClient()
@@ -294,6 +373,20 @@ class WebViewHost(
                 }
             }
         }
+    }
+
+    private fun requestLinkedImageTarget(fallbackLinkUrl: String?) {
+        val handler = Handler(Looper.getMainLooper()) { message ->
+            val linkUrl = message.data.getString("url")
+                ?.takeIf(String::isNotBlank)
+                ?: fallbackLinkUrl?.takeIf(String::isNotBlank)
+            val imageUrl = message.data.getString("src")?.takeIf(String::isNotBlank)
+            if (linkUrl != null || imageUrl != null) {
+                onLongPressTarget(WebHitTarget(linkUrl = linkUrl, imageUrl = imageUrl))
+            }
+            true
+        }
+        view.requestFocusNodeHref(Message.obtain(handler))
     }
 
     private fun handleBridgeMessage(
@@ -365,7 +458,7 @@ class WebViewHost(
         mimeType: String?,
     ) {
         val uri = Uri.parse(url)
-        require(uri.scheme == "https")
+        require(WebDownloadPolicy.isAllowed(url))
         val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
         val request = DownloadManager.Request(uri)
             .setTitle(fileName)
@@ -373,7 +466,14 @@ class WebViewHost(
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
         userAgent?.takeIf { it.isNotBlank() }?.let { request.addRequestHeader("User-Agent", it) }
-        request.addRequestHeader("Authorization", "Bearer $currentAccessToken")
+        CookieManager.getInstance().getCookie(url)
+            ?.takeIf(String::isNotBlank)
+            ?.let { request.addRequestHeader("Cookie", it) }
+        if (WebDownloadPolicy.shouldAttachAuthorization(url)) {
+            view.url?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
+                ?.let { request.addRequestHeader("Referer", it) }
+            request.addRequestHeader("Authorization", "Bearer $currentAccessToken")
+        }
         val manager = view.context.getSystemService(DownloadManager::class.java)
         manager.enqueue(request)
     }
@@ -382,4 +482,20 @@ class WebViewHost(
         const val USER_AGENT_MARKER = "CpttmmAndroid"
         const val BRIDGE_HANDSHAKE = "cpttmm:bridge-port-v1"
     }
+}
+
+internal object WebDownloadPolicy {
+    fun isAllowed(rawUrl: String): Boolean {
+        val uri = runCatching { java.net.URI(rawUrl) }.getOrNull() ?: return false
+        return when (DomainPolicy.classify(rawUrl)) {
+            is NavigationTarget.Internal ->
+                uri.scheme.equals("https", ignoreCase = true) ||
+                    (BuildConfig.DEBUG && uri.scheme.equals("http", ignoreCase = true))
+            is NavigationTarget.External -> uri.scheme.equals("https", ignoreCase = true)
+            NavigationTarget.Blocked -> false
+        }
+    }
+
+    fun shouldAttachAuthorization(rawUrl: String): Boolean =
+        DomainPolicy.classify(rawUrl) is NavigationTarget.Internal
 }
