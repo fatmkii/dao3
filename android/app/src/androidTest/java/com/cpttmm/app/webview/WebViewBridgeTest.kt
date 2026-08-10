@@ -6,7 +6,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cpttmm.app.BuildConfig
 import com.cpttmm.app.MainActivity
 import com.cpttmm.app.data.local.AccountEntity
-import com.cpttmm.app.navigation.AppDomain
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -43,7 +42,7 @@ class WebViewBridgeTest {
             )
             userAgent = host.view.settings.userAgentString
             activity.setContentView(host.view)
-            host.load(AppDomain.PRIMARY)
+            loadTrustedBridgePage(host)
         }
 
         try {
@@ -73,7 +72,7 @@ class WebViewBridgeTest {
                 if (bootstrapCount == 1) firstMessage.countDown() else secondMessage.countDown()
             })
             activity.setContentView(host.view)
-            host.load(AppDomain.PRIMARY)
+            loadTrustedBridgePage(host)
         }
 
         try {
@@ -123,7 +122,7 @@ class WebViewBridgeTest {
                 trustedMessage.countDown()
             })
             activity.setContentView(host.view)
-            host.load(AppDomain.PRIMARY)
+            loadTrustedBridgePage(host)
         }
         assertTrue(trustedMessage.await(10, TimeUnit.SECONDS))
         scenario.onActivity { host.destroy(saveState = false) }
@@ -136,6 +135,16 @@ class WebViewBridgeTest {
             "\"binggan\":\"BridgeTest\"," +
             "\"accessToken\":\"access-token\"," +
             "\"pendingStorageNamespaces\":[]}}"
+
+    private fun loadTrustedBridgePage(host: WebViewHost) {
+        host.view.loadDataWithBaseURL(
+            BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+            TRUSTED_BRIDGE_PAGE,
+            "text/html",
+            "UTF-8",
+            BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+        )
+    }
 
     private fun host(
         context: Context,
@@ -165,4 +174,21 @@ class WebViewBridgeTest {
         onShowFileChooser = { _, _ -> false },
         onDownloadFailure = {},
     )
+
+    private companion object {
+        const val TRUSTED_BRIDGE_PAGE =
+            "<html><body><script>" +
+                "window.addEventListener('message',event=>{" +
+                "if(event.data!=='cpttmm:bridge-port-v1'||event.ports.length!==1)return;" +
+                "const port=event.ports[0];" +
+                "port.onmessage=event=>{" +
+                "const message=JSON.parse(event.data);" +
+                "if(message.type==='authBootstrap'){" +
+                "port.postMessage(JSON.stringify({type:'themeChanged'}));" +
+                "}};" +
+                "port.start();" +
+                "port.postMessage(JSON.stringify({type:'authBootstrapRequested'}));" +
+                "});" +
+                "</script></body></html>"
+    }
 }
