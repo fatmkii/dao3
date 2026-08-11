@@ -1,5 +1,6 @@
 import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 import {
+    bridgeAcknowledged,
     bridgeMessages,
     installMessagePortAndroidBridge,
     legacyAndroidTest,
@@ -57,6 +58,7 @@ test.describe('Android App bridge', () => {
 
         await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+        await expect.poll(() => bridgeAcknowledged(page)).toBe(true);
         await expect(page.getByRole('button', { name: '导入饼干' })).toBeHidden();
         await expect.poll(() => page.evaluate(() => ({
             token: localStorage.getItem('Token'),

@@ -5,6 +5,7 @@ export interface AndroidBridgeTransport {
 }
 
 export const ANDROID_BRIDGE_HANDSHAKE = 'cpttmm:bridge-port-v1'
+export const ANDROID_BRIDGE_READY_ACK = 'cpttmm:bridge-ready-v1'
 export const ANDROID_USER_AGENT_MARKER = 'CpttmmAndroid'
 
 let messagePortTransport: AndroidBridgeTransport | null = null
@@ -37,6 +38,7 @@ if (typeof window !== 'undefined') {
 
         const port = event.ports[0]
         port.start()
+        port.postMessage(ANDROID_BRIDGE_READY_ACK)
         messagePortTransport = port
         resolveMessagePort?.(port)
         resolveMessagePort = null

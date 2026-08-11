@@ -8,6 +8,7 @@ import com.cpttmm.app.MainActivity
 import com.cpttmm.app.data.local.AccountEntity
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -79,6 +80,115 @@ class WebViewBridgeTest {
             assertTrue(firstMessage.await(10, TimeUnit.SECONDS))
             scenario.onActivity { host.reload() }
             assertTrue(secondMessage.await(10, TimeUnit.SECONDS))
+        } finally {
+            scenario.onActivity { host.destroy(saveState = false) }
+            scenario.close()
+        }
+    }
+
+    @Test
+    fun retriesHandshakeWhenPageInstallsListenerAfterLoadAndAcknowledgesThePort() {
+        val bootstrapReceived = CountDownLatch(1)
+        lateinit var host: WebViewHost
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+
+        scenario.onActivity { activity ->
+            host = host(context = activity, onBridgeMessage = { message ->
+                if (JSONObject(message.data).optString("type") == "authBootstrapRequested") {
+                    bootstrapReceived.countDown()
+                }
+            })
+            activity.setContentView(host.view)
+            host.view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                DELAYED_TRUSTED_BRIDGE_PAGE,
+                "text/html",
+                "UTF-8",
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+            )
+        }
+
+        try {
+            assertTrue(bootstrapReceived.await(7, TimeUnit.SECONDS))
+        } finally {
+            scenario.onActivity { host.destroy(saveState = false) }
+            scenario.close()
+        }
+    }
+
+    @Test
+    fun pageWithoutAckCannotSelectCandidateWithABusinessMessage() {
+        val bridgeMessageReceived = CountDownLatch(1)
+        lateinit var host: WebViewHost
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+
+        scenario.onActivity { activity ->
+            host = host(
+                context = activity,
+                onBridgeMessage = { bridgeMessageReceived.countDown() },
+            )
+            activity.setContentView(host.view)
+            host.view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                UNACKNOWLEDGED_TRUSTED_BRIDGE_PAGE,
+                "text/html",
+                "UTF-8",
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+            )
+        }
+
+        try {
+            assertFalse(bridgeMessageReceived.await(2, TimeUnit.SECONDS))
+        } finally {
+            scenario.onActivity { host.destroy(saveState = false) }
+            scenario.close()
+        }
+    }
+
+    @Test
+    fun pageFinishedPerformsFinalHandshakeAfterRetryBudgetIsExhausted() {
+        val pageReady = CountDownLatch(1)
+        val bootstrapReceived = CountDownLatch(1)
+        lateinit var host: WebViewHost
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+
+        scenario.onActivity { activity ->
+            host = host(
+                context = activity,
+                onBridgeMessage = { message ->
+                    if (JSONObject(message.data).optString("type") == "authBootstrapRequested") {
+                        bootstrapReceived.countDown()
+                    }
+                },
+                onTitleChanged = { if (it == "ready") pageReady.countDown() },
+            )
+            activity.setContentView(host.view)
+            host.view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                "<html><head><title>ready</title></head><body></body></html>",
+                "text/html",
+                "UTF-8",
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+            )
+        }
+
+        try {
+            assertTrue(pageReady.await(5, TimeUnit.SECONDS))
+            scenario.onActivity {
+                repeat(25) {
+                    host.view.webViewClient.onPageCommitVisible(
+                        host.view,
+                        BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                    )
+                }
+                host.view.evaluateJavascript(INSTALL_TRUSTED_BRIDGE_LISTENER) {
+                    host.view.webViewClient.onPageFinished(
+                        host.view,
+                        BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                    )
+                }
+            }
+            assertTrue(bootstrapReceived.await(5, TimeUnit.SECONDS))
         } finally {
             scenario.onActivity { host.destroy(saveState = false) }
             scenario.close()
@@ -187,8 +297,38 @@ class WebViewBridgeTest {
                 "port.postMessage(JSON.stringify({type:'themeChanged'}));" +
                 "}};" +
                 "port.start();" +
+                "port.postMessage('cpttmm:bridge-ready-v1');" +
                 "port.postMessage(JSON.stringify({type:'authBootstrapRequested'}));" +
                 "});" +
                 "</script></body></html>"
+
+        const val DELAYED_TRUSTED_BRIDGE_PAGE =
+            "<html><body><script>let accepted=false;" +
+                "setTimeout(()=>window.addEventListener('message',event=>{" +
+                "if(accepted||event.data!=='cpttmm:bridge-port-v1'||" +
+                "event.ports.length!==1)return;accepted=true;" +
+                "const port=event.ports[0];port.start();" +
+                "port.postMessage('cpttmm:bridge-ready-v1');" +
+                "setTimeout(()=>port.postMessage(JSON.stringify({" +
+                "type:'authBootstrapRequested'})),1000);" +
+                "}),3000);" +
+                "</script></body></html>"
+
+        const val UNACKNOWLEDGED_TRUSTED_BRIDGE_PAGE =
+            "<html><body><script>let accepted=false;" +
+                "window.addEventListener('message',event=>{" +
+                "if(accepted||event.data!=='cpttmm:bridge-port-v1'||" +
+                "event.ports.length!==1)return;accepted=true;" +
+                "const port=event.ports[0];port.start();" +
+                "port.postMessage(JSON.stringify({type:'authBootstrapRequested'}));" +
+                "});</script></body></html>"
+
+        const val INSTALL_TRUSTED_BRIDGE_LISTENER =
+            "window.addEventListener('message',event=>{" +
+                "if(event.data!=='cpttmm:bridge-port-v1'||event.ports.length!==1)return;" +
+                "const port=event.ports[0];port.start();" +
+                "port.postMessage('cpttmm:bridge-ready-v1');" +
+                "port.postMessage(JSON.stringify({type:'authBootstrapRequested'}));" +
+                "},{once:true});"
     }
 }

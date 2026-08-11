@@ -1,5 +1,7 @@
 import { test as base, type Page } from '@playwright/test';
 
+const ANDROID_BRIDGE_READY_ACK = 'cpttmm:bridge-ready-v1';
+
 export interface BridgeMessage {
     type: string;
     payload?: Record<string, unknown>;
@@ -18,8 +20,9 @@ async function installBridge(
     transport: 'message-port' | 'legacy-listener',
     options: AndroidBridgeOptions = {},
 ) {
-    await page.addInitScript(({ bootstrapOptions, bridgeTransport }) => {
+    await page.addInitScript(({ bootstrapOptions, bridgeTransport, bridgeReadyAck }) => {
         const bridgeWindow = window as Window & {
+            __bridgeAcknowledged: boolean;
             __bridgeMessages: BridgeMessage[];
             CpttmmAndroid?: {
                 postMessage(message: string): void;
@@ -27,12 +30,17 @@ async function installBridge(
                 removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
             };
         };
+        bridgeWindow.__bridgeAcknowledged = false;
         bridgeWindow.__bridgeMessages = [];
 
         const handleOutgoing = (
             serialized: string,
             dispatchToWeb: (message: string) => void,
         ) => {
+            if (serialized === bridgeReadyAck) {
+                bridgeWindow.__bridgeAcknowledged = true;
+                return;
+            }
             const message = JSON.parse(serialized) as BridgeMessage;
             bridgeWindow.__bridgeMessages.push(message);
             if (message.type === 'authBootstrapRequested' &&
@@ -96,7 +104,11 @@ async function installBridge(
                 ports: [channel.port2],
             }));
         }, { once: true });
-    }, { bootstrapOptions: options, bridgeTransport: transport });
+    }, {
+        bootstrapOptions: options,
+        bridgeTransport: transport,
+        bridgeReadyAck: ANDROID_BRIDGE_READY_ACK,
+    });
 }
 
 export async function installMessagePortAndroidBridge(page: Page, options: AndroidBridgeOptions = {}) {
@@ -111,6 +123,12 @@ export async function bridgeMessages(page: Page): Promise<BridgeMessage[]> {
     return page.evaluate(() => (
         window as Window & { __bridgeMessages: BridgeMessage[] }
     ).__bridgeMessages);
+}
+
+export async function bridgeAcknowledged(page: Page): Promise<boolean> {
+    return page.evaluate(() => (
+        window as Window & { __bridgeAcknowledged: boolean }
+    ).__bridgeAcknowledged);
 }
 
 export const legacyAndroidTest = base.extend<{ legacyAndroidPage: Page }>({

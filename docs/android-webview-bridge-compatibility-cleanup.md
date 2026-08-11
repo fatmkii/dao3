@@ -22,6 +22,7 @@
 - versionCode：`待 MessagePort APK 发布时填写`
 
 两种传输共享相同的 JSON 消息协议、异步回复语义和业务行为。新 APK 的 User-Agent 带有固定 `CpttmmAndroid` 标记，并使用 `cpttmm:bridge-port-v1` 作为端口握手标识。
+网页收到端口后立即发送 `cpttmm:bridge-ready-v1` 确认；APK 只在收到该确认后使用端口传递业务消息。
 
 ## 临时兼容代码
 
@@ -53,6 +54,7 @@
 
 - WebView User-Agent 的 `CpttmmAndroid` 标记及网页侧严格检测。
 - `cpttmm:bridge-port-v1` MessagePort 握手。
+- `cpttmm:bridge-ready-v1` 显式确认。
 - `DomainPolicy` 可信 origin 限制、精确 target origin，以及只向主页面传递端口的安全边界。
 - reload、跨文档导航和 WebView 销毁时关闭旧端口，加载完成但未收到消息时重试握手。
 - 统一 JSON 消息协议和原生异步回复机制。

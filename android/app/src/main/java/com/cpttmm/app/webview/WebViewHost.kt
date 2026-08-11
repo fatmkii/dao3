@@ -86,9 +86,16 @@ class WebViewHost(
     private var currentAccessToken = accessToken
     private var destroyed = false
     private var pendingScrollY: Int? = null
-    private var bridgePort: WebMessagePort? = null
-    private var bridgeReceivedMessage = false
+    private val bridgePorts = linkedSetOf<WebMessagePort>()
+    private var bridgeAcknowledged = false
+    private var bridgeHandshakeAttempts = 0
+    private var bridgeFinalHandshakeAttempted = false
     private var onFindResult: ((WebFindResult) -> Unit)? = null
+    private val retryBridgeHandshake = Runnable {
+        if (!destroyed && !bridgeAcknowledged) {
+            view.url?.let { establishBridge(view, it) }
+        }
+    }
 
     init {
         configure()
@@ -109,6 +116,8 @@ class WebViewHost(
         view.settings.userAgentString = "${view.settings.userAgentString} $USER_AGENT_MARKER"
         view.webViewClient = object : WebViewClient() {
             override fun onPageStarted(webView: WebView, url: String, favicon: Bitmap?) {
+                bridgeHandshakeAttempts = 0
+                bridgeFinalHandshakeAttempted = false
                 closeBridgePort()
                 onMainFrameError(null)
                 DomainPolicy.internalPath(url)?.let(onPathChanged)
@@ -119,7 +128,16 @@ class WebViewHost(
             }
 
             override fun onPageFinished(webView: WebView, url: String) {
-                if (!bridgeReceivedMessage) establishBridge(webView, url)
+                if (!bridgeAcknowledged) {
+                    val forceFinalHandshake =
+                        bridgeHandshakeAttempts >= MAX_BRIDGE_HANDSHAKE_ATTEMPTS &&
+                            !bridgeFinalHandshakeAttempted
+                    establishBridge(
+                        webView,
+                        url,
+                        force = forceFinalHandshake,
+                    )
+                }
                 pendingScrollY?.let { scrollY ->
                     pendingScrollY = null
                     webView.scrollTo(0, scrollY)
@@ -409,31 +427,57 @@ class WebViewHost(
         )
     }
 
-    private fun establishBridge(webView: WebView, url: String) {
+    private fun establishBridge(webView: WebView, url: String, force: Boolean = false) {
         if (destroyed) return
         val sourceOrigin = DomainPolicy.trustedOrigin(url) ?: return
-        closeBridgePort()
+        if (!force && bridgeHandshakeAttempts >= MAX_BRIDGE_HANDSHAKE_ATTEMPTS) return
+        if (force) bridgeFinalHandshakeAttempted = true
         val ports = webView.createWebMessageChannel()
         val nativePort = ports[0]
-        bridgePort = nativePort
-        bridgeReceivedMessage = false
+        bridgePorts += nativePort
+        bridgeHandshakeAttempts += 1
         nativePort.setWebMessageCallback(object : WebMessagePort.WebMessageCallback() {
             override fun onMessage(port: WebMessagePort, message: WebMessage) {
-                if (port !== bridgePort || destroyed) return
-                bridgeReceivedMessage = true
-                message.data?.let { handleBridgeMessage(it, sourceOrigin, port) }
+                if (port !in bridgePorts || destroyed) return
+                val data = message.data ?: return
+                if (!bridgeAcknowledged) {
+                    if (data == BRIDGE_READY_ACK) selectBridgePort(port)
+                    return
+                }
+                if (data != BRIDGE_READY_ACK) {
+                    handleBridgeMessage(data, sourceOrigin, port)
+                }
             }
         })
         webView.postWebMessage(
             WebMessage(BRIDGE_HANDSHAKE, arrayOf(ports[1])),
             Uri.parse(sourceOrigin),
         )
+        scheduleBridgeHandshakeRetry()
+    }
+
+    private fun selectBridgePort(port: WebMessagePort) {
+        if (bridgeAcknowledged) return
+        bridgeAcknowledged = true
+        view.removeCallbacks(retryBridgeHandshake)
+        bridgePorts.filterNot { it === port }.forEach {
+            bridgePorts.remove(it)
+            it.close()
+        }
+    }
+
+    private fun scheduleBridgeHandshakeRetry() {
+        view.removeCallbacks(retryBridgeHandshake)
+        if (bridgeHandshakeAttempts < MAX_BRIDGE_HANDSHAKE_ATTEMPTS) {
+            view.postDelayed(retryBridgeHandshake, BRIDGE_HANDSHAKE_RETRY_MILLIS)
+        }
     }
 
     private fun closeBridgePort() {
-        bridgePort?.close()
-        bridgePort = null
-        bridgeReceivedMessage = false
+        view.removeCallbacks(retryBridgeHandshake)
+        bridgePorts.forEach(WebMessagePort::close)
+        bridgePorts.clear()
+        bridgeAcknowledged = false
     }
 
     private fun saveRestorableState() {
@@ -481,6 +525,9 @@ class WebViewHost(
     companion object {
         const val USER_AGENT_MARKER = "CpttmmAndroid"
         const val BRIDGE_HANDSHAKE = "cpttmm:bridge-port-v1"
+        const val BRIDGE_READY_ACK = "cpttmm:bridge-ready-v1"
+        private const val BRIDGE_HANDSHAKE_RETRY_MILLIS = 400L
+        private const val MAX_BRIDGE_HANDSHAKE_ATTEMPTS = 20
     }
 }
 
