@@ -24,10 +24,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,11 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpttmm.app.BuildConfig
+import com.cpttmm.app.R
 import com.cpttmm.app.account.MobileAuthCoordinator
 import com.cpttmm.app.data.local.BrowserTabEntity
 import com.cpttmm.app.model.WorkspacePolicy
@@ -137,15 +143,13 @@ internal fun TabSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun SettingsPanel(
+internal fun WorkspaceToolsPanel(
     currentBinggan: String,
     currentOlo: Long,
     domain: AppDomain,
     auth: MobileAuthCoordinator,
     error: String?,
-    onDomainChange: (AppDomain) -> Unit,
     onSelectAccount: () -> Unit,
-    onClearWebCache: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -166,28 +170,7 @@ internal fun SettingsPanel(
                 .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text("访问域名", style = MaterialTheme.typography.titleMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AppDomain.entries.forEach { candidate ->
-                FilterChip(
-                    selected = candidate == domain,
-                    onClick = { onDomainChange(candidate) },
-                    label = { Text(candidate.host) },
-                    enabled = !BuildConfig.DEBUG,
-                )
-            }
-        }
-        Text(
-            if (BuildConfig.DEBUG) {
-                "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
-            } else {
-                "如果网络链接有问题请尝试更换网址；不会切换已登录的饼干；"
-            },
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
         if (error != null) InlineMessage(error)
-        HorizontalDivider()
         Button(
             onClick = onSelectAccount,
             modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -198,26 +181,85 @@ internal fun SettingsPanel(
             style = MaterialTheme.typography.bodySmall,
         )
         HorizontalDivider()
-        FilledTonalButton(
-            onClick = onClearWebCache,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors =
-                ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-        ) { Text("清理网页缓存") }
-        Text(
-            "不会删除已导入饼干",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        HorizontalDivider()
         Text("当前版本 ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         when {
             release != null -> ReleaseDetails(release!!, context)
             releaseError != null -> InlineMessage(releaseError!!)
             else -> CircularProgressIndicator(Modifier.size(28.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AppSettingsScreen(
+    domain: AppDomain,
+    error: String?,
+    onBack: () -> Unit,
+    onDomainChange: (AppDomain) -> Unit,
+    onClearWebCache: () -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("设置") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(R.drawable.chevron_left),
+                            contentDescription = "返回",
+                        )
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text("访问域名", style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppDomain.entries.forEach { candidate ->
+                    FilterChip(
+                        selected = candidate == domain,
+                        onClick = { onDomainChange(candidate) },
+                        label = { Text(candidate.host) },
+                        enabled = !BuildConfig.DEBUG,
+                    )
+                }
+            }
+            Text(
+                if (BuildConfig.DEBUG) {
+                    "Debug 版固定访问 192.168.1.210，以上选项仅供查看。"
+                } else {
+                    "如果网络链接有问题请尝试更换网址；不会切换已登录的饼干。"
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            if (error != null) InlineMessage(error)
+            HorizontalDivider()
+            Text("网页缓存", style = MaterialTheme.typography.titleMedium)
+            FilledTonalButton(
+                onClick = onClearWebCache,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors =
+                    ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+            ) { Text("清理网页缓存") }
+            Text(
+                "清理后会重新加载当前页面，不会删除已导入饼干。",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }

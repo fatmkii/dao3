@@ -1,8 +1,6 @@
 package com.cpttmm.app.ui
 
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -222,7 +220,9 @@ private fun ActiveForumWorkspace(
         }
     var showTabs by remember { mutableStateOf(false) }
     var showAccountSwitcher by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
     var tabError by remember { mutableStateOf<String?>(null) }
+    var toolsError by remember { mutableStateOf<String?>(null) }
     var settingsError by remember { mutableStateOf<String?>(null) }
     var currentOlo by remember(account.id) { mutableStateOf(0L) }
     var pendingLongPressTarget by remember { mutableStateOf<WebHitTarget?>(null) }
@@ -236,7 +236,7 @@ private fun ActiveForumWorkspace(
         mutableStateOf(WebFindResult(0, 0, true))
     }
     val density = LocalDensity.current
-    val settingsPanelMaxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
+    val toolsPanelMaxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
     val bottomBarScrollBehavior =
         remember(account.id, domain, activeTab.id, density) {
             BottomBarScrollBehavior(
@@ -441,6 +441,37 @@ private fun ActiveForumWorkspace(
         if (touchExplorationEnabled) resetBottomBarForNavigation()
     }
 
+    if (showSettings) {
+        BackHandler { showSettings = false }
+        AppSettingsScreen(
+            domain = domain,
+            error = settingsError,
+            onBack = { showSettings = false },
+            onDomainChange = { selected ->
+                if (selected != domain) {
+                    settingsError = null
+                    scope.launch {
+                        runCatching { auth.accessTokenForWebView(account, selected) }
+                            .onSuccess { preferences.setDomain(selected) }
+                            .onFailure {
+                                if (it is MobileSessionUnavailableException) {
+                                    onSessionExpired(account)
+                                } else {
+                                    settingsError = accountErrorMessage(it)
+                                }
+                            }
+                    }
+                }
+            },
+            onClearWebCache = {
+                pageErrors[activeTab.id] = null
+                host.clearResourceCacheAndReload()
+                Toast.makeText(context, "网页缓存已清理。", Toast.LENGTH_SHORT).show()
+            },
+        )
+        return
+    }
+
     BackHandler {
         when {
             showTabs -> showTabs = false
@@ -507,40 +538,17 @@ private fun ActiveForumWorkspace(
                                 ),
                     ) {
                         if (bottomMode == WorkspaceBottomMode.TOOLS) {
-                            SettingsPanel(
+                            WorkspaceToolsPanel(
                                 currentBinggan = account.binggan,
                                 currentOlo = currentOlo,
                                 domain = domain,
                                 auth = auth,
-                                error = settingsError,
-                                onDomainChange = { selected ->
-                                    if (selected != domain) {
-                                        settingsError = null
-                                        scope.launch {
-                                            runCatching { auth.accessTokenForWebView(account, selected) }
-                                                .onSuccess {
-                                                    preferences.setDomain(selected)
-                                                    bottomMode = WorkspaceBottomMode.COLLAPSED
-                                                }.onFailure {
-                                                    if (it is MobileSessionUnavailableException) {
-                                                        onSessionExpired(account)
-                                                    } else {
-                                                        settingsError = accountErrorMessage(it)
-                                                    }
-                                                }
-                                        }
-                                    }
-                                },
+                                error = toolsError,
                                 onSelectAccount = {
                                     bottomMode = WorkspaceBottomMode.COLLAPSED
                                     showAccountSwitcher = true
                                 },
-                                onClearWebCache = {
-                                    bottomMode = WorkspaceBottomMode.COLLAPSED
-                                    pageErrors[activeTab.id] = null
-                                    host.clearResourceCacheAndReload()
-                                },
-                                modifier = Modifier.heightIn(max = settingsPanelMaxHeight),
+                                modifier = Modifier.heightIn(max = toolsPanelMaxHeight),
                             )
                             PageActionsRow(
                                 onFind = { bottomMode = WorkspaceBottomMode.FIND },
@@ -560,13 +568,6 @@ private fun ActiveForumWorkspace(
                                         }
                                     }
                                 },
-                                onCopy = {
-                                    withCurrentPage { url ->
-                                        context.getSystemService(ClipboardManager::class.java)
-                                            .setPrimaryClip(ClipData.newPlainText("页面网址", url))
-                                        Toast.makeText(context, "网址已复制。", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
                                 onOpenExternal = {
                                     withCurrentPage { url ->
                                         runCatching {
@@ -575,6 +576,10 @@ private fun ActiveForumWorkspace(
                                             Toast.makeText(context, "没有可用的浏览器。", Toast.LENGTH_SHORT).show()
                                         }
                                     }
+                                },
+                                onSettings = {
+                                    bottomMode = WorkspaceBottomMode.COLLAPSED
+                                    showSettings = true
                                 },
                             )
                         }
@@ -707,7 +712,7 @@ private fun ActiveForumWorkspace(
                             onSelectTab(it)
                             showAccountSwitcher = false
                         }.onFailure {
-                            settingsError = it.message
+                            toolsError = it.message
                         }
                     }
                 }
@@ -871,8 +876,8 @@ private fun NavigationIconButton(
 private fun PageActionsRow(
     onFind: () -> Unit,
     onShare: () -> Unit,
-    onCopy: () -> Unit,
     onOpenExternal: () -> Unit,
+    onSettings: () -> Unit,
 ) {
     Row(
         modifier =
@@ -883,8 +888,8 @@ private fun PageActionsRow(
     ) {
         PageActionButton("页内查找", R.drawable.search, onFind)
         PageActionButton("分享", R.drawable.share, onShare)
-        PageActionButton("复制网址", R.drawable.copy, onCopy)
         PageActionButton("浏览器打开", R.drawable.open_external, onOpenExternal)
+        PageActionButton("设置", R.drawable.settings, onSettings)
     }
 }
 
