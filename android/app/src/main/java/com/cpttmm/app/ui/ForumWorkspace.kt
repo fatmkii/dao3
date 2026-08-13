@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -62,10 +63,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -101,6 +104,8 @@ import com.cpttmm.app.webview.WebViewPool
 import com.cpttmm.app.webview.WebHitTarget
 import com.cpttmm.app.webview.WebImageSaveResult
 import com.cpttmm.app.webview.PendingWebFileChooser
+import com.cpttmm.app.webview.PullUpRefreshPhase
+import com.cpttmm.app.webview.PullUpRefreshState
 import com.cpttmm.app.webview.WebFileChooserRoute
 import com.cpttmm.app.webview.webFileChooserRoute
 import kotlinx.coroutines.launch
@@ -247,6 +252,9 @@ private fun ActiveForumWorkspace(
     var findQuery by remember(account.id, domain, activeTab.id) { mutableStateOf("") }
     var findResult by remember(account.id, domain, activeTab.id) {
         mutableStateOf(WebFindResult(0, 0, true))
+    }
+    var pullUpRefreshState by remember(account.id, domain, activeTab.id) {
+        mutableStateOf(PullUpRefreshState())
     }
     val density = LocalDensity.current
     val toolsPanelMaxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
@@ -435,6 +443,14 @@ private fun ActiveForumWorkspace(
             host.setOnFindResultListener(null)
             onWebViewHostChanged(null)
             host.pause()
+        }
+    }
+    DisposableEffect(host, touchExplorationEnabled) {
+        host.setPullUpRefreshEnabled(!touchExplorationEnabled)
+        host.setOnPullUpRefreshStateChangedListener { pullUpRefreshState = it }
+        onDispose {
+            host.setOnPullUpRefreshStateChangedListener(null)
+            host.setPullUpRefreshEnabled(false)
         }
     }
     DisposableEffect(host, bottomBarScrollBehavior, touchExplorationEnabled) {
@@ -648,11 +664,22 @@ private fun ActiveForumWorkspace(
             }
         },
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .clipToBounds()
+                .background(MaterialTheme.colorScheme.surface),
+        ) {
+            PullUpRefreshIndicator(
+                state = pullUpRefreshState,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
             ActiveTabView(
                 tabId = activeTab.id,
                 view = host.view,
                 applyImePadding = bottomMode != WorkspaceBottomMode.FIND,
+                translationY = -pullUpRefreshState.distancePx,
             )
             if (bottomMode == WorkspaceBottomMode.TOOLS) {
                 Box(
@@ -1028,6 +1055,7 @@ internal fun ActiveTabView(
     tabId: String,
     view: View,
     applyImePadding: Boolean = true,
+    translationY: Float = 0f,
 ) {
     key(tabId) {
         AndroidView(
@@ -1035,7 +1063,55 @@ internal fun ActiveTabView(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .then(if (applyImePadding) Modifier.imePadding() else Modifier),
+                    .then(if (applyImePadding) Modifier.imePadding() else Modifier)
+                    .graphicsLayer { this.translationY = translationY },
+        )
+    }
+}
+
+@Composable
+internal fun PullUpRefreshIndicator(
+    state: PullUpRefreshState,
+    modifier: Modifier = Modifier,
+) {
+    if (state.phase == PullUpRefreshPhase.IDLE) return
+
+    val label =
+        when (state.phase) {
+            PullUpRefreshPhase.IDLE -> return
+            PullUpRefreshPhase.PULLING -> "上拉刷新"
+            PullUpRefreshPhase.ARMED -> "松开刷新"
+            PullUpRefreshPhase.REFRESHING -> "正在刷新"
+        }
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .semantics(mergeDescendants = true) { contentDescription = label },
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (state.phase == PullUpRefreshPhase.REFRESHING) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.refresh),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

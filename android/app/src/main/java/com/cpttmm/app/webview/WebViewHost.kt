@@ -229,6 +229,7 @@ class WebViewHost(
                 WebFindResult(activeMatchOrdinal, numberOfMatches, isDoneCounting),
             )
         }
+        (view as DraggableScrollbarWebView).setOnPullUpRefreshListener(::reload)
     }
 
     fun load(domain: AppDomain, path: String = "/", scrollY: Int = 0) {
@@ -339,6 +340,16 @@ class WebViewHost(
         (view as DraggableScrollbarWebView).setOnVerticalScrollChangedListener(listener)
     }
 
+    internal fun setPullUpRefreshEnabled(enabled: Boolean) {
+        (view as DraggableScrollbarWebView).setPullUpRefreshEnabled(enabled)
+    }
+
+    internal fun setOnPullUpRefreshStateChangedListener(
+        listener: ((PullUpRefreshState) -> Unit)?,
+    ) {
+        (view as DraggableScrollbarWebView).setOnPullUpRefreshStateChangedListener(listener)
+    }
+
     override fun pause() {
         if (destroyed) return
         saveRestorableState()
@@ -374,6 +385,8 @@ class WebViewHost(
         destroyed = true
         if (saveState) saveRestorableState()
         setOnVerticalScrollChangedListener(null)
+        setOnPullUpRefreshStateChangedListener(null)
+        (view as DraggableScrollbarWebView).setOnPullUpRefreshListener(null)
         onFindResult = null
         closeBridgePort()
         view.webViewClient = WebViewClient()
