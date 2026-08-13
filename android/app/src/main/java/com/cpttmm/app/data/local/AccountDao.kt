@@ -23,9 +23,6 @@ interface AccountDao {
     @Query("UPDATE accounts SET alias = :alias WHERE id = :accountId")
     suspend fun updateAlias(accountId: String, alias: String)
 
-    @Query("UPDATE accounts SET cachedThemeName = :themeName WHERE id = :accountId")
-    suspend fun updateCachedTheme(accountId: String, themeName: String)
-
     @Query("SELECT * FROM account_secrets WHERE accountId = :accountId LIMIT 1")
     suspend fun secrets(accountId: String): AccountSecretEntity?
 

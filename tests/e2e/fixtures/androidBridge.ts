@@ -13,6 +13,7 @@ export interface AndroidBridgeOptions {
     accessToken?: string;
     pendingStorageNamespaces?: string[];
     replyToBootstrap?: boolean;
+    themeName?: string;
 }
 
 async function installBridge(
@@ -29,6 +30,7 @@ async function installBridge(
                 addEventListener(type: string, listener: (event: MessageEvent) => void): void;
                 removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
             };
+            __dispatchNativeBridgeMessage?: (message: string) => void;
         };
         bridgeWindow.__bridgeAcknowledged = false;
         bridgeWindow.__bridgeMessages = [];
@@ -56,6 +58,7 @@ async function installBridge(
                             localStorage.getItem('__pendingNamespaces') ??
                             JSON.stringify(bootstrapOptions.pendingStorageNamespaces ?? []),
                         ),
+                        themeName: bootstrapOptions.themeName ?? 'green',
                     },
                 }));
                 const delay = Number(localStorage.getItem('__bootstrapDelayMs') ?? 0);
@@ -86,6 +89,11 @@ async function installBridge(
                     });
                 },
             };
+            bridgeWindow.__dispatchNativeBridgeMessage = (message) => {
+                listeners.forEach((listener) => listener(new MessageEvent('message', {
+                    data: message,
+                })));
+            };
             return;
         }
 
@@ -99,6 +107,9 @@ async function installBridge(
                 handleOutgoing(String(event.data), (message) => channel.port1.postMessage(message));
             };
             channel.port1.start();
+            bridgeWindow.__dispatchNativeBridgeMessage = (message) => {
+                channel.port1.postMessage(message);
+            };
             window.dispatchEvent(new MessageEvent('message', {
                 data: 'cpttmm:bridge-port-v1',
                 ports: [channel.port2],
@@ -129,6 +140,18 @@ export async function bridgeAcknowledged(page: Page): Promise<boolean> {
     return page.evaluate(() => (
         window as Window & { __bridgeAcknowledged: boolean }
     ).__bridgeAcknowledged);
+}
+
+export async function dispatchNativeTheme(page: Page, name: string) {
+    await page.evaluate((themeName) => {
+        const bridgeWindow = window as Window & {
+            __dispatchNativeBridgeMessage?: (message: string) => void;
+        };
+        bridgeWindow.__dispatchNativeBridgeMessage?.(JSON.stringify({
+            type: 'themeSelected',
+            payload: { name: themeName },
+        }));
+    }, name);
 }
 
 export const legacyAndroidTest = base.extend<{ legacyAndroidPage: Page }>({

@@ -51,6 +51,15 @@ if (typeof window !== 'undefined') {
 }
 
 export function useAndroidAppBridge() {
+    function onThemeSelected(listener: (name: string) => void): () => void {
+        const handleThemeSelected = (event: Event) => {
+            const name = (event as CustomEvent<{ name?: string }>).detail?.name
+            if (name) listener(name)
+        }
+        window.addEventListener('cpttmm:theme-selected', handleThemeSelected)
+        return () => window.removeEventListener('cpttmm:theme-selected', handleThemeSelected)
+    }
+
     function notifyThemeChanged(payload: AndroidThemePayload) {
         postMessage({ type: 'themeChanged', payload })
     }
@@ -85,6 +94,7 @@ export function useAndroidAppBridge() {
     return {
         isAndroidApp: readonly(isAndroidApp),
         notifyThemeChanged,
+        onThemeSelected,
         notifyOloChanged,
         notifyNavigationChanged,
         requestAuthRefresh,

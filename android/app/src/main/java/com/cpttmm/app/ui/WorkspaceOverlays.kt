@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
@@ -28,9 +30,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +57,8 @@ import com.cpttmm.app.data.local.BrowserTabEntity
 import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.network.MobileReleaseInfo
+import com.cpttmm.app.preferences.AppTheme
+import com.cpttmm.app.preferences.AppThemePreferences
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,10 +201,14 @@ internal fun WorkspaceToolsPanel(
 internal fun AppSettingsScreen(
     domain: AppDomain,
     error: String?,
+    themePreferences: AppThemePreferences,
     onBack: () -> Unit,
     onDomainChange: (AppDomain) -> Unit,
     onClearWebCache: () -> Unit,
+    onFollowSystemChange: (Boolean) -> Unit,
+    onThemeForSystemModeChange: (Boolean, AppTheme) -> Unit,
 ) {
+    var selectingDarkMode by remember { mutableStateOf<Boolean?>(null) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -223,6 +233,34 @@ internal fun AppSettingsScreen(
                     .padding(horizontal = 24.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            Text("通用设定", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth().clickable {
+                        onFollowSystemChange(!themePreferences.followSystem)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("跟随系统切换皮肤")
+                Switch(
+                    checked = themePreferences.followSystem,
+                    onCheckedChange = onFollowSystemChange,
+                )
+            }
+            if (themePreferences.followSystem) {
+                ThemeSettingRow(
+                    label = "亮色时皮肤：",
+                    theme = themePreferences.lightTheme,
+                    onClick = { selectingDarkMode = false },
+                )
+                ThemeSettingRow(
+                    label = "暗色时皮肤：",
+                    theme = themePreferences.darkTheme,
+                    onClick = { selectingDarkMode = true },
+                )
+            }
+            HorizontalDivider()
             Text("访问域名", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppDomain.entries.forEach { candidate ->
@@ -262,6 +300,71 @@ internal fun AppSettingsScreen(
             )
         }
     }
+
+    selectingDarkMode?.let { darkMode ->
+        ThemeSelectionDialog(
+            title = if (darkMode) "暗色时皮肤" else "亮色时皮肤",
+            selectedTheme = if (darkMode) themePreferences.darkTheme else themePreferences.lightTheme,
+            onSelect = { theme ->
+                onThemeForSystemModeChange(darkMode, theme)
+                selectingDarkMode = null
+            },
+            onDismiss = { selectingDarkMode = null },
+        )
+    }
+}
+
+@Composable
+private fun ThemeSettingRow(
+    label: String,
+    theme: AppTheme,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        FilterChip(
+            selected = false,
+            onClick = onClick,
+            label = { Text(theme.displayName) },
+        )
+    }
+}
+
+@Composable
+private fun ThemeSelectionDialog(
+    title: String,
+    selectedTheme: AppTheme,
+    onSelect: (AppTheme) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                AppTheme.entries.forEach { theme ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { onSelect(theme) },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = theme == selectedTheme,
+                            onClick = { onSelect(theme) },
+                        )
+                        Text(theme.displayName)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
 }
 
 @Composable

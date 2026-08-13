@@ -8,6 +8,7 @@ interface AndroidAuthBootstrap {
     binggan: string
     accessToken: string
     pendingStorageNamespaces?: string[]
+    themeName?: string
 }
 
 interface NativeBridgeMessage {
@@ -117,11 +118,22 @@ export function initializeAndroidAuth(): Promise<void> {
             const message = typeof event.data === 'string'
                 ? JSON.parse(event.data) as NativeBridgeMessage
                 : event.data as NativeBridgeMessage
+            if (message.type === 'themeSelected') {
+                const name = (message.payload as unknown as { name?: string } | undefined)?.name
+                if (name) {
+                    window.dispatchEvent(new CustomEvent('cpttmm:theme-selected', {
+                        detail: { name },
+                    }))
+                }
+                return
+            }
             if (message.type !== 'authBootstrap' || !message.payload) return
 
             window.clearTimeout(timeout)
-            activeBridge?.removeEventListener?.('message', handleMessage)
             androidAuth = message.payload
+            if (message.payload.themeName) {
+                scopedLocalStorage.setItem('theme', message.payload.themeName)
+            }
 
             const cleaned = message.payload.pendingStorageNamespaces ?? []
             cleaned.forEach(removeNamespace)

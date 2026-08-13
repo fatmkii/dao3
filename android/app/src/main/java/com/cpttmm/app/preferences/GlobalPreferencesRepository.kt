@@ -2,6 +2,7 @@ package com.cpttmm.app.preferences
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -25,8 +26,53 @@ class GlobalPreferencesRepository(
         AppDomain.entries.firstOrNull { it.host == preferences[DOMAIN] } ?: AppDomain.PRIMARY
     }
 
+    val themePreferences: Flow<AppThemePreferences> = context.globalDataStore.data.map(::themePreferences)
+
     suspend fun setDomain(domain: AppDomain) {
         context.globalDataStore.edit { it[DOMAIN] = domain.host }
+    }
+
+    suspend fun initializeThemePreferences(migratedThemeName: String?) {
+        context.globalDataStore.edit { preferences ->
+            if (preferences[THEME_INITIALIZED] == true) return@edit
+            val migratedTheme = AppTheme.fromStorage(migratedThemeName) ?: AppTheme.GREEN
+            preferences[THEME_FOLLOW_SYSTEM] = false
+            preferences[THEME_LIGHT] = AppTheme.GREEN.storageValue
+            preferences[THEME_DARK] = AppTheme.DARK.storageValue
+            preferences[THEME_MANUAL] = migratedTheme.storageValue
+            preferences[THEME_INITIALIZED] = true
+        }
+    }
+
+    suspend fun repairThemePreferences() {
+        context.globalDataStore.edit(::writeValidThemePreferences)
+    }
+
+    suspend fun setFollowSystem(enabled: Boolean, isSystemDark: Boolean) {
+        context.globalDataStore.edit { preferences ->
+            val current = themePreferences(preferences)
+            if (!enabled) {
+                preferences[THEME_MANUAL] = current.themeFor(isSystemDark).storageValue
+            }
+            preferences[THEME_FOLLOW_SYSTEM] = enabled
+            writeValidThemePreferences(preferences)
+        }
+    }
+
+    suspend fun setThemeForSystemMode(isDarkMode: Boolean, theme: AppTheme) {
+        context.globalDataStore.edit { preferences ->
+            preferences[if (isDarkMode) THEME_DARK else THEME_LIGHT] = theme.storageValue
+            writeValidThemePreferences(preferences)
+        }
+    }
+
+    suspend fun recordWebTheme(theme: AppTheme, isSystemDark: Boolean) {
+        context.globalDataStore.edit { preferences ->
+            writeThemePreferences(
+                preferences,
+                themePreferences(preferences).afterWebThemeChanged(theme, isSystemDark),
+            )
+        }
     }
 
     suspend fun installationId(): String = installIdMutex.withLock {
@@ -70,9 +116,47 @@ class GlobalPreferencesRepository(
     private fun cleanupEntry(origin: String, storageNamespace: String) =
         "${origin.trimEnd('/')}|$storageNamespace"
 
+    private fun themePreferences(
+        preferences: androidx.datastore.preferences.core.Preferences,
+    ): AppThemePreferences {
+        val lightTheme = AppTheme.fromStorage(preferences[THEME_LIGHT])
+        val darkTheme = AppTheme.fromStorage(preferences[THEME_DARK])
+        val manualTheme = AppTheme.fromStorage(preferences[THEME_MANUAL])
+        val initialized = preferences[THEME_INITIALIZED] ?: false
+        return AppThemePreferences(
+            followSystem = preferences[THEME_FOLLOW_SYSTEM] ?: false,
+            lightTheme = lightTheme ?: AppTheme.GREEN,
+            darkTheme = darkTheme ?: AppTheme.DARK,
+            manualTheme = manualTheme ?: AppTheme.GREEN,
+            initialized = initialized,
+            requiresRepair = initialized && (lightTheme == null || darkTheme == null || manualTheme == null),
+        )
+    }
+
+    private fun writeValidThemePreferences(
+        preferences: androidx.datastore.preferences.core.MutablePreferences,
+    ) {
+        writeThemePreferences(preferences, themePreferences(preferences))
+    }
+
+    private fun writeThemePreferences(
+        preferences: androidx.datastore.preferences.core.MutablePreferences,
+        themePreferences: AppThemePreferences,
+    ) {
+        preferences[THEME_LIGHT] = themePreferences.lightTheme.storageValue
+        preferences[THEME_DARK] = themePreferences.darkTheme.storageValue
+        preferences[THEME_MANUAL] = themePreferences.manualTheme.storageValue
+        preferences[THEME_INITIALIZED] = true
+    }
+
     private companion object {
         val DOMAIN = stringPreferencesKey("domain")
         val INSTALLATION_ID = stringPreferencesKey("installation_id")
         val PENDING_STORAGE_CLEANUPS = stringSetPreferencesKey("pending_storage_cleanups")
+        val THEME_FOLLOW_SYSTEM = booleanPreferencesKey("theme_follow_system")
+        val THEME_LIGHT = stringPreferencesKey("theme_light")
+        val THEME_DARK = stringPreferencesKey("theme_dark")
+        val THEME_MANUAL = stringPreferencesKey("theme_manual")
+        val THEME_INITIALIZED = booleanPreferencesKey("theme_initialized")
     }
 }

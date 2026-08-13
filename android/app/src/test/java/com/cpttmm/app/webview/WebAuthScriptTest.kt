@@ -12,11 +12,13 @@ class WebAuthScriptTest {
             binggan = "b\"</script>\n",
             accessToken = "token\\'\u2028",
             pendingStorageNamespaces = setOf("old-one"),
+            themeName = "green",
         )
         assertTrue(message.contains("\"storageNamespace\":\"storage\\\"\\u003c/script\\u003e\""))
         assertTrue(message.contains("\"binggan\":\"b\\\"\\u003c/script\\u003e\\n\""))
         assertTrue(message.contains("\"accessToken\":\"token\\\\'\\u2028\""))
         assertTrue(message.contains("\"pendingStorageNamespaces\":[\"old-one\"]"))
+        assertTrue(message.contains("\"themeName\":\"green\""))
         assertFalse(message.contains("</script>"))
     }
 

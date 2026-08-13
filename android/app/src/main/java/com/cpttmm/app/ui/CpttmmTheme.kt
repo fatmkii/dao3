@@ -1,10 +1,16 @@
 package com.cpttmm.app.ui
 
-import androidx.compose.foundation.background
+import android.app.Activity
+import android.graphics.Color as AndroidColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.cpttmm.app.preferences.AppTheme
 
 private val HotpotRed = Color(0xFF9D3529)
 private val DeepBroth = Color(0xFF351C18)
@@ -100,6 +106,27 @@ internal fun defaultNativeThemePalette(themeName: String?): NativeThemePalette =
         "blue" -> NativeThemePalette(themeName, Color(0xFF6495ED), Color(0xFFF5F7FF))
         else -> NativeThemePalette("green", Color(0xFF52B051), Color(0xFFFAFFFA))
     }
+
+internal fun defaultNativeThemePalette(theme: AppTheme): NativeThemePalette =
+    defaultNativeThemePalette(theme.storageValue)
+
+@Composable
+internal fun SyncSystemBars(theme: NativeThemePalette) {
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        val lightBackground = theme.backgroundColor.luminance() > 0.5f
+        @Suppress("DEPRECATION")
+        run {
+            window.statusBarColor = AndroidColor.TRANSPARENT
+            window.navigationBarColor = theme.backgroundColor.toArgb()
+        }
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = lightBackground
+            isAppearanceLightNavigationBars = lightBackground
+        }
+    }
+}
 
 private fun contrastingTextColor(background: Color): Color = if (background.luminance() > 0.5f) DeepBroth else Color.White
 

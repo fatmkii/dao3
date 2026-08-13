@@ -54,10 +54,6 @@ class SecureAccountRepository(
         )
     }
 
-    suspend fun updateCachedTheme(accountId: String, themeName: String) {
-        dao.updateCachedTheme(accountId, themeName)
-    }
-
     suspend fun updateAlias(accountId: String, alias: String) {
         dao.updateAlias(accountId, AccountAliasPolicy.requireValid(alias))
     }

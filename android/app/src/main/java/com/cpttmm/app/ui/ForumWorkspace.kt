@@ -90,6 +90,8 @@ import com.cpttmm.app.navigation.AppDomain
 import com.cpttmm.app.navigation.DomainPolicy
 import com.cpttmm.app.navigation.NavigationTarget
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
+import com.cpttmm.app.preferences.AppTheme
+import com.cpttmm.app.preferences.AppThemePreferences
 import com.cpttmm.app.session.RefreshPolicy
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebBridgeMessage
@@ -122,6 +124,9 @@ internal fun ForumWorkspace(
     tabs: BrowserTabRepository,
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
+    themePreferences: AppThemePreferences,
+    isSystemDark: Boolean,
+    currentTheme: AppTheme,
     foregroundGeneration: Int,
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
@@ -129,7 +134,7 @@ internal fun ForumWorkspace(
     onAddAccount: () -> Unit,
     onRemoveAccount: (AccountEntity) -> Unit,
     onSessionExpired: (AccountEntity) -> Unit,
-    onThemeChanged: (String, Color, Color) -> Unit,
+    onThemeChanged: (AppTheme, Color, Color) -> Unit,
 ) {
     var accessToken by remember(account.id, domain) { mutableStateOf<String?>(null) }
     var error by remember(account.id, domain) { mutableStateOf<String?>(null) }
@@ -160,6 +165,9 @@ internal fun ForumWorkspace(
         accounts = accounts,
         preferences = preferences,
         diagnostics = diagnostics,
+        themePreferences = themePreferences,
+        isSystemDark = isSystemDark,
+        currentTheme = currentTheme,
         foregroundGeneration = foregroundGeneration,
         onWebViewHostChanged = onWebViewHostChanged,
         onWebViewPoolChanged = onWebViewPoolChanged,
@@ -191,18 +199,23 @@ private fun ActiveForumWorkspace(
     accounts: SecureAccountRepository,
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
+    themePreferences: AppThemePreferences,
+    isSystemDark: Boolean,
+    currentTheme: AppTheme,
     foregroundGeneration: Int,
     onWebViewHostChanged: (WebViewHost?) -> Unit,
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit,
     onAddAccount: () -> Unit,
     onRemoveAccount: (AccountEntity) -> Unit,
     onSessionExpired: (AccountEntity) -> Unit,
-    onThemeChanged: (String, Color, Color) -> Unit,
+    onThemeChanged: (AppTheme, Color, Color) -> Unit,
     onSelectTab: (BrowserTabEntity?) -> Unit,
     onError: (Throwable) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val currentThemeSelection by rememberUpdatedState(currentTheme)
+    val currentSystemDark by rememberUpdatedState(isSystemDark)
     val pendingFileChooser = remember { PendingWebFileChooser<Array<Uri>>() }
     val photoPickerLauncher =
         rememberLauncherForActivityResult(
@@ -254,6 +267,9 @@ private fun ActiveForumWorkspace(
 
     LaunchedEffect(tabs) {
         webViewPool.retainTabs(tabs.mapTo(mutableSetOf()) { it.id })
+    }
+    LaunchedEffect(webViewPool, currentTheme) {
+        webViewPool.updateTheme(currentTheme.storageValue)
     }
     DisposableEffect(webViewPool) {
         onWebViewPoolChanged(webViewPool)
@@ -315,6 +331,7 @@ private fun ActiveForumWorkspace(
                         context = context,
                         account = account,
                         accessToken = currentAccessToken ?: accessToken,
+                        initialThemeName = currentThemeSelection.storageValue,
                         onExternalNavigation = { url ->
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         },
@@ -325,10 +342,11 @@ private fun ActiveForumWorkspace(
                                     account = account,
                                     domain = domain,
                                     auth = auth,
-                                    accounts = accounts,
                                     preferences = preferences,
                                     diagnostics = diagnostics,
                                     host = createdHost,
+                                    currentTheme = currentThemeSelection,
+                                    isSystemDark = currentSystemDark,
                                     onAccessTokenRefreshed = { refreshedToken ->
                                         currentAccessToken = refreshedToken
                                         webViewPool.updateAccessToken(account.id, refreshedToken)
@@ -446,6 +464,7 @@ private fun ActiveForumWorkspace(
         AppSettingsScreen(
             domain = domain,
             error = settingsError,
+            themePreferences = themePreferences,
             onBack = { showSettings = false },
             onDomainChange = { selected ->
                 if (selected != domain) {
@@ -467,6 +486,12 @@ private fun ActiveForumWorkspace(
                 pageErrors[activeTab.id] = null
                 host.clearResourceCacheAndReload()
                 Toast.makeText(context, "网页缓存已清理。", Toast.LENGTH_SHORT).show()
+            },
+            onFollowSystemChange = { enabled ->
+                scope.launch { preferences.setFollowSystem(enabled, currentSystemDark) }
+            },
+            onThemeForSystemModeChange = { darkMode, theme ->
+                scope.launch { preferences.setThemeForSystemMode(darkMode, theme) }
             },
         )
         return
@@ -1020,13 +1045,14 @@ private suspend fun handleBridgeMessage(
     account: AccountEntity,
     domain: AppDomain,
     auth: MobileAuthCoordinator,
-    accounts: SecureAccountRepository,
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
     host: WebViewHost,
+    currentTheme: AppTheme,
+    isSystemDark: Boolean,
     onAccessTokenRefreshed: (String) -> Unit,
     onAuthFailure: (Throwable) -> Unit,
-    onThemeChanged: (String, Color, Color) -> Unit,
+    onThemeChanged: (AppTheme, Color, Color) -> Unit,
     onOloChanged: (Long) -> Unit,
 ) {
     val json = runCatching { JSONObject(message.data) }.getOrNull() ?: return
@@ -1039,6 +1065,7 @@ private suspend fun handleBridgeMessage(
                     binggan = account.binggan,
                     accessToken = host.accessToken(),
                     pendingStorageNamespaces = pendingNamespaces,
+                    themeName = currentTheme.storageValue,
                 ),
             )
         }
@@ -1066,14 +1093,14 @@ private suspend fun handleBridgeMessage(
 
         "themeChanged" -> {
             val payload = json.optJSONObject("payload")
-            val themeName = payload?.optString("name").orEmpty()
+            val theme = AppTheme.fromStorage(payload?.optString("name"))
             val primaryColor = parseCssColor(payload?.optString("primaryColor").orEmpty())
             val backgroundColor = parseCssColor(payload?.optString("backgroundColor").orEmpty())
-            if (themeName in APP_THEME_NAMES) {
-                accounts.updateCachedTheme(account.id, themeName)
-                val defaults = defaultNativeThemePalette(themeName)
+            if (theme != null) {
+                preferences.recordWebTheme(theme, isSystemDark)
+                val defaults = defaultNativeThemePalette(theme)
                 onThemeChanged(
-                    themeName,
+                    theme,
                     primaryColor ?: defaults.primaryColor,
                     backgroundColor ?: defaults.backgroundColor,
                 )
@@ -1086,5 +1113,3 @@ private suspend fun handleBridgeMessage(
         }
     }
 }
-
-private val APP_THEME_NAMES = setOf("light", "sfw", "dark", "green", "blue")

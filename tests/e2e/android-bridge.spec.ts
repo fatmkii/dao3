@@ -2,6 +2,7 @@ import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 import {
     bridgeAcknowledged,
     bridgeMessages,
+    dispatchNativeTheme,
     installMessagePortAndroidBridge,
     legacyAndroidTest,
 } from './fixtures/androidBridge';
@@ -104,7 +105,7 @@ test.describe('Android App bridge', () => {
         await expect(page.getByRole('button', { name: '重试' })).toBeVisible();
     });
 
-    test('isolates tokens and settings between two pages in one browser context', async ({ page, context }) => {
+    test('isolates tokens while applying the native global theme to every account', async ({ page, context }) => {
         await page.addInitScript(() => {
             localStorage.setItem('cpttmm:account-one:theme', 'dark');
             localStorage.setItem('cpttmm:account-two:theme', 'green');
@@ -135,9 +136,27 @@ test.describe('Android App bridge', () => {
         await expect.poll(() => firstAuthorization).toBe('Bearer expired-token');
         await expect.poll(() => secondAuthorization).toBe('Bearer token-two');
         await expect.poll(async () => (await bridgeMessages(page))
-            .find((message) => message.type === 'themeChanged')?.payload?.name).toBe('dark');
+            .find((message) => message.type === 'themeChanged')?.payload?.name).toBe('green');
         await expect.poll(async () => (await bridgeMessages(secondPage))
             .find((message) => message.type === 'themeChanged')?.payload?.name).toBe('green');
+    });
+
+    test('applies native theme changes without reloading the page', async ({ page }) => {
+        await mockAuthenticatedUser(page);
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await expect.poll(() => bridgeAcknowledged(page)).toBe(true);
+
+        const navigationEntries = await page.evaluate(() => performance.getEntriesByType('navigation').length);
+        await dispatchNativeTheme(page, 'blue');
+
+        await expect.poll(() => page.evaluate(() =>
+            localStorage.getItem('cpttmm:account-one:theme'),
+        )).toBe('blue');
+        await expect.poll(async () => (await bridgeMessages(page))
+            .filter((message) => message.type === 'themeChanged')
+            .at(-1)?.payload?.name).toBe('blue');
+        expect(await page.evaluate(() => performance.getEntriesByType('navigation').length))
+            .toBe(navigationEntries);
     });
 
     test('cleans pending namespaces without touching the active account', async ({ page }) => {

@@ -7,6 +7,7 @@ interface PooledWebViewHost {
     fun pause()
     fun resume()
     fun updateAccessToken(accessToken: String)
+    fun updateTheme(themeName: String)
     fun destroy(saveState: Boolean = true)
 }
 
@@ -40,6 +41,10 @@ class WebViewPool<T : PooledWebViewHost> {
         hosts.values
             .filter { it.accountId == accountId }
             .forEach { it.updateAccessToken(accessToken) }
+    }
+
+    fun updateTheme(themeName: String) {
+        hosts.values.forEach { it.updateTheme(themeName) }
     }
 
     fun remove(tabId: String, saveState: Boolean) {

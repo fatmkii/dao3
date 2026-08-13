@@ -77,6 +77,18 @@ class WebViewPoolTest {
     }
 
     @Test
+    fun `updates theme in every host regardless of account`() {
+        val pool = WebViewPool<FakeHost>()
+        val first = pool.getOrCreate("first", "first-account") { FakeHost("first-account") }
+        val second = pool.getOrCreate("second", "second-account") { FakeHost("second-account") }
+
+        pool.updateTheme("blue")
+
+        assertEquals("blue", first.themeName)
+        assertEquals("blue", second.themeName)
+    }
+
+    @Test
     fun `replaces a tab host when its account changes`() {
         val pool = WebViewPool<FakeHost>()
         val old = pool.getOrCreate("tab", "old") { FakeHost("old") }
@@ -97,6 +109,7 @@ class WebViewPoolTest {
         var destroyed = false
         var savedOnDestroy: Boolean? = null
         var accessToken: String? = null
+        var themeName: String? = null
 
         override fun pause() {
             paused = true
@@ -110,6 +123,10 @@ class WebViewPoolTest {
 
         override fun updateAccessToken(accessToken: String) {
             this.accessToken = accessToken
+        }
+
+        override fun updateTheme(themeName: String) {
+            this.themeName = themeName
         }
 
         override fun destroy(saveState: Boolean) {

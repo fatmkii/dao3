@@ -6,11 +6,13 @@ object WebAuthScript {
         binggan: String,
         accessToken: String,
         pendingStorageNamespaces: Set<String>,
+        themeName: String,
     ): String = buildString {
         append("{\"type\":\"authBootstrap\",\"payload\":{")
         append("\"storageNamespace\":").append(javaScriptString(storageNamespace))
         append(",\"binggan\":").append(javaScriptString(binggan))
         append(",\"accessToken\":").append(javaScriptString(accessToken))
+        append(",\"themeName\":").append(javaScriptString(themeName))
         append(",\"pendingStorageNamespaces\":[")
         pendingStorageNamespaces.forEachIndexed { index, namespace ->
             if (index > 0) append(',')
@@ -24,6 +26,9 @@ object WebAuthScript {
         append(javaScriptString(accessToken))
         append("}}));void 0;")
     }
+
+    fun themeMessage(themeName: String): String =
+        "{\"type\":\"themeSelected\",\"payload\":{\"name\":${javaScriptString(themeName)}}}"
 
     private fun javaScriptString(value: String): String = buildString {
         append('"')

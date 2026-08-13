@@ -24,10 +24,12 @@ import com.cpttmm.app.data.local.AccountEntity
 import com.cpttmm.app.diagnostics.DiagnosticLogger
 import com.cpttmm.app.model.WorkspacePolicy
 import com.cpttmm.app.navigation.AppDomain
+import com.cpttmm.app.preferences.AppThemePreferences
 import com.cpttmm.app.preferences.GlobalPreferencesRepository
 import com.cpttmm.app.webview.WebViewHost
 import com.cpttmm.app.webview.WebViewPool
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,31 +39,55 @@ fun CpttmmApp(
     tabs: BrowserTabRepository,
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
+    initialThemePreferences: AppThemePreferences = AppThemePreferences(),
+    isSystemDark: Boolean = false,
     foregroundGeneration: Int = 0,
     onWebViewHostChanged: (WebViewHost?) -> Unit = {},
     onWebViewPoolChanged: (WebViewPool<WebViewHost>?) -> Unit = {},
 ) {
-    var nativeTheme by remember { mutableStateOf(defaultNativeThemePalette(null)) }
-    CpttmmTheme(nativeTheme) {
-        val accountFlow = remember(accounts) { accounts.observeAccounts() }
-        val accountList by accountFlow.collectAsState(initial = emptyList())
-        val domain by preferences.domain.collectAsState(initial = AppDomain.PRIMARY)
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        var showAccountSheet by remember { mutableStateOf(false) }
-        var accountToRemove by remember { mutableStateOf<AccountEntity?>(null) }
-        var accountToReauthenticate by remember { mutableStateOf<AccountEntity?>(null) }
-        val tabFlow = remember(tabs) { tabs.observe() }
-        val tabList by tabFlow.collectAsState(initial = emptyList())
-        var activeTabId by remember { mutableStateOf<String?>(null) }
-        val activeTab = tabList.firstOrNull { it.id == activeTabId }
-        val activeAccount = accountList.firstOrNull { it.id == activeTab?.accountId }
-        val currentActiveTab by rememberUpdatedState(activeTab)
-        val currentAccountList by rememberUpdatedState(accountList)
-
-        LaunchedEffect(activeAccount?.id) {
-            nativeTheme = defaultNativeThemePalette(activeAccount?.cachedThemeName)
+    val accountFlow = remember(accounts) { accounts.observeAccounts() }
+    val accountList by accountFlow.collectAsState(initial = emptyList())
+    val domain by preferences.domain.collectAsState(initial = AppDomain.PRIMARY)
+    val themePreferences by preferences.themePreferences.collectAsState(initial = initialThemePreferences)
+    val tabFlow = remember(tabs) { tabs.observe() }
+    val tabList by tabFlow.collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var showAccountSheet by remember { mutableStateOf(false) }
+    var accountToRemove by remember { mutableStateOf<AccountEntity?>(null) }
+    var accountToReauthenticate by remember { mutableStateOf<AccountEntity?>(null) }
+    var activeTabId by remember { mutableStateOf<String?>(null) }
+    val activeTab = tabList.firstOrNull { it.id == activeTabId }
+    val activeAccount = accountList.firstOrNull { it.id == activeTab?.accountId }
+    val currentActiveTab by rememberUpdatedState(activeTab)
+    val currentAccountList by rememberUpdatedState(accountList)
+    val effectiveTheme = themePreferences.themeFor(isSystemDark)
+    val displayedTheme =
+        if (activeAccount == null || activeTab == null) {
+            themePreferences.accountHomeTheme(isSystemDark)
+        } else {
+            effectiveTheme
         }
+    var nativeTheme by remember {
+        mutableStateOf(defaultNativeThemePalette(initialThemePreferences.accountHomeTheme(isSystemDark)))
+    }
+
+    LaunchedEffect(preferences, accounts, tabs) {
+        if (!themePreferences.initialized) {
+            val persistedTabs = tabs.observe().first()
+            val persistedAccounts = accounts.observeAccounts().first()
+            val recentAccountId = persistedTabs.firstOrNull()?.accountId
+            val migratedTheme = persistedAccounts.firstOrNull { it.id == recentAccountId }?.cachedThemeName
+            preferences.initializeThemePreferences(migratedTheme)
+        }
+    }
+
+    LaunchedEffect(displayedTheme) {
+        nativeTheme = defaultNativeThemePalette(displayedTheme)
+    }
+
+    CpttmmTheme(nativeTheme) {
+        SyncSystemBars(nativeTheme)
 
         fun activateAccount(account: AccountEntity) {
             scope.launch {
@@ -115,6 +141,9 @@ fun CpttmmApp(
                 tabs = tabs,
                 preferences = preferences,
                 diagnostics = diagnostics,
+                themePreferences = themePreferences,
+                isSystemDark = isSystemDark,
+                currentTheme = effectiveTheme,
                 foregroundGeneration = foregroundGeneration,
                 onWebViewHostChanged = onWebViewHostChanged,
                 onWebViewPoolChanged = onWebViewPoolChanged,
@@ -125,8 +154,8 @@ fun CpttmmApp(
                 },
                 onRemoveAccount = { accountToRemove = it },
                 onSessionExpired = ::handleSessionExpired,
-                onThemeChanged = { name, primaryColor, backgroundColor ->
-                    nativeTheme = NativeThemePalette(name, primaryColor, backgroundColor)
+                onThemeChanged = { theme, primaryColor, backgroundColor ->
+                    nativeTheme = NativeThemePalette(theme.storageValue, primaryColor, backgroundColor)
                 },
             )
         }

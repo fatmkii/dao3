@@ -61,6 +61,7 @@ class WebViewHost(
     context: Context,
     account: AccountEntity,
     accessToken: String,
+    initialThemeName: String = "green",
     private val onExternalNavigation: (String) -> Unit,
     private val onBridgeMessage: (WebBridgeMessage) -> Unit,
     private val onSaveState: (RestorableWebViewState) -> Unit,
@@ -84,10 +85,12 @@ class WebViewHost(
     }
 
     private var currentAccessToken = accessToken
+    private var currentThemeName = initialThemeName
     private var destroyed = false
     private var pendingScrollY: Int? = null
     private val bridgePorts = linkedSetOf<WebMessagePort>()
     private var bridgeAcknowledged = false
+    private var activeBridgePort: WebMessagePort? = null
     private var bridgeHandshakeAttempts = 0
     private var bridgeFinalHandshakeAttempted = false
     private var onFindResult: ((WebFindResult) -> Unit)? = null
@@ -245,6 +248,12 @@ class WebViewHost(
         if (currentUrl != null && DomainPolicy.classify(currentUrl) is NavigationTarget.Internal) {
             view.evaluateJavascript(WebAuthScript.update(accessToken), null)
         }
+    }
+
+    override fun updateTheme(themeName: String) {
+        if (destroyed) return
+        currentThemeName = themeName
+        activeBridgePort?.postMessage(WebMessage(WebAuthScript.themeMessage(themeName)))
     }
 
     fun accessToken(): String = currentAccessToken
@@ -459,11 +468,13 @@ class WebViewHost(
     private fun selectBridgePort(port: WebMessagePort) {
         if (bridgeAcknowledged) return
         bridgeAcknowledged = true
+        activeBridgePort = port
         view.removeCallbacks(retryBridgeHandshake)
         bridgePorts.filterNot { it === port }.forEach {
             bridgePorts.remove(it)
             it.close()
         }
+        port.postMessage(WebMessage(WebAuthScript.themeMessage(currentThemeName)))
     }
 
     private fun scheduleBridgeHandshakeRetry() {
@@ -478,6 +489,7 @@ class WebViewHost(
         bridgePorts.forEach(WebMessagePort::close)
         bridgePorts.clear()
         bridgeAcknowledged = false
+        activeBridgePort = null
     }
 
     private fun saveRestorableState() {

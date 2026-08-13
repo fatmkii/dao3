@@ -28,7 +28,7 @@ import MessageApi from '@/vue/Components/MessageApi.vue';
 import TopBar from '@/vue/TopBar/TopBar.vue';
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, useThemeVars, zhCN } from 'naive-ui';
 import UnauthModal from './Modals/UnauthModal.vue';
-import { computed, watch } from 'vue';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
 
 //加载主题相关的store
 const themeStore = useThemeStore()
@@ -39,7 +39,14 @@ const userStore = useUserStore()
 
 //一般设定的store
 const commonStore = useCommonStore()
-const { isAndroidApp, notifyThemeChanged, notifyOloChanged } = useAndroidAppBridge()
+const { isAndroidApp, notifyThemeChanged, notifyOloChanged, onThemeSelected } = useAndroidAppBridge()
+let stopThemeSelectionListener: (() => void) | undefined
+
+onMounted(() => {
+    stopThemeSelectionListener = onThemeSelected(themeStore.themeChange)
+})
+
+onUnmounted(() => stopThemeSelectionListener?.())
 
 watch(
     () => [
