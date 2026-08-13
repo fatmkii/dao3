@@ -95,6 +95,30 @@ class AccuseTest extends TestCase
         $this->assertStringNotContainsString($this->target->binggan, json_encode($list));
     }
 
+    public function test_banned_user_cannot_create_accuse(): void
+    {
+        $this->reporter->forceFill(['is_banned' => true])->save();
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->payload())
+            ->assertJson(['code' => ResponseCode::USER_BANNED]);
+
+        $this->assertDatabaseCount('accuses', 0);
+        $this->assertDatabaseCount('accuse_reasons', 0);
+    }
+
+    public function test_locked_user_cannot_create_accuse(): void
+    {
+        $this->reporter->forceFill(['locked_until' => now()->addHour()])->save();
+        Sanctum::actingAs($this->reporter);
+
+        $this->postJson('/api/accuses', $this->payload())
+            ->assertJson(['code' => ResponseCode::USER_LOCKED]);
+
+        $this->assertDatabaseCount('accuses', 0);
+        $this->assertDatabaseCount('accuse_reasons', 0);
+    }
+
     public function test_user_can_accuse_self_deleted_post(): void
     {
         $this->post->is_deleted = 1;

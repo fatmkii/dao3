@@ -103,11 +103,11 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
 
 //Accuse系列
 Route::prefix('accuses')->middleware('auth:sanctum')->group(function () {
-    Route::get('', [AccuseController::class, 'index']);
-    Route::post('', [AccuseController::class, 'store']);
-    Route::post('/{accuse}/hint', [AccuseController::class, 'hint']);
-    Route::post('/{accuse}/handle', [AccuseController::class, 'handle']);
-    Route::put('/{accuse}/uncertain', [AccuseController::class, 'uncertain']);
+    Route::get('', [AccuseController::class, 'index'])->middleware('CheckBinggan:show'); //查看举报列表
+    Route::post('', [AccuseController::class, 'store'])->middleware('CheckBinggan:create'); //提交举报
+    Route::post('/{accuse}/hint', [AccuseController::class, 'hint']); //举报提示（只能由管理员操作）
+    Route::post('/{accuse}/handle', [AccuseController::class, 'handle']); //处理举报（只能由管理员操作）
+    Route::put('/{accuse}/uncertain', [AccuseController::class, 'uncertain']); //处理举报（只能由管理员操作）
 });
 
 //Forum系列
