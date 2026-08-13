@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Common\ResponseCode;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessAdminActive;
 use App\Models\Accuse;
 use App\Models\AccuseReason;
 use App\Models\Admin;
@@ -268,20 +269,43 @@ class AccuseController extends Controller
         }
 
         if ($request->action !== 'ignore') {
-            $result = $this->runAdminAction($request, $accuse);
+            $result = $this->runAdminAction($request, $accuse); // 执行管理员操作
             $payload = $result->getData(true);
             if (($payload['code'] ?? null) !== ResponseCode::SUCCESS) {
                 return $result;
             }
         }
 
-        app(AccuseHandlingService::class)->markPendingByAccuseIds(
+        $updatedCount = app(AccuseHandlingService::class)->markPendingByAccuseIds(
             [$accuse->id],
             $request->user(),
             $request->action,
             $request->action === 'ignore' ? '忽略' : trim($request->reason),
             in_array($request->action, ['delete', 'deleteAll']) && $request->boolean('reduce_olo')
         );
+
+        // 如果是忽略举报，并且成功更新了状态，则记录管理员操作日志
+        if ($request->action === 'ignore' && $updatedCount > 0) {
+            $user = $request->user();
+            $isPostAccuse = $accuse->target_type === 'post';
+
+            ProcessAdminActive::dispatch([
+                'user_id' => $user->id,
+                'binggan' => $user->binggan,
+                'name' => null,
+                'admin_level' => $user->admin,
+                'active' => '忽略举报',
+                'active_type' => 'accuse_ignore',
+                'content' => null,
+                'olo' => null,
+                'post_id' => $isPostAccuse ? $accuse->post_id : null,
+                'thread_id' => $isPostAccuse ? $accuse->thread_id : null,
+                'thread_title' => $isPostAccuse ? $accuse->thread_title : null,
+                'floor' => $isPostAccuse ? $accuse->floor : null,
+                'user_id_target' => $accuse->target_user_id,
+                'binggan_target' => $accuse->target_binggan,
+            ]);
+        }
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,

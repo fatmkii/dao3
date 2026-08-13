@@ -277,6 +277,21 @@ class AccuseTest extends TestCase
                 'handle_note' => '忽略',
             ],
         ]);
+
+        Bus::assertDispatched(ProcessAdminActive::class, function (ProcessAdminActive $job) use ($admin, $list) {
+            $payload = $this->adminActivePayload($job);
+
+            return $payload['user_id'] === $admin->id
+                && $payload['active'] === '忽略举报'
+                && $payload['active_type'] === 'accuse_ignore'
+                && $payload['content'] === null
+                && $payload['post_id'] === $list['post_id']
+                && $payload['thread_id'] === $list['thread_id']
+                && $payload['thread_title'] === $list['thread_title']
+                && $payload['floor'] === $list['floor']
+                && $payload['user_id_target'] === $this->target->id
+                && $payload['binggan_target'] === $this->target->binggan;
+        });
     }
 
     public function test_my_pending_only_returns_only_admin_forums(): void
@@ -687,6 +702,21 @@ class AccuseTest extends TestCase
                 'handle_note' => '忽略',
             ],
         ]);
+
+        Bus::assertDispatched(ProcessAdminActive::class, function (ProcessAdminActive $job) use ($admin) {
+            $payload = $this->adminActivePayload($job);
+
+            return $payload['user_id'] === $admin->id
+                && $payload['active'] === '忽略举报'
+                && $payload['active_type'] === 'accuse_ignore'
+                && $payload['content'] === null
+                && $payload['post_id'] === null
+                && $payload['thread_id'] === null
+                && $payload['thread_title'] === null
+                && $payload['floor'] === null
+                && $payload['user_id_target'] === $this->target->id
+                && $payload['binggan_target'] === $this->target->binggan;
+        });
 
         Sanctum::actingAs($forumAdmin, ['forum_admin']);
         $handledList = $this->getJson('/api/accuses')->json('data.data.0');
