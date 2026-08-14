@@ -1,4 +1,4 @@
-import { test as base, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
 
 const ANDROID_BRIDGE_READY_ACK = 'cpttmm:bridge-ready-v1';
 
@@ -18,18 +18,12 @@ export interface AndroidBridgeOptions {
 
 async function installBridge(
     page: Page,
-    transport: 'message-port' | 'legacy-listener',
     options: AndroidBridgeOptions = {},
 ) {
-    await page.addInitScript(({ bootstrapOptions, bridgeTransport, bridgeReadyAck }) => {
+    await page.addInitScript(({ bootstrapOptions, bridgeReadyAck }) => {
         const bridgeWindow = window as Window & {
             __bridgeAcknowledged: boolean;
             __bridgeMessages: BridgeMessage[];
-            CpttmmAndroid?: {
-                postMessage(message: string): void;
-                addEventListener(type: string, listener: (event: MessageEvent) => void): void;
-                removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
-            };
             __dispatchNativeBridgeMessage?: (message: string) => void;
         };
         bridgeWindow.__bridgeAcknowledged = false;
@@ -76,27 +70,6 @@ async function installBridge(
             }
         };
 
-        if (bridgeTransport === 'legacy-listener') {
-            const listeners = new Set<(event: MessageEvent) => void>();
-            bridgeWindow.CpttmmAndroid = {
-                addEventListener(_type, listener) { listeners.add(listener); },
-                removeEventListener(_type, listener) { listeners.delete(listener); },
-                postMessage(serialized) {
-                    handleOutgoing(serialized, (message) => {
-                        listeners.forEach((listener) => listener(new MessageEvent('message', {
-                            data: message,
-                        })));
-                    });
-                },
-            };
-            bridgeWindow.__dispatchNativeBridgeMessage = (message) => {
-                listeners.forEach((listener) => listener(new MessageEvent('message', {
-                    data: message,
-                })));
-            };
-            return;
-        }
-
         Object.defineProperty(navigator, 'userAgent', {
             configurable: true,
             value: `${navigator.userAgent} CpttmmAndroid`,
@@ -117,17 +90,12 @@ async function installBridge(
         }, { once: true });
     }, {
         bootstrapOptions: options,
-        bridgeTransport: transport,
         bridgeReadyAck: ANDROID_BRIDGE_READY_ACK,
     });
 }
 
 export async function installMessagePortAndroidBridge(page: Page, options: AndroidBridgeOptions = {}) {
-    await installBridge(page, 'message-port', options);
-}
-
-export async function installLegacyAndroidBridge(page: Page, options: AndroidBridgeOptions = {}) {
-    await installBridge(page, 'legacy-listener', options);
+    await installBridge(page, options);
 }
 
 export async function bridgeMessages(page: Page): Promise<BridgeMessage[]> {
@@ -153,10 +121,3 @@ export async function dispatchNativeTheme(page: Page, name: string) {
         }));
     }, name);
 }
-
-export const legacyAndroidTest = base.extend<{ legacyAndroidPage: Page }>({
-    legacyAndroidPage: async ({ page }, use) => {
-        await installLegacyAndroidBridge(page);
-        await use(page);
-    },
-});

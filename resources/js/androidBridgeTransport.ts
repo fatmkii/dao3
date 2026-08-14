@@ -17,10 +17,6 @@ const messagePortReady = typeof window === 'undefined'
         resolveMessagePort = resolve
     })
 
-function legacyBridge(): AndroidBridgeTransport | undefined {
-    return typeof window !== 'undefined' ? window.CpttmmAndroid : undefined
-}
-
 function hasAndroidUserAgent(): boolean {
     return typeof navigator !== 'undefined' &&
         navigator.userAgent.split(/\s+/).includes(ANDROID_USER_AGENT_MARKER)
@@ -46,16 +42,14 @@ if (typeof window !== 'undefined') {
 }
 
 export function isAndroidApp(): boolean {
-    return Boolean(legacyBridge()) || hasAndroidUserAgent()
+    return hasAndroidUserAgent()
 }
 
 export function currentAndroidBridge(): AndroidBridgeTransport | undefined {
-    return legacyBridge() ?? messagePortTransport ?? undefined
+    return messagePortTransport ?? undefined
 }
 
 export async function waitForAndroidBridge(): Promise<AndroidBridgeTransport | undefined> {
-    const legacy = legacyBridge()
-    if (legacy) return legacy
     if (!hasAndroidUserAgent()) return undefined
     return messagePortTransport ?? messagePortReady ?? undefined
 }

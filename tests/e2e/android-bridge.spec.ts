@@ -4,7 +4,6 @@ import {
     bridgeMessages,
     dispatchNativeTheme,
     installMessagePortAndroidBridge,
-    legacyAndroidTest,
 } from './fixtures/androidBridge';
 
 const forum = {
@@ -487,17 +486,4 @@ test.describe('Android App bridge', () => {
         await page.goto('/user-center', { waitUntil: 'domcontentloaded' });
         await expect(page.getByText('定制饼干', { exact: true })).toBeHidden();
     });
-});
-
-legacyAndroidTest('keeps the new web app compatible with the legacy listener bridge', async ({
-    legacyAndroidPage: page,
-}) => {
-    await mockEmptyMyEmoji(page);
-    await mockAuthenticatedUser(page);
-
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    await expect(page.getByRole('button', { name: '导入饼干' })).toBeHidden();
-    await expect.poll(async () => (await bridgeMessages(page))[0]?.type)
-        .toBe('authBootstrapRequested');
 });

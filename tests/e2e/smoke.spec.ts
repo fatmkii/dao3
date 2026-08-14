@@ -46,10 +46,8 @@ test('home page renders without browser errors', async ({ page }) => {
     await expect(page.locator('#app')).not.toHaveText('');
     await expect(page.locator('#app').getByRole('button', { name: '导入饼干' })).toBeVisible();
     expect(await page.evaluate(() => ({
-        hasBridge: 'CpttmmAndroid' in window,
         hasBridgeMessages: '__bridgeMessages' in window,
     }))).toEqual({
-        hasBridge: false,
         hasBridgeMessages: false,
     });
     expect(browserErrors).toEqual([]);

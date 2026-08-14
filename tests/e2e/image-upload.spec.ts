@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
+import { installMessagePortAndroidBridge } from './fixtures/androidBridge';
 
 const userData = {
     binggan: {
@@ -28,30 +29,13 @@ async function installAndroidBridge(page: Page, userCustom?: Record<string, unkn
         if (storedUserCustom && localStorage.getItem(storageKey) === null) {
             localStorage.setItem(storageKey, JSON.stringify(storedUserCustom));
         }
-        const listeners = new Set<(event: MessageEvent) => void>();
-        (window as Window & { CpttmmAndroid: {
-            postMessage(message: string): void;
-            addEventListener(type: string, listener: (event: MessageEvent) => void): void;
-            removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
-        } }).CpttmmAndroid = {
-            addEventListener(_type, listener) { listeners.add(listener); },
-            removeEventListener(_type, listener) { listeners.delete(listener); },
-            postMessage(serialized) {
-                if (JSON.parse(serialized).type !== 'authBootstrapRequested') return;
-                queueMicrotask(() => listeners.forEach((listener) => listener(new MessageEvent('message', {
-                    data: JSON.stringify({
-                        type: 'authBootstrap',
-                        payload: {
-                            storageNamespace: 'image-upload',
-                            binggan: 'android_binggan',
-                            accessToken: 'android-token',
-                            pendingStorageNamespaces: [],
-                        },
-                    }),
-                }))));
-            },
-        };
     }, userCustom);
+    await installMessagePortAndroidBridge(page, {
+        storageNamespace: 'image-upload',
+        binggan: 'android_binggan',
+        accessToken: 'android-token',
+        pendingStorageNamespaces: [],
+    });
 }
 
 async function mockAuthenticatedUser(page: Page) {

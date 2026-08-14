@@ -1,14 +1,18 @@
-# Android WebView 桥兼容代码清理指南
+# Android WebView 桥兼容代码清理指南（已完成）
 
-本文记录 Android WebView 桥从 AndroidX `WEB_MESSAGE_LISTENER` 迁移到平台 `WebMessagePort` 时，为保证“网页先发布、APK 后发布”而保留的旧 APK 兼容代码。只有在 MessagePort APK 成为唯一受支持版本后，才可按本文删除兼容分支。
+本文记录 Android WebView 桥从 AndroidX `WEB_MESSAGE_LISTENER` 迁移到平台 `WebMessagePort` 时，为保证“网页先发布、APK 后发布”而保留的旧 APK 兼容代码。MessagePort APK 成为唯一受支持版本后，旧兼容分支已按本文完成清理。
+
+## 清理状态
+
+> 代码清理已于 **2026-08-14** 完成。当前运行时代码和 E2E 测试只使用 MessagePort；旧 listener 适配、旧全局类型声明和旧 APK 专用测试夹具/用例均已移除。本文后续章节保留历史范围、发布约束和验证标准，便于追溯本次清理内容。
 
 ## 协议与发布矩阵
 
-| 网页 / APK | 旧 APK：`window.CpttmmAndroid` listener | 新 APK：MessagePort |
-| --- | --- | --- |
-| 迁移前网页 | 支持 | 不支持 |
-| 当前兼容网页 | 支持 | 支持 |
-| 未来清理后网页 | 不支持 | 支持 |
+| 网页 / APK     | 旧 APK：`window.CpttmmAndroid` listener | 新 APK：MessagePort |
+| -------------- | --------------------------------------- | ------------------- |
+| 迁移前网页     | 支持                                    | 不支持              |
+| 当前兼容网页   | 支持                                    | 支持                |
+| 未来清理后网页 | 不支持                                  | 支持                |
 
 发布必须遵循以下顺序：
 
@@ -18,15 +22,15 @@
 
 首次支持版本：
 
-- Android tag：`待 MessagePort APK 发布时填写`
-- versionCode：`待 MessagePort APK 发布时填写`
+- Android tag：`android v0.3.5`
+- versionCode：`3005`
 
 两种传输共享相同的 JSON 消息协议、异步回复语义和业务行为。新 APK 的 User-Agent 带有固定 `CpttmmAndroid` 标记，并使用 `cpttmm:bridge-port-v1` 作为端口握手标识。
 网页收到端口后立即发送 `cpttmm:bridge-ready-v1` 确认；APK 只在收到该确认后使用端口传递业务消息。
 
-## 临时兼容代码
+## 已清理的临时兼容代码（历史范围）
 
-### 旧 listener 检测与适配
+### 旧 listener 检测与适配（已删除）
 
 位置：`resources/js/androidBridgeTransport.ts`。
 
@@ -34,13 +38,13 @@
 - `currentAndroidBridge()` 和 `waitForAndroidBridge()` 将旧 listener 与新 `MessagePort` 归一为同一收发接口。
 - 该旧分支只负责传输适配；bootstrap、401 刷新、主题/OLO/路由同步和存储隔离不应复制到分支内。
 
-### 旧全局类型声明
+### 旧全局类型声明（已删除）
 
 位置：`resources/js/index.d.ts` 的 `Window.CpttmmAndroid`。
 
 该声明只服务于旧 APK 全局对象。MessagePort 使用浏览器内建类型，不需要额外全局声明。
 
-### 旧 APK Playwright 夹具与用例
+### 旧 APK Playwright 夹具与用例（已删除）
 
 位置：
 
@@ -61,7 +65,7 @@
 - `authBootstrap`、access token 刷新、账号 localStorage 隔离和待清理命名空间确认逻辑。
 - 主题、OLO 和路由同步等业务协议。
 
-## 清理前置条件
+## 清理前置条件（实施前记录）
 
 必须同时满足：
 
@@ -71,7 +75,7 @@
 
 不要单独使用 `mobile_sessions.app_version` 判断所有用户是否已升级。该字段只记录移动会话创建时的 App 版本；用户升级 App 不会更新已有会话记录，因此它既可能低估升级比例，也不能证明旧 APK 已全部淘汰。应结合支持政策、分发入口、发布窗口和实际版本遥测作出清理决定。
 
-## 稳定后的清理步骤
+## 已执行的清理步骤（2026-08-14）
 
 1. 从 `androidBridgeTransport.ts` 删除 `legacyBridge()`、旧全局对象检测及 listener 适配，让初始化只等待 MessagePort。
 2. 从 `resources/js/index.d.ts` 删除 `Window.CpttmmAndroid` 声明。
