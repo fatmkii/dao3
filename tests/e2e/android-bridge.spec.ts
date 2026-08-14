@@ -39,9 +39,22 @@ const userData = {
         fjf_pingbici: [],
         title_pingbici: [],
     },
-    my_emoji: [],
+    my_emoji_version: null,
     emoji_excluded: [],
 };
+
+async function mockEmptyMyEmoji(page: Page) {
+    await page.route('**/api/user/my_emoji', (route) => route.fulfill({
+        json: {
+            code: 200,
+            message: 'success',
+            data: {
+                my_emoji_version: null,
+                my_emoji: [],
+            },
+        },
+    }));
+}
 
 async function mockAuthenticatedUser(page: Page) {
     await page.route('**/api/user/show', (route) => route.fulfill({
@@ -52,6 +65,7 @@ async function mockAuthenticatedUser(page: Page) {
 test.describe('Android App bridge', () => {
     test.beforeEach(async ({ page }) => {
         await installMessagePortAndroidBridge(page);
+        await mockEmptyMyEmoji(page);
     });
 
     test('hides web authentication controls and synchronizes theme', async ({ page }) => {
@@ -116,6 +130,7 @@ test.describe('Android App bridge', () => {
             binggan: 'second_binggan',
             accessToken: 'token-two',
         });
+        await mockEmptyMyEmoji(secondPage);
 
         let firstAuthorization = '';
         let secondAuthorization = '';
@@ -477,6 +492,7 @@ test.describe('Android App bridge', () => {
 legacyAndroidTest('keeps the new web app compatible with the legacy listener bridge', async ({
     legacyAndroidPage: page,
 }) => {
+    await mockEmptyMyEmoji(page);
     await mockAuthenticatedUser(page);
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });

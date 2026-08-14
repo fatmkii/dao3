@@ -32,7 +32,7 @@ class UserEmojiCacheTest extends TestCase
         $this->myEmoji->save();
     }
 
-    public function test_legacy_user_data_response_still_contains_my_emoji(): void
+    public function test_user_data_response_omits_my_emoji_and_contains_version(): void
     {
         $response = $this->postJson('/api/user/show', [
             'binggan' => $this->user->binggan,
@@ -41,19 +41,6 @@ class UserEmojiCacheTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('code', ResponseCode::SUCCESS)
-            ->assertJsonPath('data.my_emoji', ['https://example.com/one.png'])
-            ->assertJsonPath('data.my_emoji_version', $this->myEmoji->version);
-    }
-
-    public function test_version_only_user_data_response_omits_my_emoji(): void
-    {
-        $response = $this->postJson('/api/user/show', [
-            'binggan' => $this->user->binggan,
-            'my_emoji_version_only' => true,
-        ]);
-
-        $response
-            ->assertOk()
             ->assertJsonPath('data.my_emoji_version', $this->myEmoji->version)
             ->assertJsonMissingPath('data.my_emoji');
     }

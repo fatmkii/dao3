@@ -21,7 +21,7 @@ export const useUserStore = defineStore('userStore', () => {
     const myEmojiReady = shallowRef(cachedMyEmoji !== null)
     const myEmojiLoading = shallowRef(false)
 
-    // /user/show在版本模式下不包含my_emoji，这里只保存接口直接返回的普通用户数据。
+    // /user/show只保存接口直接返回的普通用户数据。
     const userDataInit: userDataResponse = {
         binggan: {
             nickname: "= =",
@@ -97,17 +97,8 @@ export const useUserStore = defineStore('userStore', () => {
     }
 
     userDataOnSuccess((event) => {
-        // 兼容尚未支持版本模式的旧后端：如果响应仍带完整数据，就直接使用并缓存。
-        if (Array.isArray(event.data.my_emoji)) {
-            storeMyEmoji({
-                my_emoji_version: event.data.my_emoji_version ?? null,
-                my_emoji: event.data.my_emoji,
-            })
-            return
-        }
-
         // 本地存在同版本缓存时无需请求完整表情包；null版本同样可以表示有效的空表情包。
-        const serverVersion = event.data.my_emoji_version ?? null
+        const serverVersion = event.data.my_emoji_version
         if (myEmojiReady.value && myEmojiVersion.value === serverVersion) return
 
         // 请求错误由Alova统一提示；这里保留旧缓存，并等待下次刷新再次比较版本。
@@ -116,14 +107,14 @@ export const useUserStore = defineStore('userStore', () => {
 
     if (binggan && token) {//Localstorage中有token和饼干才请求用户数据
         userLoginStatus.value = true
-        // 常规刷新只获取表情包版本，完整数据由上面的版本比较逻辑按需下载。
-        getUserData(binggan, true)
+        // /user/show只返回表情包版本，完整数据由上面的版本比较逻辑按需下载。
+        getUserData(binggan)
     }
 
     //需要强制重新拉取user data时候用
     function refreshUserData() {
         // 手动刷新同样只获取版本号，避免反复传输完整表情包。
-        getUserData(binggan, true)
+        getUserData(binggan)
     }
 
     //检查是否具有某个版面的管理员权限

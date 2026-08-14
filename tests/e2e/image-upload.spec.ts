@@ -18,7 +18,7 @@ const userData = {
         fjf_pingbici: [],
         title_pingbici: [],
     },
-    my_emoji: [],
+    my_emoji_version: null,
     emoji_excluded: [],
 };
 
@@ -57,6 +57,16 @@ async function installAndroidBridge(page: Page, userCustom?: Record<string, unkn
 async function mockAuthenticatedUser(page: Page) {
     await page.route('**/api/user/show', (route) => route.fulfill({
         json: { code: 200, message: 'success', data: userData },
+    }));
+    await page.route('**/api/user/my_emoji', (route) => route.fulfill({
+        json: {
+            code: 200,
+            message: 'success',
+            data: {
+                my_emoji_version: null,
+                my_emoji: [],
+            },
+        },
     }));
 }
 

@@ -21,17 +21,14 @@ interface userData {
         title_pingbici: string[]
     },
     my_emoji: string[],
-    my_emoji_version?: string | null,
+    my_emoji_version: string | null,
     emoji_excluded: number[]
 }
-type userDataResponse = Omit<userData, 'my_emoji'> & {
-    my_emoji?: string[],
-}
-const userDataGetter = (binggan: string, myEmojiVersionOnly = false) => commonAlova.Post<userDataResponse>(
+type userDataResponse = Omit<userData, 'my_emoji'>
+const userDataGetter = (binggan: string) => commonAlova.Post<userDataResponse>(
     '/api/user/show',
     {
         binggan: binggan,
-        my_emoji_version_only: myEmojiVersionOnly,
     },
     {
         //第三个参数是config

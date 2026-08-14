@@ -84,9 +84,8 @@ test('uses the account-scoped my emoji cache when the version matches', async ({
     });
 
     await page.route('**/api/user/show', async (route) => {
-        expect(route.request().postDataJSON()).toMatchObject({
+        expect(route.request().postDataJSON()).toEqual({
             binggan: 'cached_binggan',
-            my_emoji_version_only: true,
         });
         await route.fulfill({
             json: versionOnlyUserData('cached-user', 'version-1', 7),
@@ -298,10 +297,23 @@ test('accuse demo renders and supports core interactions', async ({ page }) => {
                         fjf_pingbici: [],
                         title_pingbici: [],
                     },
-                    my_emoji: [],
+                    my_emoji_version: null,
                     emoji_excluded: [],
                 },
             }),
+        });
+    });
+
+    await page.route('**/api/user/my_emoji', async (route) => {
+        await route.fulfill({
+            json: {
+                code: 200,
+                message: 'success',
+                data: {
+                    my_emoji_version: null,
+                    my_emoji: [],
+                },
+            },
         });
     });
 
