@@ -202,10 +202,12 @@ internal fun AppSettingsScreen(
     domain: AppDomain,
     error: String?,
     themePreferences: AppThemePreferences,
+    keepTabsAfterClose: Boolean,
     onBack: () -> Unit,
     onDomainChange: (AppDomain) -> Unit,
     onClearWebCache: () -> Unit,
     onFollowSystemChange: (Boolean) -> Unit,
+    onKeepTabsAfterCloseChange: (Boolean) -> Unit,
     onThemeForSystemModeChange: (Boolean, AppTheme) -> Unit,
 ) {
     var selectingDarkMode by remember { mutableStateOf<Boolean?>(null) }
@@ -258,6 +260,20 @@ internal fun AppSettingsScreen(
                     label = "暗色时皮肤：",
                     theme = themePreferences.darkTheme,
                     onClick = { selectingDarkMode = true },
+                )
+            }
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth().clickable {
+                        onKeepTabsAfterCloseChange(!keepTabsAfterClose)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("关闭APP后保持标签页")
+                Switch(
+                    checked = keepTabsAfterClose,
+                    onCheckedChange = onKeepTabsAfterCloseChange,
                 )
             }
             HorizontalDivider()

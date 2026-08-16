@@ -130,6 +130,7 @@ internal fun ForumWorkspace(
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
     themePreferences: AppThemePreferences,
+    keepTabsAfterClose: Boolean,
     isSystemDark: Boolean,
     currentTheme: AppTheme,
     foregroundGeneration: Int,
@@ -171,6 +172,7 @@ internal fun ForumWorkspace(
         preferences = preferences,
         diagnostics = diagnostics,
         themePreferences = themePreferences,
+        keepTabsAfterClose = keepTabsAfterClose,
         isSystemDark = isSystemDark,
         currentTheme = currentTheme,
         foregroundGeneration = foregroundGeneration,
@@ -205,6 +207,7 @@ private fun ActiveForumWorkspace(
     preferences: GlobalPreferencesRepository,
     diagnostics: DiagnosticLogger,
     themePreferences: AppThemePreferences,
+    keepTabsAfterClose: Boolean,
     isSystemDark: Boolean,
     currentTheme: AppTheme,
     foregroundGeneration: Int,
@@ -481,6 +484,7 @@ private fun ActiveForumWorkspace(
             domain = domain,
             error = settingsError,
             themePreferences = themePreferences,
+            keepTabsAfterClose = keepTabsAfterClose,
             onBack = { showSettings = false },
             onDomainChange = { selected ->
                 if (selected != domain) {
@@ -505,6 +509,9 @@ private fun ActiveForumWorkspace(
             },
             onFollowSystemChange = { enabled ->
                 scope.launch { preferences.setFollowSystem(enabled, currentSystemDark) }
+            },
+            onKeepTabsAfterCloseChange = { enabled ->
+                scope.launch { preferences.setKeepTabsAfterClose(enabled) }
             },
             onThemeForSystemModeChange = { darkMode, theme ->
                 scope.launch { preferences.setThemeForSystemMode(darkMode, theme) }

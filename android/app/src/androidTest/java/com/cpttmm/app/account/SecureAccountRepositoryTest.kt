@@ -147,6 +147,27 @@ class SecureAccountRepositoryTest {
     }
 
     @Test
+    fun clearingAllTabsKeepsAccountsAndSelectedAccountStartsAtHome() = runBlocking {
+        withContext(Dispatchers.IO) {
+            val firstAccount = repository.saveSession(session("first")).accountId
+            val secondAccount = repository.saveSession(session("second")).accountId
+            val tabs = BrowserTabRepository(database, nowMillis = { 500L })
+            tabs.create(firstAccount, "/thread/1")
+            tabs.create(secondAccount, "/thread/2")
+
+            tabs.clearAll()
+
+            assertTrue(database.accountDao().tabs().isEmpty())
+            assertNotNull(database.accountDao().accountByBinggan("first"))
+            val home = tabs.ensureForAccount(secondAccount)
+            assertEquals(secondAccount, home.accountId)
+            assertEquals("/", home.path)
+            assertEquals("小火锅", home.title)
+            assertEquals(1, database.accountDao().tabs().size)
+        }
+    }
+
+    @Test
     fun pendingRevocationIsDeletedOnlyAfterServerLogoutSucceeds() = runBlocking {
         withContext(Dispatchers.IO) {
             val accountId = repository.saveSession(session("cookie")).accountId

@@ -28,8 +28,16 @@ class GlobalPreferencesRepository(
 
     val themePreferences: Flow<AppThemePreferences> = context.globalDataStore.data.map(::themePreferences)
 
+    val keepTabsAfterClose: Flow<Boolean> = context.globalDataStore.data.map { preferences ->
+        preferences[KEEP_TABS_AFTER_CLOSE] ?: true
+    }
+
     suspend fun setDomain(domain: AppDomain) {
         context.globalDataStore.edit { it[DOMAIN] = domain.host }
+    }
+
+    suspend fun setKeepTabsAfterClose(enabled: Boolean) {
+        context.globalDataStore.edit { it[KEEP_TABS_AFTER_CLOSE] = enabled }
     }
 
     suspend fun initializeThemePreferences(migratedThemeName: String?) {
@@ -158,5 +166,6 @@ class GlobalPreferencesRepository(
         val THEME_DARK = stringPreferencesKey("theme_dark")
         val THEME_MANUAL = stringPreferencesKey("theme_manual")
         val THEME_INITIALIZED = booleanPreferencesKey("theme_initialized")
+        val KEEP_TABS_AFTER_CLOSE = booleanPreferencesKey("keep_tabs_after_close")
     }
 }

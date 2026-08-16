@@ -28,6 +28,8 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { initialThemePreferences.value == null }
         super.onCreate(savedInstanceState)
         val app = application as CpttmmApplication
+        val shouldApplyTabRetentionPolicy =
+            app.launchTracker.shouldApplyTabRetentionPolicy(savedInstanceState != null)
         isSystemDark.value = resources.configuration.isDarkMode()
 
         lifecycleScope.launch {
@@ -37,6 +39,15 @@ class MainActivity : ComponentActivity() {
                 } catch (_: IOException) {
                     AppThemePreferences()
                 }
+            val keepTabsAfterClose =
+                try {
+                    app.preferences.keepTabsAfterClose.first()
+                } catch (_: IOException) {
+                    true
+                }
+            if (shouldApplyTabRetentionPolicy && !keepTabsAfterClose) {
+                runCatching { app.tabs.clearAll() }
+            }
             initialThemePreferences.value = loadedPreferences
             if (loadedPreferences.requiresRepair) {
                 try {

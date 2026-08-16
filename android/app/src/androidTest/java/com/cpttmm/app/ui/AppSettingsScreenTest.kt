@@ -26,10 +26,12 @@ class AppSettingsScreenTest {
                     domain = AppDomain.PRIMARY,
                     error = null,
                     themePreferences = AppThemePreferences(),
+                    keepTabsAfterClose = true,
                     onBack = { action = "back" },
                     onDomainChange = {},
                     onClearWebCache = { action = "clear" },
                     onFollowSystemChange = { action = "follow:$it" },
+                    onKeepTabsAfterCloseChange = { action = "keep:$it" },
                     onThemeForSystemModeChange = { darkMode, theme ->
                         action = "theme:$darkMode:${theme.storageValue}"
                     },
@@ -42,6 +44,8 @@ class AppSettingsScreenTest {
         composeRule.onNodeWithText("亮色时皮肤：").assertDoesNotExist()
         composeRule.onNodeWithText("跟随系统切换皮肤").performClick()
         assertEquals("follow:true", action)
+        composeRule.onNodeWithText("关闭APP后保持标签页").assertIsDisplayed().performClick()
+        assertEquals("keep:false", action)
         composeRule.onNodeWithText("访问域名").assertIsDisplayed()
         composeRule.onNodeWithText("清理网页缓存").performClick()
         assertEquals("clear", action)
@@ -59,10 +63,12 @@ class AppSettingsScreenTest {
                     domain = AppDomain.PRIMARY,
                     error = null,
                     themePreferences = AppThemePreferences(followSystem = true),
+                    keepTabsAfterClose = false,
                     onBack = {},
                     onDomainChange = {},
                     onClearWebCache = {},
                     onFollowSystemChange = {},
+                    onKeepTabsAfterCloseChange = {},
                     onThemeForSystemModeChange = { darkMode, theme ->
                         action = "$darkMode:${theme.storageValue}"
                     },
@@ -70,6 +76,7 @@ class AppSettingsScreenTest {
             }
         }
 
+        composeRule.onNodeWithText("关闭APP后保持标签页").assertIsDisplayed()
         composeRule.onNodeWithText("亮色时皮肤：").performClick()
         composeRule.onNodeWithText(AppTheme.BLUE.displayName).performScrollTo().performClick()
         assertEquals("false:blue", action)

@@ -80,6 +80,10 @@ class BrowserTabRepository(
         dao.tabs().firstOrNull()
     }
 
+    suspend fun clearAll() {
+        dao.deleteAllTabs()
+    }
+
     private fun newTab(accountId: String, path: String): BrowserTabEntity = BrowserTabEntity(
         id = UUID.randomUUID().toString(),
         accountId = accountId,

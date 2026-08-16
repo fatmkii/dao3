@@ -112,4 +112,7 @@ interface AccountDao {
 
     @Query("DELETE FROM browser_tabs WHERE accountId = :accountId")
     suspend fun deleteTabs(accountId: String)
+
+    @Query("DELETE FROM browser_tabs")
+    suspend fun deleteAllTabs()
 }

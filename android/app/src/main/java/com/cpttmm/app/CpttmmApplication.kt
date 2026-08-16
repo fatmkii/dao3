@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.first
 class CpttmmApplication : Application() {
     private val tokenCipher by lazy { AndroidKeystoreTokenCipher() }
 
+    internal val launchTracker = AppLaunchTracker()
+
     val database: AppDatabase by lazy {
         Room.databaseBuilder(this, AppDatabase::class.java, "cpttmm.db")
             .fallbackToDestructiveMigration(dropAllTables = true)

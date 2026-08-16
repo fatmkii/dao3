@@ -49,6 +49,7 @@ fun CpttmmApp(
     val accountList by accountFlow.collectAsState(initial = emptyList())
     val domain by preferences.domain.collectAsState(initial = AppDomain.PRIMARY)
     val themePreferences by preferences.themePreferences.collectAsState(initial = initialThemePreferences)
+    val keepTabsAfterClose by preferences.keepTabsAfterClose.collectAsState(initial = true)
     val tabFlow = remember(tabs) { tabs.observe() }
     val tabList by tabFlow.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
@@ -142,6 +143,7 @@ fun CpttmmApp(
                 preferences = preferences,
                 diagnostics = diagnostics,
                 themePreferences = themePreferences,
+                keepTabsAfterClose = keepTabsAfterClose,
                 isSystemDark = isSystemDark,
                 currentTheme = effectiveTheme,
                 foregroundGeneration = foregroundGeneration,
