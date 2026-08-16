@@ -48,7 +48,7 @@
    ```bash
    npm run build
    ```
-5. 打包 release，排除 `.git`、`node_modules`、`tests`、`.github`。
+5. 打包 release，排除 `.git`、`node_modules`、`tests`、`.github`、`android`。
 6. 上传 GitHub artifact。
 7. 通过 SSH 上传到生产服务器。
 8. 在服务器解压、链接 `.env/storage`、生成 Laravel 缓存、调整权限、切换 `current`。

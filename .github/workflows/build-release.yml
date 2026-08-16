@@ -59,6 +59,7 @@ jobs:
             --exclude='node_modules' \
             --exclude='tests' \
             --exclude='.github' \
+            --exclude='android' \
             -czf /tmp/dao3-release.tar.gz .
           cp /tmp/dao3-release.tar.gz dao3-release.tar.gz
 
