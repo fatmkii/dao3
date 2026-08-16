@@ -1,5 +1,6 @@
 package com.cpttmm.app.webview
 
+import android.annotation.SuppressLint
 import android.os.SystemClock
 import android.view.InputDevice
 import android.view.MotionEvent
@@ -19,6 +20,104 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class PullUpRefreshWebViewTest {
+    @SuppressLint("SetJavaScriptEnabled")
+    @Test
+    fun scrollbarTapPassesThroughAndDragStillScrolls() {
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        val pageReady = CountDownLatch(1)
+        val clickReported = CountDownLatch(1)
+        var tapCount = ""
+        lateinit var view: DraggableScrollbarWebView
+
+        scenario.onActivity { activity ->
+            view = DraggableScrollbarWebView(activity).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                )
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(webView: android.webkit.WebView, url: String) {
+                        countDownWhenScrollable(webView, pageReady)
+                    }
+                }
+                settings.javaScriptEnabled = true
+            }
+            activity.setContentView(view)
+            view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                """
+                    <html>
+                    <head><meta name="viewport" content="width=device-width"></head>
+                    <body onclick="window.tapCount += 1" style="margin:0">
+                    <script>window.tapCount = 0</script>
+                    <div style="height:10000px"></div>
+                    </body>
+                    </html>
+                """.trimIndent(),
+                "text/html",
+                "UTF-8",
+                null,
+            )
+        }
+
+        try {
+            assertTrue(pageReady.await(5, TimeUnit.SECONDS))
+            scenario.onActivity {
+                view.scrollTo(0, 1)
+                val density = view.resources.displayMetrics.density
+                val downTime = SystemClock.uptimeMillis()
+                val x = view.width - 24f * density
+                val y = 28f * density
+                dispatchSingle(view, downTime, downTime, MotionEvent.ACTION_DOWN, x, y)
+                dispatchSingle(view, downTime, downTime + 16, MotionEvent.ACTION_UP, x, y)
+                view.postDelayed({
+                    view.evaluateJavascript("window.tapCount.toString()") { result ->
+                        tapCount = result.trim('"')
+                        clickReported.countDown()
+                    }
+                }, 100)
+            }
+            assertTrue(clickReported.await(5, TimeUnit.SECONDS))
+            assertEquals("1", tapCount)
+            scenario.onActivity {
+                view.scrollTo(0, 1)
+                val density = view.resources.displayMetrics.density
+                val downTime = SystemClock.uptimeMillis()
+                val startX = view.width - 24f * density
+                val startY = 28f * density
+                dispatchSingle(view, downTime, downTime, MotionEvent.ACTION_DOWN, startX, startY)
+                dispatchSingle(
+                    view,
+                    downTime,
+                    downTime + 8,
+                    MotionEvent.ACTION_MOVE,
+                    startX + 2f * density,
+                    startY + density,
+                )
+                dispatchSingle(
+                    view,
+                    downTime,
+                    downTime + 16,
+                    MotionEvent.ACTION_MOVE,
+                    startX + 2f * density,
+                    view.height * 0.5f,
+                )
+                dispatchSingle(
+                    view,
+                    downTime,
+                    downTime + 32,
+                    MotionEvent.ACTION_UP,
+                    startX + 2f * density,
+                    view.height * 0.5f,
+                )
+                assertTrue(view.scrollY > view.height)
+            }
+        } finally {
+            scenario.onActivity { view.destroy() }
+            scenario.close()
+        }
+    }
+
     @Test
     fun shortPageRefreshesOnlyAfterSingleFingerVerticalPullPassesThreshold() {
         val scenario = ActivityScenario.launch(MainActivity::class.java)

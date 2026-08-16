@@ -83,6 +83,9 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
     private var fadeAnimator: ValueAnimator? = null
     private var pullDistanceAnimator: ValueAnimator? = null
     private var draggingScrollbar = false
+    private var scrollbarDragCandidate = false
+    private var scrollbarDownX = 0f
+    private var scrollbarDownY = 0f
     private var dragGrabOffset = 0f
     private var touchInProgress = false
     private var userScrollActive = false
@@ -177,14 +180,40 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
             return true
         }
 
-        if (event.actionMasked == MotionEvent.ACTION_DOWN && isScrollbarHit(event.x, event.y)) {
-            val thumb = currentThumb() ?: return super.onTouchEvent(event)
-            dragGrabOffset = event.y - trackPadding - thumb.top
-            draggingScrollbar = true
-            pullGestureRejected = true
-            parent?.requestDisallowInterceptTouchEvent(true)
-            showScrollbar()
-            return true
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                if (isScrollbarHit(event.x, event.y)) {
+                    val thumb = currentThumb() ?: return super.onTouchEvent(event)
+                    scrollbarDragCandidate = true
+                    scrollbarDownX = event.x
+                    scrollbarDownY = event.y
+                    dragGrabOffset = event.y - trackPadding - thumb.top
+                    pullGestureRejected = true
+                }
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> scrollbarDragCandidate = false
+            MotionEvent.ACTION_MOVE -> {
+                if (scrollbarDragCandidate) {
+                    val horizontalDistance = abs(event.x - scrollbarDownX)
+                    val verticalDistance = abs(event.y - scrollbarDownY)
+                    if (
+                        event.pointerCount != 1 ||
+                        horizontalDistance > touchSlop && horizontalDistance > verticalDistance
+                    ) {
+                        scrollbarDragCandidate = false
+                    } else if (verticalDistance > touchSlop) {
+                        scrollbarDragCandidate = false
+                        draggingScrollbar = true
+                        expectedScrollDirection = if (event.y > scrollbarDownY) 1 else -1
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                        showScrollbar()
+                        cancelWebViewTouch(event)
+                        dragScrollbarTo(event.y)
+                        return true
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> scrollbarDragCandidate = false
         }
 
         when (event.actionMasked) {
@@ -218,6 +247,8 @@ internal class DraggableScrollbarWebView(context: Context) : WebView(context) {
         touchInProgress = false
         userScrollActive = false
         expectedScrollDirection = 0
+        scrollbarDragCandidate = false
+        draggingScrollbar = false
         fadeAnimator?.cancel()
         resetPullUpRefresh()
         super.onDetachedFromWindow()
