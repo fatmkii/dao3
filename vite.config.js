@@ -48,6 +48,13 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
                     //     vendor: ['alova', 'axios', 'crypto-js', 'dayjs', 'laravel-echo', 'naive-ui', 'pinia', 'pusher-js', 'sass', 'vue', 'vue-router', 'vue3-dnd'],
                     // }
                     manualChunks: (id) => {
+                        if (id === '\0plugin-vue:export-helper') return 'vue-sfc-helper';
+                        if (id.includes('/resources/api/')) return 'app-api';
+                        if (id.includes('/resources/stores/')) return 'app-stores';
+                        if (id.includes('/resources/composables/')) return 'app-composables';
+                        if (id.includes('/resources/js/') && !id.endsWith('/resources/js/app.js')) return 'app-utils';
+                        if (id.includes('/resources/vue/Custom/')) return 'app-custom-components';
+
                         if (id.includes('node_modules')) {
                             const match = id.match(/node_modules\/(?:\.pnpm\/.+?\/node_modules\/)?(@[^/]+\/[^/]+|[^/]+)/);
                             if (match) {
