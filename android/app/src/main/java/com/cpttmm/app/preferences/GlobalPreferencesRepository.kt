@@ -32,12 +32,20 @@ class GlobalPreferencesRepository(
         preferences[KEEP_TABS_AFTER_CLOSE] ?: true
     }
 
+    val pullUpRefreshEnabled: Flow<Boolean> = context.globalDataStore.data.map { preferences ->
+        preferences[PULL_UP_REFRESH_ENABLED] ?: true
+    }
+
     suspend fun setDomain(domain: AppDomain) {
         context.globalDataStore.edit { it[DOMAIN] = domain.host }
     }
 
     suspend fun setKeepTabsAfterClose(enabled: Boolean) {
         context.globalDataStore.edit { it[KEEP_TABS_AFTER_CLOSE] = enabled }
+    }
+
+    suspend fun setPullUpRefreshEnabled(enabled: Boolean) {
+        context.globalDataStore.edit { it[PULL_UP_REFRESH_ENABLED] = enabled }
     }
 
     suspend fun initializeThemePreferences(migratedThemeName: String?) {
@@ -167,5 +175,6 @@ class GlobalPreferencesRepository(
         val THEME_MANUAL = stringPreferencesKey("theme_manual")
         val THEME_INITIALIZED = booleanPreferencesKey("theme_initialized")
         val KEEP_TABS_AFTER_CLOSE = booleanPreferencesKey("keep_tabs_after_close")
+        val PULL_UP_REFRESH_ENABLED = booleanPreferencesKey("pull_up_refresh_enabled")
     }
 }

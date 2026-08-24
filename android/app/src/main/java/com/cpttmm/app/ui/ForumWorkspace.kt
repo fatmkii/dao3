@@ -131,6 +131,7 @@ internal fun ForumWorkspace(
     diagnostics: DiagnosticLogger,
     themePreferences: AppThemePreferences,
     keepTabsAfterClose: Boolean,
+    pullUpRefreshEnabled: Boolean,
     isSystemDark: Boolean,
     currentTheme: AppTheme,
     foregroundGeneration: Int,
@@ -173,6 +174,7 @@ internal fun ForumWorkspace(
         diagnostics = diagnostics,
         themePreferences = themePreferences,
         keepTabsAfterClose = keepTabsAfterClose,
+        pullUpRefreshEnabled = pullUpRefreshEnabled,
         isSystemDark = isSystemDark,
         currentTheme = currentTheme,
         foregroundGeneration = foregroundGeneration,
@@ -208,6 +210,7 @@ private fun ActiveForumWorkspace(
     diagnostics: DiagnosticLogger,
     themePreferences: AppThemePreferences,
     keepTabsAfterClose: Boolean,
+    pullUpRefreshEnabled: Boolean,
     isSystemDark: Boolean,
     currentTheme: AppTheme,
     foregroundGeneration: Int,
@@ -448,8 +451,8 @@ private fun ActiveForumWorkspace(
             host.pause()
         }
     }
-    DisposableEffect(host, touchExplorationEnabled) {
-        host.setPullUpRefreshEnabled(!touchExplorationEnabled)
+    DisposableEffect(host, touchExplorationEnabled, pullUpRefreshEnabled) {
+        host.setPullUpRefreshEnabled(pullUpRefreshEnabled && !touchExplorationEnabled)
         host.setOnPullUpRefreshStateChangedListener { pullUpRefreshState = it }
         onDispose {
             host.setOnPullUpRefreshStateChangedListener(null)
@@ -485,6 +488,7 @@ private fun ActiveForumWorkspace(
             error = settingsError,
             themePreferences = themePreferences,
             keepTabsAfterClose = keepTabsAfterClose,
+            pullUpRefreshEnabled = pullUpRefreshEnabled,
             onBack = { showSettings = false },
             onDomainChange = { selected ->
                 if (selected != domain) {
@@ -512,6 +516,9 @@ private fun ActiveForumWorkspace(
             },
             onKeepTabsAfterCloseChange = { enabled ->
                 scope.launch { preferences.setKeepTabsAfterClose(enabled) }
+            },
+            onPullUpRefreshEnabledChange = { enabled ->
+                scope.launch { preferences.setPullUpRefreshEnabled(enabled) }
             },
             onThemeForSystemModeChange = { darkMode, theme ->
                 scope.launch { preferences.setThemeForSystemMode(darkMode, theme) }

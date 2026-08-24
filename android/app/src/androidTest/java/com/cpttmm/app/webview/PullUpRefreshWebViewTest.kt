@@ -169,6 +169,50 @@ class PullUpRefreshWebViewTest {
     }
 
     @Test
+    fun disabledPullUpRefreshDoesNotRefreshAtBottom() {
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        val pageReady = CountDownLatch(1)
+        var refreshes = 0
+        lateinit var view: DraggableScrollbarWebView
+
+        scenario.onActivity { activity ->
+            view = DraggableScrollbarWebView(activity).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                )
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(webView: android.webkit.WebView, url: String) {
+                        pageReady.countDown()
+                    }
+                }
+                setPullUpRefreshEnabled(false)
+                setOnPullUpRefreshListener { refreshes += 1 }
+            }
+            activity.setContentView(view)
+            view.loadDataWithBaseURL(
+                BuildConfig.DEVELOPMENT_SERVER_ORIGIN,
+                "<html><body>short page</body></html>",
+                "text/html",
+                "UTF-8",
+                null,
+            )
+        }
+
+        try {
+            assertTrue(pageReady.await(5, TimeUnit.SECONDS))
+            scenario.onActivity {
+                val density = view.resources.displayMetrics.density
+                drag(view, horizontalDp = 0f, upwardDp = 80f, density = density)
+                assertEquals(0, refreshes)
+            }
+        } finally {
+            scenario.onActivity { view.destroy() }
+            scenario.close()
+        }
+    }
+
+    @Test
     fun longPageRequiresBottomBeforePullCanRefresh() {
         val scenario = ActivityScenario.launch(MainActivity::class.java)
         val pageReady = CountDownLatch(1)

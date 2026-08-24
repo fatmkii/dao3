@@ -27,11 +27,13 @@ class AppSettingsScreenTest {
                     error = null,
                     themePreferences = AppThemePreferences(),
                     keepTabsAfterClose = true,
+                    pullUpRefreshEnabled = true,
                     onBack = { action = "back" },
                     onDomainChange = {},
                     onClearWebCache = { action = "clear" },
                     onFollowSystemChange = { action = "follow:$it" },
                     onKeepTabsAfterCloseChange = { action = "keep:$it" },
+                    onPullUpRefreshEnabledChange = { action = "pull:$it" },
                     onThemeForSystemModeChange = { darkMode, theme ->
                         action = "theme:$darkMode:${theme.storageValue}"
                     },
@@ -46,6 +48,8 @@ class AppSettingsScreenTest {
         assertEquals("follow:true", action)
         composeRule.onNodeWithText("关闭APP后保持标签页").assertIsDisplayed().performClick()
         assertEquals("keep:false", action)
+        composeRule.onNodeWithText("底部滑动页面触发刷新").assertIsDisplayed().performClick()
+        assertEquals("pull:false", action)
         composeRule.onNodeWithText("访问域名").assertIsDisplayed()
         composeRule.onNodeWithText("清理网页缓存").performClick()
         assertEquals("clear", action)
@@ -64,11 +68,13 @@ class AppSettingsScreenTest {
                     error = null,
                     themePreferences = AppThemePreferences(followSystem = true),
                     keepTabsAfterClose = false,
+                    pullUpRefreshEnabled = true,
                     onBack = {},
                     onDomainChange = {},
                     onClearWebCache = {},
                     onFollowSystemChange = {},
                     onKeepTabsAfterCloseChange = {},
+                    onPullUpRefreshEnabledChange = {},
                     onThemeForSystemModeChange = { darkMode, theme ->
                         action = "$darkMode:${theme.storageValue}"
                     },

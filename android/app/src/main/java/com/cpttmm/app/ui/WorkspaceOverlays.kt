@@ -203,11 +203,13 @@ internal fun AppSettingsScreen(
     error: String?,
     themePreferences: AppThemePreferences,
     keepTabsAfterClose: Boolean,
+    pullUpRefreshEnabled: Boolean,
     onBack: () -> Unit,
     onDomainChange: (AppDomain) -> Unit,
     onClearWebCache: () -> Unit,
     onFollowSystemChange: (Boolean) -> Unit,
     onKeepTabsAfterCloseChange: (Boolean) -> Unit,
+    onPullUpRefreshEnabledChange: (Boolean) -> Unit,
     onThemeForSystemModeChange: (Boolean, AppTheme) -> Unit,
 ) {
     var selectingDarkMode by remember { mutableStateOf<Boolean?>(null) }
@@ -274,6 +276,20 @@ internal fun AppSettingsScreen(
                 Switch(
                     checked = keepTabsAfterClose,
                     onCheckedChange = onKeepTabsAfterCloseChange,
+                )
+            }
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth().clickable {
+                        onPullUpRefreshEnabledChange(!pullUpRefreshEnabled)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("底部滑动页面触发刷新")
+                Switch(
+                    checked = pullUpRefreshEnabled,
+                    onCheckedChange = onPullUpRefreshEnabledChange,
                 )
             }
             HorizontalDivider()
