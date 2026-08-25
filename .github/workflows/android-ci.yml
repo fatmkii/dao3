@@ -46,7 +46,7 @@ jobs:
           ./android/gradlew -p android \
             testDebugUnitTest testReleaseUnitTest \
             lintDebug lintRelease \
-            assembleDebug assembleRelease assembleDebugAndroidTest \
+            assembleRelease \
             --no-daemon
 
       - name: Upload failure reports
@@ -62,7 +62,6 @@ jobs:
           retention-days: 7
 
   instrumented-tests:
-    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
