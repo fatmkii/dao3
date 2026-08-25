@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -36,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -60,6 +66,14 @@ import com.cpttmm.app.network.MobileReleaseInfo
 import com.cpttmm.app.preferences.AppTheme
 import com.cpttmm.app.preferences.AppThemePreferences
 
+private const val TAB_SHEET_VISIBLE_TAB_COUNT = 4
+private val TabSheetTabHeight = 64.dp
+private val TabSheetItemSpacing = 10.dp
+private val TabSheetMaxListHeight =
+    TabSheetTabHeight * TAB_SHEET_VISIBLE_TAB_COUNT +
+        TabSheetItemSpacing * (TAB_SHEET_VISIBLE_TAB_COUNT - 1)
+private const val TabSheetListTestTag = "tab-sheet-list"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TabSheet(
@@ -72,59 +86,87 @@ internal fun TabSheet(
     onClose: (BrowserTabEntity) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val orderedTabs = remember(tabs, activeTab.id) {
+        tabs.sortedBy { it.id == activeTab.id }
+    }
+    val listState = rememberLazyListState()
+    LaunchedEffect(orderedTabs, activeTab.id) {
+        val activeIndex = orderedTabs.indexOfFirst { it.id == activeTab.id }
+        if (activeIndex >= 0) {
+            listState.scrollToItem(
+                (activeIndex - TAB_SHEET_VISIBLE_TAB_COUNT + 1).coerceAtLeast(0),
+            )
+        }
+    }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        sheetGesturesEnabled = false,
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            tabs.sortedBy { it.id == activeTab.id }.forEach { tab ->
-                val isActive = tab.id == activeTab.id
-                Card(
-                    onClick = { onSelect(tab) },
-                    modifier = Modifier.fillMaxWidth().semantics { selected = isActive },
-                    border =
-                        if (isActive) {
-                            BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                            )
-                        } else {
-                            null
-                        },
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor =
-                                if (isActive) {
-                                    MaterialTheme.colorScheme.background
-                                } else {
-                                    MaterialTheme.colorScheme.surface
-                                },
-                        ),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxWidth().heightIn(max = TabSheetMaxListHeight).testTag(TabSheetListTestTag),
+                verticalArrangement = Arrangement.spacedBy(TabSheetItemSpacing),
+            ) {
+                items(orderedTabs, key = { it.id }) { tab ->
+                    val isActive = tab.id == activeTab.id
+                    Card(
+                        onClick = { onSelect(tab) },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = TabSheetTabHeight)
+                                .semantics { selected = isActive },
+                        border =
+                            if (isActive) {
+                                BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                                )
+                            } else {
+                                null
+                            },
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor =
+                                    if (isActive) {
+                                        MaterialTheme.colorScheme.background
+                                    } else {
+                                        MaterialTheme.colorScheme.surface
+                                    },
+                            ),
                     ) {
-                        TextButton(
-                            onClick = { onSelect(tab) },
-                            modifier = Modifier.height(48.dp),
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                accountAliases[tab.accountId].orEmpty(),
-                                maxLines = 1,
-                            )
-                        }
-                        Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
-                            Text(tab.title, maxLines = 1, fontWeight = FontWeight.Medium)
-                            Text(
-                                tab.path,
-                                maxLines = 1,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        TextButton(onClick = { onClose(tab) }, modifier = Modifier.height(48.dp)) {
-                            Text("关闭")
+                            TextButton(
+                                onClick = { onSelect(tab) },
+                                modifier = Modifier.height(48.dp),
+                            ) {
+                                Text(
+                                    accountAliases[tab.accountId].orEmpty(),
+                                    maxLines = 1,
+                                )
+                            }
+                            Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
+                                Text(tab.title, maxLines = 1, fontWeight = FontWeight.Medium)
+                                Text(
+                                    tab.path,
+                                    maxLines = 1,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(onClick = { onClose(tab) }, modifier = Modifier.height(48.dp)) {
+                                Text("关闭")
+                            }
                         }
                     }
                 }
