@@ -3,7 +3,6 @@ package com.cpttmm.app.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,8 +38,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -115,60 +117,13 @@ internal fun TabSheet(
                 verticalArrangement = Arrangement.spacedBy(TabSheetItemSpacing),
             ) {
                 items(orderedTabs, key = { it.id }) { tab ->
-                    val isActive = tab.id == activeTab.id
-                    Card(
-                        onClick = { onSelect(tab) },
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = TabSheetTabHeight)
-                                .semantics { selected = isActive },
-                        border =
-                            if (isActive) {
-                                BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                                )
-                            } else {
-                                null
-                            },
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor =
-                                    if (isActive) {
-                                        MaterialTheme.colorScheme.background
-                                    } else {
-                                        MaterialTheme.colorScheme.surface
-                                    },
-                            ),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TextButton(
-                                onClick = { onSelect(tab) },
-                                modifier = Modifier.height(48.dp),
-                            ) {
-                                Text(
-                                    accountAliases[tab.accountId].orEmpty(),
-                                    maxLines = 1,
-                                )
-                            }
-                            Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
-                                Text(tab.title, maxLines = 1, fontWeight = FontWeight.Medium)
-                                Text(
-                                    tab.path,
-                                    maxLines = 1,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            TextButton(onClick = { onClose(tab) }, modifier = Modifier.height(48.dp)) {
-                                Text("关闭")
-                            }
-                        }
-                    }
+                    SwipeDismissibleTabItem(
+                        tab = tab,
+                        accountAlias = accountAliases[tab.accountId].orEmpty(),
+                        isActive = tab.id == activeTab.id,
+                        onSelect = { onSelect(tab) },
+                        onClose = { onClose(tab) },
+                    )
                 }
             }
             if (error != null) InlineMessage(error)
@@ -184,6 +139,79 @@ internal fun TabSheet(
                         "已达到 ${WorkspacePolicy.MAX_TABS} 个标签上限"
                     },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SwipeDismissibleTabItem(
+    tab: BrowserTabEntity,
+    accountAlias: String,
+    isActive: Boolean,
+    onSelect: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val dismissState = rememberSwipeToDismissBoxState()
+
+    SwipeToDismissBox(
+        state = dismissState,
+        modifier = Modifier.fillMaxWidth(),
+        backgroundContent = {},
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        onDismiss = { direction ->
+            if (direction == SwipeToDismissBoxValue.EndToStart) onClose()
+        },
+    ) {
+        Card(
+            onClick = onSelect,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = TabSheetTabHeight)
+                    .semantics { selected = isActive },
+            border =
+                if (isActive) {
+                    BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                    )
+                } else {
+                    null
+                },
+            colors =
+                CardDefaults.cardColors(
+                    containerColor =
+                        if (isActive) {
+                            MaterialTheme.colorScheme.background
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        },
+                ),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(
+                    onClick = onSelect,
+                    modifier = Modifier.height(48.dp),
+                ) {
+                    Text(accountAlias, maxLines = 1)
+                }
+                Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
+                    Text(tab.title, maxLines = 1, fontWeight = FontWeight.Medium)
+                    Text(
+                        tab.path,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = onClose, modifier = Modifier.height(48.dp)) {
+                    Text("关闭")
+                }
             }
         }
     }

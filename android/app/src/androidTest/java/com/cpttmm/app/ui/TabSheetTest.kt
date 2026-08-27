@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeLeft
 import com.cpttmm.app.data.local.BrowserTabEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -212,6 +213,33 @@ class TabSheetTest {
         val activeTop = composeRule.onNodeWithText("/active").fetchSemanticsNode().boundsInRoot.top
         val otherTop = composeRule.onNodeWithText("/other").fetchSemanticsNode().boundsInRoot.top
         assertTrue(activeTop > otherTop)
+    }
+
+    @Test
+    fun swipingATabToTheLeftClosesIt() {
+        val first = tab("first", "account-one", "/thread/1")
+        val active = tab("active", "account-one", "/active")
+        var closedTab: BrowserTabEntity? = null
+
+        composeRule.setContent {
+            CpttmmTheme(defaultNativeThemePalette(null)) {
+                TabSheet(
+                    tabs = listOf(first, active),
+                    accountAliases = emptyMap(),
+                    activeTab = active,
+                    error = null,
+                    onSelect = {},
+                    onCreate = {},
+                    onClose = { closedTab = it },
+                    onDismiss = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(first.path).performTouchInput { swipeLeft() }
+        composeRule.waitForIdle()
+
+        assertEquals(first, closedTab)
     }
 
     private fun tab(id: String, accountId: String, path: String) =
