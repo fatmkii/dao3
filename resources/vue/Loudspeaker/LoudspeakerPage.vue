@@ -22,8 +22,10 @@
 
             <n-text>只看自己</n-text>
             <n-switch v-model:value="onlyMyLoudspeaker" />
-            <n-date-picker v-model:formatted-value="dateSelected" value-format="yyyy-MM-dd" type="date" clearable
-                placeholder="筛选生效日期" :size="commonStore.isMobile ? 'small' : 'medium'" />
+            <n-date-picker v-model:formatted-value="dateRangeSelected" value-format="yyyy-MM-dd" type="daterange"
+                update-value-on-close start-placeholder="开始生效日期" end-placeholder="结束生效日期"
+                :is-date-disabled="dateDisabled" :size="commonStore.isMobile ? 'small' : 'medium'"
+                style="max-width: 300px;" />
         </n-flex>
 
         <!-- 分页器 -->
@@ -65,7 +67,7 @@
         <n-empty v-else />
 
         <!-- 发布大喇叭modal -->
-        <NewLoudspeakerModal ref="NewLoudspeakerModalCom" @refresh-loudspeaker="loudspeakerDataSend(params)" />
+        <NewLoudspeakerModal ref="NewLoudspeakerModalCom" @refresh-loudspeaker="refreshLoudspeakerData" />
         <AccuseCreateModal ref="AccuseCreateModalCom" @submit="submitAccuse" />
         <n-modal v-model:show="adminDeleteModalVisible" display-directive="if">
             <n-card :style="{ maxWidth: commonStore.modalMaxWidth }" title="强制删除大喇叭" closable size="small"
@@ -100,7 +102,7 @@ import { FlagOutlined as Flag } from '@vicons/material'
 import { useRequest } from 'alova'
 import dayjs from 'dayjs'
 import { NCard, NDatePicker, NFlex, NGradientText, NIcon, NPopover, NSwitch, NText, NEmpty, NModal, useThemeVars } from 'naive-ui'
-import { computed, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import AccuseCreateModal from '../Accuse/AccuseCreateModal.vue'
 import NewLoudspeakerModal from './NewLoudspeakerModal.vue'
 
@@ -115,7 +117,11 @@ const themeVars = useThemeVars()
 document.title = '大喇叭'
 
 //用户输入
-const dateSelected = ref<string>()
+const today = dayjs.tz()
+const dateRangeSelected = ref<[string, string]>([
+    today.format('YYYY-MM-DD'),
+    today.add(6, 'day').format('YYYY-MM-DD'),
+])
 const onlyMyLoudspeaker = ref<boolean>(false)
 const page = ref<number>(1)
 const pageSize = ref<number>(30)
@@ -125,22 +131,33 @@ const adminDeleteReason = shallowRef('')
 const offset = computed(() => (page.value - 1) * pageSize.value)
 
 //获取大喇叭数据
-const params: loudspeakerDataParams = {
-    binggan: userStore.binggan!,
-    mode: 'all'
-}
 const { loading: loudspeakerDataLoading,
     data: loudspeakerDataRaw,
     send: loudspeakerDataSend } = useRequest(
         (params: loudspeakerDataParams) => loudspeakerDataGetter(params), { immediate: false, initialData: [] }
     );
-loudspeakerDataSend(params)
+function refreshLoudspeakerData() {
+    return loudspeakerDataSend({
+        binggan: userStore.binggan!,
+        mode: 'range',
+        date_start: dateRangeSelected.value[0],
+        date_end: dateRangeSelected.value[1],
+    })
+}
+watch(dateRangeSelected, () => {
+    page.value = 1
+    refreshLoudspeakerData()
+}, { immediate: true })
+
+function dateDisabled(timestamp: number, _position: 'start' | 'end', value: [number, number] | null) {
+    if (value === null) return false
+
+    return Math.abs(dayjs.tz(timestamp).startOf('day').diff(dayjs.tz(value[0]).startOf('day'), 'day')) > 6
+}
+
 const loudspeakerData = computed(() => {
     return loudspeakerDataRaw.value.filter((item) => {
         if (onlyMyLoudspeaker.value && !item.is_your_loudspeaker) {
-            return false
-        }
-        if (dateSelected.value && !dayjs.tz(dateSelected.value).isSame(item.effective_date, 'day')) {
             return false
         }
         return true
@@ -171,7 +188,7 @@ function adminDeleteLoudspeakerHandle() {
         content: adminDeleteReason.value.trim(),
     }).then(() => {
         adminDeleteModalVisible.value = false
-        loudspeakerDataSend(params)
+        refreshLoudspeakerData()
     })
 }
 
@@ -202,7 +219,7 @@ function repealLoudspeakerHandle(id: number, should_confirm: boolean = false) {
                 loudspeaker_id: id,
                 confirm_penalty: should_confirm,
             }).then(
-                () => loudspeakerDataSend(params)
+                refreshLoudspeakerData
             ).catch(
                 (error) => {
                     if (error.cause !== undefined && error.cause.code == 21430) {

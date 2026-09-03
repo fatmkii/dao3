@@ -22,6 +22,7 @@ use App\Models\MyEmoji;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Validation\ValidationException;
 use App\Models\MyBattleChara;
 use App\Models\UserBank;
 use App\Models\UserLV;
@@ -932,22 +933,29 @@ class UserController extends Controller
     {
         $request->validate([
             'binggan' => 'nullable|string',
-            'mode' => 'required|string',
+            'mode' => 'required|string|in:effective,range',
+            'date_start' => 'required_if:mode,range|date_format:Y-m-d',
+            'date_end' => 'required_if:mode,range|date_format:Y-m-d|after_or_equal:date_start',
         ]);
-
-
 
         if ($request->mode == 'effective') {
             //正常显示的已发布的大喇叭
             $loudspeakers = Loudspeaker::where('effective_date', "<", Carbon::now())->orderBy('sub_id', 'desc')->orderBy('id', 'asc')->get();
-        } elseif ($request->mode == 'all') {
-            //全部大喇叭（不含软删除），用于确认包括未发布的清单
-            $loudspeakers = Loudspeaker::orderBy('sub_id', 'desc')->orderBy('id', 'asc')->get();
         } else {
-            return response()->json([
-                'code' => ResponseCode::PARAM_FAILED,
-                'message' => ResponseCode::$codeMap[ResponseCode::PARAM_FAILED],
-            ]);
+            $dateStart = Carbon::createFromFormat('Y-m-d', $request->date_start)->startOfDay();
+            $dateEnd = Carbon::createFromFormat('Y-m-d', $request->date_end)->startOfDay();
+
+            if ($dateEnd->gt($dateStart->copy()->addDays(6))) {
+                throw ValidationException::withMessages([
+                    'date_end' => '最多可以查询连续7天的大喇叭',
+                ]);
+            }
+
+            $loudspeakers = Loudspeaker::where('effective_date', '>=', $dateStart)
+                ->where('effective_date', '<', $dateEnd->addDay())
+                ->orderBy('sub_id', 'desc')
+                ->orderBy('id', 'asc')
+                ->get();
         }
 
         if ($request->query('binggan')) {
