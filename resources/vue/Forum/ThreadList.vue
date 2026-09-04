@@ -141,8 +141,8 @@ defineExpose({ reloadBrowseLogger })
 function toThreadPage(threadId: number) {
     const routerParams = {
         name: 'thread',
-        params: { threadId: threadId, page: Math.ceil((browseLoggerData.value[threadId]!.floor + 1) / 200) },
-        hash: `#f_${browseLoggerData.value[threadId]!.floor}`
+        // 不固定楼层hash，让主题页始终根据最新浏览记录恢复进度
+        params: { threadId: threadId, page: Math.ceil((browseLoggerData.value[threadId]!.floor + 1) / 200) }
     }
     if (props.newWindowToPost) {
         //新窗口打开时，先解析域名再进行打开
