@@ -771,13 +771,13 @@ export const medalsHidden: medalsData = {
         'name': '鹦鹉登鸡',
         'describe': '小火锅第四届喜欢的表情包',
         'threshold': 0, //本命是冠军表情包的全部饼干
-        'img': 'https://wmimg.com/i/1547/2026/06/6a3d4c4451779.png',
+        'img': 'https://wmimg.com/i/1547/2026/09/6aae25199e1fe.png',
     },
     289: {
         'name': '再见粪海狂蛆',
         'describe': '† 升天 †',
         'threshold': 0, //本命是淘汰表情包的全部饼干
-        'img': 'https://wmimg.com/i/1547/2026/06/6a3d4c444e871.png',
+        'img': 'https://wmimg.com/i/1547/2026/09/6aae25199022b.png',
     },
 
     //银行提前支取累计 
