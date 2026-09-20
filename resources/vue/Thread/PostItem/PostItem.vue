@@ -27,8 +27,7 @@
                     <Recover />
                 </n-icon>
                 <!-- 举报按钮 -->
-                <n-icon :size="24" v-if="!postData.is_your_post"
-                    class="post-accuse-icon" @click="accuseHandle">
+                <n-icon :size="24" v-if="!postData.is_your_post" class="post-accuse-icon" @click="accuseHandle">
                     <Flag />
                 </n-icon>
                 <!-- 打赏按钮 -->
@@ -69,7 +68,14 @@
         <template v-if="!postIsFolded">
             <!-- 正文内容 -->
             <div class="post-content" ref="postContentContainerDom" :style="postContentContainerStyle">
-                <span v-html="postContent" class="post-span" ref="postContentDom" :style="postContentStyle"></span>
+                <div v-if="isAdminDeletedPost" :style="{ marginBottom: deletedPostExpanded ? '8px' : undefined }">
+                    <n-button text :aria-expanded="deletedPostExpanded"
+                        @click="deletedPostExpanded = !deletedPostExpanded">
+                        {{ deletedPostMessage }}
+                    </n-button>
+                </div>
+                <span v-if="!isAdminDeletedPost || deletedPostExpanded" v-html="postContent" class="post-span"
+                    ref="postContentDom" :style="postContentStyle"></span>
             </div>
 
             <!-- 红包组件 -->
@@ -122,7 +128,7 @@ import { CardGiftcardFilled as Gift, FlagOutlined as Flag } from '@vicons/materi
 import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
-import { computed, h, onMounted, ref } from 'vue'
+import { computed, h, nextTick, ref, watch } from 'vue'
 import Battle from './Battle.vue'
 import HongbaoPost from './HongbaoPost.vue'
 
@@ -339,6 +345,18 @@ function dropdownSelect(name: dropdownNames) {
 //回复数据处理（各种屏蔽等）
 const postIsFolded = ref<boolean>(false)//是否被折叠的状态
 const postFoldedMessage = ref<string>()//折叠回复后的提示词
+const isAdminDeletedPost = computed(() => props.postData.is_deleted === 2
+    && (props.postData.is_your_post || userStore.admin.isNormalAdmin))
+const deletedPostExpanded = ref(false)
+const deletedPostMessage = computed(() => {
+    const action = deletedPostExpanded.value ? '收起' : '展开'
+    const viewer = props.postData.is_your_post ? '发帖者' : '管理员'
+    return `此贴已被管理员删除（${viewer}可点击${action}）`
+})
+//对于发帖者或管理员的已被管理员删除的帖子，使用 v-if 标签折叠，包裹原始内容
+watch([() => props.postData.id, () => props.postData.is_deleted, isAdminDeletedPost], () => {
+    deletedPostExpanded.value = false
+})
 function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片的回调函数
     if (match.search(/class='emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
         //判断是否表情包
@@ -450,12 +468,6 @@ const postContent = computed(() => {//数据处理
         postContent = postContent.replace(reg, urlReplacer)
     }
 
-    // 对于发帖者或管理员的已被管理员删除的帖子，使用 details 标签折叠，包裹原始内容
-    if (props.postData.is_deleted === 2 && (props.postData.is_your_post || userStore.admin.isNormalAdmin)) {
-        const expandText = props.postData.is_your_post ? '发帖者可点击展开' : '管理员可点击展开'
-        postContent = `<details><summary class="system-post-summary" style="cursor: pointer;">此贴已被管理员删除（${expandText}）</summary><div style="margin-top: 8px;">${postContent}</div></details>`
-    }
-
     return postContent
 })
 
@@ -469,14 +481,17 @@ const postFooterText = computed<string>(() => {
 })
 function quoteClick() {
     const maxQuote = commonStore.userCustom.quoteMax; //最大可引用的层数
+    if (isAdminDeletedPost.value) {
+        deletedPostExpanded.value = false
+    }
 
     // 折叠details标签的内容避免被引用;
-    let elements_details = postContentDom.value!.getElementsByTagName("details");
+    let elements_details = postContentDom.value?.getElementsByTagName("details") ?? [];
     for (let dom of elements_details) {
         dom.open = false;
     }
 
-    let postLines = postContentDom.value!.innerText.split("\n");
+    let postLines = (isAdminDeletedPost.value ? deletedPostMessage.value : postContentDom.value?.innerText ?? '').split("\n");
     let indexArray: number[] = [];
 
     //搜索引用的层数
@@ -565,9 +580,6 @@ function emojiAddHandle() {
     }
 
 }
-onMounted(() => {
-    setImgOnClick()
-})
 
 //被屏蔽的图片重新展开功能
 function setImgSvgOnClick() {
@@ -581,9 +593,6 @@ function setImgSvgOnClick() {
         });
     });
 }
-onMounted(() => {
-    setImgSvgOnClick()
-})
 
 
 //确认post总行数，如果超过特定行数，则折叠（包括图片等高度）
@@ -607,11 +616,16 @@ function unfoldContent() {
     postContentTopOffset.value = undefined;
     postContentContainerMaxHeight.value = undefined;
 }
-onMounted(() => {
-    if (props.postData.floor !== 0) {//首楼不折叠
+watch(postContentDom, async (element) => {
+    unfoldContent()
+    if (!element) return
+    setImgOnClick()
+    setImgSvgOnClick()
+    await nextTick()
+    if (postContentDom.value === element && props.postData.floor !== 0 && !isAdminDeletedPost.value) {//首楼和管理员删除帖不折叠高度
         setMaxHeight()
     }
-})
+}, { flush: 'post' })
 
 //刷新大乱斗数据
 function refreshBattleData() {
