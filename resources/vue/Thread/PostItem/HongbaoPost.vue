@@ -147,7 +147,7 @@ function hongbaoStoreHandle(event?: MouseEvent | KeyboardEvent) {
         hongbao_post_id: props.hongbaoData.id,
         hongbao_key_word: keywordInput.value
     }
-    hongbaoPostStoreSend(params)
+    hongbaoPostStoreSend(params).catch(() => undefined)
 }
 hongbaoPostStoreOnSuccess(() => {
     keywordInput.value = ''

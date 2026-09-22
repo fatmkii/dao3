@@ -12,7 +12,8 @@ class RecordPostActivity
 {
     public function __construct(
         private AntiSpamService $antiSpam
-    ) {}
+    ) {
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -22,12 +23,12 @@ class RecordPostActivity
     public function terminate(Request $request, Response $response): void
     {
         $content = json_decode($response->getContent(), true);
-        if (!is_array($content) || ($content['code'] ?? null) !== ResponseCode::SUCCESS) {
+        if (! is_array($content) || ($content['code'] ?? null) !== ResponseCode::SUCCESS) {
             return;
         }
 
         $action = $this->detectAction($request);
-        if (!$action) {
+        if (! $action) {
             return;
         }
 
@@ -35,18 +36,6 @@ class RecordPostActivity
         $user = $request->user();
 
         switch ($action) {
-            case 'new_post':
-                $ip2Count = $this->antiSpam->recordPost($ip);
-                if ($user) {
-                    $this->antiSpam->evaluateTimelineBatch(
-                        $user->binggan,
-                        $user->id,
-                        $ip,
-                        $request->input('thread_id'),
-                        $ip2Count
-                    );
-                }
-                break;
             case 'new_thread':
                 if ($user) {
                     $this->antiSpam->recordThread($user->binggan);
@@ -58,12 +47,7 @@ class RecordPostActivity
                 }
                 $this->antiSpam->recordHongbao($ip);
                 break;
-            case 'view_post':
-            case 'view_thread':
-                if ($user) {
-                    $this->antiSpam->clearPostView($ip);
-                }
-                break;
+
         }
     }
 
@@ -74,21 +58,10 @@ class RecordPostActivity
 
         if ($method === 'POST') {
             return match ($path) {
-                'api/posts/create' => 'new_post',
                 'api/threads/create' => 'new_thread',
-                'api/battles' => 'new_post',
                 'api/hongbao_post/store' => 'hongbao_store',
                 default => null,
             };
-        }
-
-        if ($method === 'GET') {
-            if (preg_match('#^api/posts/\d+$#', $path)) {
-                return 'view_post';
-            }
-            if (preg_match('#^api/threads/\d+$#', $path)) {
-                return 'view_thread';
-            }
         }
 
         return null;

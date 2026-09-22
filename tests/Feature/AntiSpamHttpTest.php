@@ -7,6 +7,7 @@ use App\Exceptions\SpamDetectedException;
 use App\Jobs\ProcessIncomeStatement;
 use App\Jobs\ProcessUserActive;
 use App\Models\Forum;
+use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
 use App\Services\AntiSpamService;
@@ -14,16 +15,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
+use Tests\Concerns\InteractsWithAntiSpamRedis;
 
 class AntiSpamHttpTest extends TestCase
 {
     use RefreshDatabase;
+    use InteractsWithAntiSpamRedis;
 
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->isolateAntiSpamRedis();
 
         // 阻止异步记录任务，避免因 income_statement_2026 / user_actives_2026_5
         // 等分表不存在而导致的数据库错误
@@ -100,7 +104,7 @@ class AntiSpamHttpTest extends TestCase
         $this->assertStringContainsString('最多回帖10次', $response->json('message'));
     }
 
-    public function test_post_create_blocked_by_ip_limit(): void
+    public function test_post_create_requires_captcha(): void
     {
         $antiSpamMock = $this->createMock(AntiSpamService::class);
         $antiSpamMock->expects($this->once())
@@ -141,14 +145,44 @@ class AntiSpamHttpTest extends TestCase
             'forum_id' => $forum->id,
             'thread_id' => $thread->id,
             'content' => '测试回帖内容',
-            'new_post_key' => md5($thread->id . 'test_binggan' . time() . 'true'),
-            'timestamp' => time(),
         ]);
 
-        // 应该返回成功（不是 spam 错误）
-        $code = $response->json('code');
-        $this->assertNotEquals(ResponseCode::POST_TOO_MANY, $code);
-        $this->assertNotEquals(ResponseCode::POST_TOO_MANY_MAYBE_ROBOT, $code);
+        $response->assertOk()->assertJson(['code' => ResponseCode::SUCCESS]);
+        $this->assertSame(110, (int) $this->user->fresh()->coin);
+    }
+
+    public function test_real_captcha_gate_blocks_creation_and_rewards_until_unlocked(): void
+    {
+        [$forum, $thread] = $this->seedForumAndThread();
+        $service = app(AntiSpamService::class);
+        $reservation = $service->checkPostSpam('192.0.2.1', $this->user);
+        $service->finishPostReservation($this->user, $reservation, true);
+        $key = AntiSpamService::REDIS_POST_CAPTCHA.$this->user->id;
+        Redis::hset($key, 'count', Redis::hget($key, 'limit'));
+        $postCount = Post::suffix(intdiv($thread->id, 10000))->where('thread_id', $thread->id)->count();
+        $params = [
+            'binggan' => $this->user->binggan,
+            'forum_id' => $forum->id,
+            'thread_id' => $thread->id,
+            'content' => '人工回复测试',
+        ];
+
+        $this->postJson('/api/posts/create', $params)->assertJson(['code' => ResponseCode::POST_TOO_MANY_MAYBE_ROBOT]);
+        $this->assertSame(100, (int) $this->user->fresh()->coin);
+        $this->assertSame($postCount, Post::suffix(intdiv($thread->id, 10000))->where('thread_id', $thread->id)->count());
+        Bus::assertNotDispatched(ProcessUserActive::class);
+
+        $captcha = $service->issueCaptcha($this->user, 'abcd');
+        $this->postJson('/api/user/water_unlock', [
+            'binggan' => $this->user->binggan,
+            'captcha_key' => $captcha,
+            'captcha_code' => 'abcd',
+            'type' => 'new_post',
+        ])->assertJson(['code' => ResponseCode::SUCCESS]);
+        $this->postJson('/api/posts/create', $params)->assertJson(['code' => ResponseCode::SUCCESS]);
+        $this->assertSame(110, (int) $this->user->fresh()->coin);
+        $this->assertSame($postCount + 1, Post::suffix(intdiv($thread->id, 10000))->where('thread_id', $thread->id)->count());
+        $this->assertSame('1', Redis::hget($key, 'count'));
     }
 
     // ============================================
@@ -276,10 +310,10 @@ class AntiSpamHttpTest extends TestCase
     }
 
     // ============================================
-    // GET /api/posts/{id} 查看清除测试
+    // GET /api/posts/{id} 查看不再调用反灌水服务
     // ============================================
 
-    public function test_view_post_triggers_clear(): void
+    public function test_view_post_does_not_call_antispam(): void
     {
         // 先创建一个帖子（需要 thread 和 forum）
         list($forum, $thread) = $this->seedForumAndThread();
@@ -288,7 +322,6 @@ class AntiSpamHttpTest extends TestCase
         $antiSpamMock = $this->createMock(AntiSpamService::class);
         $antiSpamMock->method('checkPostSpam');
         $antiSpamMock->method('recordPost');
-        $antiSpamMock->method('evaluateTimelineBatch');
         $this->app->instance(AntiSpamService::class, $antiSpamMock);
 
         // 发帖
@@ -305,13 +338,8 @@ class AntiSpamHttpTest extends TestCase
         $this->assertEquals(ResponseCode::SUCCESS, $createCode, 'Post creation should succeed before view test');
         $postId = $createResponse->json('data.post_id');
 
-        // Mock 2: 用于查看请求，验证 clearPostView 被调用
         $antiSpamMock2 = $this->createMock(AntiSpamService::class);
-        $antiSpamMock2->method('checkPostSpam');
-        $antiSpamMock2->method('recordPost');
-        $antiSpamMock2->expects($this->once())
-            ->method('clearPostView')
-            ->with('127.0.0.1');
+        $antiSpamMock2->expects($this->never())->method($this->anything());
         $this->app->instance(AntiSpamService::class, $antiSpamMock2);
 
         $response = $this->getJson("/api/posts/{$postId}?thread_id={$thread->id}");
@@ -328,7 +356,6 @@ class AntiSpamHttpTest extends TestCase
         $antiSpamMock->expects($this->once())->method('checkPostSpam');
         $antiSpamMock->expects($this->never())->method('recordPost');
         $antiSpamMock->expects($this->never())->method('recordThread');
-        $antiSpamMock->expects($this->never())->method('clearPostView');
         $this->app->instance(AntiSpamService::class, $antiSpamMock);
 
         $response = $this->postJson('/api/posts/create', [

@@ -895,7 +895,7 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
     }
     resolveLastTime = resolve
     contentCommitLastTime = content
-    sendNewPostHandle(params)
+    sendNewPostHandle(params).catch(() => undefined)
 }
 function newPostHandleAgain() {
     newPostHandle(contentCommitLastTime, resolveLastTime)

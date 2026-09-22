@@ -16,10 +16,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tests\TestCase;
+use Tests\Concerns\InteractsWithAntiSpamRedis;
 
 class AntiSpamMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
+    use InteractsWithAntiSpamRedis;
 
     private User $user;
     private AntiSpamService $antiSpamMock;
@@ -27,6 +29,7 @@ class AntiSpamMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->isolateAntiSpamRedis();
 
         $user = new User();
         $user->binggan = 'test_binggan_abc';
@@ -50,7 +53,7 @@ class AntiSpamMiddlewareTest extends TestCase
 
         $this->antiSpamMock->expects($this->once())
             ->method('checkPostSpam')
-            ->with('127.0.0.1', $this->user, null, null, null);
+            ->with('127.0.0.1', $this->user);
 
         $middleware->handle($request, fn($req) => new Response('pass'));
     }
@@ -64,7 +67,7 @@ class AntiSpamMiddlewareTest extends TestCase
 
         $this->antiSpamMock->expects($this->once())
             ->method('checkPostSpam')
-            ->with('127.0.0.1', $this->user, null, null, null);
+            ->with('127.0.0.1', $this->user);
 
         $middleware->handle($request, fn($req) => new Response('pass'));
     }
@@ -92,7 +95,7 @@ class AntiSpamMiddlewareTest extends TestCase
 
         $this->antiSpamMock->expects($this->once())
             ->method('checkHongbaoSpam')
-            ->with('127.0.0.1', $this->user, null, null, null);
+            ->with('127.0.0.1', $this->user);
 
         $middleware->handle($request, fn($req) => new Response('pass'));
     }
@@ -140,7 +143,7 @@ class AntiSpamMiddlewareTest extends TestCase
 
         $this->antiSpamMock->expects($this->once())
             ->method('checkPostSpam')
-            ->with('127.0.0.1', $this->user, 10001, 'test_key', $this->anything())
+            ->with('127.0.0.1', $this->user)
             ->willThrowException(new SpamDetectedException(
                 ResponseCode::POST_TOO_MANY,
                 ResponseCode::$codeMap[ResponseCode::POST_TOO_MANY] . '为防止刷屏，每1分钟最多回帖10次（含大乱斗）'
@@ -353,7 +356,7 @@ class AntiSpamMiddlewareTest extends TestCase
         // Admin 仍然进入中间件（由 AntiSpamService 内部判断是否绕过）
         $this->antiSpamMock->expects($this->once())
             ->method('checkPostSpam')
-            ->with('127.0.0.1', $adminUser, 10001, null, null);
+            ->with('127.0.0.1', $adminUser);
 
         $response = $middleware->handle($request, fn($req) => new Response('controller_reached'));
         $this->assertEquals('controller_reached', $response->getContent());
@@ -362,51 +365,6 @@ class AntiSpamMiddlewareTest extends TestCase
     // ============================================
     // RecordPostActivity - 路由检测测试
     // ============================================
-
-    public function test_record_detect_action_new_post(): void
-    {
-        $middleware = new RecordPostActivity($this->antiSpamMock);
-
-        $request = Request::create('/api/posts/create', 'POST');
-        $request->setUserResolver(fn() => $this->user);
-
-        $this->antiSpamMock->expects($this->once())
-            ->method('recordPost')
-            ->with('127.0.0.1');
-
-        $jsonResponse = new JsonResponse(['code' => 200, 'message' => 'ok']);
-        $middleware->terminate($request, $jsonResponse);
-    }
-
-    public function test_record_detect_action_view_post(): void
-    {
-        $middleware = new RecordPostActivity($this->antiSpamMock);
-
-        $request = Request::create('/api/posts/99999', 'GET');
-        $request->setUserResolver(fn() => $this->user);
-
-        $this->antiSpamMock->expects($this->once())
-            ->method('clearPostView')
-            ->with('127.0.0.1');
-
-        $jsonResponse = new JsonResponse(['code' => 200]);
-        $middleware->terminate($request, $jsonResponse);
-    }
-
-    public function test_record_detect_action_view_thread(): void
-    {
-        $middleware = new RecordPostActivity($this->antiSpamMock);
-
-        $request = Request::create('/api/threads/99999', 'GET');
-        $request->setUserResolver(fn() => $this->user);
-
-        $this->antiSpamMock->expects($this->once())
-            ->method('clearPostView')
-            ->with('127.0.0.1');
-
-        $jsonResponse = new JsonResponse(['code' => 200]);
-        $middleware->terminate($request, $jsonResponse);
-    }
 
     public function test_record_detect_action_new_thread(): void
     {
@@ -480,8 +438,6 @@ class AntiSpamMiddlewareTest extends TestCase
         $this->antiSpamMock->expects($this->never())->method('recordPost');
         $this->antiSpamMock->expects($this->never())->method('recordHongbao');
         $this->antiSpamMock->expects($this->never())->method('recordThread');
-        $this->antiSpamMock->expects($this->never())->method('clearPostView');
-        $this->antiSpamMock->expects($this->never())->method('evaluateTimelineBatch');
 
         $middleware->terminate($request, $errorResponse);
     }
@@ -499,23 +455,6 @@ class AntiSpamMiddlewareTest extends TestCase
         $this->antiSpamMock->expects($this->never())->method('recordPost');
 
         $middleware->terminate($request, $htmlResponse);
-    }
-
-    public function test_record_new_post_calls_record_post(): void
-    {
-        $middleware = new RecordPostActivity($this->antiSpamMock);
-
-        $request = Request::create('/api/posts/create', 'POST', [
-            'thread_id' => 10001,
-        ]);
-        $request->setUserResolver(fn() => $this->user);
-
-        $this->antiSpamMock->expects($this->once())
-            ->method('recordPost')
-            ->with('127.0.0.1');
-
-        $jsonResponse = new JsonResponse(['code' => 200]);
-        $middleware->terminate($request, $jsonResponse);
     }
 
     private function createHongbaoPostForUser(int $userId): HongbaoPost

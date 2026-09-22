@@ -34,6 +34,18 @@ class ProcessUserActive implements ShouldQueue
      */
     public function handle()
     {
+        // 兼容发布前已入队的旧反灌水日志，其他用户活动继续正常记录。
+        if (in_array($this->user_active['active'] ?? null, [
+            '反机器人多维评分',
+            '用户触发了机器人刷帖警报',
+            '用户触发了抢红包警报',
+            '怀疑用户用脚本刷帖(JS脚本类型)',
+            '怀疑用户用脚本刷帖(key不正确)',
+            '用户输入验证码错误',
+        ], true)) {
+            return;
+        }
+
         $model = new UserActive($this->user_active);
         $model->setsuffix(Carbon::now()->year . '_' . Carbon::now()->month);
         $model->save();

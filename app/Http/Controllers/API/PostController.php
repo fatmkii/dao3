@@ -41,8 +41,6 @@ class PostController extends Controller
             'content' => 'required|string|max:20000',
             'nickname' => 'max:30',
             'post_with_admin' => 'boolean',
-            'new_post_key' => 'required|string',
-            'timestamp' => 'integer',
         ]);
 
         $user = $request->user();
@@ -137,6 +135,7 @@ class PostController extends Controller
             // }
 
             DB::commit();
+            $request->attributes->set('anti_spam_post_committed', true);
         } catch (Exception $e) {
             DB::rollback();
             throw $e;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Services\AntiSpamService;
 use Illuminate\Http\Request;
 use App\Common\ResponseCode;
 use App\Facades\GlobalSetting;
@@ -11,7 +12,6 @@ use App\Common\NewBingganChecker;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
@@ -200,16 +200,10 @@ class CommonController extends Controller
         );
     }
 
-    public function get_captcha()
+    public function get_captcha(Request $request, AntiSpamService $antiSpam)
     {
         $captcha = new Captcha(3);
-
-        $key = "";
-        do {
-            $key = Str::random(6);
-        } while (Redis::exists("captcha_key_" . $key));
-
-        Redis::setex("captcha_key_" . $key, 60, $captcha->getCode());
+        $key = $antiSpam->issueCaptcha($request->user(), $captcha->getCode());
 
         return response()->json(
             [

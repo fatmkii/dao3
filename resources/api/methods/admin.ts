@@ -528,41 +528,6 @@ const dailyDataGetter = (params: dailyDataGetterParams) => {
     return methodInstance
 }
 
-//查询反机器人多维评分
-interface antiBotScoresData {
-    binggan: string,
-    content: string,
-    created_at: string,
-}
-interface antiBotScoresListData {
-    data: antiBotScoresData[],
-    last_page: number,
-}
-interface antiBotScoresGetterParams {
-    binggan: string,
-    date_from: string,
-    date_to: string,
-    page?: number,
-}
-const antiBotScoresGetter = (params: antiBotScoresGetterParams) => {
-    const methodInstance = commonAlova.Get<antiBotScoresListData>(
-        'api/admin/antibot_scores',
-        {
-            name: 'antiBotScoresGetter',
-            params: {
-                ...params,
-                page: params.page || 1,
-            },
-            localCache: null,
-            hitSource: [],
-        }
-    )
-    methodInstance.meta = {
-        shouldRemind: false
-    };
-    return methodInstance
-}
-
 export {
     deleteLoudspeakerParams, deleteLoudspeakerPoster, deleteThreadParams, deleteThreadPoster, deletePostParams, deletePostPoster,
     recoveryPostParams, recoveryPostPoster, deleteAllPostParams, deleteAllPostPoster, userBanParams, userBanPoster,
@@ -573,5 +538,4 @@ export {
     adminActivesData, adminActivesGetter, adminActivesGetterParams, unlockUuidParams, unlockUuidPoster, transferThreadParams, transferThreadPoster,
     watermarkDecodeParams, watermarkDecodePoster,
     dailyDataItem, dailyDataListData, dailyDataGetterParams, dailyDataGetter,
-    antiBotScoresData, antiBotScoresListData, antiBotScoresGetterParams, antiBotScoresGetter
 }

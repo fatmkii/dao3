@@ -69,8 +69,6 @@ class BattleController extends Controller
             'chara_id' => 'required|integer',
             'is_custom_chara' => 'nullable|boolean',
             'chara_group' => 'required|integer',
-            'new_post_key' => 'string',
-            'timestamp' => 'integer',
         ]);
 
         $user = $request->user();
@@ -129,6 +127,7 @@ class BattleController extends Controller
             $user->coinConsume($request->battle_olo);
 
             DB::commit();
+            $request->attributes->set('anti_spam_post_committed', true);
         } catch (Exception $e) {
             DB::rollback();
             throw $e;

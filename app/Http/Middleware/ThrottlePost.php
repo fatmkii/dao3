@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Common\ResponseCode;
 use App\Exceptions\SpamDetectedException;
 use App\Models\HongbaoPost;
 use App\Services\AntiSpamService;
@@ -13,17 +14,18 @@ class ThrottlePost
 {
     public function __construct(
         private AntiSpamService $antiSpam
-    ) {}
+    ) {
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return $next($request);
         }
 
         $action = $this->detectAction($request);
-        if (!$action) {
+        if (! $action) {
             return $next($request);
         }
 
@@ -32,14 +34,22 @@ class ThrottlePost
         try {
             switch ($action) {
                 case 'new_post':
-                    $this->antiSpam->checkPostSpam(
-                        $ip,
-                        $user,
-                        $request->input('thread_id'),
-                        $request->input('new_post_key'),
-                        $request->input('timestamp')
-                    );
-                    break;
+                    $reservation = $this->antiSpam->checkPostSpam($ip, $user);
+                    try {
+                        $response = $next($request);
+
+                        return $response;
+                    } finally {
+                        $content = isset($response) ? json_decode($response->getContent(), true) : null;
+                        $succeeded = $request->attributes->get('anti_spam_post_committed', false)
+                            || (is_array($content) && ($content['code'] ?? null) === ResponseCode::SUCCESS);
+                        if ($reservation !== null) {
+                            $this->antiSpam->finishPostReservation($user, $reservation, $succeeded);
+                        }
+                        if ($succeeded) {
+                            $this->antiSpam->recordPost($ip);
+                        }
+                    }
                 case 'new_thread':
                     $this->antiSpam->checkThreadSpam($user->binggan, $user);
                     break;
@@ -47,13 +57,7 @@ class ThrottlePost
                     if ($this->isOwnHongbaoPost($request, $user->id)) {
                         break;
                     }
-                    $this->antiSpam->checkHongbaoSpam(
-                        $ip,
-                        $user,
-                        $request->input('thread_id'),
-                        $request->input('new_post_key'),
-                        $request->input('timestamp')
-                    );
+                    $this->antiSpam->checkHongbaoSpam($ip, $user);
                     break;
             }
         } catch (SpamDetectedException $e) {
@@ -84,7 +88,7 @@ class ThrottlePost
     private function isOwnHongbaoPost(Request $request, int $userId): bool
     {
         $hongbaoPostId = $request->input('hongbao_post_id');
-        if (!$hongbaoPostId) {
+        if (! $hongbaoPostId) {
             return false;
         }
 

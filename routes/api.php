@@ -58,7 +58,7 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     Route::post('/my_emoji_set', [UserController::class, 'my_emoji_set'])->middleware('CheckBinggan:create');     //设定表情包
     Route::post('/my_emoji_add', [UserController::class, 'my_emoji_add'])->middleware('CheckBinggan:create');     //追加表情包
     Route::get('/my_emoji', [UserController::class, 'my_emoji_show']);     //获取我的表情包
-    Route::post('/water_unlock', [UserController::class, 'water_unlock'])->middleware('CheckBinggan:create');     //解除灌水锁定
+    Route::post('/water_unlock', [UserController::class, 'water_unlock'])->middleware(['CheckBinggan:create', 'throttle:captcha_unlock']);     //解除灌水锁定
     Route::post('/user_lv_up', [UserController::class, 'user_lv_up'])->middleware('CheckBinggan:create');  //升级饼干
     Route::get('/user_lv_show', [UserController::class, 'user_lv_show'])->middleware('CheckBinggan:show');  //查看饼干等级信息
     // Route::post('/show_messages_index', [UserController::class, 'show_messages_index'])->middleware('CheckBinggan:show'); //获得站内消息列表
@@ -98,7 +98,6 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/transfer_thread', [AdminController::class, 'transfer_thread']); //解锁一个用户注册的uuid限制
     Route::post('/watermark_decode', [AdminController::class, 'watermark_decode']); //解混淆水印
     Route::get('/get_daily_data', [AdminController::class, 'get_daily_data']); //查询每日数据
-    Route::get('/antibot_scores', [AdminActivesController::class, 'antibotScores']); //查询反机器人多维评分
 });
 
 //Accuse系列
@@ -118,7 +117,7 @@ Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
 
 //thread系列
 Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
-    Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show')->middleware('RecordPostActivity'); //查看主题
+    Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show'); //查看主题
     Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //发新主题
     Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
     Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色
@@ -126,8 +125,8 @@ Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
 
 //Post系列
 Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
-    Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show')->middleware('RecordPostActivity'); //获得单个帖子数据
-    Route::post('/create', [PostController::class, 'create'])->middleware('throttle:new_post')->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //新帖子
+    Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show'); //获得单个帖子数据
+    Route::post('/create', [PostController::class, 'create'])->middleware('throttle:new_post')->middleware('CheckBinggan:create')->middleware('ThrottlePost'); //新帖子
     Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
     Route::post('/create_roll', [PostController::class, 'create_roll'])->middleware('CheckBinggan:create'); //新roll点
     Route::put('/recover/{post_id}', [PostController::class, 'recover'])->middleware('CheckBinggan:create'); //恢复删除的帖子
@@ -177,7 +176,7 @@ Route::prefix('hongbao_post')->middleware('auth:sanctum')->group(function () {
 //Battle系列
 Route::prefix('battles')->middleware('auth:sanctum')->group(function () {
     Route::get('/{battle_id}', [BattleController::class, 'show'])->middleware('CheckBinggan:show');  //获取大乱斗数据
-    Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity');  //用户发起大乱斗
+    Route::post('', [BattleController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost');  //用户发起大乱斗
     Route::post('/c_roll', [BattleController::class, 'challenger_roll'])->middleware('CheckBinggan:create');  //挑战者投色子
 });
 
@@ -200,7 +199,7 @@ Route::prefix('emoji_contest')->middleware('auth:sanctum')->group(function () {
 Route::get('/new_binggan_enable', [CommonController::class, 'new_binggan_enable']); //已废弃
 Route::get('/new_binggan_check', [CommonController::class, 'new_binggan_enable_check']);
 Route::get('/home_banners', [CommonController::class, 'get_home_banners']);
-Route::get('/captcha', [CommonController::class, 'get_captcha']);
+Route::get('/captcha', [CommonController::class, 'get_captcha'])->middleware(['auth:sanctum', 'throttle:captcha_get']);
 Route::get('/new_loudspeaker_enable', [CommonController::class, 'new_loudspeaker_enable']);
 Route::post('/img_upload', [CommonController::class, 'img_upload'])->middleware(['auth:sanctum', 'CheckBinggan:create']); //上传图片
 Route::post('/store_pool', [CommonController::class, 'store_hongbao_pool'])->middleware('auth:sanctum', 'CheckBinggan:create'); //投入祝福池

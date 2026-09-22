@@ -7,7 +7,6 @@ use \Illuminate\Pagination\LengthAwarePaginator;
 use App\Common\MyPaginator;
 use App\Facades\GlobalSettingClass;
 
-use App\Models\Post;
 use App\Services\AntiSpamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -59,15 +58,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->ip());
         });
 
-        // Post 创建事件监听：自动记录发帖时间线（用于机器人评分）
-        Post::created(function (Post $post) {
-            // 排除系统消息（大乱斗提示、Roll点结果等）
-            if ($post->created_by_admin != 2) {
-                app(AntiSpamService::class)->recordPostTimeline(
-                    $post->created_binggan,
-                    $post->id
-                );
-            }
-        });
+        foreach (['captcha_get', 'captcha_unlock'] as $name) {
+            RateLimiter::for($name, function (Request $request) {
+                return Limit::perMinute(10)->by($request->user()->id);
+            });
+        }
     }
 }

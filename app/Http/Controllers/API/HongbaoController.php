@@ -55,8 +55,6 @@ class HongbaoController extends Controller
             'content' => 'required|string|max:20000',
             'nickname' => 'max:30',
             'post_with_admin' => 'boolean',
-            'new_post_key' => 'required|string',
-            'timestamp' => 'integer',
 
             //抢红包的验证
             'hongbao_id' => 'required|integer',

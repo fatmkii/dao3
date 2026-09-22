@@ -121,7 +121,7 @@ function battleCreateHandle(event?: MouseEvent | KeyboardEvent) {
         new_post_key: newPostKey,
         timestamp: timestamp,
     }
-    battleCreateSend(params)
+    battleCreateSend(params).catch(() => undefined)
 }
 battleCreateOnSuccess(() => {
     emit('refreshPostsList')
