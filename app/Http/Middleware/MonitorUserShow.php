@@ -32,8 +32,6 @@ class MonitorUserShow
         $response->headers->set('X-Request-ID', $requestId);
 
         try {
-            $user = $request->user();
-            $token = $user?->currentAccessToken();
             $code = $response instanceof JsonResponse ? $response->getData(true)['code'] ?? null : null;
             $exception = $response->exception ?? null;
             $status = $response->getStatusCode();
@@ -48,7 +46,13 @@ class MonitorUserShow
                 default => 'unexpected_response',
             };
 
-            Log::channel('user_show')->log($reason === 'success' ? 'info' : 'warning', 'user_show_completed', [
+            if ($reason === 'success') {
+                return $response;
+            }
+
+            $user = $request->user();
+            $token = $user?->currentAccessToken();
+            Log::channel('user_show')->log('warning', 'user_show_completed', [
                 'request_id' => $requestId,
                 'user_id' => $user?->getAuthIdentifier(),
                 'client_type' => $token instanceof PersonalAccessToken ? ($token->client_type ?? 'unknown') : 'unknown',

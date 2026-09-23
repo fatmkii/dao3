@@ -37,7 +37,19 @@ class UserShowMonitoringTest extends TestCase
         Log::shouldReceive('error')->andReturnNull();
     }
 
-    public function test_success_logs_safe_metadata_and_returns_request_id(): void
+    public function test_success_returns_request_id_without_logging(): void
+    {
+        $user = User::factory()->create();
+        $id = (string) Str::uuid();
+
+        $this->actingAs($user, 'sanctum')->withHeader('X-Request-ID', $id)
+            ->postJson('/api/user/show', ['binggan' => $user->binggan])
+            ->assertOk()->assertJsonPath('code', ResponseCode::SUCCESS)->assertHeader('X-Request-ID', $id);
+
+        $this->assertSame([], $this->records);
+    }
+
+    public function test_failure_logs_safe_metadata_and_returns_request_id(): void
     {
         $user = User::factory()->create(['binggan' => 'private-binggan']);
         $token = $user->createToken('android', ['normal']);
@@ -48,15 +60,15 @@ class UserShowMonitoringTest extends TestCase
             'Authorization' => 'Bearer '.$token->plainTextToken,
             'X-Request-ID' => $id,
             'User-Agent' => 'test CpttmmAndroid',
-        ])->postJson('/api/user/show', ['binggan' => $user->binggan]);
+        ])->postJson('/api/user/show', ['binggan' => 'wrong-private-binggan']);
 
-        $response->assertOk()->assertJsonPath('code', ResponseCode::SUCCESS)->assertHeader('X-Request-ID', $id);
-        $context = $this->context('success');
+        $response->assertUnauthorized()->assertJsonPath('code', ResponseCode::CANNOTLOGIN)->assertHeader('X-Request-ID', $id);
+        $context = $this->context('binggan_mismatch');
         $this->assertSame($id, $context['request_id']);
         $this->assertSame($user->id, $context['user_id']);
         $this->assertSame('android', $context['client_type']);
         $this->assertTrue($context['android_webview']);
-        $this->assertTrue($context['binggan_matches']);
+        $this->assertFalse($context['binggan_matches']);
         $this->assertGreaterThanOrEqual(0, $context['duration_ms']);
         $this->assertStringNotContainsString($user->binggan, json_encode($this->records));
         $this->assertStringNotContainsString($token->plainTextToken, json_encode($this->records));
@@ -148,7 +160,7 @@ class UserShowMonitoringTest extends TestCase
         $this->assertCount(1, $this->records);
         $this->assertSame('user_show_completed', $this->records[0]['message']);
         $this->assertSame($reason, $this->records[0]['context']['reason']);
-        $this->assertSame($reason === 'success' ? 'info' : 'warning', $this->records[0]['level']);
+        $this->assertSame('warning', $this->records[0]['level']);
 
         return $this->records[0]['context'];
     }

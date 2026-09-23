@@ -4,8 +4,8 @@
 全局中间件在认证之前开始计时，在 Laravel 渲染响应后记录结果。
 
 日志位置：`storage/logs/user-show-YYYY-MM-DD.log`，按日轮转，保留 14 天。
-为排查持续失败和恢复过程，当前每次请求均记录一条 `user_show_completed`。
-成功为 info，其他结果为 warning。无需新增环境变量；部署时需按现有流程更新配置缓存。
+仅失败或异常请求记录一条 warning 级别的 `user_show_completed`，成功请求不写日志。
+HTTP 200 但业务失败或附带异常的响应仍会记录。无需新增环境变量。
 
 ## 关联请求
 
@@ -21,7 +21,7 @@ rg '具体诊断UUID' storage/logs/user-show-*.log
 ## 字段与判断
 
 - `http_status` / `business_code`：同时检查。数据库异常在现有处理逻辑下可能返回 HTTP 200。
-- `reason`：`success`、`unauthenticated`、`binggan_mismatch`、`user_banned`、`validation_failed`、`server_exception` 或 `unexpected_response`。
+- `reason`：`unauthenticated`、`binggan_mismatch`、`user_banned`、`validation_failed`、`server_exception` 或 `unexpected_response`。
 - `user_id`：认证后的内部用户 ID；`binggan_matches`：请求饼干与认证用户是否一致。
 - `client_type`：从认证 token 读取，无法识别时为 unknown。
 - `android_webview`：User-Agent 是否包含现有的 CpttmmAndroid 标记，仅作诊断线索，不能作为可信身份。
@@ -36,6 +36,6 @@ rg '具体诊断UUID' storage/logs/user-show-*.log
 
 ## 排查边界
 
-`success` 只证明服务端生成了成功响应，不能证明客户端已收到响应、写入缓存或更新界面。
-无对应记录时，结合 Nginx access/error log 判断请求是否到达、是否被代理拒绝，或 PHP 是否中途退出。
+成功请求仍返回 `X-Request-ID`，但不写诊断日志；已有的历史 success 记录不作清理。
+无对应记录不代表请求未到达或客户端显示正常，结合 Nginx access/error log 判断请求是否成功、是否被代理拒绝，或 PHP 是否中途退出。
 本次没有添加前端监控或用户提示。
