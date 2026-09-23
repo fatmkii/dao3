@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckBinggan;
+use App\Http\Middleware\MonitorUserShow;
 use App\Http\Middleware\RecordPostActivity;
 use App\Http\Middleware\ThrottlePost;
 use Carbon\Carbon;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->prepend(MonitorUserShow::class);
         $middleware->alias([
             'CheckBinggan' => CheckBinggan::class,
             'ThrottlePost' => ThrottlePost::class,
@@ -70,7 +72,9 @@ return Application::configure(basePath: dirname(__DIR__))
             $error_timestamp = Carbon::now()->toDateTimeString();
             Log::error($e, [
                 'request_url' => $request->url(),
-                'request_data' => $redactedRequestData($request),
+                'request_data' => $request->attributes->has('user_show_request_id')
+                    ? ['request_id' => $request->attributes->get('user_show_request_id')]
+                    : $redactedRequestData($request),
                 'request_ip' => $request->ip(),
             ]);
             return response()->json([
