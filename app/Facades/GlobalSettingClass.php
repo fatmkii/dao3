@@ -46,11 +46,9 @@ class GlobalSettingClass
         $festival_days = [
             ['month' => 6, 'day' => 18],
             ['month' => 11, 'day' => 11],
-            ['month' => 2, 'day' => 16], //TODO，春节用每次都要改，26年已改
-            ['month' => 2, 'day' => 17], //TODO，春节用每次都要改，26年已改
+            ['month' => 2, 'day' => 5], //TODO，春节用每次都要改，27年已改
+            ['month' => 2, 'day' => 6], //TODO，春节用每次都要改，27年已改
         ];
-
-        $is_october_1st = false;
 
 
         if ($time == null) {
@@ -63,10 +61,6 @@ class GlobalSettingClass
             }
         }
 
-        if ($time->month == 10 && $time->day == 1) {
-            //25年国庆红包0税率
-            $is_october_1st = true;
-        }
 
         switch ($name) {
             case 'normal': {
@@ -83,9 +77,6 @@ class GlobalSettingClass
                     //红包税率。
                     if ($is_festival) {
                         $tax_rate = 1.02;
-                    } elseif ($is_october_1st && $hongbao_num >= 20) {
-                        //25年国庆特别地0税率（红包数量大于20时）
-                        $tax_rate = 1;
                     } else {
                         $tax_rate = 1.07;
                     }

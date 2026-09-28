@@ -282,18 +282,18 @@ class CommonController extends Controller
         $message = ""; //红包回帖信息
 
         //TODO 这里每次活动要改
-        if (Carbon::now() < Carbon::create("2026-4-28 8:0:0")) {
+        if (Carbon::now() < Carbon::create("2026-10-1 8:0:0")) {
             $coin = 0;
             $message = "本次活动尚未开始，请稍等喔";
-        } elseif (Carbon::now() > Carbon::create("2026-5-2 0:0:0")) {
+        } elseif (Carbon::now() > Carbon::create("2026-10-4 0:0:0")) {
             $coin = 0;
             $message = "本次活动已经结束，你来晚啦";
         } elseif (DB::table("hongbao_record")->where('user_id', $user->id)->lockForUpdate()->exists()) {
             $coin = 0;
             $message = "你已经领取过了，不要贪心喔！";
-        } elseif (Carbon::parse($user->created_at) > Carbon::create("2026-4-28 0:0:0")) {
+        } elseif (Carbon::parse($user->created_at) > Carbon::create("2026-10-1 0:0:0")) {
             $coin = 0;
-            $message = "你的饼干不符合领取条件（需要是26年4月28日0点前领取的饼干）";
+            $message = "你的饼干不符合领取条件（需要是26年9月28日0点前领取的饼干）";
         } else {
             $rand_num = random_int(1, 1000);
             switch ($rand_num) {
@@ -403,22 +403,22 @@ class CommonController extends Controller
             $message = "我投入了1000个olo！<br>" . $request->message; //祝福池留言
         }
 
-        if (Carbon::now() < Carbon::create("2026-2-17 0:0:0") && $user->admin != 99) {
+        if (Carbon::now() < Carbon::create("2026-10-1 0:0:0") && $user->admin != 99) {
             return response()->json([
                 'code' => ResponseCode::USER_CANNOT,
                 'message' => "本次活动尚未开始，请稍等喔",
             ]);
         }
-        if (Carbon::now() > Carbon::create("2026-2-20 0:0:0")) {
+        if (Carbon::now() > Carbon::create("2026-10-4 0:0:0")) {
             return response()->json([
                 'code' => ResponseCode::USER_CANNOT,
                 'message' => "本次活动已经结束，你来晚啦",
             ]);
         }
-        if (Carbon::parse($user->created_at) > Carbon::create("2026-2-2 0:0:0")) {
+        if (Carbon::parse($user->created_at) > Carbon::create("2026-9-28 0:0:0")) {
             return response()->json([
                 'code' => ResponseCode::USER_CANNOT,
-                'message' => "你的饼干不符合参与条件（26年2月2日0点前领取的饼干）",
+                'message' => "你的饼干不符合参与条件（26年9月28日0点前领取的饼干）",
             ]);
         }
 
