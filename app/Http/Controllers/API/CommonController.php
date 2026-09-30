@@ -282,7 +282,7 @@ class CommonController extends Controller
         $message = ""; //红包回帖信息
 
         //TODO 这里每次活动要改
-        if (Carbon::now() < Carbon::create("2026-10-1 8:0:0")) {
+        if (Carbon::now() < Carbon::create("2026-10-1 0:0:0")) {
             $coin = 0;
             $message = "本次活动尚未开始，请稍等喔";
         } elseif (Carbon::now() > Carbon::create("2026-10-4 0:0:0")) {
