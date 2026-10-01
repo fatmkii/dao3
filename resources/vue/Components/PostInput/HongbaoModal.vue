@@ -10,11 +10,6 @@
                         <br />
                         活动期间限时手续费2%！
                     </n-text>
-                    <n-text v-else-if="commonStore.isOctober1st">
-                        <del>在红包总额以外，会追加扣除7%手续费。</del>
-                        <br />
-                        10月1日“红包个数”在20个及以上时，手续费<n-text type="error">0%!!</n-text>
-                    </n-text>
                     <n-text v-else>
                         在红包总额以外，会追加扣除7%手续费。
                     </n-text>
