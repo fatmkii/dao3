@@ -888,6 +888,7 @@ function newPostHandle(content: contentCommit, resolve: (value: any) => void) {
         forum_id: forumData.value.id,
         thread_id: threadData.value.id,
         content: content.contentInput,
+        recording_id: content.recordingId,
         nickname: content.nicknameInput,
         post_with_admin: content.postWithAdmin,
         new_post_key: newPostKey,

@@ -79,6 +79,7 @@
             </div>
 
             <!-- 红包组件 -->
+            <RecordingPost v-if="postData.is_deleted === 0 && postData.recording_data" :recording="postData.recording_data" />
             <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data" :forum-id="forumId"
                 :thread-id="postData.thread_id" :no-hongbao-pic-mode="noHongbaoPicMode"
                 @refresh-posts-list="emit('refreshPostsList')" />
@@ -129,6 +130,7 @@ import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, h, nextTick, ref, watch } from 'vue'
+import RecordingPost from './RecordingPost.vue'
 import Battle from './Battle.vue'
 import HongbaoPost from './HongbaoPost.vue'
 

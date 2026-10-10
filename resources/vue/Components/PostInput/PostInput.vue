@@ -38,6 +38,7 @@
                     <Dropdown />
                 </n-icon>
             </n-dropdown>
+            <button v-if="recordingVisible" class="recording-control" type="button" aria-label="录音" title="录音" :disabled="handling || userIsLocked || disabled || !!recordingPending" @click="openRecording"><MicOutline aria-hidden="true" /></button>
             <!-- 红包 -->
             <n-popover v-if="mode === 'post'" placement="bottom-start"
                 :trigger="commonStore.isMobile ? 'click' : 'hover'">
@@ -119,10 +120,14 @@
                 </template>
                 第二天8点自动发出
             </n-popover>
+            <template v-if="recordingAttachment">
+                <button class="recording-control" type="button" :aria-label="`已录音 ${(recordingAttachment.duration_ms / 1000).toFixed(1)} 秒`" title="查看录音" :disabled="handling || !!recordingPending" @click="openRecording"><MicOutline aria-hidden="true" /></button>
+                <span>{{ (recordingAttachment.duration_ms / 1000).toFixed(1) }} 秒</span>
+            </template>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
-                        :disabled="handling || userIsLocked || disabled">提交</f-button>
+                        :disabled="handling || userIsLocked || disabled || !!recordingPending">提交</f-button>
                 </template>
                 可以Ctrl+Enter
             </n-popover>
@@ -143,6 +148,7 @@
 </template>
 
 <script setup lang="ts">
+import { useRecordingAttachment } from '@/composables/useRecordingAttachment'
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useAndroidAppBridge } from '@/composables/useAndroidAppBridge'
@@ -153,7 +159,8 @@ import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
 import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
+import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo, MicOutline } from '@vicons/ionicons5'
+import '@/css/recordingControls.css'
 import { useStorage } from '@vueuse/core'
 import { getScopedLocalStorage } from '@/js/androidAuth'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
@@ -197,6 +204,8 @@ const props = withDefaults(defineProps<Props>(), {
     randomHeadsGroup: 1,
 })
 
+const { visible: recordingVisible, attachment: recordingAttachment, pending: recordingPending, open: openRecording, clear: clearRecording } = useRecordingAttachment(computed(() => props.threadId), computed(() => props.mode === 'post'))
+
 //输入框style
 const inputStyle = computed(() => ({
     fontSize: commonStore.userCustom.fontSizeInput + 'px',
@@ -232,6 +241,7 @@ const postWithAdmin = ref<boolean>(false)
 
 //复位输入内容
 function resetInput() {
+    clearRecording()
     nicknameInput.value = userStore.userData.binggan.nickname || '= ='
     titleInput.value = ""
     contentInput.value = ""
@@ -413,12 +423,14 @@ export interface contentCommit {
     postWithAdmin: boolean,
     isDelay: boolean,
     ist: boolean,
+    recordingId?: number,
 }
 const emit = defineEmits<{
     contentCommit: [content: contentCommit, resolve: (value: any) => void],
     refreshPostsList: []
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
+    if (recordingPending.value || props.handling) return
     if (!event.isTrusted) {
         const dialogArgs = {
             title: '错误',
@@ -437,6 +449,7 @@ function handleCommit(event: MouseEvent | KeyboardEvent) {
             titleInput: titleInput.value,
             isDelay: isDelayInput.value,
             ist: event.isTrusted,
+            recordingId: recordingAttachment.value?.id,
         }, resolve)
     });
     promise.then(resetContent)
@@ -444,6 +457,7 @@ function handleCommit(event: MouseEvent | KeyboardEvent) {
 
 //提交成功后，复位输入内容
 function resetContent() {
+    clearRecording()
     titleInput.value = ""
     contentInput.value = ""
     isDelayInput.value = false

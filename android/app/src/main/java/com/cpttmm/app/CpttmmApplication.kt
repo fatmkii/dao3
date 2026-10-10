@@ -61,6 +61,7 @@ class CpttmmApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        java.io.File(cacheDir, "recordings").deleteRecursively()
         diagnostics.record(DiagnosticEvent.APP_STARTED)
         PendingRevocationWorker.enqueue(this)
     }

@@ -31,6 +31,7 @@ class Post extends ModelWithSuffix
         'created_IP',
         'created_binggan',
         'updated_at',
+        'recording',
         'forum_id',
         // 'thread_id',
     ];
@@ -38,7 +39,8 @@ class Post extends ModelWithSuffix
     protected $appends = [
         'is_your_post',
         // 'battle_data', //3.0改为battle数据单独api请求
-        'hongbao_data'
+        'hongbao_data',
+        'recording_data',
     ];
 
     protected $casts = [];
@@ -89,6 +91,20 @@ class Post extends ModelWithSuffix
         $post->save();
 
         return $post;
+    }
+
+    public function recording()
+    {
+        return $this->belongsTo(PostRecording::class);
+    }
+
+    public function getRecordingDataAttribute()
+    {
+        if ($this->is_deleted != 0 || !$this->recording_id) {
+            return null;
+        }
+
+        return $this->recording?->playbackData();
     }
 
     public function Thread()

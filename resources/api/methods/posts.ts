@@ -1,3 +1,4 @@
+import type { RecordingData } from '@/composables/useRecordingAttachment';
 import { commonAlova } from '@/api/index';
 
 //红包数据（被包含在postData内）
@@ -20,6 +21,8 @@ interface hongbaoPostData {
 }
 
 interface postData {
+    recording_id?: number | null,
+    recording_data?: RecordingData | null,
     id: number,
     created_at: string,
     is_deleted: number,//0=正常；1=被用户删除；2=被管理员删除
@@ -40,6 +43,7 @@ interface postData {
 
 //发新帖
 interface newPostParams {
+    recording_id?: number,
     binggan: string,
     forum_id: number,
     thread_id: number,

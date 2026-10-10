@@ -8,6 +8,7 @@ interface AndroidAuthBootstrap {
     binggan: string
     accessToken: string
     pendingStorageNamespaces?: string[]
+    recordingSupported?: boolean
     themeName?: string
 }
 
@@ -23,6 +24,10 @@ let androidAuth: AndroidAuthBootstrap | null = null
 
 export function isAndroidApp(): boolean {
     return detectAndroidApp()
+}
+
+export function supportsRecordings(): boolean {
+    return androidAuth?.recordingSupported === true
 }
 
 export function getAccessToken(): string | null {
