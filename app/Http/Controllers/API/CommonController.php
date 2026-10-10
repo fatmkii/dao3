@@ -22,7 +22,7 @@ use GuzzleHttp\Client;
 
 class CommonController extends Controller
 {
-    // 图片上传到阿里云oss的接口
+    // 图片上传到阿里云oss的接口（已废弃）
     private function oss_upload(UploadedFile $file, string $mode)
     {
 
