@@ -3,4 +3,5 @@
     <string name="recording_limit">最长 %1$.1f 秒，上传后保留 14 天</string>
     <string name="recording_in_progress">录音中 %1$.1f 秒</string>
     <string name="recording_ready">已录音 %1$.1f 秒，可试听或确认上传</string>
+    <string name="recording_confirmed">已录音 %1$.1f 秒，可试听或删除</string>
 </resources>

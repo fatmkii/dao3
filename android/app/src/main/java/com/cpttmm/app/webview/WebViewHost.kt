@@ -475,6 +475,7 @@ class WebViewHost(
                     ))
                 }) { currentAccessToken },
                 { view.evaluateJavascript("window.dispatchEvent(new Event('cpttmm:stop-audio'));void 0;", null) },
+                themeName = { currentThemeName },
             ).also { recordingPanel = it }
             panel.open(payload) { reply ->
                 if (!destroyed && replyPort in bridgePorts) replyPort.postMessage(WebMessage(reply))

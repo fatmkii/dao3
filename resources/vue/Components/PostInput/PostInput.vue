@@ -38,7 +38,17 @@
                     <Dropdown />
                 </n-icon>
             </n-dropdown>
-            <button v-if="recordingVisible" class="recording-control" type="button" aria-label="录音" title="录音" :disabled="handling || userIsLocked || disabled || !!recordingPending" @click="openRecording"><MicOutline aria-hidden="true" /></button>
+            <n-popover v-if="recordingVisible" placement="bottom-start"
+                :trigger="commonStore.isMobile ? 'click' : 'hover'">
+                <template #trigger>
+                    <n-icon :size="commonStore.isMobile ? 28 : 32" class="recording-input-icon"
+                        aria-label="录音" :aria-disabled="recordingDisabled" :tabindex="recordingDisabled ? -1 : 0"
+                        @keydown.enter.prevent="openRecordingFromInput" @keydown.space.prevent="openRecordingFromInput">
+                        <Audio @click="openRecordingFromInput" />
+                    </n-icon>
+                </template>
+                录音
+            </n-popover>
             <!-- 红包 -->
             <n-popover v-if="mode === 'post'" placement="bottom-start"
                 :trigger="commonStore.isMobile ? 'click' : 'hover'">
@@ -120,10 +130,11 @@
                 </template>
                 第二天8点自动发出
             </n-popover>
-            <template v-if="recordingAttachment">
-                <button class="recording-control" type="button" :aria-label="`已录音 ${(recordingAttachment.duration_ms / 1000).toFixed(1)} 秒`" title="查看录音" :disabled="handling || !!recordingPending" @click="openRecording"><MicOutline aria-hidden="true" /></button>
-                <span>{{ (recordingAttachment.duration_ms / 1000).toFixed(1) }} 秒</span>
-            </template>
+            <span v-if="recordingAttachment" class="recording-attachment-link" role="link"
+                :aria-disabled="recordingDisabled" :tabindex="recordingDisabled ? -1 : 0"
+                @click="openRecordingFromInput" @keydown.enter.prevent="openRecordingFromInput">
+                已录音 {{ (recordingAttachment.duration_ms / 1000).toFixed(1) }} 秒
+            </span>
             <n-popover placement="bottom-start" trigger="hover" :disabled="commonStore.isMobile">
                 <template #trigger>
                     <f-button type="primary" @click="handleCommit($event)" :loading="handling"
@@ -157,13 +168,12 @@ import { useUserStore } from '@/stores/user'
 import RollModal from '@/vue/Components/PostInput/RollModal.vue'
 import PostItem from '@/vue/Thread/PostItem/PostItem.vue'
 import { FButton, FCheckbox, FInput, FInputGroupLabel } from '@custom'
-import { MoneyCollectOutlined as Hongbao, AudioMutedOutlined as Mute } from '@vicons/antd'
+import { MoneyCollectOutlined as Hongbao, StopOutlined as Mute, AudioOutlined as Audio } from '@vicons/antd'
 import { Code24Regular as Code, DrawShape24Regular as Draw, Eraser24Regular as Earser } from '@vicons/fluent'
-import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo, MicOutline } from '@vicons/ionicons5'
-import '@/css/recordingControls.css'
+import { DiceOutline as Dice, EllipsisHorizontal as Dropdown, GameControllerOutline as Game, ArrowUndoOutline as Undo } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { getScopedLocalStorage } from '@/js/androidAuth'
-import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard } from 'naive-ui'
+import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import AndroidImageUpload from './AndroidImageUpload.vue'
 import BattleModal from './BattleModal.vue'
@@ -177,6 +187,7 @@ import PingbiciModal from './PingbiciModal.vue'
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
+const themeVars = useThemeVars()
 const { isAndroidApp } = useAndroidAppBridge()
 
 const contentInputDom = ref<HTMLInputElement | null>(null) //输入框的组件引用
@@ -231,6 +242,10 @@ const textareaPlaceHolder = computed(() => {
     }
 })
 const userIsLocked = computed(() => userStore.userData.binggan.locked_ttl > 0)
+const recordingDisabled = computed(() => props.handling || userIsLocked.value || props.disabled || !!recordingPending.value)
+function openRecordingFromInput() {
+    if (!recordingDisabled.value) openRecording()
+}
 
 //用户输入内容
 const nicknameInput = ref<string>(userStore.userData.binggan.nickname || '= =')
@@ -514,3 +529,11 @@ onBeforeUnmount(handleContentBlur)
 defineExpose({ quoteHandle, isTyping, resetInput })
 
 </script>
+
+<style scoped>
+.recording-input-icon { cursor: pointer; }
+.recording-input-icon[aria-disabled="true"] { opacity: 0.4; cursor: default; }
+.recording-attachment-link { color: v-bind('themeVars.primaryColor'); cursor: pointer; }
+.recording-attachment-link:hover:not([aria-disabled="true"]), .recording-attachment-link:focus-visible { text-decoration: underline; }
+.recording-attachment-link[aria-disabled="true"] { opacity: 0.4; cursor: default; }
+</style>

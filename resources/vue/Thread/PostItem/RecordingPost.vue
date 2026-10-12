@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { RecordingData } from '@/composables/useRecordingAttachment'
-import { PauseOutline, PlayOutline, ReloadOutline, StopOutline } from '@vicons/ionicons5'
+import { PlayOutline as Play, PauseOutline as Pause, Renew as Retry, StopOutline as Stop } from '@vicons/carbon'
+import { NCard, NIcon, useThemeVars } from 'naive-ui'
+import { useCommonStore } from '@/stores/common'
 import '@/css/recordingControls.css'
 
 const props = defineProps<{ recording: RecordingData }>()
+const commonStore = useCommonStore()
+const themeVars = useThemeVars()
 const audio = ref<HTMLAudioElement | null>(null)
 const playing = ref(false)
 const position = ref(0)
@@ -104,25 +108,32 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="recording-post">
-        <span v-if="expired" role="status">录音已失效</span>
-        <template v-else>
-            <button class="recording-control" type="button" :disabled="loading" :aria-label="toggleLabel" :title="toggleLabel" :aria-busy="loading" @click="toggle">
-                <ReloadOutline v-if="loading || failed" :class="{ 'recording-control__loading': loading }" aria-hidden="true" />
-                <PauseOutline v-else-if="playing" aria-hidden="true" />
-                <PlayOutline v-else aria-hidden="true" />
-            </button>
-            <button class="recording-control" type="button" aria-label="停止" title="停止" @click="stop"><StopOutline aria-hidden="true" /></button>
-            <input type="range" aria-label="录音进度" min="0" :max="total" step="0.1" :value="position" @input="seek" />
-            <span class="recording-time">{{ time(position) }} / {{ time(total) }}</span>
-            <span v-if="failed" role="status">加载失败，请重试</span>
-        </template>
-        <audio ref="audio" preload="none" @timeupdate="position = audio?.currentTime ?? 0" @ended="stop" @error="playbackError" />
-    </div>
+    <n-card size="small" :bordered="true" embedded class="recording-post">
+        <div class="recording-controls">
+            <span v-if="expired" role="status">录音已失效</span>
+            <template v-else>
+                <button class="recording-control" type="button" :disabled="loading" :aria-label="toggleLabel" :title="toggleLabel" :aria-busy="loading" @click="toggle">
+                    <n-icon :size="commonStore.isMobile ? 28 : 32" :class="{ 'recording-control__loading': loading }" aria-hidden="true">
+                        <Retry v-if="loading || failed" />
+                        <Pause v-else-if="playing" />
+                        <Play v-else />
+                    </n-icon>
+                </button>
+                <button class="recording-control" type="button" aria-label="停止" title="停止" @click="stop">
+                    <n-icon :size="commonStore.isMobile ? 28 : 32" aria-hidden="true"><Stop /></n-icon>
+                </button>
+                <input class="recording-progress" type="range" aria-label="录音进度" min="0" :max="total" step="0.1" :value="position" @input="seek" />
+                <span class="recording-time">{{ time(position) }} / {{ time(total) }}</span>
+                <span v-if="failed" role="status">加载失败，请重试</span>
+            </template>
+            <audio ref="audio" preload="none" @timeupdate="position = audio?.currentTime ?? 0" @ended="stop" @error="playbackError" />
+        </div>
+    </n-card>
 </template>
 
 <style scoped>
-.recording-post { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 12px; margin: 8px 0; border: 1px solid currentColor; border-radius: 10px; max-width: 440px; }
-.recording-post input { flex: 1; min-width: 80px; width: 100px; }
+.recording-post { max-width: 440px; }
+.recording-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.recording-progress { flex: 1; min-width: 80px; width: 100px; accent-color: v-bind('themeVars.primaryColor'); }
 .recording-time { font-variant-numeric: tabular-nums; font-size: 12px; }
 </style>

@@ -54,8 +54,8 @@ for (const supported of [false, true]) {
         await installMessagePortAndroidBridge(page, { recordingSupported: supported });
         await mockPage(page);
         await page.goto('/thread/123/1');
-        if (supported) await expect(page.getByRole('button', { name: '录音', exact: true })).toBeVisible();
-        else await expect(page.getByRole('button', { name: '录音', exact: true })).toHaveCount(0);
+        if (supported) await expect(page.getByRole('img', { name: '录音', exact: true })).toBeVisible();
+        else await expect(page.getByRole('img', { name: '录音', exact: true })).toHaveCount(0);
     });
 }
 
@@ -69,30 +69,30 @@ test('native confirm, stale response, cancel, failure retry and remove preserve 
         return route.fulfill({ json: fail ? { code: 422, message: '测试提交失败' } : { code: 200, message: '已发表', data: {} } });
     });
     await page.goto('/thread/123/1');
-    await page.getByRole('button', { name: '录音', exact: true }).click();
+    await page.getByRole('img', { name: '录音', exact: true }).click();
     await expect.poll(async () => (await bridgeMessages(page)).filter(m => m.type === 'recordingOpen').length).toBe(1);
     await reply(page, 'confirmed', { requestId: 'stale' });
-    await expect(page.getByRole('button', { name: '已录音 15.0 秒' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: '已录音 15.0 秒' })).toHaveCount(0);
     await reply(page, 'confirmed');
-    await expect(page.getByRole('button', { name: '已录音 15.0 秒' })).toBeVisible();
-    await page.getByRole('button', { name: '已录音 15.0 秒' }).click();
+    await expect(page.getByRole('link', { name: '已录音 15.0 秒' })).toBeVisible();
+    await page.getByRole('link', { name: '已录音 15.0 秒' }).click();
     await expect.poll(async () => (await bridgeMessages(page)).filter(m => m.type === 'recordingOpen').length).toBe(2);
     await reply(page, 'cancelled');
     await page.getByRole('textbox', { name: '正文内容' }).fill('录音正文');
     await page.getByRole('button', { name: '提交', exact: true }).click();
     await expect.poll(() => submitted?.recording_id).toBe(42);
-    await expect(page.getByRole('button', { name: '已录音 15.0 秒' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '已录音 15.0 秒' })).toBeVisible();
     fail = false;
     await page.getByRole('button', { name: '提交', exact: true }).click();
-    await expect(page.getByRole('button', { name: '已录音 15.0 秒' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: '已录音 15.0 秒' })).toHaveCount(0);
     await expect.poll(async () => (await bridgeMessages(page)).some(m => m.type === 'recordingRelease')).toBe(true);
-    await page.getByRole('button', { name: '录音', exact: true }).click();
+    await page.getByRole('img', { name: '录音', exact: true }).click();
     await expect.poll(async () => (await bridgeMessages(page)).filter(m => m.type === 'recordingOpen').length).toBe(3);
     await reply(page, 'confirmed');
-    await page.getByRole('button', { name: '已录音 15.0 秒' }).click();
+    await page.getByRole('link', { name: '已录音 15.0 秒' }).click();
     await expect.poll(async () => (await bridgeMessages(page)).filter(m => m.type === 'recordingOpen').length).toBe(4);
     await reply(page, 'removed');
-    await expect(page.getByRole('button', { name: '已录音 15.0 秒' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: '已录音 15.0 秒' })).toHaveCount(0);
 });
 
 test('playback is lazy, mutually exclusive, pausable, seekable and stops for native preview', async ({ page }) => {

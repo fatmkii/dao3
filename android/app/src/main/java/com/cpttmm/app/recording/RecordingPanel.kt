@@ -24,12 +24,16 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.cpttmm.app.MainActivity
 import com.cpttmm.app.R
+import com.cpttmm.app.ui.defaultNativeThemePalette
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,6 +51,7 @@ class RecordingPanel(
     private val binggan: String,
     private val api: RecordingApi,
     private val stopWebAudio: () -> Unit,
+    private val themeName: () -> String = { "green" },
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val handler = Handler(Looper.getMainLooper())
@@ -77,6 +82,8 @@ class RecordingPanel(
     private var confirmButton: ImageButton? = null
     private var playButton: ImageButton? = null
     private var wave: Waveform? = null
+    private var primaryColor = Color.rgb(82, 176, 81)
+    private var onPrimaryColor = Color.WHITE
     private val amplitudes = mutableListOf<Int>()
     private val captureChanges = object : AudioManager.AudioRecordingCallback() {
         override fun onRecordingConfigChanged(configs: MutableList<AudioRecordingConfiguration>) {
@@ -113,7 +120,11 @@ class RecordingPanel(
                 if (generation != current) return@onSuccess
                 maxDurationMs = config.getInt("max_duration_ms")
                 maxSizeBytes = config.getLong("max_size_bytes")
-                status?.text = context.getString(R.string.recording_limit, maxDurationMs / 1000.0)
+                status?.text = if (confirmed != null) {
+                    context.getString(R.string.recording_confirmed, confirmed!!.getInt("duration_ms") / 1000.0)
+                } else {
+                    context.getString(R.string.recording_limit, maxDurationMs / 1000.0)
+                }
             }.onFailure { if (generation == current) status?.text = it.message ?: "录音暂不可用" }
             if (generation == current) { busy = false; updateControls() }
         }
@@ -148,31 +159,71 @@ class RecordingPanel(
     }
 
     private fun showDialog() {
+        val palette = defaultNativeThemePalette(themeName())
+        primaryColor = palette.primaryColor.toArgb()
+        onPrimaryColor = if (ColorUtils.calculateLuminance(primaryColor) > 0.5) Color.rgb(53, 28, 24) else Color.WHITE
+        val surface = palette.backgroundColor.toArgb()
+        val foreground = if (ColorUtils.calculateLuminance(surface) > 0.5) Color.rgb(51, 54, 57) else Color.rgb(242, 242, 245)
         val layout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(32, 24, 32, 32)
-            setBackgroundColor(Color.WHITE)
+            setPadding(dp(20), dp(12), dp(20), dp(20))
+            background = GradientDrawable().apply {
+                setColor(surface)
+                cornerRadii = floatArrayOf(dp(28).toFloat(), dp(28).toFloat(), dp(28).toFloat(), dp(28).toFloat(), 0f, 0f, 0f, 0f)
+            }
         }
-        status = TextView(context).apply { text = "正在读取录音配置…"; setTextColor(Color.DKGRAY) }
-        layout.addView(status)
-        wave = Waveform(context)
-        layout.addView(wave, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 120))
+        layout.addView(View(context).apply {
+            background = GradientDrawable().apply {
+                setColor(ColorUtils.setAlphaComponent(foreground, 64))
+                cornerRadius = dp(2).toFloat()
+            }
+        }, LinearLayout.LayoutParams(dp(32), dp(4)).apply { gravity = Gravity.CENTER_HORIZONTAL; bottomMargin = dp(20) })
+        val recordingCard = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(16))
+            background = GradientDrawable().apply {
+                setColor(ColorUtils.blendARGB(surface, primaryColor, 0.08f))
+                cornerRadius = dp(16).toFloat()
+                setStroke(dp(1).coerceAtLeast(1), ColorUtils.setAlphaComponent(primaryColor, 89))
+            }
+        }
+        layout.addView(recordingCard)
+        val cardHeader = LinearLayout(context).apply { gravity = Gravity.CENTER_VERTICAL }
+        recordingCard.addView(cardHeader)
+        status = TextView(context).apply {
+            text = "正在读取录音配置…"
+            textSize = 15f
+            setTextColor(foreground)
+        }
+        cardHeader.addView(status, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        cardHeader.addView(Button(context).apply {
+            text = "关闭"
+            textSize = 14f
+            isAllCaps = false
+            minWidth = 0
+            minHeight = 0
+            setTextColor(primaryColor)
+            val mask = GradientDrawable().apply { setColor(Color.WHITE); cornerRadius = dp(20).toFloat() }
+            background = RippleDrawable(ColorStateList.valueOf(ColorUtils.setAlphaComponent(primaryColor, 32)), null, mask)
+            setOnClickListener { finish("cancelled") }
+        }, LinearLayout.LayoutParams(dp(64), dp(48)))
+        wave = Waveform(context, primaryColor)
+        recordingCard.addView(wave, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72)))
         layout.addView(TextView(context).apply {
             text = "长按麦克风录音，松手停止"
+            textSize = 14f
             gravity = Gravity.CENTER
-            setTextColor(Color.DKGRAY)
-            setPadding(0, 0, 0, dp(16))
+            setTextColor(foreground)
+            setPadding(0, dp(16), 0, dp(16))
         })
         val controls = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
         }
         layout.addView(controls)
-        playButton = iconButton("试听录音", R.drawable.recording_play).apply {
-            setOnClickListener { play() }
-        }
+        playButton = iconButton("试听录音", R.drawable.recording_play).apply { setOnClickListener { play() } }
         controls.addView(playButton)
-        recordButton = iconButton("长按录音，松手停止", R.drawable.recording_mic, 64).apply {
+        recordButton = iconButton("长按录音，松手停止", R.drawable.recording_mic, 60, emphasized = true).apply {
             setOnTouchListener { view, event ->
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> { startRecording(); true }
@@ -183,47 +234,61 @@ class RecordingPanel(
             }
         }
         controls.addView(recordButton)
-        confirmButton = iconButton("确认并上传", R.drawable.recording_check).apply { setOnClickListener { confirm() } }
+        confirmButton = iconButton("确认并上传", R.drawable.recording_check).apply {
+            setOnClickListener {
+                if (!busy && recorder == null) {
+                    if (candidate == null && confirmed != null) {
+                        clearConfirmed()
+                        finish("removed")
+                    } else {
+                        confirm()
+                    }
+                }
+            }
+        }
         controls.addView(confirmButton)
-        controls.addView(iconButton("移除录音", R.drawable.recording_trash).apply {
-            setOnClickListener { if (!busy) { clearConfirmed(); finish("removed") } }
-        })
-        controls.addView(iconButton("取消", R.drawable.recording_close).apply { setOnClickListener { finish("cancelled") } })
         dialog = Dialog(context).apply {
             setContentView(layout)
             setOnCancelListener { finish("cancelled") }
-            window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            window?.setGravity(Gravity.BOTTOM)
             show()
-            window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            window?.apply {
+                setBackgroundDrawableResource(android.R.color.transparent)
+                decorView.setPadding(0, 0, 0, 0)
+                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                setGravity(Gravity.BOTTOM)
+            }
         }
         wave?.values = confirmedWaves
     }
 
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 
-    private fun iconButton(label: String, icon: Int, size: Int = 48): ImageButton = ImageButton(context).apply {
+    private fun iconButton(label: String, icon: Int, size: Int = 50, emphasized: Boolean = false): ImageButton = ImageButton(context).apply {
         contentDescription = label
         tooltipText = label
         setImageResource(icon)
-        scaleType = ImageView.ScaleType.CENTER_INSIDE
-        setPadding(dp(12), dp(12), dp(12), dp(12))
-        val color = Color.rgb(44, 122, 80)
-        imageTintList = ColorStateList(arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()), intArrayOf(Color.LTGRAY, color))
-        val outline = GradientDrawable().apply {
+        scaleType = ImageView.ScaleType.FIT_CENTER
+        val padding = if (emphasized) dp(14) else 0
+        setPadding(padding, padding, padding, padding)
+        val color = if (emphasized) onPrimaryColor else primaryColor
+        imageTintList = ColorStateList(arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()), intArrayOf(ColorUtils.setAlphaComponent(color, 96), color))
+        val fill = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(Color.TRANSPARENT)
-            setStroke(dp(1).coerceAtLeast(1), color)
+            setColor(if (emphasized) primaryColor else Color.TRANSPARENT)
         }
         val mask = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.WHITE) }
-        background = RippleDrawable(ColorStateList.valueOf(Color.argb(32, 44, 122, 80)), outline, mask)
-        layoutParams = LinearLayout.LayoutParams(dp(size), dp(size)).apply { setMargins(dp(4), 0, dp(4), 0) }
+        background = RippleDrawable(ColorStateList.valueOf(ColorUtils.setAlphaComponent(color, 32)), fill, mask)
+        layoutParams = LinearLayout.LayoutParams(dp(size), dp(size)).apply { setMargins(dp(16), 0, dp(16), 0) }
     }
 
     private fun updateControls() {
         recordButton?.isEnabled = !busy && maxDurationMs > 0
-        confirmButton?.isEnabled = !busy && recorder == null && (candidate != null || confirmed != null)
-        playButton?.isEnabled = !busy && recorder == null && (candidate != null || confirmedFile != null)
+        val canRemove = confirmed != null && candidate == null
+        confirmButton?.isEnabled = !busy && recorder == null && (checked != null || canRemove)
+        confirmButton?.setImageResource(if (canRemove) R.drawable.recording_close else R.drawable.recording_check)
+        confirmButton?.contentDescription = if (canRemove) "移除录音" else "确认并上传"
+        confirmButton?.tooltipText = confirmButton?.contentDescription
+        playButton?.isEnabled = !busy && recorder == null && (checked != null || confirmedFile != null)
         playButton?.setImageResource(if (player == null) R.drawable.recording_play else R.drawable.recording_stop)
         playButton?.contentDescription = if (player == null) "试听录音" else "停止试听"
         playButton?.tooltipText = playButton?.contentDescription
@@ -454,10 +519,10 @@ class RecordingPanel(
     }
 }
 
-private class Waveform(context: Context) : View(context) {
+private class Waveform(context: Context, color: Int) : View(context) {
     var values: List<Int> = emptyList()
         set(value) { field = value; invalidate() }
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(44, 122, 80); strokeWidth = 4f }
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color; strokeWidth = 4f }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val samples = values.takeLast(150)

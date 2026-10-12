@@ -6,13 +6,13 @@
     width: 44px;
     height: 44px;
     padding: 0;
-    border: 1px solid currentColor;
+    border: 0;
     border-radius: 50%;
     background: transparent;
     color: inherit;
     cursor: pointer;
 }
-.recording-control svg { width: 22px; height: 22px; pointer-events: none; }
+.recording-control svg { width: 1em; height: 1em; pointer-events: none; }
 .recording-control:hover:not(:disabled) { background: color-mix(in srgb, currentColor 8%, transparent); }
 .recording-control:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .recording-control:disabled { opacity: 0.4; cursor: default; }
