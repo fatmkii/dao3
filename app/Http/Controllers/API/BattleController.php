@@ -62,6 +62,7 @@ class BattleController extends Controller
         // }
 
         $request->validate([
+            'recording_id' => 'prohibited',
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',

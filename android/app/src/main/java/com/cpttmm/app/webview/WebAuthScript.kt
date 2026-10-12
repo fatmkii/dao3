@@ -12,6 +12,7 @@ object WebAuthScript {
         append("\"storageNamespace\":").append(javaScriptString(storageNamespace))
         append(",\"binggan\":").append(javaScriptString(binggan))
         append(",\"accessToken\":").append(javaScriptString(accessToken))
+        append(",\"recordingSupported\":true")
         append(",\"themeName\":").append(javaScriptString(themeName))
         append(",\"pendingStorageNamespaces\":[")
         pendingStorageNamespaces.forEachIndexed { index, namespace ->

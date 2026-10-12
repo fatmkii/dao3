@@ -31,6 +31,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('mobile')->group(function () {
+    Route::prefix('recordings')->middleware(['auth:sanctum', 'CheckBinggan:create'])->group(function () {
+        Route::get('/config', [\App\Http\Controllers\API\MobileRecordingController::class, 'config']);
+        Route::post('/uploads', [\App\Http\Controllers\API\MobileRecordingController::class, 'uploads']);
+        Route::post('/{id}/complete', [\App\Http\Controllers\API\MobileRecordingController::class, 'complete'])->whereNumber('id');
+    });
     Route::get('/version', [MobileSessionController::class, 'version']);
     Route::get('/registration-status', [MobileSessionController::class, 'registrationStatus']);
     Route::post('/login', [MobileSessionController::class, 'login'])->middleware('throttle:login');

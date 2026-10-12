@@ -19,6 +19,7 @@ class WebAuthScriptTest {
         assertTrue(message.contains("\"accessToken\":\"token\\\\'\\u2028\""))
         assertTrue(message.contains("\"pendingStorageNamespaces\":[\"old-one\"]"))
         assertTrue(message.contains("\"themeName\":\"green\""))
+        assertTrue(message.contains("\"recordingSupported\":true"))
         assertFalse(message.contains("</script>"))
     }
 

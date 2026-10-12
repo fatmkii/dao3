@@ -84,6 +84,10 @@ class WebViewHost(
         )
     }
 
+    private val recordingBinggan = account.binggan
+    private var recordingPanel: com.cpttmm.app.recording.RecordingPanel? = null
+    private var recordingPath: String? = null
+    private var isPaused = false
     private var currentAccessToken = accessToken
     private var currentThemeName = initialThemeName
     private var destroyed = false
@@ -119,6 +123,8 @@ class WebViewHost(
         view.settings.userAgentString = "${view.settings.userAgentString} $USER_AGENT_MARKER"
         view.webViewClient = object : WebViewClient() {
             override fun onPageStarted(webView: WebView, url: String, favicon: Bitmap?) {
+                recordingPanel?.destroy()
+                recordingPanel = null
                 bridgeHandshakeAttempts = 0
                 bridgeFinalHandshakeAttempted = false
                 closeBridgePort()
@@ -352,6 +358,9 @@ class WebViewHost(
 
     override fun pause() {
         if (destroyed) return
+        isPaused = true
+        recordingPanel?.pause()
+        view.evaluateJavascript("window.dispatchEvent(new Event('cpttmm:background'));void 0;", null)
         saveRestorableState()
         view.onPause()
     }
@@ -376,6 +385,8 @@ class WebViewHost(
 
     override fun resume() {
         if (destroyed) return
+        isPaused = false
+        recordingPanel?.resume()
         view.resumeTimers()
         view.onResume()
     }
@@ -383,6 +394,8 @@ class WebViewHost(
     override fun destroy(saveState: Boolean) {
         if (destroyed) return
         destroyed = true
+        recordingPanel?.destroy()
+        recordingPanel = null
         if (saveState) saveRestorableState()
         setOnVerticalScrollChangedListener(null)
         setOnPullUpRefreshStateChangedListener(null)
@@ -437,7 +450,36 @@ class WebViewHost(
         val json = runCatching { JSONObject(message) }.getOrNull()
         if (json?.optString("type") == "navigationChanged") {
             val url = json.optJSONObject("payload")?.optString("url").orEmpty()
+            if (recordingPath != url) {
+                recordingPanel?.destroy()
+                recordingPanel = null
+                recordingPath = url
+            }
             DomainPolicy.internalPath(url)?.let(onPathChanged)
+            return
+        }
+        if (json?.optString("type") == "recordingRelease") {
+            recordingPanel?.release(json.optJSONObject("payload")?.optString("editorId").orEmpty())
+            return
+        }
+        if (json?.optString("type") == "recordingOpen") {
+            if (isPaused) return
+            val payload = json.optJSONObject("payload") ?: return
+            val panel = recordingPanel ?: com.cpttmm.app.recording.RecordingPanel(
+                view.context, recordingBinggan,
+                com.cpttmm.app.recording.RecordingApi(sourceOrigin, onUnauthorized = {
+                    if (!destroyed) onBridgeMessage(WebBridgeMessage(
+                        data = "{\"type\":\"authExpired\"}",
+                        sourceOrigin = sourceOrigin,
+                        reply = {},
+                    ))
+                }) { currentAccessToken },
+                { view.evaluateJavascript("window.dispatchEvent(new Event('cpttmm:stop-audio'));void 0;", null) },
+                themeName = { currentThemeName },
+            ).also { recordingPanel = it }
+            panel.open(payload) { reply ->
+                if (!destroyed && replyPort in bridgePorts) replyPort.postMessage(WebMessage(reply))
+            }
             return
         }
         onBridgeMessage(

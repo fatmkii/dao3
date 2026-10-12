@@ -14,6 +14,7 @@ export interface AndroidBridgeOptions {
     pendingStorageNamespaces?: string[];
     replyToBootstrap?: boolean;
     themeName?: string;
+    recordingSupported?: boolean;
 }
 
 async function installBridge(
@@ -53,6 +54,7 @@ async function installBridge(
                             JSON.stringify(bootstrapOptions.pendingStorageNamespaces ?? []),
                         ),
                         themeName: bootstrapOptions.themeName ?? 'green',
+                        recordingSupported: bootstrapOptions.recordingSupported ?? false,
                     },
                 }));
                 const delay = Number(localStorage.getItem('__bootstrapDelayMs') ?? 0);

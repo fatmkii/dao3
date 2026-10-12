@@ -17,6 +17,19 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class MainActivity : ComponentActivity() {
+    private var recordingPermissionResult: ((Boolean) -> Unit)? = null
+    private val recordingPermission = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        recordingPermissionResult?.invoke(granted)
+        recordingPermissionResult = null
+    }
+
+    fun requestRecordingPermission(result: (Boolean) -> Unit) {
+        recordingPermissionResult = result
+        recordingPermission.launch(android.Manifest.permission.RECORD_AUDIO)
+    }
+
     private var activeWebViewHost: WebViewHost? = null
     private var activeWebViewPool: WebViewPool<WebViewHost>? = null
     private val foregroundGeneration = mutableIntStateOf(0)

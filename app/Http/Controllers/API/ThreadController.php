@@ -66,6 +66,8 @@ class ThreadController extends Controller
             }
         }
 
+        $posts->load('recording');
+
         //查询最大页数
         if ($searchContent == null) {
             $sql_posts_num = 'select count(*) as count from ' . $posts_table . ' where thread_id = :thread_id';
@@ -93,6 +95,7 @@ class ThreadController extends Controller
     public function create(Request $request)
     {
         $request->validate([
+            'recording_id' => 'prohibited',
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'title' => 'required|string|max:100',

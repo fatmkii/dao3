@@ -39,6 +39,7 @@ class PostController extends Controller
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',
             'content' => 'required|string|max:20000',
+            'recording_id' => 'nullable|integer|min:1',
             'nickname' => 'max:30',
             'post_with_admin' => 'boolean',
         ]);
@@ -107,15 +108,28 @@ class PostController extends Controller
         //执行追加新回复流程
         try {
             DB::beginTransaction();
+            $recordingService = app(\App\Services\PostRecordingService::class);
+            if ($request->filled('recording_id')) {
+                $recordingService->requireThread($request);
+                if ($thread->forum_id != $request->forum_id) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['forum_id' => '板块与主题不符']);
+                }
+            }
+            $recording = $recordingService->lockAttachment($request);
             $post = Post::create([
                 'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
                 'content' => $request->content,
+                'recording_id' => $recording?->id,
                 'nickname' => $request->nickname,
                 'created_by_admin' => $request->post_with_admin ? 1 : 0,
                 'created_IP' => $request->ip(),
             ]);
+
+            if ($recording) {
+                $recording->update(['post_id' => $post->id]);
+            }
 
             $user->coinChange(
                 'post', //记录类型
@@ -318,7 +332,7 @@ class PostController extends Controller
                 break;
         }
 
-        $post = Post::suffix(intval($request->thread_id / 10000))->find($id);
+        $post = Post::suffix(intval($request->thread_id / 10000))->with('recording')->find($id);
         if (!$post) {
             return response()->json([
                 'code' => ResponseCode::POST_NOT_FOUND,
@@ -552,6 +566,7 @@ class PostController extends Controller
     public function create_roll(Request $request)
     {
         $request->validate([
+            'recording_id' => 'prohibited',
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',

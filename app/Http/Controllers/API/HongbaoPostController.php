@@ -32,6 +32,7 @@ class HongbaoPostController extends Controller
         // }
 
         $request->validate([
+            'recording_id' => 'prohibited',
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
             'thread_id' => 'required|integer',
@@ -177,6 +178,7 @@ class HongbaoPostController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'recording_id' => 'prohibited',
             //一般回复的验证
             'binggan' => 'required|string',
             'forum_id' => 'required|integer',
