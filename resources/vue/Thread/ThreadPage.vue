@@ -35,6 +35,8 @@
                         <Dropdown />
                     </n-icon>
                 </n-dropdown>
+                <ThreadEditActions :thread-id="threadId" :can-edit="threadData?.can_edit_first_post"
+                    :can-view-history="threadData?.can_view_first_post_history" />
                 <f-button size="small" type="primary" v-if="threadData?.is_your_thread"
                     style="float: right; margin-left: 0.5rem;" @click="ChangeColorModalCom?.show()">
                     变色
@@ -235,6 +237,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BrowseLogger from './BrowseLogger.vue'
 import CaptchaModal from './CaptchaModal.vue'
 import ChangeColorModal from './ChangeColorModal.vue'
+import ThreadEditActions from '@/vue/EditThread/ThreadEditActions.vue'
 import CrowdComponent from './CrowdComponent.vue'
 import GambleComponent from './GambleComponent.vue'
 import HongbaoComponent from './HongbaoComponent.vue'

@@ -63,10 +63,10 @@ export const commonAlova = createAlova({
                 const json = await response.json();
                 if (json.message) {
                     window.$message.error(JSON.stringify(json.message), { closable: true, duration: 5000 }) //json.message有时候是数组，所以需要转为字符串（例如输入验证错误时）
-                    throw new Error(json.message, { cause: { code: json.code } });
+                    throw new Error(json.message, { cause: { code: json.code ?? response.status } });
                 } else {
                     window.$message.error(response.statusText, { closable: true, duration: 5000 })
-                    throw new Error(response.statusText, { cause: { code: json.code } });
+                    throw new Error(response.statusText, { cause: { code: json.code ?? response.status } });
                 }
             }
 

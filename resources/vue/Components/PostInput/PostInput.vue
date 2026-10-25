@@ -1,8 +1,8 @@
 <template>
-    <n-flex vertical>
+    <n-flex vertical :inert="mode === 'edit_thread' && disabled ? true : undefined">
         <!-- 实时预览用组件 -->
         <template v-if="showPreview">
-            <n-card v-if="mode === 'thread'" class="thread-title-container" size="small" key="title-card">
+            <n-card v-if="mode !== 'post'" class="thread-title-container" size="small" key="title-card">
                 <span class="thread-title" :style="{ fontSize: commonStore.userCustom.fontSizeThreadList + 'px' }">
                     {{ titleInput || '标题预览' }} [0]
                 </span>
@@ -14,7 +14,7 @@
             :style="{ paddingRight: commonStore.isMobile ? '24px' : '0px' }">
             <n-input-group style="max-width: 300px;">
                 <f-input-group-label style="width: 3.2rem;">昵称</f-input-group-label>
-                <f-input :maxlength="30" v-model:value="nicknameInput" show-count :input-props="nicknameInputStyle" />
+                <f-input :maxlength="30" v-model:value="nicknameInput" :disabled="mode === 'edit_thread'" show-count :input-props="nicknameInputStyle" />
             </n-input-group>
             <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions"
                 placement="bottom-start">
@@ -22,9 +22,9 @@
             </n-dropdown>
         </n-flex>
         <!-- 标题输入 -->
-        <n-input-group v-if="mode === 'thread'">
+        <n-input-group v-if="mode !== 'post'">
             <f-input-group-label style="width: 3.2rem;">标题</f-input-group-label>
-            <f-input :maxlength="100" v-model:value="titleInput" show-count placeholder="标题内容" />
+            <f-input :maxlength="100" v-model:value="titleInput" :disabled="mode === 'edit_thread'" show-count placeholder="标题内容" />
         </n-input-group>
         <!-- 表情包 -->
         <EmojiTab :auto-hide="emojiAutoHide" :random-heads-group="randomHeadsGroup" @append-emoji="emojiAppend" />
@@ -144,11 +144,11 @@
             </n-popover>
         </n-flex>
         <!-- 各种modal -->
-        <HongbaoModal ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
+        <HongbaoModal v-if="mode === 'post'" ref="HongbaoModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
-        <BattleModal ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId"
+        <BattleModal v-if="mode === 'post'" ref="BattleModalCom" :thread-id="threadId" :forum-id="forumId"
             :random-heads-group="randomHeadsGroup" @refresh-posts-list="emit('refreshPostsList')" />
-        <RollModal ref="RollModalCom" :thread-id="threadId" :forum-id="forumId"
+        <RollModal v-if="mode === 'post'" ref="RollModalCom" :thread-id="threadId" :forum-id="forumId"
             @refresh-posts-list="emit('refreshPostsList')" />
         <PingbiciModal ref="PingbiciModalCom" />
         <CodeModal ref="CodeModalCom" @insert-code="insertCodeHandle" />
@@ -202,7 +202,8 @@ const DrawerModalCom = ref<InstanceType<typeof DrawerModal> | null>(null)
 
 //组件props
 interface Props {
-    mode: 'post' | 'thread',
+    mode: 'post' | 'thread' | 'edit_thread',
+    initialValue?: { nickname: string, title: string, content: string },
     disabled: boolean,//可否输入（有时候需要禁止输入？）
     handling: boolean,//是否正在提交的状态
     forumId?: number,
@@ -233,7 +234,7 @@ const inputRows = computed(() => {
 //用户禁言显示
 const textareaPlaceHolder = computed(() => {
     if (props.disabled) {
-        return '延时主题暂不能回复（每天早上8点自动发出）'
+        return props.mode === 'edit_thread' ? '正文内容' : '延时主题暂不能回复（每天早上8点自动发出）'
     }
     if (userStore.userData.binggan.locked_ttl > 0) {
         return `你的饼干封禁中，将于${Math.floor(userStore.userData.binggan.locked_ttl / 3600) + 1}小时后解封`
@@ -248,9 +249,9 @@ function openRecordingFromInput() {
 }
 
 //用户输入内容
-const nicknameInput = ref<string>(userStore.userData.binggan.nickname || '= =')
-const titleInput = ref<string>("")
-const contentInput = ref<string>("")
+const nicknameInput = ref<string>(props.initialValue?.nickname ?? (userStore.userData.binggan.nickname || '= ='))
+const titleInput = ref<string>(props.initialValue?.title ?? '')
+const contentInput = ref<string>(props.initialValue?.content ?? '')
 const isDelayInput = ref<boolean>(false)
 const postWithAdmin = ref<boolean>(false)
 
@@ -303,7 +304,7 @@ function renderFuncOptions() {
         }),
     ]
 
-    if (userStore.userData.binggan.admin !== 0 && userStore.checkAdminForums(props.forumId)) {
+    if (props.mode !== 'edit_thread' && userStore.userData.binggan.admin !== 0 && userStore.checkAdminForums(props.forumId)) {
         options.push(
             h(FCheckbox, {
                 checked: postWithAdmin.value,
@@ -389,7 +390,7 @@ function clearContent() {
 }
 
 //内容撤销上一步的功能
-const contentInputHistory = ref<string[]>([''])
+const contentInputHistory = ref<string[]>([props.initialValue?.content ?? ''])
 function contentInputRevoke() {
     if (contentInputHistory.value.length > 1) {
         //撤回时弹出历史记录
@@ -445,7 +446,7 @@ const emit = defineEmits<{
     refreshPostsList: []
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
-    if (recordingPending.value || props.handling) return
+    if (recordingPending.value || props.handling || props.disabled || userIsLocked.value) return
     if (!event.isTrusted) {
         const dialogArgs = {
             title: '错误',
@@ -467,7 +468,7 @@ function handleCommit(event: MouseEvent | KeyboardEvent) {
             recordingId: recordingAttachment.value?.id,
         }, resolve)
     });
-    promise.then(resetContent)
+    promise.then(result => { if (result === 'success') resetContent() })
 }
 
 //提交成功后，复位输入内容

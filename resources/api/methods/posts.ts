@@ -21,6 +21,7 @@ interface hongbaoPostData {
 }
 
 interface postData {
+    edit_count?: number,
     recording_id?: number | null,
     recording_data?: RecordingData | null,
     id: number,
