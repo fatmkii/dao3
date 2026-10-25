@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Post;
 use App\Models\Thread;
+use App\Models\ThreadFirstPostRevision;
+use App\Services\ThreadReadAccess;
 use App\Common\ResponseCode;
 use Carbon\Carbon;
 use App\Exceptions\CoinException;
@@ -344,14 +346,6 @@ class ThreadController extends Controller
         $CurrentForum = $CurrentThread->forum;
         $user = $request->user();
 
-        if ($CurrentThread->is_deleted != 0 && $user->admin != 99) {
-            //已删除的帖子不显示
-            return response()->json([
-                'code' => ResponseCode::THREAD_NOT_FOUND,
-                'message' => ResponseCode::$codeMap[ResponseCode::THREAD_NOT_FOUND],
-            ]);
-        }
-
         //用RateLimiter记录，全局每10秒搜索20次限制
         if ($request->has('search_content')) {
             if (RateLimiter::tooManyAttempts('search_record_global', 20)) {
@@ -363,115 +357,7 @@ class ThreadController extends Controller
             RateLimiter::hit('search_record_global', 10);
         }
 
-        //判断是否可无饼干访问的板块
-        if (!$CurrentForum->is_anonymous && !$user) {
-            return response()->json([
-                'code' => ResponseCode::USER_NOT_FOUND,
-                'message' => '本小岛需要饼干才能查看喔',
-            ]);
-        }
-
-        //判断是否达到可以访问板块的最少奥利奥
-        if ($CurrentForum->accessible_coin > 0) {
-            if (!$user) {
-                return response()->json([
-                    'code' => ResponseCode::USER_NOT_FOUND,
-                    'message' => '本小岛需要饼干才能查看喔',
-                ]);
-            }
-            if ($user->getCoin() < $CurrentForum->accessible_coin && !(in_array($user->admin, [99, 20, 10]))) {
-                return response()->json([
-                    'code' => ResponseCode::THREAD_UNAUTHORIZED,
-                    'message' => sprintf("本小岛需要拥有大于%u奥利奥才能查看喔", $CurrentForum->accessible_coin),
-                ]);
-            }
-        }
-
-        //判断奥利奥锁定权限贴
-        if ($CurrentThread->locked_by_coin > 0) {
-            if (!$user) {
-                return response()->json([
-                    'code' => ResponseCode::USER_NOT_FOUND,
-                    'message' => '本贴需要饼干才能查看喔',
-                ]);
-            }
-            if ($user->getCoin() < $CurrentThread->locked_by_coin && !(in_array($user->admin, [99, 20, 10]))) {
-                return response()->json([
-                    'code' => ResponseCode::THREAD_UNAUTHORIZED,
-                    'message' => sprintf("本贴需要拥有大于%u奥利奥才能查看喔", $CurrentThread->locked_by_coin),
-                ]);
-            }
-        }
-
-        //判断是否私密主题 
-        if ($CurrentThread->is_private == true) {
-            if (!$user) {
-                return response()->json([
-                    'code' => ResponseCode::USER_NOT_FOUND,
-                    'message' => '本贴需要饼干才能查看喔',
-                ]);
-            }
-            if ($user->binggan != $CurrentThread->created_binggan && !(in_array($user->admin, [99, 20]))) {
-                return response()->json([
-                    'code' => ResponseCode::THREAD_IS_PRIVATE,
-                    'message' => '本贴是私密主题，只有发帖者可以查看喔',
-                ]);
-            }
-        }
-
-        //各种日清模式
-        switch ($CurrentForum->is_nissin) {
-            case 0:
-                break;
-            case 1: //按照8点日清模式
-                //新日清判断模式
-                if ($CurrentThread->has_nissined == True) {
-                    if ($user != null && $user->admin == 99) {
-                        break;
-                    } else {
-                        return response()->json([
-                            'code' => ResponseCode::THREAD_WAS_NISSINED,
-                            'message' => ResponseCode::$codeMap[ResponseCode::THREAD_WAS_NISSINED],
-                        ]);
-                    }
-                }
-                // $hour_now = Carbon::now()->hour;
-                // if ($hour_now >= 8) { //根据时间确定8点日清的节点
-                //     $nissin_breakpoint = Carbon::today()->addHours(8);
-                // } else {
-                //     $nissin_breakpoint = Carbon::yesterday()->addHours(8);
-                // }
-                // if (
-                //     $CurrentThread->created_at < $nissin_breakpoint
-                //     && $CurrentThread->sub_id == 0
-                // ) {
-                //     if ($user != null && $user->admin == 99) {
-                //         break;
-                //     } else {
-                //         return response()->json([
-                //             'code' => ResponseCode::THREAD_WAS_NISSINED,
-                //             'message' => ResponseCode::$codeMap[ResponseCode::THREAD_WAS_NISSINED],
-                //         ]);
-                //     }
-                // }
-                break;
-            case 2: //按照可选日清时间模式
-                if (
-                    $CurrentForum->is_nissin
-                    && $CurrentThread->nissin_date < Carbon::now()
-                    && $CurrentThread->sub_id == 0
-                ) {
-                    if ($user != null && $user->admin == 99) {
-                        break;
-                    } else {
-                        return response()->json([
-                            'code' => ResponseCode::THREAD_WAS_NISSINED,
-                            'message' => ResponseCode::$codeMap[ResponseCode::THREAD_WAS_NISSINED],
-                        ]);
-                    }
-                }
-                break;
-        }
+        app(ThreadReadAccess::class)->assertReadable($CurrentThread, $user);
 
         $currentPage = $request->has("page") ? $request->page : 1;
 
@@ -538,6 +424,14 @@ class ThreadController extends Controller
         //     $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
         //     $user_medal_record->check_national_day_just_read();
         // }
+
+        $firstPost = $CurrentThread->posts()->where('floor', 0)->first();
+        $firstPostInPage = $posts->firstWhere('floor', 0);
+        if ($firstPostInPage) {
+            $firstPostInPage->setAttribute('edit_count', (int) ThreadFirstPostRevision::where('thread_id', $Thread_id)->max('version'));
+        }
+        $CurrentThread->setAttribute('can_edit_first_post', ThreadFirstPostRevision::canEdit($CurrentThread, $firstPost, $user));
+        $CurrentThread->setAttribute('can_view_first_post_history', ThreadFirstPostRevision::canViewHistory($CurrentThread, $firstPost, $user));
 
         // 生成混淆后的水印字符串
         $watermark_string = WatermarkObfuscator::encode($user ? $user->id : '0', $Thread_id);

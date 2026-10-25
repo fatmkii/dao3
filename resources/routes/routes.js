@@ -35,6 +35,16 @@ const routes = [
         component: () => import('@/vue/NewThread/NewThread.vue')
     },
     {
+        path: '/edit-thread/:threadId', name: 'edit-thread',
+        props: route => ({ threadId: parseInt(route.params.threadId) }),
+        component: () => import('@/vue/EditThread/EditThread.vue'),
+    },
+    {
+        path: '/edit-thread-history/:threadId', name: 'edit-thread-history',
+        props: route => ({ threadId: parseInt(route.params.threadId) }),
+        component: () => import('@/vue/EditThread/EditThreadHistory.vue'),
+    },
+    {
         path: '/user-center',
         component: () => import('@/vue/UserCenter/UserCenter.vue'),
         name: 'user-center',

@@ -202,7 +202,7 @@ class User extends Authenticatable
         }
 
         //执行异步的队列，记录olo变动操作
-        ProcessIncomeStatement::dispatch($action, $income_statement);
+        ProcessIncomeStatement::dispatch($action, $income_statement)->afterCommit();
 
         // 操作olo数据
         $this->increment('coin', $income_statement['olo']);

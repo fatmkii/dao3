@@ -28,6 +28,8 @@ interface threadData {
     created_at: string | null,
     updated_at: string | null
     is_your_thread?: boolean,
+    can_edit_first_post?: boolean,
+    can_view_first_post_history?: boolean,
 }
 
 

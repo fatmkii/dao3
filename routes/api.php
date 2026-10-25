@@ -15,6 +15,7 @@ use App\Http\Controllers\API\HongbaoPostController;
 use App\Http\Controllers\API\MobileSessionController;
 use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\API\ThreadController;
+use App\Http\Controllers\API\ThreadFirstPostController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\VoteController;
 use Illuminate\Support\Facades\Route;
@@ -123,6 +124,9 @@ Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
 //thread系列
 Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
     Route::get('/{Thread_id}', [ThreadController::class, 'show'])->middleware('CheckBinggan:show'); //查看主题
+    Route::get('/{threadId}/first-post/edit', [ThreadFirstPostController::class, 'edit'])->whereNumber('threadId')->middleware('CheckBinggan:create');
+    Route::put('/{threadId}/first-post', [ThreadFirstPostController::class, 'update'])->whereNumber('threadId')->middleware('CheckBinggan:create');
+    Route::get('/{threadId}/first-post/history', [ThreadFirstPostController::class, 'history'])->whereNumber('threadId')->middleware('CheckBinggan:show');
     Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //发新主题
     Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
     Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色

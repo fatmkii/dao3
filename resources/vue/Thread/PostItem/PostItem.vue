@@ -1,18 +1,14 @@
 <template>
     <!-- 回复card -->
-    <component :is="commonStore.userCustom.postLegacyMode ? 'div' : NCard"
-        :class="{ card: !commonStore.userCustom.postLegacyMode }" class="post-item" :id="'f_' + postData.floor"
-        :floor="postData.floor" :style="postItemStyle" :content-style="postItemCardStyle">
-        <!-- header -->
-        <n-flex size="small" :style="postHeaderStyle">
-            <!-- 左边是头像和折叠提示 -->
-            <div class="random-head-container" v-if="!noHeadMode">
-                <img :src="randomHeadsData[randomHeadGroupIndex - 1].random_heads[postData.random_head]"
-                    :class="'head_' + postData.random_head" />
-            </div>
+    <PostFrame :id="'f_' + postData.floor" :floor="postData.floor"
+        :random-head="postData.random_head" :random-head-group-index="randomHeadGroupIndex"
+        :no-head-mode="noHeadMode" :created-by-admin="postData.created_by_admin" :edit-count="postData.edit_count">
+        <template #header>
             <n-button text v-if="postFoldedMessage !== undefined" @click="postIsFolded = !postIsFolded">
                 {{ postFoldedMessage }}
             </n-button>
+        </template>
+        <template #actions>
             <!-- 右边是删除按钮和下拉菜单（预览模式时无需加载） -->
             <template v-if="!previewMode">
                 <div style="margin-left: auto;"></div>
@@ -62,7 +58,7 @@
                     <Quote />
                 </n-icon>
             </template>
-        </n-flex>
+        </template>
 
         <!-- 隐藏时候需要被折叠的内容 -->
         <template v-if="!postIsFolded">
@@ -74,8 +70,8 @@
                         {{ deletedPostMessage }}
                     </n-button>
                 </div>
-                <span v-if="!isAdminDeletedPost || deletedPostExpanded" v-html="postContent" class="post-span"
-                    ref="postContentDom" :style="postContentStyle"></span>
+                <PostContent v-if="!isAdminDeletedPost || deletedPostExpanded" :html="postContent"
+                    :style="postContentStyle" @element-change="postContentDom = $event" @image-click="handleImageClick" />
             </div>
 
             <!-- 红包组件 -->
@@ -86,10 +82,8 @@
             <!-- 大乱斗组件 -->
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
-            <!-- 正文下面的footer，楼号等 -->
-            <n-flex :size="[4, 0]" class="post-footer" :style="postFooterStyle"
-                :class="{ 'system-post': postData.created_by_admin === 2, 'admin-post': postData.created_by_admin === 1 }">
-
+        </template>
+        <template v-if="!postIsFolded" #footer>
                 <span :depth="3" class="post-footer-text" @click="quoteClick" style="cursor: pointer;">
                     {{ '№' + postData.floor }}
                 </span>
@@ -104,9 +98,8 @@
                     {{ postData.created_binggan }}
                 </span>
                 <f-button v-if="isHeightLimited" size="tiny" @click="unfoldContent">展开限高</f-button>
-            </n-flex>
         </template>
-    </component>
+    </PostFrame>
 </template>
 
 <script setup lang="ts">
@@ -114,11 +107,12 @@ import type { AccuseCreatePayload } from '@/api/methods/accuse'
 import type { deletePostParams, postData, recoverPostParams } from '@/api/methods/posts'
 import { deletePostDeleter, recoverPostPutter } from '@/api/methods/posts'
 import { myEmojisAddPoster, type myEmojisAddParams } from '@/api/methods/user'
-import randomHeadsData from '@/data/randomHeads'
+import PostFrame from '@/vue/Components/Post/PostFrame.vue'
+import PostContent from '@/vue/Components/Post/PostContent.vue'
+import { formatPostContent, linkPostUrls } from '@/vue/Components/Post/formatPostContent'
 import { renderIcon } from '@/js/func/renderIcon'
 import showDialog from '@/js/func/showDialog'
 import { useCommonStore } from '@/stores/common'
-import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { FButton } from '@/vue/Custom'
 import type { rewardModalPayload } from '@/vue/Thread/PostItem/RewardModal.vue'
@@ -128,7 +122,7 @@ import { LockClosed12Regular as Lock } from '@vicons/fluent'
 import { CardGiftcardFilled as Gift, FlagOutlined as Flag } from '@vicons/material'
 import { Ban, EllipsisHorizontal as Dropdown, ChatbubbleEllipsesOutline as Quote, ReloadOutline as Recover } from '@vicons/ionicons5'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, NButton, NCard, NDropdown, NFlex, NIcon, type DropdownOption } from 'naive-ui'
+import { NAlert, NButton, NDropdown, NIcon, type DropdownOption } from 'naive-ui'
 import { computed, h, nextTick, ref, watch } from 'vue'
 import RecordingPost from './RecordingPost.vue'
 import Battle from './Battle.vue'
@@ -140,7 +134,6 @@ const renderDropdown = ref<boolean>(false)
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const themeStore = useThemeStore()
 const postContentDom = ref<HTMLSpanElement | null>(null)//回复内容组件的ref
 const postContentContainerDom = ref<HTMLSpanElement | null>(null)//回复内容的外层包裹容器的ref
 const BattleCom = ref<InstanceType<typeof Battle> | null>(null)
@@ -180,39 +173,6 @@ const props = withDefaults(defineProps<Props>(), {
     adminMode: false,
 })
 
-//回复框本体的style(传统模式时)
-const postItemStyle = computed(() =>
-    commonStore.userCustom.postLegacyMode ?
-        {
-            paddingTop: '6px',
-            paddingBottom: '6px',
-            borderBottom: '1px solid',
-            borderColor: themeStore.themeColor.postItemBorderColor,
-        } : undefined
-)
-
-//回复框本体的style(Card模式时)
-const postItemCardStyle = computed(() =>
-    !commonStore.userCustom.postLegacyMode ?
-        {
-            padding: commonStore.userCustom.postCardPadding + 'px'
-        } : undefined
-)
-
-//回复header的style（主要是右侧padding配置）
-const postHeaderStyle = computed(() => {
-    // 这是给侧边栏的padding,避免阻挡文字内容。
-    let paddingRight = 0
-    if (commonStore.isMobile && !commonStore.userCustom.sidebarLeft) { //电脑版和侧边栏在左侧时候不需要padding
-        //传统模式要比卡片模式要多padding一些
-        paddingRight = commonStore.userCustom.postLegacyMode ? 20 : 20 - commonStore.userCustom.postCardPadding
-    }
-    return {
-        paddingRight: paddingRight + 'px',
-    }
-})
-
-
 //回复内容的style，用来折叠高度、自定义式样等
 const postContentContainerStyle = computed(() => {
     // 这是给侧边栏的padding,避免阻挡文字内容。
@@ -237,13 +197,6 @@ const postContentContainerStyle = computed(() => {
 const postContentStyle = computed(() => ({
     top: postContentTopOffset.value === undefined ? undefined : postContentTopOffset.value + 'px',
     fontSize: commonStore.userCustom.fontSizePost + 'px'
-}))
-
-//回复Footer的style，用来自定义式样
-const postFooterStyle = computed(() => ({
-    marginTop: commonStore.userCustom.postInnerMargin + 'px',
-    fontSize: commonStore.userCustom.fontSizeFooter + 'px',
-    lineHeight: commonStore.userCustom.fontSizeFooter + 'px',
 }))
 
 //注册事件
@@ -359,36 +312,11 @@ const deletedPostMessage = computed(() => {
 watch([() => props.postData.id, () => props.postData.is_deleted, isAdminDeletedPost], () => {
     deletedPostExpanded.value = false
 })
-function imgReplacer(match: string) {//用于屏蔽表情包或者其他图片的回调函数
-    if (match.search(/class='emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
-        //判断是否表情包
-        return props.noEmojiMode ? "" : match
-
-    } else if (match.search(/class='custom[-_]emoji[-_]img'/g) != -1) {//旧2.0代码使用下划线，现3.0使用横杠-，这里要匹配两种
-        //判断是否自定义表情包
-        return props.noCustomEmojiMode ? "" : match
-    } else {
-        if (props.noImageMode) {
-            //no_image_mode:无图模式
-            return match
-                .replace(/src/i, "origin-src")
-                .replace(/<img /i, '<img src="/img_svg.svg" class="img-svg"');
-        } else {
-            return match;
-        }
-    }
-}
 const postContent = computed(() => {//数据处理
     let postContent: string
-    //第二种屏蔽类型：文本元素的替换（图片和表情包等）
-    postContent = props.postData.content.replace(/<img[^>]*>/gi, imgReplacer)
-        .replace(/<script/gi, "<**禁止使用script**")
-        .replace(/<base/gi, "<**禁止使用base标签**")
-        .replace(/\n/g, "<br>")
-
-    if (props.superAdminMode || props.adminMode) {
-        postContent = postContent.replace(/<style/gi, "<**停止解析style")
-    }
+    postContent = formatPostContent(props.postData.content, {
+        ...props, useUrlMode: false, disableStyles: props.superAdminMode || props.adminMode,
+    })
 
     //第三种屏蔽类型：不变更postData，仅进行折叠
     if (userStore.userData?.binggan.use_pingbici) {
@@ -452,23 +380,7 @@ const postContent = computed(() => {//数据处理
         })
     }
 
-    //自动转换超链接
-    if (props.useUrlMode) {
-        function urlReplacer(match: string) {
-            //判断是否是图片格式，如果非图片格式则转换为<a>标签
-            if (/\.(png|jpe?g|webp|gif)$/i.test(match)) {
-                return match
-            } else {
-                let href = match
-                if (/^www\./i.test(match)) {
-                    href = 'http://' + match
-                }
-                return `<a href="${href}" target="_blank">${match}</a>`
-            }
-        }
-        const reg = /((https?:\/\/|www\.)[\w\-@:]+(\.[\w\-@:]+)+([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?)/gi
-        postContent = postContent.replace(reg, urlReplacer)
-    }
+    if (props.useUrlMode) postContent = linkPostUrls(postContent)
 
     return postContent
 })
@@ -523,19 +435,9 @@ function quoteClick() {
 
 //点击图片添加到表情包功能
 const emojiSelected = ref<HTMLImageElement>()
-function setImgOnClick() {
-    const imgDom = postContentDom.value!.querySelectorAll('img')
-    imgDom.forEach(element => {
-        if (element.getAttribute('class') !== "img-svg") {//不处理屏蔽占位图
-            element.addEventListener('click', (event) => {
-                emojiSelected.value = element
-                window.$message.success('要添加至自定义表情包吗？', {
-                    render: renderMessage,
-                    closable: true
-                })
-            })
-        }
-    });
+function handleImageClick(element: HTMLImageElement) {
+    emojiSelected.value = element
+    window.$message.success('要添加至自定义表情包吗？', { render: renderMessage, closable: true })
 }
 const renderMessage: MessageRenderMessage = (props) => {
     const { type } = props
@@ -583,20 +485,6 @@ function emojiAddHandle() {
 
 }
 
-//被屏蔽的图片重新展开功能
-function setImgSvgOnClick() {
-    const imgDom = postContentDom.value!.querySelectorAll('.img-svg')
-    imgDom.forEach(element => {
-        element.addEventListener("click", (event) => {
-            const srcOld = element.getAttribute("src");
-            element.setAttribute("src", "");//点击给让svg图标消失作为反馈
-            element.setAttribute("src", element.getAttribute("origin-src")!);
-            element.setAttribute("origin-src", srcOld!);
-        });
-    });
-}
-
-
 //确认post总行数，如果超过特定行数，则折叠（包括图片等高度）
 const isHeightLimited = ref<boolean>(false)
 const postContentContainerMaxHeight = ref<number>()
@@ -621,8 +509,6 @@ function unfoldContent() {
 watch(postContentDom, async (element) => {
     unfoldContent()
     if (!element) return
-    setImgOnClick()
-    setImgSvgOnClick()
     await nextTick()
     if (postContentDom.value === element && props.postData.floor !== 0 && !isAdminDeletedPost.value) {//首楼和管理员删除帖不折叠高度
         setMaxHeight()

@@ -56,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trimStrings(except: [
             //对于创建大喇叭，此处关闭laravel的内置中间件。它会自动trim字符串
             fn (Request $request) => $request->is('api/loudspeaker/create'),
+            fn (Request $request) => $request->is('api/threads/*/first-post'),
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) use ($redactedRequestData) {
