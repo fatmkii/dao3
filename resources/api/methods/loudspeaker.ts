@@ -23,7 +23,11 @@ interface rangedLoudspeakerDataParams {
     date_start: string,
     date_end: string,
 }
-type loudspeakerDataParams = effectiveLoudspeakerDataParams | rangedLoudspeakerDataParams
+interface myLoudspeakerDataParams {
+    binggan: string,
+    mode: 'mine',
+}
+type loudspeakerDataParams = effectiveLoudspeakerDataParams | rangedLoudspeakerDataParams | myLoudspeakerDataParams
 const loudspeakerDataGetter = (params: loudspeakerDataParams) => {
     const methodInstance = commonAlova.Get<loudspeakerData[]>(
         'api/loudspeaker/show',

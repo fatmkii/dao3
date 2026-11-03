@@ -24,7 +24,7 @@
             <n-switch v-model:value="onlyMyLoudspeaker" />
             <n-date-picker v-model:formatted-value="dateRangeSelected" value-format="yyyy-MM-dd" type="daterange"
                 update-value-on-close start-placeholder="开始生效日期" end-placeholder="结束生效日期"
-                :is-date-disabled="dateDisabled" :size="commonStore.isMobile ? 'small' : 'medium'"
+                :disabled="onlyMyLoudspeaker" :is-date-disabled="dateDisabled" :size="commonStore.isMobile ? 'small' : 'medium'"
                 style="max-width: 300px;" />
         </n-flex>
 
@@ -132,19 +132,22 @@ const offset = computed(() => (page.value - 1) * pageSize.value)
 
 //获取大喇叭数据
 const { loading: loudspeakerDataLoading,
-    data: loudspeakerDataRaw,
+    data: loudspeakerData,
     send: loudspeakerDataSend } = useRequest(
         (params: loudspeakerDataParams) => loudspeakerDataGetter(params), { immediate: false, initialData: [] }
     );
 function refreshLoudspeakerData() {
-    return loudspeakerDataSend({
+    return loudspeakerDataSend(onlyMyLoudspeaker.value ? {
+        binggan: userStore.binggan!,
+        mode: 'mine',
+    } : {
         binggan: userStore.binggan!,
         mode: 'range',
         date_start: dateRangeSelected.value[0],
         date_end: dateRangeSelected.value[1],
     })
 }
-watch(dateRangeSelected, () => {
+watch([dateRangeSelected, onlyMyLoudspeaker], () => {
     page.value = 1
     refreshLoudspeakerData()
 }, { immediate: true })
@@ -154,16 +157,6 @@ function dateDisabled(timestamp: number, _position: 'start' | 'end', value: [num
 
     return Math.abs(dayjs.tz(timestamp).startOf('day').diff(dayjs.tz(value[0]).startOf('day'), 'day')) > 6
 }
-
-const loudspeakerData = computed(() => {
-    return loudspeakerDataRaw.value.filter((item) => {
-        if (onlyMyLoudspeaker.value && !item.is_your_loudspeaker) {
-            return false
-        }
-        return true
-    })
-})
-
 
 //确认是否可以发布大喇叭
 const { data: newLoudspeakerEnable } = useRequest(newLoudspeakerEnableGetter);

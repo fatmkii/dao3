@@ -911,12 +911,17 @@ class UserController extends Controller
     {
         $request->validate([
             'binggan' => 'nullable|string',
-            'mode' => 'required|string|in:effective,range',
+            'mode' => 'required|string|in:effective,range,mine',
             'date_start' => 'required_if:mode,range|date_format:Y-m-d',
             'date_end' => 'required_if:mode,range|date_format:Y-m-d|after_or_equal:date_start',
         ]);
 
-        if ($request->mode == 'effective') {
+        if ($request->mode == 'mine') {
+            $loudspeakers = Loudspeaker::where('user_id', $request->user()->id)
+                ->orderBy('sub_id', 'desc')
+                ->orderBy('id', 'asc')
+                ->get();
+        } elseif ($request->mode == 'effective') {
             //正常显示的已发布的大喇叭
             $loudspeakers = Loudspeaker::where('effective_date', "<", Carbon::now())->orderBy('sub_id', 'desc')->orderBy('id', 'asc')->get();
         } else {
@@ -936,9 +941,10 @@ class UserController extends Controller
                 ->get();
         }
 
-        if ($request->query('binggan')) {
+        $binggan = $request->mode === 'mine' ? $request->user()->binggan : $request->query('binggan');
+        if ($binggan) {
             foreach ($loudspeakers as $loudspeaker) {
-                $loudspeaker->setBinggan($request->query('binggan'));
+                $loudspeaker->setBinggan($binggan);
             }
         }
 

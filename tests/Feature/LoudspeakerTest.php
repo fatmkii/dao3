@@ -93,6 +93,33 @@ class LoudspeakerTest extends TestCase
         }
     }
 
+    public function test_mine_mode_returns_only_owned_undeleted_records_without_dates(): void
+    {
+        $current = $this->createLoudspeaker('2026-09-03 12:00:00');
+        $future = $this->createLoudspeaker('2026-12-03 12:00:00');
+        $deleted = $this->createLoudspeaker('2026-09-04 12:00:00');
+        $deleted->delete();
+        $other = User::factory()->create();
+        $foreign = $this->createLoudspeaker('2026-09-05 12:00:00');
+        $foreign->update(['user_id' => $other->id, 'created_binggan' => $other->binggan]);
+
+        $response = $this->getJson('/api/loudspeaker/show?'.http_build_query([
+            'mode' => 'mine',
+            'binggan' => $other->binggan,
+        ]));
+
+        $response->assertOk()->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.is_your_loudspeaker', true)
+            ->assertJsonPath('data.1.is_your_loudspeaker', true);
+        $this->assertSame([$current->id, $future->id], collect($response->json('data'))->pluck('id')->all());
+    }
+
+    public function test_mine_mode_returns_empty_array_when_user_has_no_loudspeakers(): void
+    {
+        $this->getJson('/api/loudspeaker/show?mode=mine')
+            ->assertOk()->assertJsonPath('data', []);
+    }
+
     private function createLoudspeaker(string $effectiveDate): Loudspeaker
     {
         return Loudspeaker::create([

@@ -26,7 +26,7 @@ function userDataResponse() {
     };
 }
 
-test('loudspeaker page queries an inclusive seven-day effective-date range', async ({ page }) => {
+test('loudspeaker page switches between a seven-day range and all owned loudspeakers', async ({ page }) => {
     const loudspeakerRequests: URL[] = [];
 
     await page.clock.install({ time: new Date('2026-09-03T04:00:00Z') });
@@ -52,7 +52,7 @@ test('loudspeaker page queries an inclusive seven-day effective-date range', asy
                 data: [{
                     id: 1,
                     sub_id: 0,
-                    content: '范围内的大喇叭',
+                    content: new URL(route.request().url()).searchParams.get('mode') === 'mine' ? '远期预约的大喇叭' : '范围内的大喇叭',
                     color: null,
                     thread_id: null,
                     effective_date: '2026-09-03 12:00:00',
@@ -99,4 +99,27 @@ test('loudspeaker page queries an inclusive seven-day effective-date range', asy
         date_start: '2026-09-15',
         date_end: '2026-09-21',
     });
+
+    await page.getByRole('switch').click();
+    await expect(page.getByPlaceholder('开始生效日期')).toBeDisabled();
+    await expect(page.getByPlaceholder('结束生效日期')).toBeDisabled();
+    await expect(page.getByText('远期预约的大喇叭')).toBeVisible();
+    await expect.poll(() => loudspeakerRequests.length).toBe(3);
+    expect(Object.fromEntries(loudspeakerRequests[2].searchParams)).toEqual({
+        binggan: 'loudspeaker_owner',
+        mode: 'mine',
+    });
+
+    await page.getByRole('switch').click();
+    await expect(page.getByPlaceholder('开始生效日期')).toBeEnabled();
+    await expect(page.getByPlaceholder('结束生效日期')).toBeEnabled();
+    await expect(page.getByText('范围内的大喇叭')).toBeVisible();
+    await expect.poll(() => loudspeakerRequests.length).toBe(4);
+    expect(Object.fromEntries(loudspeakerRequests[3].searchParams)).toEqual({
+        binggan: 'loudspeaker_owner',
+        mode: 'range',
+        date_start: '2026-09-15',
+        date_end: '2026-09-21',
+    });
+
 });
