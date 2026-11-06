@@ -41,7 +41,15 @@ class DelayThreadHandle extends Command
     public function handle()
     {
 
-        DB::table('threads')->where('is_delay',  1)
+        $now = Carbon::now();
+        DB::table('threads')->where('is_delay', 1)
+            ->where('is_deleted', 0)
+            ->where(function ($query) use ($now) {
+                $query->where('scheduled_at', '<=', $now)
+                    ->orWhere(function ($legacy) use ($now) {
+                        $legacy->whereNull('scheduled_at')->whereRaw('? >= 8', [$now->hour]);
+                    });
+            })
             ->update([
                 'is_delay' => 0,
                 'created_at' => Carbon::now()->addSeconds(10),

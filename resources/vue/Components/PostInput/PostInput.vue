@@ -123,13 +123,8 @@
                 :thread-id="threadId" @insert-image="insertImageHandle" />
             <ImageUpload v-else :user-is-locked="userIsLocked" :forum-id="forumId" :thread-id="threadId"
                 @insert-image="insertImageHandle" />
-            <n-popover v-if="mode === 'thread'" placement="bottom-start" trigger="hover"
-                :disabled="commonStore.isMobile">
-                <template #trigger>
-                    <f-checkbox v-model:checked="isDelayInput">延时发送</f-checkbox>
-                </template>
-                第二天8点自动发出
-            </n-popover>
+            <ThreadSchedulePicker v-if="mode === 'thread'" v-model="scheduledDateInput"
+                :disabled="handling || userIsLocked || disabled" />
             <span v-if="recordingAttachment" class="recording-attachment-link" role="link"
                 :aria-disabled="recordingDisabled" :tabindex="recordingDisabled ? -1 : 0"
                 @click="openRecordingFromInput" @keydown.enter.prevent="openRecordingFromInput">
@@ -175,6 +170,8 @@ import { useStorage } from '@vueuse/core'
 import { getScopedLocalStorage } from '@/js/androidAuth'
 import { NDivider, NDropdown, NFlex, NIcon, NInput, NInputGroup, NPopover, NCard, useThemeVars } from 'naive-ui'
 import { computed, h, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import ThreadSchedulePicker from './ThreadSchedulePicker.vue'
+import { isThreadScheduleDateValid, threadScheduleLabel } from '@/js/func/threadSchedule'
 import AndroidImageUpload from './AndroidImageUpload.vue'
 import BattleModal from './BattleModal.vue'
 import CodeModal from './CodeModal.vue'
@@ -208,6 +205,7 @@ interface Props {
     handling: boolean,//是否正在提交的状态
     forumId?: number,
     threadId?: number,
+    scheduledAt?: string | null,
     randomHeadsGroup?: number,
 }
 const props = withDefaults(defineProps<Props>(), {
@@ -234,7 +232,9 @@ const inputRows = computed(() => {
 //用户禁言显示
 const textareaPlaceHolder = computed(() => {
     if (props.disabled) {
-        return props.mode === 'edit_thread' ? '正文内容' : '延时主题暂不能回复（每天早上8点自动发出）'
+        return props.mode === 'edit_thread' ? '正文内容' : (props.scheduledAt
+            ? `预约主题暂不能回复（${threadScheduleLabel(props.scheduledAt)}）`
+            : '预约主题暂不能回复（早上8点自动发出）')
     }
     if (userStore.userData.binggan.locked_ttl > 0) {
         return `你的饼干封禁中，将于${Math.floor(userStore.userData.binggan.locked_ttl / 3600) + 1}小时后解封`
@@ -252,7 +252,7 @@ function openRecordingFromInput() {
 const nicknameInput = ref<string>(props.initialValue?.nickname ?? (userStore.userData.binggan.nickname || '= ='))
 const titleInput = ref<string>(props.initialValue?.title ?? '')
 const contentInput = ref<string>(props.initialValue?.content ?? '')
-const isDelayInput = ref<boolean>(false)
+const scheduledDateInput = ref<string | null>(null)
 const postWithAdmin = ref<boolean>(false)
 
 //复位输入内容
@@ -261,7 +261,7 @@ function resetInput() {
     nicknameInput.value = userStore.userData.binggan.nickname || '= ='
     titleInput.value = ""
     contentInput.value = ""
-    isDelayInput.value = false
+    scheduledDateInput.value = null
     postWithAdmin.value = false
 }
 
@@ -437,7 +437,7 @@ export interface contentCommit {
     titleInput: string,
     contentInput: string,
     postWithAdmin: boolean,
-    isDelay: boolean,
+    scheduledDate: string | null,
     ist: boolean,
     recordingId?: number,
 }
@@ -447,6 +447,10 @@ const emit = defineEmits<{
 }>()
 function handleCommit(event: MouseEvent | KeyboardEvent) {
     if (recordingPending.value || props.handling || props.disabled || userIsLocked.value) return
+    if (props.mode === 'thread' && scheduledDateInput.value && !isThreadScheduleDateValid(scheduledDateInput.value)) {
+        window.$message.error('预约日期已失效，请重新选择')
+        return
+    }
     if (!event.isTrusted) {
         const dialogArgs = {
             title: '错误',
@@ -463,7 +467,7 @@ function handleCommit(event: MouseEvent | KeyboardEvent) {
             nicknameInput: nicknameInput.value,
             postWithAdmin: postWithAdmin.value,
             titleInput: titleInput.value,
-            isDelay: isDelayInput.value,
+            scheduledDate: scheduledDateInput.value,
             ist: event.isTrusted,
             recordingId: recordingAttachment.value?.id,
         }, resolve)
@@ -476,7 +480,7 @@ function resetContent() {
     clearRecording()
     titleInput.value = ""
     contentInput.value = ""
-    isDelayInput.value = false
+    scheduledDateInput.value = null
 }
 
 //确认输入框是否在输入中，并且向父组件返回

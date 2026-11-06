@@ -83,7 +83,7 @@ test('edit preloads immutable identity, hides special features, and cancel does 
     await expect(page.locator('input.nickname-input')).toBeDisabled();
     await expect(page.getByPlaceholder('正文内容')).toHaveValue('原始正文');
     await expect(page.getByRole('tab')).toHaveCount(0);
-    await expect(page.getByText('延时发送', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '预约发送', exact: true })).toHaveCount(0);
     await expect(page.locator('.recording-input-icon')).toHaveCount(0);
     await page.getByRole('button', { name: '功能', exact: true }).click();
     await expect(page.getByText('管理员', { exact: true })).toHaveCount(0);

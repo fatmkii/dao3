@@ -44,6 +44,7 @@ class Thread extends ModelWithSuffix
         'has_nissined' => 'boolean',
         'can_battle' => 'boolean',
         'is_delay' => 'boolean',
+        'scheduled_at' => 'datetime',
         'is_private' => 'boolean',
     ];
 
