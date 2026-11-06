@@ -71,7 +71,7 @@ class Hongbao extends Model
         }
     }
 
-    public static function create(Request $request, $thread_id)
+    public static function create(Request $request, $thread_id, ?\Carbon\Carbon $scheduledAt = null)
     {
         $request->validate([
             'hongbao_params.olo' => 'required|integer|min:20000|max:2000000',
@@ -118,7 +118,7 @@ class Hongbao extends Model
 
         if ($request->hongbao_params['loudspeaker']) {
             //如果有设定自动发大喇叭，就发大喇叭
-            $effective_date = Carbon::now();
+            $effective_date = $scheduledAt ? $scheduledAt->copy() : Carbon::now();
             $expire_date = $effective_date->copy()->addDays(1); //记得copy否则会影响原变量
             $loudspeaker = Loudspeaker::create([
                 'sub_id' => 1,

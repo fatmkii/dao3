@@ -18,6 +18,7 @@ use App\Jobs\ProcessUserActive;
 use App\Models\Crowd;
 use App\Models\GambleQuestion;
 use App\Models\Hongbao;
+use App\Models\Loudspeaker;
 use App\Models\UserMedalRecord;
 use App\Models\VoteQuestion;
 use App\Common\WatermarkObfuscator;
@@ -117,6 +118,37 @@ class ThreadController extends Controller
         ]);
 
 
+        $now = Carbon::now();
+        $firstScheduledAt = $now->copy()->startOfDay()->addHours(8);
+        if ($firstScheduledAt->lessThanOrEqualTo($now)) {
+            $firstScheduledAt->addDay();
+        }
+        $scheduledAt = null;
+        if ($request->boolean('is_delay')) {
+            if ($request->exists('scheduled_date')) {
+                $request->validate([
+                    'scheduled_date' => 'required|date_format:Y-m-d|after_or_equal:'.$firstScheduledAt->toDateString()
+                        .'|before_or_equal:'.$firstScheduledAt->copy()->addDays(6)->toDateString(),
+                ], ['scheduled_date.*' => '预约日期最多未来7天哦']);
+                $scheduledAt = Carbon::parse($request->scheduled_date)->startOfDay()->addHours(8);
+            } else {
+                $scheduledAt = $firstScheduledAt;
+            }
+            $endTimeField = match ($request->thread_type) {
+                'vote' => 'vote_params.end_time',
+                'gamble' => 'gamble_params.end_time',
+                'crowd' => 'crowd_params.end_time',
+                default => null,
+            };
+            if ($endTimeField) {
+                $request->validate([
+                    $endTimeField => 'required|date_format:Y-m-d H:i:s|after:'.$scheduledAt->toDateTimeString(),
+                ], [$endTimeField.'.after' => '菠菜/投票/众筹的结束时间必须晚于预约发出时间，请调整结束时间']);
+            }
+        } else {
+            $request->validate(['scheduled_date' => 'prohibited']);
+        }
+
         $user = $request->user();
 
         //确认是否冒认管理员发公告或者管理员帖
@@ -196,13 +228,8 @@ class ThreadController extends Controller
             $thread->sub_title = $request->subtitle;
             $thread->random_heads_group = $request->random_heads_group;
             if ($request->nissin_time > 0) { //如果请求中带有nissin_time，才设定nissin_date
-                if ($request->is_delay) { //如果是延迟发表主题，则从发表时刻计算日清时间
-                    $hour_now = Carbon::now()->hour;
-                    if ($hour_now < 8) { //根据时间确定8点日清的节点
-                        $thread->nissin_date  = Carbon::today()->addHours(8)->addDays($request->nissin_time);
-                    } else {
-                        $thread->nissin_date  = Carbon::tomorrow()->addHours(8)->addDays($request->nissin_time);
-                    }
+                if ($scheduledAt) {
+                    $thread->nissin_date = $scheduledAt->copy()->addDays($request->nissin_time);
                 } else { //如果是非延迟发表主题，则直接计算日清时间
                     $thread->nissin_date = Carbon::now()->addDays($request->nissin_time);
                 }
@@ -211,6 +238,7 @@ class ThreadController extends Controller
             $thread->anti_jingfen = $request->anti_jingfen;
             $thread->can_battle = $request->can_battle;
             $thread->is_delay = $request->is_delay;
+            $thread->scheduled_at = $scheduledAt;
             $thread->save();
 
             //发主题帖的第0楼（Post）
@@ -270,7 +298,7 @@ class ThreadController extends Controller
 
             //追加红包贴
             if ($request->thread_type == "hongbao") {
-                $hongbao = Hongbao::create($request, $thread->id);
+                $hongbao = Hongbao::create($request, $thread->id, $scheduledAt);
                 $thread->hongbao_id = $hongbao->id; //$hongbao->create会返回id
                 $thread->save();
             }
@@ -519,6 +547,9 @@ class ThreadController extends Controller
             $CurrentThread->is_deleted = 1;
             $CurrentThread->is_delay = 0;
             $CurrentThread->save();
+            if ($CurrentThread->hongbao_id !== null) {
+                Loudspeaker::where('thread_id', $CurrentThread->id)->where('sub_id', 1)->delete();
+            }
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
