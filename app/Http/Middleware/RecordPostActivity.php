@@ -37,7 +37,7 @@ class RecordPostActivity
 
         switch ($action) {
             case 'new_thread':
-                if ($user) {
+                if ($user && ! $request->boolean('is_delay')) {
                     $this->antiSpam->recordThread($user->binggan);
                 }
                 break;

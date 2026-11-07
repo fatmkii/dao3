@@ -100,7 +100,7 @@ const newThreadPoster = (params: newThreadParams) => commonAlova.Post<newThreadD
     }
 )
 
-//撤回延时主题
+//撤回预约主题
 const delayThreadDeleter = (threadId: number) => {
     const methodInstance = commonAlova.Delete(
         '/api/threads/delay/' + threadId,

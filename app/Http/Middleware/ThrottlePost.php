@@ -51,7 +51,9 @@ class ThrottlePost
                         }
                     }
                 case 'new_thread':
-                    $this->antiSpam->checkThreadSpam($user->binggan, $user);
+                    if (! $request->boolean('is_delay')) {
+                        $this->antiSpam->checkThreadSpam($user->binggan, $user);
+                    }
                     break;
                 case 'hongbao_store':
                     if ($this->isOwnHongbaoPost($request, $user->id)) {
