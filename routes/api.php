@@ -118,7 +118,7 @@ Route::prefix('accuses')->middleware('auth:sanctum')->group(function () {
 //Forum系列
 Route::prefix('forums')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ForumController::class, 'index'])->withoutMiddleware('auth:sanctum'); //查看板块列表
-    Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表（包括延时主题）
+    Route::get('/{forum_id}', [ForumController::class, 'show'])->middleware('CheckBinggan:show'); //查看板块内主题列表（包括预约主题）
 });
 
 //thread系列
@@ -128,7 +128,7 @@ Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
     Route::put('/{threadId}/first-post', [ThreadFirstPostController::class, 'update'])->whereNumber('threadId')->middleware('CheckBinggan:create');
     Route::get('/{threadId}/first-post/history', [ThreadFirstPostController::class, 'history'])->whereNumber('threadId')->middleware('CheckBinggan:show');
     Route::post('/create', [ThreadController::class, 'create'])->middleware('CheckBinggan:create')->middleware('ThrottlePost')->middleware('RecordPostActivity'); //发新主题
-    Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回延时主题
+    Route::delete('/delay/{Thread_id}', [ThreadController::class, 'delay_thread_withdraw'])->middleware('CheckBinggan:create'); //撤回预约主题
     Route::post('/change_color', [ThreadController::class, 'change_color'])->middleware('CheckBinggan:create'); //改标题颜色
 });
 

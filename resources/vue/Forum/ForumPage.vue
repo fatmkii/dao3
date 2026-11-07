@@ -11,7 +11,7 @@
             </n-carousel>
         </div>
         <!-- 各种按钮 -->
-        <n-flex style="margin-top:8px ;" size="small">
+        <n-flex style="margin-top:8px ;" size="small" align="center">
             <n-dropdown :trigger="commonStore.isMobile ? 'click' : 'hover'" :options="funcOptions"
                 placement="bottom-start">
                 <f-button>功能</f-button>
@@ -23,10 +23,17 @@
             <n-icon :size="commonStore.isMobile ? 28 : 34">
                 <SearchIcon style="cursor: pointer;" @click="showSearchInput = !showSearchInput" />
             </n-icon>
-            <f-button type="primary" style="margin-left: auto;"
-                @click="$router.push({ name: 'loudspeaker' })">大喇叭</f-button>
-            <f-button type="primary"
-                @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
+            <n-flex size="small" align="center" :wrap="false" style="margin-left: auto;">
+                <n-flex v-if="delay" size="small" align="center" :wrap="false">
+                    <n-switch :value="onlyMine" aria-label="只看自己" :size="commonStore.isMobile ? 'small' : 'medium'"
+                        @update:value="toggleOnlyMine" />
+                    <span>只看自己</span>
+                </n-flex>
+                <f-button type="primary"
+                    @click="$router.push({ name: 'loudspeaker' })">大喇叭</f-button>
+                <f-button type="primary"
+                    @click="$router.push({ name: 'new-thread', params: { forumId: props.forumId } })">新主题</f-button>
+            </n-flex>
         </n-flex>
         <!-- 搜索输入（弹出） -->
         <n-flex v-if="showSearchInput" :wrap="false">
@@ -42,10 +49,10 @@
             :forum-id="forumId" :show-this="!threadsDataLoading"
             @withdraw-delay-thread-success="handleFetchThreadsList" />
 
-        <!-- 底部分页导航及延时主题按钮 -->
+        <!-- 底部分页导航及预约主题按钮 -->
         <n-flex :align="'center'">
             <f-button :type="props.delay ? 'default' : 'primary'" @click="toggleDelayThreads">
-                {{ props.delay ? '关闭延时主题' : '查看延时主题' }}
+                {{ props.delay ? '关闭预约主题' : '查看预约主题' }}
             </f-button>
             <Pagination v-model:page="pageSelected" @update:page="pageUpdate"
                 :last-page="threadsDataLoading ? 1 : threadsData.threads_data.lastPage" style="margin-left: auto;" />
@@ -87,7 +94,7 @@ import { SearchOutline as SearchIcon } from '@vicons/ionicons5'
 import { useStorage } from '@vueuse/core'
 import { getScopedLocalStorage } from '@/js/androidAuth'
 import { useFetcher, useWatcher } from 'alova'
-import { NCarousel, NCheckboxGroup, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NTag } from 'naive-ui'
+import { NCarousel, NCheckboxGroup, NDropdown, NEllipsis, NFlex, NIcon, NSkeleton, NSwitch, NTag } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -109,9 +116,10 @@ interface Props {
     page: number //来自路由
     search?: string,//来自路由
     delay: boolean,//来自路由
+    onlyMine?: boolean,//来自路由
 }
 const props = withDefaults(defineProps<Props>(), {
-
+    onlyMine: false,
 })
 
 //随机版头
@@ -235,25 +243,32 @@ const showSearchInput = ref<boolean>(props.search ? true : false)
 function handleSearch() {
     router.push({
         name: "forum", params: { forumId: props.forumId, page: 1 },
-        query: { search: searchTitleInput.value || undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
+        query: { search: searchTitleInput.value || undefined, delay: props.delay ? 'true' : undefined, only_mine: props.delay && props.onlyMine ? 'true' : undefined }//如果是空字符串''，则返回undefined避免请求中发送一个空的searchTitle
     })
 }
 function handleSearchClear() {
     searchTitleInput.value = undefined
     showSearchInput.value = false
-    router.push({ name: "forum", params: { forumId: props.forumId, page: 1 } })
+    router.push({ name: "forum", params: { forumId: props.forumId, page: 1 }, query: { delay: props.delay ? 'true' : undefined, only_mine: props.delay && props.onlyMine ? 'true' : undefined } })
 }
 
-//查看延时主题
+//查看预约主题
 function toggleDelayThreads() {
     router.push({ name: "forum", params: { forumId: props.forumId, page: 1 }, query: { delay: props.delay ? undefined : 'true' } })
+}
+
+function toggleOnlyMine(value: boolean) {
+    router.push({
+        name: 'forum', params: { forumId: props.forumId, page: 1 },
+        query: { search: props.search, delay: 'true', only_mine: value ? 'true' : undefined },
+    })
 }
 
 //侦听分页器跳转路由
 const pageSelected = ref<number>(props.page)
 function pageUpdate(toPage: number | undefined) {
     if (toPage === undefined) return
-    router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search, delay: props.delay ? 'true' : undefined } })
+    router.push({ name: "forum", params: { forumId: props.forumId, page: toPage }, query: { search: props.search, delay: props.delay ? 'true' : undefined, only_mine: props.delay && props.onlyMine ? 'true' : undefined } })
 }
 watch(() => props.page,
     //其他代码router.push的时候，也需要同时变更pageSelected
@@ -269,14 +284,15 @@ const threadsDataRequestParams = computed<getThreadsListParams>(() => {
         threadsPerPage: 50,
         subtitlesExcluded: subtitlesExcluded.value,
         searchTitle: props.search,
-        delay: props.delay
+        delay: props.delay,
+        onlyMine: props.delay && props.onlyMine,
     }
 })
 
 //获取主题列表数据（监听props变更）
 const { loading: threadsDataLoading, data: threadsData, onSuccess: threadsDataOnSuccess } = useWatcher(
     () => threadsListGetter(threadsDataRequestParams.value),
-    [() => props.forumId, () => props.page, () => props.search, () => props.delay, subtitlesExcluded],
+    [() => props.forumId, () => props.page, () => props.search, () => props.delay, () => props.onlyMine, subtitlesExcluded],
     { initialData: [], immediate: true, }
 );
 

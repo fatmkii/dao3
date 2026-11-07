@@ -2,16 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Common\ResponseCode;
+use App\Http\Middleware\ThrottlePost;
 use App\Jobs\ProcessIncomeStatement;
 use App\Jobs\ProcessUserActive;
 use App\Models\Forum;
 use App\Models\Loudspeaker;
 use App\Models\Thread;
 use App\Models\User;
+use App\Services\AntiSpamService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schedule;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\InteractsWithAntiSpamRedis;
@@ -52,6 +56,63 @@ class ThreadScheduleTest extends TestCase
             'random_heads_group' => 1, 'post_with_admin' => false, 'thread_type' => 'normal',
             'is_delay' => true, 'is_private' => false, 'can_battle' => true,
         ], $overrides);
+    }
+
+    public function test_scheduled_threads_bypass_existing_cooldown_without_refreshing_it(): void
+    {
+        $this->withMiddleware(ThrottlePost::class);
+        $key = AntiSpamService::REDIS_THREAD_RECORD.$this->author->binggan;
+        Redis::setex($key, 300, 'existing-cooldown');
+
+        foreach (['2026-11-03', '2026-11-04'] as $date) {
+            $this->postJson('/api/threads/create', $this->body(['scheduled_date' => $date]))
+                ->assertJsonPath('code', 200);
+        }
+        $this->assertSame('existing-cooldown', Redis::get($key));
+        $this->postJson('/api/threads/create', $this->body(['is_delay' => false]))
+            ->assertJsonPath('code', ResponseCode::THREAD_TOO_MANY);
+    }
+
+    public function test_scheduled_threads_do_not_start_cooldown_for_immediate_threads(): void
+    {
+        $this->withMiddleware(ThrottlePost::class);
+        $key = AntiSpamService::REDIS_THREAD_RECORD.$this->author->binggan;
+        foreach (['2026-11-03', '2026-11-04'] as $date) {
+            $this->postJson('/api/threads/create', $this->body(['scheduled_date' => $date]))
+                ->assertJsonPath('code', 200);
+        }
+        $this->assertFalse((bool) Redis::exists($key));
+        $this->postJson('/api/threads/create', $this->body(['is_delay' => false]))->assertJsonPath('code', 200);
+        $this->postJson('/api/threads/create', $this->body(['is_delay' => false]))
+            ->assertJsonPath('code', ResponseCode::THREAD_TOO_MANY);
+    }
+
+    public function test_only_mine_filters_scheduled_threads_using_authenticated_identity_before_pagination(): void
+    {
+        $other = User::factory()->create();
+        $otherForum = Forum::create(['name' => '其他板块', 'description' => 'test']);
+        $ids = [];
+        foreach ([
+            [$this->author->binggan, $this->forum->id, true, 0],
+            [$other->binggan, $this->forum->id, true, 0],
+            [$this->author->binggan, $this->forum->id, false, 0],
+            [$this->author->binggan, $this->forum->id, true, 1],
+            [$this->author->binggan, $otherForum->id, true, 0],
+        ] as [$binggan, $forumId, $delay, $deleted]) {
+            $thread = new Thread;
+            $thread->forceFill(['forum_id' => $forumId, 'created_binggan' => $binggan,
+                'title' => '预约列表测试', 'is_delay' => $delay, 'is_deleted' => $deleted,
+                'scheduled_at' => $delay ? '2026-11-03 08:00:00' : null])->save();
+            $ids[] = $thread->id;
+        }
+        $url = '/api/forums/'.$this->forum->id.'?delay=1&subtitles_excluded=[]';
+        $response = $this->getJson($url.'&only_mine=1&threads_per_page=1&binggan='.$other->binggan)
+            ->assertJsonPath('code', 200)->assertJsonPath('data.threads_data.lastPage', 1)->assertJsonCount(1, 'data.threads_data.data');
+        $this->assertSame([$ids[0]], array_column($response->json('data.threads_data.data'), 'id'));
+        $response->assertJsonPath('data.threads_data.data.0.scheduled_at', '2026-11-03 08:00');
+        $response = $this->getJson($url.'&only_mine=0')->assertJsonCount(2, 'data.threads_data.data');
+        $this->assertEqualsCanonicalizing([$ids[0], $ids[1]], array_column($response->json('data.threads_data.data'), 'id'));
+        $this->getJson($url.'&only_mine=invalid')->assertUnprocessable();
     }
 
     /** @dataProvider dateProvider */

@@ -36,7 +36,7 @@
                         @click="toThreadPage(threadData.id)">
                         [{{ browseLoggerData[threadData.id]?.floor }}楼]
                     </f-button>
-                    <!-- 延时主题的撤回按钮 -->
+                    <!-- 预约主题的撤回按钮 -->
                     <f-button size="tiny" type="warning" v-if="threadData.is_your_thread"
                         :disabled="withdrawDelayThreadLoading"
                         @click="handleWithdrawDelayThread(threadData.id)">撤回</f-button>
@@ -52,7 +52,8 @@
                     <span style="margin-left: auto;"></span>
                     {{ threadData.posts_num > 1200 ? '🔥' : '' }}
                     <span v-if="threadData.locked_by_coin > 0">🔒{{ threadData.locked_by_coin }}</span>
-                    <span><n-text depth="3">Re:</n-text> {{ threadData.posts_num }}</span>
+                    <span v-if="threadData.is_delay"><n-text depth="3">预约时间:</n-text> {{ threadData.scheduled_at || '—' }}</span>
+                    <span v-else><n-text depth="3">Re:</n-text> {{ threadData.posts_num }}</span>
                 </n-flex>
             </n-flex>
         </n-card>
@@ -154,7 +155,7 @@ function toThreadPage(threadId: number) {
     }
 }
 
-//撤回延时主题功能
+//撤回预约主题功能
 const { loading: withdrawDelayThreadLoading, send: sendWithdrawDelayThread, onSuccess: withdrawDelayThreadSuccess } = useRequest(
     (threadId: number) => delayThreadDeleter(threadId), { immediate: false }
 )
@@ -163,7 +164,7 @@ withdrawDelayThreadSuccess(() => {
     emit('withdrawDelayThreadSuccess')
 })
 function handleWithdrawDelayThread(threadId: number) {
-    showDialog({ title: '要撤回延时主题吗？', onPositiveClick: () => { sendWithdrawDelayThread(threadId) } })
+    showDialog({ title: '要撤回预约主题吗？', onPositiveClick: () => { sendWithdrawDelayThread(threadId) } })
 }
 
 </script>

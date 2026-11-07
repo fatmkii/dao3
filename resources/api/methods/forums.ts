@@ -44,6 +44,7 @@ interface getThreadsListParams {
     subtitlesExcluded: string[],
     searchTitle?: string
     delay?: boolean
+    onlyMine?: boolean
 }
 
 //获取版面中的主题列表
@@ -57,7 +58,8 @@ const threadsListGetter = (params: getThreadsListParams) => commonAlova.Get<thre
             threads_per_page: params.threadsPerPage,
             subtitles_excluded: JSON.stringify(params.subtitlesExcluded),
             search_title: params.searchTitle,
-            delay: params.delay ? 1 : 0
+            delay: params.delay ? 1 : 0,
+            only_mine: params.onlyMine ? 1 : 0
         },
         localCache: null,
     }

@@ -54,6 +54,7 @@ class ForumController extends Controller
             'threads_per_page' => 'integer|nullable|max:100|min:1',
             'subtitles_excluded' => 'json|nullable', //要排除的副标题
             'search_title' => 'string|max:100', //搜索标题
+            'only_mine' => 'boolean|nullable',
             'delay' => 'boolean|nullable|', //是否显示延时发送主题
         ]);
 
@@ -111,6 +112,10 @@ class ForumController extends Controller
 
         $threads = $CurrentForum->threads()->where('is_deleted', 0)->where('is_delay', $request->delay ? 1 : 0);
 
+        if ($request->boolean('only_mine')) {
+            $threads->where('created_binggan', $user->binggan);
+        }
+
         //搜索标题
         if ($request->has('search_title')) {
             $threads->where('title', 'like', '%' . $request->query('search_title') . '%');
@@ -134,7 +139,7 @@ class ForumController extends Controller
 
 
         //加入公告以及排序
-        if (!($request->has('search_title') || in_array("[公告]", $subtitles_excluded) || $request->delay)) { //搜索时或者筛选时或查看延时主题时不需要公告
+        if (!($request->has('search_title') || in_array("[公告]", $subtitles_excluded) || $request->delay || $request->boolean('only_mine'))) { //搜索时或者筛选时或查看预约主题时不需要公告
             $threads
                 ->orWhere(function ($query) {  //加入全岛公告（sub_id=99）
                     $query->where('is_deleted', 0)
