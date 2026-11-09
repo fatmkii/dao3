@@ -27,3 +27,4 @@ playwright-report/
 /android/.gradle
 /android/local.properties
 /android/**/build
+/storage/framework/lsp-*.php
