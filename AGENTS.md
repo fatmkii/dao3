@@ -21,6 +21,16 @@ This repository contains a Laravel 11 API, a Vue 3 SPA, and a native Android cli
 - Android resources and manifests: `android/app/src/main/res/`, `android/app/src/main/AndroidManifest.xml`, and `android/app/src/debug/AndroidManifest.xml`
 - Android JVM tests: `android/app/src/test/`; device/instrumentation tests: `android/app/src/androidTest/`
 - Android Room schema snapshots: `android/app/schemas/`; local setup and installation notes: `android/README.md`
+- See `docs/project_structure.md` for a more detailed directory and feature map.
+
+## Architecture & Domain Conventions
+- Backend authentication uses Laravel Sanctum. A user account is identified by a `binggan` (饼干); account creation is in `UserController`, and login/password handling is in `AuthController`. `CheckBinggan` middleware applies account restrictions in `create` and `show` modes; check `routes/api.php` for each endpoint's middleware.
+- Posts are sharded by thread ID: `Post::suffix(intval($threadId / 10000))` selects `posts_N`. `app/Models/ModelWithSuffix.php` implements table suffixing; preserve shard selection when querying or updating posts.
+- API JSON bodies use business response codes from `app/Common/ResponseCode.php` (`SUCCESS = 200`, for example `USER_NOT_FOUND = 21404`). These are distinct from HTTP status codes; reuse existing constants and `ResponseCode::$codeMap`.
+- Rate limiters are defined in `app/Providers/AppServiceProvider.php` and applied through route middleware. Post anti-spam behavior lives in `app/Services/AntiSpamService.php` and `app/Http/Middleware/ThrottlePost.php`; related constants are in `app/Models/User.php`.
+- The Vue SPA uses Composition API / `<script setup>`, Naive UI, Pinia, Vue Router, and Alova. `routes/web.php` serves `resources/views/index.blade.php` through a catch-all route; frontend routes are in `resources/routes/routes.js` (history mode). `resources/vue/App.vue` caches `ThreadPage` and `NewThread` with `KeepAlive`, so account for activation/deactivation when changing their lifecycle behavior.
+- New-post updates use Laravel Reverb, Echo, and the Pusher protocol. `app/Events/NewPostBroadcast.php` broadcasts `NewPost` on `thread_{id}` channels; the frontend Echo wrapper is `resources/js/echo.ts`.
+- Scheduled tasks are registered in `routes/console.php`; command implementations are in `app/Console/Commands/` and queued jobs are in `app/Jobs/`.
 
 ## Build, Test, and Development Commands
 - Development runs in Docker Compose from WSL. Do not use `sudo` for normal project commands; fix script or Docker socket permissions instead.
@@ -33,6 +43,7 @@ This repository contains a Laravel 11 API, a Vue 3 SPA, and a native Android cli
 - `docker compose exec php php artisan migrate`: run database migrations.
 - `docker compose exec php php artisan test`: run all tests.
 - `docker compose exec php php artisan test --filter=AntiSpam`: run a focused subset.
+- `docker compose exec php ./vendor/bin/pint`: format PHP code; pass changed file paths to limit formatting to the current change.
 - `npm run e2e:install`: install the local Playwright Chromium browser after npm dependencies are installed.
 - `docker compose exec node npm run e2e:docker:install`: install Playwright Chromium and browser runtime dependencies in the Node container after it is created or rebuilt.
 - `npm run e2e`: run Playwright smoke checks against `http://localhost:80` from WSL after local browser dependencies are installed.
@@ -57,6 +68,7 @@ This repository contains a Laravel 11 API, a Vue 3 SPA, and a native Android cli
 
 ## Testing Guidelines
 - Framework: PHPUnit (via `php artisan test`).
+- `phpunit.xml` configures MySQL database `dao_test`, array-backed cache/sessions, and synchronous queues. Database-backed feature tests use `RefreshDatabase`; anti-spam and other tests that call Redis directly still require Redis. For connection failures, check the Docker MySQL/Redis services and test connection settings before debugging application code.
 - Frontend smoke checks use Playwright. After changes that affect Vue pages, routing, frontend assets, or page rendering, run `docker compose exec node npm run e2e:docker` with the local stack available at `http://localhost:80`.
 - Place HTTP/integration tests in `tests/Feature`; pure logic tests in `tests/Unit`.
 - Name test files with `*Test.php` suffix (example: `AntiSpamHttpTest.php`).
