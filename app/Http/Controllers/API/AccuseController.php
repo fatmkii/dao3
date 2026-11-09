@@ -151,7 +151,12 @@ class AccuseController extends Controller
             return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个回复了');
         }
 
-        $accuse = DB::transaction(function () use ($request, $thread, $post, $user, $targetUserId, $existingAccuse) {
+        $accuse = DB::transaction(function () use ($request, $thread, $post, $user, $targetUserId) {
+            $existingAccuse = Accuse::where('post_id', $post->id)->lockForUpdate()->first();
+            if ($existingAccuse?->status === 'handled') {
+                return null;
+            }
+
             $accuse = $existingAccuse ?: Accuse::create([
                 'target_type' => 'post',
                 'thread_id' => $thread->id,
@@ -174,6 +179,10 @@ class AccuseController extends Controller
 
             return $accuse->load(['reasons', 'handledBy.AdminPermissions']);
         });
+
+        if ($accuse === null) {
+            return $this->error(ResponseCode::USER_CANNOT, '该回复的举报已处理');
+        }
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -203,7 +212,12 @@ class AccuseController extends Controller
             return $this->error(ResponseCode::USER_CANNOT, '你已经举报过这个大喇叭了');
         }
 
-        $accuse = DB::transaction(function () use ($request, $loudspeaker, $user, $existingAccuse) {
+        $accuse = DB::transaction(function () use ($request, $loudspeaker, $user) {
+            $existingAccuse = Accuse::where('loudspeaker_id', $loudspeaker->id)->lockForUpdate()->first();
+            if ($existingAccuse?->status === 'handled') {
+                return null;
+            }
+
             $accuse = $existingAccuse ?: Accuse::create([
                 'target_type' => 'loudspeaker',
                 'thread_id' => $loudspeaker->thread_id ?? 0,
@@ -230,6 +244,10 @@ class AccuseController extends Controller
 
             return $accuse->load(['reasons', 'handledBy.AdminPermissions']);
         });
+
+        if ($accuse === null) {
+            return $this->error(ResponseCode::USER_CANNOT, '该大喇叭的举报已处理');
+        }
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,

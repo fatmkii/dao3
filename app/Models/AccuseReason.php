@@ -20,6 +20,7 @@ class AccuseReason extends Model
     protected $hidden = [
         'reporter_user_id',
         'updated_at',
+        'invalid_report_consumed_at',
     ];
 
     public function accuse()

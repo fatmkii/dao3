@@ -2,7 +2,7 @@
 import type { AccuseCreateParams, AccuseCreatePayload } from '@/api/methods/accuse'
 import { useCommonStore } from '@/stores/common'
 import { FButton, FInput, FInputGroupLabel } from '@custom'
-import { NCard, NFlex, NInputGroup, NModal } from 'naive-ui'
+import { NCard, NFlex, NInputGroup, NModal, NText } from 'naive-ui'
 import { reactive, shallowRef } from 'vue'
 
 const commonStore = useCommonStore()
@@ -98,9 +98,12 @@ defineExpose({ show })
                 </n-input-group>
                 <n-input-group v-if="form.target_type === 'loudspeaker'">
                     <f-input-group-label style="width: 5.5rem;">大喇叭</f-input-group-label>
-                    <f-input :value="form.loudspeaker_content" disabled :style="{ color: form.loudspeaker_color ?? undefined }" />
+                    <f-input :value="form.loudspeaker_content" disabled
+                        :style="{ color: form.loudspeaker_color ?? undefined }" />
                 </n-input-group>
-                <f-input v-model:value="form.reason" type="textarea" placeholder="填写举报理由（至少5字）&#10;为提升效率，请附上具体楼规、缩写、花名等&#10;如需举报多条，请在这里说明" :maxlength="500" show-count />
+                <f-input v-model:value="form.reason" type="textarea"
+                    placeholder="填写举报理由（至少5字）&#10;为提升效率，请附上具体楼规、缩写、花名等&#10;如需举报多条，请在这里说明" :maxlength="500" show-count />
+                <n-text type="warning">为抑制乱举报现象，如果1天内无效的举报达到10次，将被封禁饼干</n-text>
             </n-flex>
 
             <template #action>

@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Models\UserMedal;
 use App\Services\AccuseHandlingService;
 use App\Services\MobileSessionService;
+use App\Services\UserLockService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -696,34 +697,14 @@ class AdminController extends Controller
             ]);
         }
 
-        if ($user_to_lock->is_banned) {
+        $lock = app(UserLockService::class)->lock($user_to_lock);
+        if (!$lock['locked']) {
             return response()->json([
                 'code' => ResponseCode::DEFAULT,
-                'message' => '该饼干已经被碎过了。',
+                'message' => $lock['message'],
             ]);
         }
-
-        if ($user_to_lock->locked_until != null && $user_to_lock->locked_until > Carbon::now()) {
-            return response()->json([
-                'code' => ResponseCode::DEFAULT,
-                'message' => '该饼干已经是封禁状态了。封禁期到：' . $user_to_lock->locked_until,
-            ]);
-        }
-
-        // $user_to_lock->locked_until = Carbon::now()->addDays(3);
-        $user_to_lock->locked_count += 1;
-        $user_to_lock->locked_until = Carbon::now()->addDays(3 * $user_to_lock->locked_count); //每封禁一次，多3天
-        if ($user_to_lock->locked_count >= 4) {
-            //如果被锁定超过3次（≥4），则碎饼干
-            $user_to_lock->is_banned = true;
-            $msg = '该饼干已被累计封禁4次，已永久碎饼干。';
-        } else {
-            $msg = sprintf('该饼干已封禁%d天。', $user_to_lock->locked_count * 3);
-        }
-        $user_to_lock->save();
-        if ($user_to_lock->is_banned) {
-            $this->sessions->revokeAllForUser($user_to_lock);
-        }
+        $msg = $lock['message'];
 
         // $admin_name = $user->tokenCan('admin') ? '管理员' : '专岛管理员';
         // ProcessUserActive::dispatch(
