@@ -866,6 +866,46 @@ class AccuseTest extends TestCase
         $this->assertAccuseHandledByLoudspeaker($loudspeaker, $admin, 'delete', '举报中心删除原因');
     }
 
+    /** @dataProvider submissionTargetProvider */
+    public function test_submission_rechecks_handled_status_inside_transaction(bool $loudspeaker): void
+    {
+        if ($loudspeaker) {
+            $speaker = $this->createLoudspeaker();
+            $this->createAccuseForLoudspeaker($speaker);
+            $payload = $this->loudspeakerPayload($speaker);
+        } else {
+            $this->createAccuseForPost($this->post);
+            $payload = $this->payload();
+        }
+        $accuse = Accuse::firstOrFail();
+        $admin = $this->createAdmin();
+        $handled = false;
+        Accuse::retrieved(function (Accuse $retrieved) use (&$handled, $accuse, $admin) {
+            if (!$handled && $retrieved->id === $accuse->id) {
+                $handled = true;
+                app(\App\Services\AccuseHandlingService::class)->markPendingByAccuseIds(
+                    [$accuse->id], $admin, 'ignore', '忽略'
+                );
+            }
+        });
+        Sanctum::actingAs(User::factory()->create());
+        try {
+            $this->postJson('/api/accuses', $payload)->assertJson([
+                'code' => ResponseCode::USER_CANNOT,
+                'message' => $loudspeaker ? '该大喇叭的举报已处理' : '该回复的举报已处理',
+            ]);
+        } finally {
+            Accuse::flushEventListeners();
+        }
+        $this->assertTrue($handled);
+        $this->assertSame(1, $accuse->reasons()->count());
+    }
+
+    public static function submissionTargetProvider(): array
+    {
+        return [[false], [true]];
+    }
+
     private function payload(array $override = []): array
     {
         return array_merge([
