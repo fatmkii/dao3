@@ -46,11 +46,17 @@ class ThreadReadAccess
                 self::deny(ResponseCode::THREAD_IS_PRIVATE, '本贴是私密主题，只有发帖者可以查看喔');
             }
         }
-        $expired = ($forum->is_nissin == 1 && $thread->has_nissined)
-            || ($forum->is_nissin == 2 && $thread->nissin_date < Carbon::now() && $thread->sub_id == 0);
-        if ($expired && $user?->admin != 99) {
+        if ($this->isNissined($thread) && $user?->admin != 99) {
             self::deny(ResponseCode::THREAD_WAS_NISSINED);
         }
+    }
+
+    public function isNissined(Thread $thread): bool
+    {
+        $forum = $thread->forum;
+
+        return ($forum?->is_nissin == 1 && $thread->has_nissined)
+            || ($forum?->is_nissin == 2 && $thread->nissin_date < Carbon::now() && $thread->sub_id == 0);
     }
 
     public static function deny(int $code, ?string $message = null): never

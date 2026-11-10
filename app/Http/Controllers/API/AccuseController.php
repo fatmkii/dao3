@@ -13,6 +13,7 @@ use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
 use App\Services\AccuseHandlingService;
+use App\Services\ThreadReadAccess;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -155,6 +156,11 @@ class AccuseController extends Controller
             $existingAccuse = Accuse::where('post_id', $post->id)->lockForUpdate()->first();
             if ($existingAccuse?->status === 'handled') {
                 return null;
+            }
+
+            $currentThread = Thread::whereKey($thread->id)->sharedLock()->firstOrFail();
+            if (app(ThreadReadAccess::class)->isNissined($currentThread)) {
+                ThreadReadAccess::deny(ResponseCode::THREAD_WAS_NISSINED);
             }
 
             $accuse = $existingAccuse ?: Accuse::create([
