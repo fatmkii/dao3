@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Accuse;
 use App\Models\AccuseReason;
 use App\Models\AdminActive;
+use App\Models\Thread;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -90,10 +91,26 @@ class AccuseHandlingService
             $users = User::whereIn('id', $reasons->pluck('reporter_user_id'))
                 ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
 
+            $threads = Thread::whereIn('id', $accuses->where('target_type', 'post')->pluck('thread_id'))
+                ->orderBy('id')->sharedLock()->get()->keyBy('id');
+            $exemptIds = $accuses->filter(function (Accuse $accuse) use ($threads) {
+                $thread = $threads->get($accuse->thread_id);
+
+                return $accuse->target_type === 'post' && $thread
+                    && app(ThreadReadAccess::class)->isNissined($thread);
+            })->modelKeys();
+
             Accuse::whereIn('id', $accuses->modelKeys())
                 ->update($this->handledPayload($admin, 'ignore', $note, false));
 
+            if (!empty($exemptIds)) {
+                $this->consume($reasons->whereIn('accuse_id', $exemptIds)->modelKeys());
+            }
+
             foreach ($reasons as $reason) {
+                if (in_array($reason->accuse_id, $exemptIds)) {
+                    continue;
+                }
                 $user = $users->get($reason->reporter_user_id);
                 if (! $user) {
                     continue;
