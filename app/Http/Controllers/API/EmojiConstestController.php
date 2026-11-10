@@ -16,19 +16,43 @@ use Illuminate\Support\Facades\Log;
 
 class EmojiConstestController extends Controller
 {
-    private $start_time = '2026-6-18 20:00:00';
-    private $end_time = '2026-6-22 20:00:00';
+    private $start_time = '2026-11-11 20:00:00';
+    private $end_time = '2026-11-14 20:00:00';
     protected $chara_name_list = [
-        1 => 'AC娘',
-        2 => '鹦鹉鸡',
-        3 => '咪子鱼',
-        5 => '麻将脸',
-        6 => '小恐龙',
-        9 => '小企鹅',
-        16 => '药水哥',
-        17 => '吉伊卡哇',
-        18 => '领结猫',
+        1 => '比格多栋',
+        2 => '四荤一素',
+        3 => '姆明',
+        4 => '棉球猫',
+        5 => '假飞鼠',
+        6 => '呆猫八条',
+        7 => '艾露猫',
+        8 => '麻将脸',
+        9 => '奶龙',
     ];
+
+    public function ranking()
+    {
+        $totals = DB::table('emoji_contest')
+            ->whereIn('emoji_group_id', array_keys($this->chara_name_list))
+            ->selectRaw('emoji_group_id, SUM(votes_num_total) AS votes_num_total')
+            ->groupBy('emoji_group_id')
+            ->pluck('votes_num_total', 'emoji_group_id');
+
+        $ranking = collect(array_keys($this->chara_name_list))
+            ->map(fn ($id) => [
+                'emoji_group_id' => (int) $id,
+                'votes_num_total' => (int) ($totals[$id] ?? 0),
+            ])
+            ->sort(fn ($a, $b) => ($b['votes_num_total'] <=> $a['votes_num_total'])
+                ?: ($a['emoji_group_id'] <=> $b['emoji_group_id']))
+            ->values();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => '查询成功！',
+            'data' => $ranking,
+        ]);
+    }
 
     public function show(Request $request, $emoji_group_id)
     {

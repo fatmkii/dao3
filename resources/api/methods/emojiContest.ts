@@ -2,6 +2,16 @@ import { commonAlova } from '@/api/index';
 import { useUserStore } from '@/stores/user';
 const userStore = useUserStore()
 
+export interface moeRankingData {
+    emoji_group_id: number,
+    votes_num_total: number,
+}
+
+export const moeRankingGetter = () => commonAlova.Get<moeRankingData[]>(
+    'api/emoji_contest/ranking',
+    { localCache: null, shareRequest: false }
+)
+
 
 //获取表情包萌活动数据
 interface moeData {

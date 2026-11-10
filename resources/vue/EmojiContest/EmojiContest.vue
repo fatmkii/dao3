@@ -6,11 +6,17 @@
         </n-carousel>
         <!-- 提示 -->
         <n-alert :show-icon="false" :type="'warning'">
-            <span>（new!）本次活动同样有版头应援活动喔！</span>
-            <router-link :to="'/thread/192451'">点击这里投稿</router-link>
+            <span>（old!）本次活动同样有版头应援活动喔！</span>
+            <router-link :to="'/thread/206131'">点击这里投稿</router-link>
         </n-alert>
         <!-- 提示 -->
-        <n-alert :show-icon="false" :type="'default'">{{ bannerText }} </n-alert>
+        <n-alert :show-icon="false" :type="'default'">
+            <n-text>{{ bannerText }}</n-text>
+        </n-alert>
+        <!-- 实时排名 -->
+        <EmojiContestRanking :items="rankingItems" :loading="rankingLoading" :refreshing="pageRefreshing"
+            :logged-in="userStore.userLoginStatus" :error="rankingError" :image-background="emojiBackGroundColor"
+            @select="selectRankingGroup" @refresh="refreshPage" />
         <!-- 本体Tabs -->
         <n-tabs type="line" animated :placement="'left'" :size="commonStore.isMobile ? 'small' : 'large'"
             v-model:value="emojiGroupIdSelected" @update:value="getMoeData">
@@ -40,14 +46,12 @@
             <n-tab-pane v-for="(emojiGroupData, key) in emojiGroupsData" :key="key + 1" :name="emojiGroupData.id"
                 :tab="emojiGroupData.name">
                 <n-spin :show="moeDataLoading" style="height: 400px;">
-                    <!-- 票数总计和刷新按钮 -->
+                    <!-- 票数总计 -->
                     <n-flex style="margin-top: 12px; " :align="'center'">
                         <span>{{ emojiGroupData.name }}
                             总票数：
                             {{ getMoeDataSum(moeData) }}
                         </span>
-                        <f-button type="primary" style="margin-left: auto;"
-                            @click="getMoeData(emojiGroupData.id)">刷新</f-button>
                     </n-flex>
                     <n-flex :wrap="true" :size="[8, 4]" style="margin-top: 12px;">
                         <!-- 各个表情包列表 -->
@@ -72,30 +76,29 @@
 import { useUserStore } from '@/stores/user'
 import { useCommonStore } from '@/stores/common'
 import emojiDataRaw from '@/data/emojiContestData' //这里根据需要换成出道萌或者表情包萌 
-import { ref, computed } from 'vue';
-import { useRequest } from 'alova';
-import { NFlex, NTabs, NTabPane, NAlert, NSpin, NCarousel } from 'naive-ui';
-import { type moeUserVoteData as moeUserVoteDataInterface, type moeData as moeDataInterface, type moeUserVoteParams, moeDataGetter, moeUserVoteDataGetter, moeUserVotePoster } from '@/api/methods/emojiContest';
+import { ref, shallowRef, computed, onBeforeUnmount } from 'vue';
+import { NFlex, NTabs, NTabPane, NAlert, NSpin, NCarousel, NText } from 'naive-ui';
+import { type moeUserVoteData as moeUserVoteDataInterface, type moeData as moeDataInterface, type moeRankingData, moeRankingGetter, moeDataGetter, moeUserVoteDataGetter } from '@/api/methods/emojiContest';
 import VoteModal from './VoteModal.vue'
-import { FButton } from '@custom';
+import EmojiContestRanking from './EmojiContestRanking.vue'
 import dayjs from 'dayjs'
 import { shuffleArray } from '@/js/func/shuffle'
 
 // 表情包萌活动的基础数据
-const startTime = dayjs.tz('2026-6-18 20:00')
-const endTime = dayjs.tz('2026-6-22 20:00')
-const emojiGroupIdList = [1, 2, 3, 5, 6, 9, 16, 17, 18] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
+const startTime = dayjs.tz('2026-11-11 20:00')
+const endTime = dayjs.tz('2026-11-14 20:00')
+const emojiGroupIdList = [1, 2, 3, 4, 5, 6, 7, 8, 9] //可以用来过滤不参与的表情包。但出道萌是全数参赛的。
 const emojiGroupIndex = {
     // 这里的序号记得也要改
-    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2d6530f41.gif", "name": "AC娘" },
-    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad2f8780322.png", "name": "鹦鹉鸡" },
-    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab6a329cadc.gif", "name": "咪子鱼" },
-    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "麻将脸" },
-    6: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3845d3839.jpg", "name": "小恐龙" },
-    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3d2be5311.jpg", "name": "小企鹅" },
-    16: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ab79a86a0cb.gif", "name": "药水哥" },
-    17: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad4b806cb12.gif", "name": "吉伊卡哇" },
-    18: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910bf4fb0954.gif", "name": "领结猫" },
+    1: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c488ea284.jpg", "name": "比格多栋" },
+    2: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c525855a3.jpg", "name": "四荤一素" },
+    3: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6911cf46a80a4.gif", "name": "姆明" },
+    4: { "emojiUrl": "https://wmimg.com/i/1547/2026/11/6aedb4297f792.gif", "name": "棉球猫" },
+    5: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c0f1d78ed.gif", "name": "假飞鼠" },
+    6: { "emojiUrl": "https://wmimg.com/i/1547/2026/11/6aedb46240c52.gif", "name": "呆猫八条" },
+    7: { "emojiUrl": "https://wmimg.com/i/1547/2026/11/6aedb48ad41c0.webp", "name": "艾露猫" },
+    8: { "emojiUrl": "https://wmimg.com/i/1547/2025/02/67ad3601c5eef.png", "name": "麻将脸" },
+    9: { "emojiUrl": "https://wmimg.com/i/1547/2025/11/6910c2d3e4ff1.gif", "name": "奶龙" },
 } as {
     [key: number]: {
         emojiUrl: string
@@ -106,129 +109,6 @@ const emojiGroupIndex = {
 const bannersShuffled = computed(() => {
     const banners = [
         "https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3289498.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be32c83ec.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be32d83fd.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be330324f.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3302e52.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be33203ca.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be331bdb6.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be332a60c.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3334183.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be331fecd.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3328b40.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be333e31e.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be337d305.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3345ff7.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a37be335d782.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be331605a.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be333c3c8.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be33557ce.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3416f30.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3329ada.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be34470eb.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be333c3d1.gif",
-        "https://wmimg.com/i/1547/2026/06/6a37be34b3043.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be34d2a3b.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be348e457.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be34d5b91.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be353cae2.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be35269a7.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3520799.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be35569a1.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be35ae875.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be3544ffb.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be35ab984.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be359c707.png",
-        "https://wmimg.com/i/1547/2026/06/6a37be35748bc.gif",
-        "https://wmimg.com/i/1547/2026/06/6a37be3570bad.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a38002d66d0b.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002d78829.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002d7ed38.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002d8af56.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002defe8e.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002e1000d.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002e0ab5d.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002e17f49.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002e17fbf.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002decf9a.gif",
-        "https://wmimg.com/i/1547/2026/06/6a38002e153cf.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d1a91b9.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d1b0e68.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d1b5c69.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d1c26be.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d221de0.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d20b7ce.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d23253b.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d269b0e.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d26baa9.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2742a5.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d278862.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2807bb.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d249092.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911d292f52.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002d66d0b.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2b0651.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2a04a3.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d31f244.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2aec82.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2bd05f.gif",
-        "https://wmimg.com/i/1547/2026/06/6a3911d365abe.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d36d31d.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d385d9f.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d3ae3b8.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911d3a9816.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d3e512d.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d3c47f7.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a38002e1000d.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d425b54.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d433918.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d40ae3f.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d47065c.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d45da29.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d48a7e2.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d507d5b.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d53c8f8.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d52a366.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002defe8e.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d57a0f0.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d578858.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911d59b77a.gif",
-        "https://wmimg.com/i/1547/2026/06/6a3911d2bd078.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911e8f3153.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911e936226.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911e949e55.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911e95b45a.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911e968779.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911e9a172a.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911e999e9b.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ea288b5.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911ea5d484.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911ea726e0.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911eac874b.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911eaa1f84.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911eb1931f.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911eb0c131.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ec42252.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ec8f3d9.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3911ec6783e.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ec72f7c.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ecbd6db.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ecdc633.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ecbbb71.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911eccee99.png",
-        "https://wmimg.com/i/1547/2026/06/6a38002e0ab5d.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ed21a4d.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ed2dc29.gif",
-        "https://wmimg.com/i/1547/2026/06/6a3911ecda723.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ed2f1c1.png",
-        "https://wmimg.com/i/1547/2026/06/6a3911ed1411c.png",
-        "https://wmimg.com/i/1547/2026/06/6a3916484e037.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a3916485fce5.jpg",
-        "https://wmimg.com/i/1547/2026/06/6a391648608ca.png",
-        "https://wmimg.com/i/1547/2026/06/6a3916486d8bf.png",
-        "https://wmimg.com/i/1547/2026/06/6a39164888fc3.png",
-        "https://wmimg.com/i/1547/2026/06/6a39164898e53.png",
     ]
     return shuffleArray(banners).slice(0, 5)
 })
@@ -259,7 +139,7 @@ const endText = computed<string>(() => {
 //基础数据
 const userStore = useUserStore()
 const commonStore = useCommonStore()
-const emojiGroupIdSelected = ref<number>()
+const emojiGroupIdSelected = shallowRef(0)
 const emojiGroupsData = computed<emojiGroupData[]>(() =>
     emojiDataRaw.filter(data => emojiGroupIdList.includes(data.id))
 )
@@ -277,29 +157,97 @@ const emojiBackGroundColor = computed(() =>
     commonStore.userCustom.emojiWhiteBack ? '#FFFFFF' : undefined,
 )
 
-// 切换分组时候，读取表情包组的投票结果数据
-function getMoeData(emojiGroupId: number) {
-    if (emojiGroupId === 0) {
-        // id=0是“我的本命”页
-        moeUserVoteDataSend()
-    } else {
-        moeData.value = [] as moeDataInterface[]
-        moeDataGetterSend(emojiGroupId)
+// 各请求只应用最新响应，投票后不复用提交前的在途请求。
+const ranking = ref<moeRankingData[]>([])
+const rankingLoading = shallowRef(false)
+const rankingError = shallowRef('')
+const pageRefreshing = shallowRef(false)
+const moeData = ref<moeDataInterface[]>([])
+const moeDataLoading = shallowRef(false)
+const moeUserVoteData = ref<moeUserVoteDataInterface[]>([])
+const moeUserVoteDataLoading = shallowRef(false)
+let rankingRequest = 0
+let groupRequest = 0
+let userRequest = 0
+let loadedGroupId: number | undefined
+let disposed = false
+onBeforeUnmount(() => { disposed = true })
+
+const rankingItems = computed(() => ranking.value
+    .filter(item => emojiGroupIdList.includes(item.emoji_group_id))
+    .map(item => ({ ...item, ...emojiGroupIndex[item.emoji_group_id] })))
+
+async function refreshRanking() {
+    const request = ++rankingRequest
+    rankingLoading.value = true
+    rankingError.value = ''
+    try {
+        const data = await moeRankingGetter().send()
+        if (!disposed && request === rankingRequest) ranking.value = data
+    } catch {
+        if (!disposed && request === rankingRequest) {
+            rankingError.value = ranking.value.length ? '刷新失败，显示上次结果。' : '加载失败，请点击刷新重试。'
+        }
+    } finally {
+        if (!disposed && request === rankingRequest) rankingLoading.value = false
     }
 }
 
-// 获取当前已选择表情包组的投票结果数据
-const { loading: moeDataLoading, data: moeData, send: moeDataGetterSend, onSuccess: moeDataOnSuccess } =
-    useRequest((emoji_group_id: number) => moeDataGetter(emoji_group_id),
-        { immediate: false, initialData: [] }
-    );
-
-// 获取用户参与投票数据
-const { loading: moeUserVoteDataLoading, data: moeUserVoteData, send: moeUserVoteDataSend }
-    = useRequest(moeUserVoteDataGetter, { immediate: false, initialData: [] });
-if (userStore.binggan) {
-    moeUserVoteDataSend()
+async function refreshUserVotes() {
+    const request = ++userRequest
+    moeUserVoteDataLoading.value = true
+    try {
+        const method = moeUserVoteDataGetter()
+        method.config.shareRequest = false
+        const data = await method.send()
+        if (!disposed && request === userRequest) moeUserVoteData.value = data
+    } catch {
+        // 错误由公共 API 拦截器提示，保留已有数据。
+    } finally {
+        if (!disposed && request === userRequest) moeUserVoteDataLoading.value = false
+    }
 }
+
+async function getMoeData(emojiGroupId: number) {
+    if (!userStore.userLoginStatus) return
+    const request = ++groupRequest
+    if (emojiGroupId === 0) {
+        moeDataLoading.value = false
+        return refreshUserVotes()
+    }
+    if (loadedGroupId !== emojiGroupId) moeData.value = []
+    loadedGroupId = emojiGroupId
+    moeDataLoading.value = true
+    try {
+        const method = moeDataGetter(emojiGroupId)
+        method.config.shareRequest = false
+        const data = await method.send()
+        if (!disposed && request === groupRequest && emojiGroupIdSelected.value === emojiGroupId) {
+            moeData.value = data
+        }
+    } catch {
+        // 同组刷新失败时保留已有数据。
+    } finally {
+        if (!disposed && request === groupRequest) moeDataLoading.value = false
+    }
+}
+
+function selectRankingGroup(id: number) {
+    emojiGroupIdSelected.value = id
+    void getMoeData(id)
+}
+
+async function refreshPage() {
+    if (!userStore.userLoginStatus || pageRefreshing.value) return
+    pageRefreshing.value = true
+    try {
+        await Promise.allSettled([refreshRanking(), getMoeData(emojiGroupIdSelected.value)])
+    } finally {
+        if (!disposed) pageRefreshing.value = false
+    }
+}
+
+if (userStore.userLoginStatus) void refreshPage()
 
 // 计算总票数
 function getMoeDataSum(moeData: moeDataInterface[]) {
@@ -330,8 +278,9 @@ function showVoteModalCom(emojiGroupData: emojiGroupData, voteData: moeDataInter
 
 //投票后刷新数据
 function refreshMoeData(emojiGroupId: number) {
-    moeUserVoteDataSend()
-    getMoeData(emojiGroupId)
+    void refreshRanking()
+    void refreshUserVotes()
+    if (emojiGroupIdSelected.value === emojiGroupId) void getMoeData(emojiGroupId)
 }
 
 </script>
