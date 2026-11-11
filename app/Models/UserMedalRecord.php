@@ -693,7 +693,8 @@ class UserMedalRecord extends Model
         // $medals_id = array(264, 265); //217和218是第二届表情包出道
         // $medals_id = array(281, 282); //281和282是第三届表情包萌
         // $medals_id = array(267, 268); //267和268是第三届表情包出道
-        $medals_id = array(286, 287); //286和287是第四届表情包萌
+        // $medals_id = array(286, 287); //286和287是第四届表情包萌
+        $medals_id = array(290, 291); //290和291是第四届表情包出道
 
 
         //已经获得过的徽章（统一查询一次，用于后续判断）

@@ -109,6 +109,7 @@ const emojiGroupIndex = {
 const bannersShuffled = computed(() => {
     const banners = [
         "https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png",
+        "https://i.lefuha.top/v2/upload/2026-11-10/584ec897-261d-4bfe-9bb4-640cf6275df8.gif"
     ]
     return shuffleArray(banners).slice(0, 5)
 })

@@ -842,6 +842,18 @@ export const medalsHidden: medalsData = {
         'threshold': null,
         'img': 'https://wmimg.com/i/1547/2025/11/691924d616951.png',
     },
+    290: {
+        'name': '小火锅第四届出道萌',
+        'describe': '出道萌投票500票',
+        'threshold': 500, //这里指500票，50000个olo
+        'img': 'https://wmimg.com/i/1547/2026/11/6af44f22bf339.png',
+    },
+    291: {
+        'name': '我来组成小火锅表情包！',
+        'describe': '出道萌投票500票',
+        'threshold': 500, //这里指500票，50000个olo
+        'img': 'https://wmimg.com/i/1547/2026/11/6af44f22c58bf.png',
+    },
 
     270: {
         'name': '吼那么大声干嘛啦',

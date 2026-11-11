@@ -802,6 +802,18 @@ class Medals
             'threshold' => 0,
             'varname' => null,
         ),
+        290 => array(
+            'name' => '小火锅第四届出道萌',
+            'describe' => '出道萌投票500票',
+            'threshold' => 500, //这里指500票，50000个olo
+            'varname' => 'emoji_contest_total',
+        ),
+        291 => array(
+            'name' => '我来组成小火锅表情包！',
+            'describe' => '出道萌投票500票',
+            'threshold' => 500, //这里指500票，50000个olo
+            'varname' => 'emoji_contest_total',
+        ),
 
         //大喇叭相关
         270 => array(

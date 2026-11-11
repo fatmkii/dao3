@@ -174,11 +174,11 @@ class EmojiConstestController extends Controller
 
             //确认成就进度（不同表情包有不同成就，仅在618的表情包萌有用）
             // TODO这里618要打开，1111要关闭
-            UserMedalRecord::check_emoji_contest_group(
-                $request->emoji_group_id,
-                $user_vote_total->votes_num_total,
-                $user
-            );
+            // UserMedalRecord::check_emoji_contest_group(
+            //     $request->emoji_group_id,
+            //     $user_vote_total->votes_num_total,
+            //     $user
+            // );
             //确认成就进度（统计总数。在出道萌和表情包萌都有用）
             UserMedalRecord::check_emoji_contest_total($user);
 
