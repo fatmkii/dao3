@@ -109,7 +109,15 @@ const emojiGroupIndex = {
 const bannersShuffled = computed(() => {
     const banners = [
         "https://wmimg.com/i/1547/2025/06/6846dbf60cbe7.png",
-        "https://i.lefuha.top/v2/upload/2026-11-10/584ec897-261d-4bfe-9bb4-640cf6275df8.gif"
+        "https://i.lefuha.top/v2/upload/2026-11-10/584ec897-261d-4bfe-9bb4-640cf6275df8.gif",
+        "https://wmimg.com/i/1547/2026/11/6af7001143e9d.png",
+        "https://wmimg.com/i/1547/2026/11/6af7001143ccc.jpg",
+        "https://wmimg.com/i/1547/2026/11/6af7001152a07.jpg",
+        "https://wmimg.com/i/1547/2026/11/6af7001295480.png",
+        "https://wmimg.com/i/1547/2026/11/6af70012c7c96.png",
+        "https://wmimg.com/i/1547/2026/11/6af70012eaecd.png",
+        "https://wmimg.com/i/1547/2026/11/6af70012de4ee.png",
+        "https://wmimg.com/i/1547/2026/11/6af7001335a32.png"
     ]
     return shuffleArray(banners).slice(0, 5)
 })
