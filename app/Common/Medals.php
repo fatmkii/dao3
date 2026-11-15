@@ -814,6 +814,12 @@ class Medals
             'threshold' => 500, //这里指500票，50000个olo
             'varname' => 'emoji_contest_total',
         ),
+        292 => array(
+            'name' => '小火锅今日食材：四荤一素',
+            'describe' => '美味又健康！',
+            'threshold' => null,
+            'varname' => null,
+        ),
 
         //大喇叭相关
         270 => array(

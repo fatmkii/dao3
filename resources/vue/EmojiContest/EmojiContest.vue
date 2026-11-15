@@ -117,7 +117,14 @@ const bannersShuffled = computed(() => {
         "https://wmimg.com/i/1547/2026/11/6af70012c7c96.png",
         "https://wmimg.com/i/1547/2026/11/6af70012eaecd.png",
         "https://wmimg.com/i/1547/2026/11/6af70012de4ee.png",
-        "https://wmimg.com/i/1547/2026/11/6af7001335a32.png"
+        "https://wmimg.com/i/1547/2026/11/6af7001335a32.png",
+        "https://wmimg.com/i/1547/2026/11/6af9ba1e0ada7.jpg",
+        "https://wmimg.com/i/1547/2026/11/6af9ba1e1a8e0.jpg",
+        "https://picui.ogmua.cn/s1/2026/11/14/6af83c0e4bdab.webp",
+        "https://picui.ogmua.cn/s1/2026/11/14/6af83c5852b07.webp",
+        "https://picui.ogmua.cn/s1/2026/11/14/6af83764a3e37.webp",
+        "https://picui.ogmua.cn/s1/2026/11/14/6af7e3d82fd11.webp",
+        "https://picui.ogmua.cn/s1/2026/11/14/6af7e3d440807.webp"
     ]
     return shuffleArray(banners).slice(0, 5)
 })

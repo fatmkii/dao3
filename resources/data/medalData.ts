@@ -854,6 +854,12 @@ export const medalsHidden: medalsData = {
         'threshold': 500, //这里指500票，50000个olo
         'img': 'https://wmimg.com/i/1547/2026/11/6af44f22c58bf.png',
     },
+    292: {
+        'name': '小火锅今日食材：四荤一素',
+        'describe': '美味又健康！',
+        'threshold':null,
+        'img': 'https://wmimg.com/i/1547/2026/11/6af9b6430c0a4.png',
+    },
 
     270: {
         'name': '吼那么大声干嘛啦',
