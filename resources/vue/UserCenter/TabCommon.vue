@@ -205,12 +205,14 @@ const imgHostOptions = computed(() => isAndroidApp.value
     ? [
         { value: 'picui', label: 'picui' },
         { value: 'imgimg', label: 'imgimg' },
+        { value: 'urusai', label: 'URUSAI' },
     ]
     : [
         { value: 'imgbb', label: '(推荐)imgbb' },
         { value: 'freeimage', label: 'Freeimage' },
         { value: 'imgimg', label: 'imgimg' },
         { value: 'picui', label: 'picui' },
+        { value: 'urusai', label: 'URUSAI' },
         // { value: 'imge', label: 'imge' },   “没有可用储存”
         // { value: 'imgtbl', label: '(已停用)imgtbl' }, 关闭了游客上传
         // { value: 'mjj', label: '(不推荐)mjj' }, 网络不好

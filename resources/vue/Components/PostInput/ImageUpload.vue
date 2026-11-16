@@ -19,7 +19,7 @@ import { useCommonStore, type imgHostWebType } from '@/stores/common'
 import { FButton } from '@custom'
 import { NUpload, type UploadCustomRequestOptions } from 'naive-ui'
 import { onMounted, onUnmounted, ref, computed } from 'vue'
-import { uploadImagePoster, type uploadImageParams, type uploadImageToPublicParams, uploadImageToPublicPoster } from '@/api/methods/common'
+import { uploadImagePoster, type uploadImageParams, type uploadImageToPublicParams, uploadImageToPublicPoster, URUSAI_MAX_FILE_SIZE, uploadImageToUrusaiPoster } from '@/api/methods/common'
 import { useUserStore } from '@/stores/user'
 
 //基础数据
@@ -43,7 +43,7 @@ const emit = defineEmits<{
 
 //根据不同图床选择不同的配置方法
 const imgHostList1: imgHostWebType[] = ['imgbb', 'freeimage']
-const imgHostList2: imgHostWebType[] = ['imgimg', 'picui']
+const imgHostList2: imgHostWebType[] = ['imgimg', 'picui', 'urusai']
 const hostType = computed<number>(() => {
     if (props.forumId === 419) {
         return 0
@@ -132,43 +132,45 @@ const imgHostType2Url = computed<string>(() => {
     return urlMap[commonStore.userCustom.imgHostWeb] || ""
 
 })
-const imgHostType2Request = ({
-    file,
-    data,
-    headers,
-    withCredentials,
-    action,
-    onFinish,
-    onError,
-    onProgress
-}: UploadCustomRequestOptions) => {
-    if (file.file !== null) {
-        // if (file.file.size > 1024000) {
-        //     window.$message.error('图片大小不能超过10M喔')
-        //     NUploadCom.value?.clear() //清空已选择的图片
-        //     return
-        // }
+const imgHostType2Request = async ({ file }: UploadCustomRequestOptions) => {
+    if (file.file === null) return
+    const isUrusai = commonStore.userCustom.imgHostWeb === 'urusai'
+    if (isUrusai && file.file.size > URUSAI_MAX_FILE_SIZE) {
+        window.$message.error('图片大小不能超过50MB喔')
+        NUploadCom.value?.clear()
+        return
+    }
+
+    uploading.value = true
+    try {
+        if (isUrusai) {
+            const response = await uploadImageToUrusaiPoster(file.file)
+            if (response.status === 'success' && response.data?.url_direct) {
+                emit('insertImage', response.data.url_direct)
+            } else {
+                window.$message.error(response.status === 'success'
+                    ? '图片上传失败，请重试'
+                    : response.message || '图片上传失败，请重试')
+            }
+            return
+        }
+
         const params: uploadImageToPublicParams = {
             file: file.file,
             url: imgHostType2Url.value,
         }
-        uploading.value = true
-        uploadImageToPublicPoster(params)
-            .then((response) => {
-                console.log(response.data)
-                if (response.status === true) {
-                    emit('insertImage', response.data.links.url)//插入链接到输入框
-                }
-                else {
-                    window.$message.error(response.message)
-                }
-                NUploadCom.value?.clear() //清空已选择的图片
-                uploading.value = false
-            })
-            .catch(() => {
-                NUploadCom.value?.clear() //清空已选择的图片
-                uploading.value = false
-            });
+        const response = await uploadImageToPublicPoster(params)
+        console.log(response.data)
+        if (response.status === true) {
+            emit('insertImage', response.data.links.url)//插入链接到输入框
+        } else {
+            window.$message.error(response.message)
+        }
+    } catch {
+        //请求错误由externalAlova提示
+    } finally {
+        NUploadCom.value?.clear() //清空已选择的图片
+        uploading.value = false
     }
 }
 

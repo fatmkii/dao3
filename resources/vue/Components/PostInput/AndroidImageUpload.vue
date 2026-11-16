@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { uploadImagePoster, type uploadImageParams, uploadImageToPublicPoster, type uploadImageToPublicParams } from '@/api/methods/common'
+import { uploadImagePoster, type uploadImageParams, uploadImageToPublicPoster, type uploadImageToPublicParams, URUSAI_MAX_FILE_SIZE, uploadImageToUrusaiPoster } from '@/api/methods/common'
 import { useCommonStore } from '@/stores/common'
 import { useUserStore } from '@/stores/user'
 import { FButton } from '@custom'
@@ -48,6 +48,22 @@ async function uploadImage({ file }: UploadCustomRequestOptions) {
             return
         }
 
+        if (commonStore.userCustom.imgHostAndroid === 'urusai') {
+            if (file.file.size > URUSAI_MAX_FILE_SIZE) {
+                window.$message.error('图片大小不能超过50MB喔')
+                return
+            }
+            const response = await uploadImageToUrusaiPoster(file.file)
+            if (response.status === 'success' && response.data?.url_direct) {
+                emit('insertImage', response.data.url_direct)
+            } else {
+                window.$message.error(response.status === 'success'
+                    ? '图片上传失败，请重试'
+                    : response.message || '图片上传失败，请重试')
+            }
+            return
+        }
+
         const params: uploadImageToPublicParams = {
             file: file.file,
             url: publicHostUrl.value,
@@ -58,6 +74,8 @@ async function uploadImage({ file }: UploadCustomRequestOptions) {
         } else {
             window.$message.error(response.message)
         }
+    } catch {
+        //请求错误由Alova提示
     } finally {
         upload.value?.clear()
         uploading.value = false

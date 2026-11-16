@@ -103,6 +103,29 @@ const uploadImageToPublicPoster = (params: uploadImageToPublicParams) => {
     return methodInstance
 }
 
+//匿名上传图片到URUSAI
+const URUSAI_MAX_FILE_SIZE = 50 * 1024 * 1024
+interface uploadImageToUrusaiData {
+    status: 'success' | 'error',
+    message: string,
+    data?: {
+        url_direct?: string,
+    },
+}
+const uploadImageToUrusaiPoster = (file: File) => {
+    const formData = new FormData
+    formData.append("file", file)
+    return externalAlova.Post<uploadImageToUrusaiData>(
+        'https://api-v1-t2-upload.urusai.cc',
+        formData,
+        {
+            name: 'uploadImageToUrusaiPoster',
+            credentials: 'omit',
+            localCache: null,
+        }
+    )
+}
+
 //确认是否开放饼干和下次开放日期
 interface newBingganCheckData {
     enable: boolean,
@@ -126,4 +149,4 @@ const newBingganCheckGetter = () => {
 }
 
 
-export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams, uploadImageToPublicParams, uploadImageToPublicPoster, newBingganCheckData, newBingganCheckGetter }
+export { captchaGetter, captchaData, uploadImagePoster, uploadImageParams, uploadImageToPublicParams, uploadImageToPublicPoster, URUSAI_MAX_FILE_SIZE, uploadImageToUrusaiPoster, newBingganCheckData, newBingganCheckGetter }

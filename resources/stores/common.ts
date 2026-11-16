@@ -4,8 +4,8 @@ import { useStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { getScopedLocalStorage } from '@/js/androidAuth'
 
-export type imgHostWebType = 'imgbb' | 'freeimage' | 'imgimg' | 'picui'
-export type imgHostAndroidType = 'imgimg' | 'picui'
+export type imgHostWebType = 'imgbb' | 'freeimage' | 'imgimg' | 'picui' | 'urusai'
+export type imgHostAndroidType = 'imgimg' | 'picui' | 'urusai'
 
 type legacyImgHostType = 'mjj' | 'imgbb' | 'freeimage' | 'picgo' | 'tutu' | 'imge' | 'imgtbl' | 'imgimg' | 'helloimg' | 'picui' | 'imgwang'
 

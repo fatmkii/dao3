@@ -38,6 +38,16 @@ async function installAndroidBridge(page: Page, userCustom?: Record<string, unkn
     });
 }
 
+async function installWebUser(page: Page, userCustom: Record<string, unknown>) {
+    await page.addInitScript((storedUserCustom) => {
+        localStorage.setItem('Binggan', 'web_binggan');
+        localStorage.setItem('Token', 'web-token');
+        if (localStorage.getItem('user_custom') === null) {
+            localStorage.setItem('user_custom', JSON.stringify(storedUserCustom));
+        }
+    }, userCustom);
+}
+
 async function mockAuthenticatedUser(page: Page) {
     await page.route('**/api/user/show', (route) => route.fulfill({
         json: { code: 200, message: 'success', data: userData },
@@ -180,7 +190,7 @@ test.describe('image host preferences', () => {
         expect((await storedUserCustom(page)).imgHost).toBeUndefined();
     });
 
-    test('Android shows only its two hosts and persists independently', async ({ page }) => {
+    test('Android shows three hosts and persists independently', async ({ page }) => {
         await installAndroidBridge(page, { imgHostWeb: 'freeimage' });
         await mockUserCenter(page);
         await selectGeneralSettings(page);
@@ -189,31 +199,22 @@ test.describe('image host preferences', () => {
         await expect(hostSelect).toContainText('imgimg');
         await hostSelect.click();
         const options = page.locator('.n-base-select-option');
-        await expect(options).toHaveCount(2);
+        await expect(options).toHaveCount(3);
         await expect(options.filter({ hasText: 'picui' })).toBeVisible();
         await expect(options.filter({ hasText: 'imgimg' })).toBeVisible();
-        await options.filter({ hasText: 'picui' }).click();
+        await options.filter({ hasText: 'URUSAI' }).click();
 
         await expect.poll(() => storedUserCustom(page)).toMatchObject({
             imgHostWeb: 'freeimage',
-            imgHostAndroid: 'picui',
+            imgHostAndroid: 'urusai',
         });
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.getByText('一般设定', { exact: true }).click();
-        await expect(page.getByTestId('image-host-select')).toContainText('picui');
+        await expect(page.getByTestId('image-host-select')).toContainText('URUSAI');
     });
 
-    test('web shows four hosts and leaves the Android preference unchanged', async ({ page }) => {
-        await page.addInitScript(() => {
-            localStorage.setItem('Binggan', 'web_binggan');
-            localStorage.setItem('Token', 'web-token');
-            if (localStorage.getItem('user_custom') === null) {
-                localStorage.setItem('user_custom', JSON.stringify({
-                    imgHostWeb: 'imgbb',
-                    imgHostAndroid: 'imgimg',
-                }));
-            }
-        });
+    test('web shows five hosts and leaves the Android preference unchanged', async ({ page }) => {
+        await installWebUser(page, { imgHostWeb: 'imgbb', imgHostAndroid: 'imgimg' });
         await mockUserCenter(page);
         await selectGeneralSettings(page);
 
@@ -221,14 +222,17 @@ test.describe('image host preferences', () => {
         await expect(hostSelect).toContainText('imgbb');
         await hostSelect.click();
         const options = page.locator('.n-base-select-option');
-        await expect(options).toHaveCount(4);
-        await expect(options).toContainText(['(推荐)imgbb', 'Freeimage', 'imgimg', 'picui']);
-        await options.filter({ hasText: 'picui' }).click();
+        await expect(options).toHaveCount(5);
+        await expect(options).toContainText(['(推荐)imgbb', 'Freeimage', 'imgimg', 'picui', 'URUSAI']);
+        await options.filter({ hasText: 'URUSAI' }).click();
 
         await expect.poll(() => storedUserCustom(page)).toMatchObject({
-            imgHostWeb: 'picui',
+            imgHostWeb: 'urusai',
             imgHostAndroid: 'imgimg',
         });
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.getByText('一般设定', { exact: true }).click();
+        await expect(page.getByTestId('image-host-select')).toContainText('URUSAI');
     });
 });
 
@@ -318,4 +322,172 @@ test.describe('Android image upload', () => {
         await expect(page.getByText('upload failed', { exact: true })).toBeVisible();
         await expect(content).toHaveValue('unchanged');
     });
+});
+
+for (const platform of ['web', 'Android'] as const) {
+    test.describe(`${platform} URUSAI image upload`, () => {
+        const endpoint = 'https://api-v1-t2-upload.urusai.cc/';
+        const imageUrl = 'https://i.urusai.cc/test.png';
+
+        test.beforeEach(async ({ page }) => {
+            await page.route(endpoint, (route) => route.abort('blockedbyclient'));
+            if (platform === 'Android') {
+                await installAndroidBridge(page, { imgHostWeb: 'freeimage', imgHostAndroid: 'urusai' });
+            } else {
+                await installWebUser(page, { imgHostWeb: 'urusai', imgHostAndroid: 'picui' });
+            }
+            await mockThreadPage(page, 1);
+        });
+
+        test('uploads only the file anonymously and inserts the direct URL at the saved selection', async ({ page, context }) => {
+            await context.addCookies([{
+                name: 'urusai-session',
+                value: 'must-not-be-sent',
+                domain: 'api-v1-t2-upload.urusai.cc',
+                path: '/',
+                secure: true,
+                sameSite: 'None',
+            }]);
+            let uploadBody = '';
+            let uploadHeaders: Record<string, string> = {};
+            await page.route(endpoint, async (route) => {
+                uploadBody = multipartText(route.request());
+                uploadHeaders = await route.request().allHeaders();
+                await route.fulfill({
+                    json: { status: 'success', message: 'uploaded', data: { url_direct: imageUrl } },
+                });
+            });
+            await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+
+            const content = page.locator('#content-input');
+            await content.fill('before after');
+            await content.evaluate((element) => {
+                const textarea = element as HTMLTextAreaElement;
+                textarea.focus();
+                textarea.setSelectionRange(7, 7);
+                textarea.dispatchEvent(new Event('select', { bubbles: true }));
+            });
+            await page.locator('input[type="file"][accept="image/*"]').setInputFiles(imageFile());
+
+            await expect(content).toHaveValue(`before <img src='${imageUrl}' />after`);
+            await expect(content).toBeFocused();
+            expect(uploadHeaders['content-type']).toContain('multipart/form-data; boundary=');
+            expect(uploadHeaders.authorization).toBeUndefined();
+            expect(uploadHeaders.cookie).toBeUndefined();
+            expect(uploadBody).toContain('name="file"; filename="photo.png"');
+            expect(uploadBody.match(/Content-Disposition: form-data;/g)).toHaveLength(1);
+            await expect(page.locator('#image-upload-js')).toHaveCount(0);
+        });
+
+        for (const failure of ['business error', 'missing direct URL', 'network error'] as const) {
+            test(`keeps the body after ${failure} and allows retrying the same file`, async ({ page }) => {
+                let attempts = 0;
+                await page.route(endpoint, (route) => {
+                    attempts += 1;
+                    if (attempts === 1) {
+                        if (failure === 'network error') return route.abort('failed');
+                        return route.fulfill({
+                            json: failure === 'business error'
+                                ? { status: 'error', message: 'upload rejected' }
+                                : { status: 'success', message: 'uploaded', data: {} },
+                        });
+                    }
+                    return route.fulfill({
+                        json: { status: 'success', message: 'uploaded', data: { url_direct: imageUrl } },
+                    });
+                });
+                await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+
+                const content = page.locator('#content-input');
+                const fileInput = page.locator('input[type="file"][accept="image/*"]');
+                const uploadButton = page.getByRole('button', { name: '上传图片', exact: true });
+                await content.fill('unchanged');
+                await fileInput.setInputFiles(imageFile());
+
+                const errorMessage = failure === 'business error' ? 'upload rejected'
+                    : failure === 'network error' ? '嗷！好像网络出错了。' : '图片上传失败，请重试';
+                await expect(page.getByText(errorMessage, { exact: true })).toBeVisible();
+                await expect(content).toHaveValue('unchanged');
+                await expect(uploadButton).toBeEnabled();
+                await fileInput.setInputFiles(imageFile());
+
+                await expect(content).toHaveValue(`unchanged<img src='${imageUrl}' />`);
+                expect(attempts).toBe(2);
+                await expect(uploadButton).toBeEnabled();
+            });
+        }
+
+        test('rejects files over 50MiB before uploading and accepts the exact limit', async ({ page }) => {
+            let requests = 0;
+            await page.route(endpoint, (route) => {
+                requests += 1;
+                return route.fulfill({
+                    json: { status: 'success', message: 'uploaded', data: { url_direct: imageUrl } },
+                });
+            });
+            await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+            const fileInput = page.locator('input[type="file"][accept="image/*"]');
+            // Playwright limits in-memory payloads to 50MiB; construct the oversized File in the browser.
+            const selectSizedImage = (size: number) => fileInput.evaluate((element, fileSize) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(fileSize)], 'large.png', { type: 'image/png' }));
+                const input = element as HTMLInputElement;
+                input.files = transfer.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }, size);
+
+            await selectSizedImage(50 * 1024 * 1024 + 1);
+            await expect(page.getByText('图片大小不能超过50MB喔', { exact: true })).toBeVisible();
+            await expect(page.locator('#content-input')).toHaveValue('');
+            expect(requests).toBe(0);
+
+            await selectSizedImage(50 * 1024 * 1024);
+            await expect(page.locator('#content-input')).toHaveValue(`<img src='${imageUrl}' />`);
+            expect(requests).toBe(1);
+        });
+
+        test('forum 419 keeps using the authenticated backend when URUSAI is selected', async ({ page }) => {
+            await mockThreadPage(page, 419);
+            const freeHostRequests: string[] = [];
+            page.on('request', (request) => {
+                if (/urusai\.cc|picui\.cn|imgimg\.cc|upload\.js|pup\.js/.test(request.url())) {
+                    freeHostRequests.push(request.url());
+                }
+            });
+            let backendBody = '';
+            await page.route('**/api/img_upload', (route) => {
+                backendBody = multipartText(route.request());
+                return route.fulfill({
+                    json: { code: 200, message: 'success', data: { file_url: 'https://self.test/419.png' } },
+                });
+            });
+            await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+            await expect(page.locator('#content-input')).toBeVisible();
+            await page.locator('input[type="file"][accept="image/*"]').setInputFiles(imageFile());
+
+            await expect(page.locator('#content-input')).toHaveValue("<img src='https://self.test/419.png' />");
+            expect(backendBody).toContain(platform === 'Android' ? 'android_binggan' : 'web_binggan');
+            expect(freeHostRequests).toEqual([]);
+            await expect(page.locator('#image-upload-js')).toHaveCount(0);
+        });
+    });
+}
+
+test.describe('web image upload', () => {
+    for (const host of [
+        { preference: 'picui', endpoint: 'https://picui.cn/api/v1/upload' },
+        { preference: 'imgimg', endpoint: 'https://imgimg.cc/api/v1/upload' },
+    ] as const) {
+        test(`keeps uploading to ${host.preference}`, async ({ page }) => {
+            await installWebUser(page, { imgHostWeb: host.preference });
+            await mockThreadPage(page, 1);
+            await page.route(host.endpoint, (route) => route.fulfill({
+                json: { status: true, message: 'success', data: { links: { url: 'https://cdn.test/legacy.png' } } },
+            }));
+            await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
+            await page.locator('input[type="file"][accept="image/*"]').setInputFiles(imageFile());
+
+            await expect(page.locator('#content-input')).toHaveValue("<img src='https://cdn.test/legacy.png' />");
+        });
+    }
 });
