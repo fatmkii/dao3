@@ -90,12 +90,14 @@ class ThrottlePost
     private function isOwnHongbaoPost(Request $request, int $userId): bool
     {
         $hongbaoPostId = $request->input('hongbao_post_id');
-        if (! $hongbaoPostId) {
+        if ((! is_int($hongbaoPostId) && ! is_string($hongbaoPostId))
+            || filter_var($hongbaoPostId, FILTER_VALIDATE_INT) === false) {
             return false;
         }
 
-        $hongbaoUserId = HongbaoPost::whereKey($hongbaoPostId)->value('user_id');
-        $isOwnHongbaoPost = (int) $hongbaoUserId === $userId;
+        $hongbao = HongbaoPost::find($hongbaoPostId);
+        $request->attributes->set('hongbao_post', $hongbao);
+        $isOwnHongbaoPost = $hongbao !== null && (int) $hongbao->user_id === $userId;
         $request->attributes->set('is_own_hongbao_post', $isOwnHongbaoPost);
 
         return $isOwnHongbaoPost;

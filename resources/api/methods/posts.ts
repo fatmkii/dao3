@@ -99,6 +99,16 @@ const postGetter = (params: postParams) => {
 }
 
 
+export function postsBatchGetter(threadId: number, postIds: number[], binggan: string) {
+    const query = new URLSearchParams({ thread_id: String(threadId), binggan })
+    postIds.forEach((id) => query.append('post_ids[]', String(id)))
+    const method = commonAlova.Get<postData[]>('api/posts/batch?' + query.toString(), {
+        localCache: null,
+    })
+    method.meta = { shouldRemind: false }
+    return method
+}
+
 //用户删除回复
 interface deletePostParams {
     binggan: string,

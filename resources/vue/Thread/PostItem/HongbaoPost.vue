@@ -110,6 +110,7 @@ const keywordInput = ref<string>(props.hongbaoData.key_word_type === 1 ? props.h
 //注册事件
 const emit = defineEmits<{
     refreshPostsList: [],
+    refreshHongbao: [],
 }>()
 
 //提交抢红包
@@ -154,11 +155,17 @@ hongbaoPostStoreOnSuccess(() => {
     emit('refreshPostsList')
 })
 hongbaoPostStoreOnError((event) => {
-    if (event.error.cause !== undefined &&
-        event.error.cause.code === 244291) {
+    const code = event.error.cause?.code
+    if (code === 244291) {
         CaptchaModalCom.value?.show()
+        return
+    }
+    if (code === 29429) return
+
+    keywordInput.value = ''
+    if (code === 29404 || code === 29406 || code === 294101) {
+        emit('refreshHongbao')
     } else {
-        keywordInput.value = ''
         emit('refreshPostsList')
     }
 })

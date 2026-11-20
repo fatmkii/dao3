@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Forum;
@@ -205,13 +206,70 @@ class PostController extends Controller
      */
     public function show(Request $request, $id)
     {
-
-        $request->validate([
+        $validated = $request->validate([
             'binggan' => 'string|nullable',
             'thread_id' => 'integer|required',
         ]);
 
-        $CurrentThread = Thread::find($request->thread_id);
+        $thread = $this->readablePostThread($request, $validated['thread_id']);
+        if ($thread instanceof JsonResponse) {
+            return $thread;
+        }
+
+        $post = Post::suffix(intval($thread->id / 10000))
+            ->where('thread_id', $thread->id)
+            ->with('recording')
+            ->find($id);
+        if (!$post) {
+            return response()->json([
+                'code' => ResponseCode::POST_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::POST_NOT_FOUND],
+            ]);
+        }
+
+        $this->preparePostForReader($request, $thread, $post);
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'data' => $post,
+            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
+        ]);
+    }
+
+    public function showBatch(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'binggan' => 'string|nullable',
+            'thread_id' => 'required|integer',
+            'post_ids' => 'required|array|max:50',
+            'post_ids.*' => 'required|integer|min:1|distinct',
+        ]);
+        $thread = $this->readablePostThread($request, $validated['thread_id']);
+        if ($thread instanceof JsonResponse) {
+            return $thread;
+        }
+
+        $posts = Post::suffix(intval($thread->id / 10000))
+            ->where('thread_id', $thread->id)
+            ->whereKey($validated['post_ids'])
+            ->with('recording')
+            ->orderBy('floor')
+            ->orderBy('id')
+            ->get();
+        foreach ($posts as $post) {
+            $this->preparePostForReader($request, $thread, $post);
+        }
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'data' => $posts,
+            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
+        ]);
+    }
+
+    private function readablePostThread(Request $request, int $threadId): Thread|JsonResponse
+    {
+        $CurrentThread = Thread::find($threadId);
         if (!$CurrentThread || $CurrentThread->is_delay == 1) {
             return response()->json([
                 'code' => ResponseCode::THREAD_NOT_FOUND,
@@ -220,6 +278,12 @@ class PostController extends Controller
         }
 
         $CurrentForum = $CurrentThread->forum;
+        if (!$CurrentForum) {
+            return response()->json([
+                'code' => ResponseCode::FORUM_NOT_FOUND,
+                'message' => ResponseCode::$codeMap[ResponseCode::FORUM_NOT_FOUND],
+            ]);
+        }
         $user = $request->user();
 
         //判断是否可无饼干访问的板块
@@ -262,7 +326,7 @@ class PostController extends Controller
             }
         }
 
-        //判断是否私密主题 
+        //判断是否私密主题
         if ($CurrentThread->is_private == true) {
             if (!$user) {
                 return response()->json([
@@ -294,25 +358,6 @@ class PostController extends Controller
                         ]);
                     }
                 }
-                // $hour_now = Carbon::now()->hour;
-                // if ($hour_now >= 8) { //根据时间确定8点日清的节点
-                //     $nissin_breakpoint = Carbon::today()->addHours(8);
-                // } else {
-                //     $nissin_breakpoint = Carbon::yesterday()->addHours(8);
-                // }
-                // if (
-                //     $CurrentThread->created_at < $nissin_breakpoint
-                //     && $CurrentThread->sub_id == 0
-                // ) {
-                //     if ($user != null && $user->admin == 99) {
-                //         break;
-                //     } else {
-                //         return response()->json([
-                //             'code' => ResponseCode::THREAD_WAS_NISSINED,
-                //             'message' => ResponseCode::$codeMap[ResponseCode::THREAD_WAS_NISSINED],
-                //         ]);
-                //     }
-                // }
                 break;
             case 2: //按照可选日清时间模式
                 if (
@@ -332,18 +377,15 @@ class PostController extends Controller
                 break;
         }
 
-        $post = Post::suffix(intval($request->thread_id / 10000))->with('recording')->find($id);
-        if (!$post) {
-            return response()->json([
-                'code' => ResponseCode::POST_NOT_FOUND,
-                'message' => ResponseCode::$codeMap[ResponseCode::POST_NOT_FOUND],
-            ]);
-        }
+        return $CurrentThread;
+    }
 
-
+    private function preparePostForReader(Request $request, Thread $CurrentThread, Post $post): void
+    {
+        $user = $request->user();
         //如果有提供binggan，为每个post输入binggan，用来判断is_your_post（为前端提供是否是用户自己帖子的判据）
-        if ($request->query('binggan')) {
-            $post->setBinggan($request->query('binggan'));
+        if ($user && $request->query('binggan') === $user->binggan) {
+            $post->setBinggan($user->binggan);
         }
 
         //如果有提供$user，为每个post输入user_id，用来判断is_your_post（为前端提供是否是用户自己帖子的判据）
@@ -360,12 +402,6 @@ class PostController extends Controller
         if ($user && $user->admin == 99) {
             $post->makeVisible('created_binggan');
         }
-
-        return response()->json([
-            'code' => ResponseCode::SUCCESS,
-            'data' => $post,
-            'message' => ResponseCode::$codeMap[ResponseCode::SUCCESS],
-        ]);
     }
 
     /**

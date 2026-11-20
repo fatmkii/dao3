@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Thread;
 use App\Models\Forum;
@@ -15,8 +17,8 @@ use App\Exceptions\CoinException;
 use App\Facades\GlobalSetting;
 use App\Models\HongbaoPost;
 use App\Models\HongbaoPostUser;
+use App\Models\User;
 use App\Models\UserMedalRecord;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 
@@ -233,209 +235,147 @@ class HongbaoPostController extends Controller
         }
 
 
-        $hongbao = HongbaoPost::find($request->hongbao_post_id);
+        $hongbao = $request->attributes->has('hongbao_post')
+            ? $request->attributes->get('hongbao_post')
+            : HongbaoPost::find($request->hongbao_post_id);
         if (!$hongbao) {
-            return response()->json(
-                [
-                    'code' => ResponseCode::HONGBAO_NOT_FOUND,
-                    'message' => ResponseCode::$codeMap[ResponseCode::HONGBAO_NOT_FOUND],
-                ],
-            );
+            return $this->claimError(ResponseCode::HONGBAO_NOT_FOUND);
         }
 
+        $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip());
+        if ($hongbao->key_word != $request->hongbao_key_word) {
+            $this->assertClaimAvailable($hongbao, $user);
+            if (Redis::exists($key)) {
+                return $this->claimError(ResponseCode::HONGBAO_TOO_MANY);
+            }
 
+            $post = DB::transaction(fn () => $this->createClaimReply($request, $user, $request->content));
+            UserMedalRecord::check_floor($post->floor, $user);
+            $user->UserMedalRecord()->firstOrCreate()->push_posts_num();
 
-        //检查是否已经抢过红包了
-        $hongbao_user_exists  = HongbaoPostUser::where('hongbao_post_id', $hongbao->id)->where('user_id', $user->id)->exists();
-        if ($hongbao_user_exists) {
-            return response()->json(
-                [
-                    'code' => ResponseCode::HONGBAO_HAS_BEEN_USED,
-                    'message' => ResponseCode::$codeMap[ResponseCode::HONGBAO_HAS_BEEN_USED],
-                ],
-            );
+            return $this->claimError(ResponseCode::HONGBAO_KEYWORD_WRONG);
         }
 
-        //检查是否抢完了红包
-        if ($hongbao->num_remains == 0) {
-            return response()->json(
-                [
-                    'code' => ResponseCode::HONGBAO_HAS_BEEN_CLOSED,
-                    'message' => ResponseCode::$codeMap[ResponseCode::HONGBAO_HAS_BEEN_CLOSED],
-                ],
-            );
-        }
+        [$post, $packetFloor, $coin] = DB::transaction(function () use ($request, $user, $thread, $hongbao, $key) {
+            // 领取者先锁定同一红包，再用最新库存和领取记录决定是否写入。
+            $packet = HongbaoPost::withTrashed()->lockForUpdate()->find($hongbao->id);
+            if (!$packet || ($packet->trashed() && $packet->num_remains > 0)) {
+                throw new HttpResponseException($this->claimError(ResponseCode::HONGBAO_NOT_FOUND));
+            }
+            $this->assertClaimAvailable($packet, $user);
+            if (!Redis::set($key, 1, 'EX', 10, 'NX')) {
+                throw new HttpResponseException($this->claimError(ResponseCode::HONGBAO_TOO_MANY));
+            }
 
-        //用Redis记录，限制10秒内同一个IP不能领取同一个红包
-        $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
-        if (Redis::exists($key)) {
-            return response()->json(
-                [
-                    'code' => ResponseCode::HONGBAO_TOO_MANY,
-                    'message' => ResponseCode::$codeMap[ResponseCode::HONGBAO_TOO_MANY],
-                ],
-            );
-        }
+            $isLast = $packet->num_remains == 1;
+            $coin = 0;
+            if ($isLast) {
+                $coin = $packet->olo_remains;
+            } elseif ($packet->type == 1) {
+                $central = intval($packet->olo_remains / $packet->num_remains);
+                $coin = rand(0, $central * 2);
+            } elseif ($packet->type == 2) {
+                $coin = intval($packet->olo_total / $packet->num_total);
+            }
 
-        //无论红包关键词是否正确，都发一个回复：
-        try {
-            DB::beginTransaction();
+            $content = $packet->key_word_type == 3
+                ? '--红包口令: （暗号红包已隐藏口令）'
+                : $request->content;
+            $post = $this->createClaimReply($request, $user, $content);
+            $result = $isLast
+                ? sprintf('恭喜抢到来自№%d楼的最后一个红包，有%d个奥利奥！', $packet->floor, $coin)
+                : sprintf('你抢到了来自№%d楼的%d个奥利奥！', $packet->floor, $coin);
+            $result = '@№'.$post->floor.'：'.$result;
 
-            $post = Post::create([
+            $message = '';
+            if ($packet->message) {
+                $message = $packet->message;
+                $result .= '<br>——'.$message;
+            }
+            $messages = $packet->message_json;
+            if ($messages) {
+                $message = $messages[array_rand($messages)];
+                $result .= '<br>——'.$message;
+            }
+
+            $packet->olo_remains -= $coin;
+            $packet->num_remains--;
+            if ($isLast) {
+                $packet->deleted_at = now();
+            }
+            $packet->save();
+
+            Post::create([
                 'created_binggan' => $user->binggan,
                 'forum_id' => $request->forum_id,
                 'thread_id' => $request->thread_id,
-                'content' => $request->content,
-                'nickname' => $request->nickname,
-                'created_by_admin' => $request->post_with_admin ? 1 : 0,
+                'content' => $result,
+                'nickname' => '红包结果',
+                'created_by_admin' => 2,
                 'created_IP' => $request->ip(),
             ]);
 
-            $user->coinChange(
-                'post', //记录类型
-                [
-                    'olo' => 10,
-                    'content' => '回帖',
-                    'type' => 'post',
-                ]
-            ); //回复+10奥利奥（通过统一接口、记录操作）
+            $user->coinChange('normal', [
+                'olo' => $coin,
+                'content' => $message != '' ? '抢到红包——'.$message : '抢到红包',
+                'thread_id' => $thread->id,
+                'thread_title' => $thread->title,
+                'post_id' => $post->id,
+                'floor' => $post->floor,
+                'type' => 'hongbao_in',
+            ]);
+            HongbaoPostUser::create([
+                'hongbao_post_id' => $packet->id,
+                'user_id' => $user->id,
+                'olo' => $coin,
+                'floor' => $post->floor,
+                'created_at' => now(),
+            ]);
 
-            DB::commit();
+            return [$post, $packet->floor, $coin];
+        });
 
-            //广播发帖动作
-            // $post->broadcast();
-        } catch (Exception $e) {
-            DB::rollback();
-            throw $e;
+        UserMedalRecord::check_floor($post->floor, $user);
+        $userMedalRecord = $user->UserMedalRecord()->firstOrCreate();
+        $userMedalRecord->push_hongbao_in($coin);
+        $userMedalRecord->push_posts_num();
+
+        return response()->json([
+            'code' => ResponseCode::SUCCESS,
+            'message' => sprintf('你抢到了来自№%d楼的%d个奥利奥！', $packetFloor, $coin),
+            'data' => null,
+        ]);
+    }
+
+    private function assertClaimAvailable(HongbaoPost $packet, User $user): void
+    {
+        if (HongbaoPostUser::where('hongbao_post_id', $packet->id)->where('user_id', $user->id)->exists()) {
+            throw new HttpResponseException($this->claimError(ResponseCode::HONGBAO_HAS_BEEN_USED));
         }
 
-        //检查红包关键词是否正确 
-        if ($hongbao->key_word == $request->hongbao_key_word) { //口令正确的流程：
-
-            //追加该IP的抢红包记录，限制同一IP抢同一个红包（当关键词正确时）
-            $key = sprintf('hongbao_post_%s_%s', $hongbao->id, $request->ip()); //格式：hongbao_post_红包ID_IP地址
-            $ttl = 10; //限制10秒
-            Redis::setex($key, $ttl, 1);
-
-            try {
-                DB::beginTransaction();
-
-                $hongbao = HongbaoPost::lockForUpdate()->find($request->hongbao_post_id); //这里要lockForUpdate，重复赋值一次
-
-                $coin = 0; //红包金额
-                $post_content = ""; //红包回帖信息
-
-                if ($hongbao->num_remains == 1) {
-                    $hongbao->delete(); //软删除
-                    $coin = $hongbao->olo_remains;
-                    $post_content = sprintf("恭喜抢到来自№%d楼的最后一个红包，有%d个奥利奥！", $hongbao->floor, $coin);
-                } else {
-                    if ($hongbao->type == 1) {
-                        //随机红包
-                        $central = intval($hongbao->olo_remains / $hongbao->num_remains);
-                        $coin = rand(0, $central * 2);
-                    } elseif ($hongbao->type == 2) {
-                        //定额红包
-                        $coin = intval($hongbao->olo_total / $hongbao->num_total);
-                    }
-                    $post_content = sprintf("你抢到了来自№%d楼的%d个奥利奥！", $hongbao->floor,  $coin);
-                }
-                $post_content = "@№" . $post->floor . "：" . $post_content;
-
-
-                $message = "";
-                if ($hongbao->message) { //3.0不再使用message，而直接使用message_json。这里暂时做2.0兼容。
-                    //$hongbao->message当是单一message时候不为null
-                    $message = $hongbao->message;
-                    $post_content = $post_content . '<br>——' . $message;
-                }
-
-                if ($hongbao->message_json) {
-                    //$hongbao->message_json当是多选一message时候不为null
-                    $message_array = $hongbao->message_json;
-                    if (count($message_array) >= 1) {
-                        $rand_key = array_rand($message_array);
-                        $message = $message_array[$rand_key]; //从多个回复中随机抽出一个
-                        $post_content = $post_content . '<br>——' . $message;
-                    }
-                }
-
-                $keyword_prefix = '--红包口令: '; //为了方便前端识别并屏蔽，增加前缀
-                if ($hongbao->key_word_type == 3) {
-                    //暗号红包时，把回复中的红包口令隐藏起来
-                    $post->content = $keyword_prefix . "（暗号红包已隐藏口令）";
-                    $post->save();
-                }
-
-                HongbaoPost::withTrashed()->where('id', $hongbao->id)->increment('olo_remains', -$coin); //直接用$hongbao->withTrashed()的话， SQL查询语句会失去全部where条件，导致变更所有记录。可能是laravel的bug
-                HongbaoPost::withTrashed()->where('id', $hongbao->id)->decrement('num_remains');
-
-                $post_reply = Post::create([
-                    'created_binggan' => $user->binggan,
-                    'forum_id' => $request->forum_id,
-                    'thread_id' => $request->thread_id,
-                    'content' => $post_content,
-                    'nickname' => '红包结果',
-                    'created_by_admin' => 2,
-                    'created_IP' => $request->ip(),
-                ]);
-
-                $user->coinChange(
-                    'normal', //记录类型
-                    [
-                        'olo' => $coin,
-                        'content' => $message != "" ? '抢到红包——' . $message : '抢到红包',
-                        'thread_id' => $thread->id,
-                        'thread_title' => $thread->title,
-                        'post_id' => $post->id,
-                        'floor' => $post->floor,
-                        'type' => 'hongbao_in',
-                    ]
-                ); //（通过统一接口、记录操作）
-                $user->save();
-
-                $hongbao_user = HongbaoPostUser::create([
-                    'hongbao_post_id' => $hongbao->id,
-                    'user_id' => $user->id,
-                    'olo' => $coin,
-                    'floor' => $post->floor,
-                    'created_at' => Carbon::now(),
-                ]);
-
-                DB::commit();
-            } catch (Exception $e) {
-                DB::rollback();
-                throw $e;
-            }
-
-            //检查成就
-            UserMedalRecord::check_floor($post->floor, $user); //（抢到特定楼层）
-            $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
-            $user_medal_record->push_hongbao_in($coin); //红包成就
-            $user_medal_record->push_posts_num(); //回复数量
-
-            //广播发帖动作（系统回复红包）
-            // $post_reply->broadcast();
-
-            return response()->json(
-                [
-                    'code' => ResponseCode::SUCCESS,
-                    'message' =>  sprintf("你抢到了来自№%d楼的%d个奥利奥！", $hongbao->floor,  $coin),
-                    'data' => null
-                ],
-            );
-        } else { //口令错误的流程：(相当于只发表了一个普通回复)
-            //检查成就
-            UserMedalRecord::check_floor($post->floor, $user); //（抢到特定楼层）
-            $user_medal_record = $user->UserMedalRecord()->firstOrCreate(); //如果记录不存在就追加
-            $user_medal_record->push_posts_num(); //回复数量
-
-            return response()->json(
-                [
-                    'code' => ResponseCode::HONGBAO_KEYWORD_WRONG,
-                    'message' => ResponseCode::$codeMap[ResponseCode::HONGBAO_KEYWORD_WRONG],
-                ],
-            );
+        if ($packet->num_remains == 0) {
+            throw new HttpResponseException($this->claimError(ResponseCode::HONGBAO_HAS_BEEN_CLOSED));
         }
+    }
+
+    private function createClaimReply(Request $request, User $user, string $content): Post
+    {
+        $post = Post::create([
+            'created_binggan' => $user->binggan,
+            'forum_id' => $request->forum_id,
+            'thread_id' => $request->thread_id,
+            'content' => $content,
+            'nickname' => $request->nickname,
+            'created_by_admin' => $request->post_with_admin ? 1 : 0,
+            'created_IP' => $request->ip(),
+        ]);
+        $user->coinChange('post', ['olo' => 10, 'content' => '回帖', 'type' => 'post']);
+
+        return $post;
+    }
+
+    private function claimError(int $code): JsonResponse
+    {
+        return response()->json(['code' => $code, 'message' => ResponseCode::$codeMap[$code]]);
     }
 }
