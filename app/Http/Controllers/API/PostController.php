@@ -445,7 +445,7 @@ class PostController extends Controller
                     'message' => '饼干错误',
                     'data' => [
                         'post_id' => $id,
-                        'created_binggan' => $post->created_binggan,
+                        // 'created_binggan' => $post->created_binggan,
                         '$request->binggan' => $user->binggan,
                     ]
                 ],
@@ -530,7 +530,7 @@ class PostController extends Controller
                     'message' => '饼干错误',
                     'data' => [
                         'post_id' => $id,
-                        'created_binggan' => $post->created_binggan,
+                        // 'created_binggan' => $post->created_binggan,
                         '$request->binggan' => $user->binggan,
                     ]
                 ],
