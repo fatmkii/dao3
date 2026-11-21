@@ -78,7 +78,7 @@
             <RecordingPost v-if="postData.is_deleted === 0 && postData.recording_data" :recording="postData.recording_data" />
             <HongbaoPost v-if="postData.hongbao_data !== null" :hongbao-data="postData.hongbao_data" :forum-id="forumId"
                 :thread-id="postData.thread_id" :no-hongbao-pic-mode="noHongbaoPicMode"
-                @refresh-posts-list="emit('refreshPostsList')" />
+                @refresh-posts-list="emit('refreshPostsList')" @refresh-hongbao="emit('refreshHongbao', postData.id)" />
             <!-- 大乱斗组件 -->
             <Battle v-if="postData.battle_id !== null" :battle-id="postData.battle_id" ref="BattleCom" />
 
@@ -205,6 +205,7 @@ const emit = defineEmits<{
     showAccuseModal: [payload: AccuseCreatePayload],
     quoteClick: [content: string],
     refreshPostsList: [],
+    refreshHongbao: [postId: number],
     adminHandle: [{ action: 'hint' | 'ban' | 'lock' | 'deleteAll' | 'delete' | 'recovery', postId: number }],
 }>()
 

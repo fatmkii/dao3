@@ -320,7 +320,7 @@ test.describe('Android App bridge', () => {
         await expect(page.getByAltText('需要饼干才能进入喔')).toBeHidden();
     });
 
-    test('reconciles the current page once when Android returns to foreground', async ({ page }) => {
+    test('batches live replies and reconciles the current page when Android returns to foreground', async ({ page }) => {
         await mockAuthenticatedUser(page);
         await page.route('**/api/forums/', (route) => route.fulfill({
             json: { code: 200, message: 'success', data: [forum] },
@@ -370,6 +370,11 @@ test.describe('Android App bridge', () => {
             is_your_post: false,
             hongbao_data: null,
         };
+        const packet = {
+            id: 51, floor: 1, num_total: 5, num_remains: 1, olo_total: 3000,
+            type: 2, key_word_type: 1, key_word: '测试口令', olo_hide: 0, hongbao_user: null, pic_url: null,
+        };
+        const packetPost = { ...post, id: 1010, floor: 1, content: '红包回复', hongbao_id: packet.id, hongbao_data: packet };
         await page.route('**/api/threads/123**', async (route) => {
             threadRequestCount += 1;
             await route.fulfill({
@@ -379,17 +384,34 @@ test.describe('Android App bridge', () => {
                     data: {
                         forum_data: forum,
                         thread_data: threadData,
-                        posts_data: { currentPage: 1, lastPage, data: [post] },
+                        posts_data: { currentPage: 1, lastPage, data: [post, packetPost] },
                         your_post_floors: [],
                         watermark_string: 'test-watermark',
                     },
                 },
             });
         });
+        await page.route('**/api/hongbao_post/store', (route) =>
+            route.fulfill({ json: { code: 29404, message: '红包不存在' } }));
+        await page.route('**/api/posts/1010?*', (route) => route.fulfill({
+            json: { code: 200, data: { ...packetPost, hongbao_data: { ...packet, num_remains: 0 } } },
+        }));
         let reverbSocket: WebSocketRoute | undefined;
-        let postRequestCount = 0;
-        await page.route('**/api/posts/1001**', (route) => {
-            postRequestCount += 1;
+        const postBatches: string[][] = [];
+        await page.route('**/api/posts/batch?*', (route) => {
+            const ids = new URL(route.request().url()).searchParams.getAll('post_ids[]');
+            postBatches.push(ids);
+            if (!ids.includes('1003')) {
+                return route.fulfill({
+                    json: {
+                        code: 200,
+                        data: [
+                            { ...post, id: 1001, floor: 2, content: '第一条实时回帖' },
+                            { ...post, id: 1002, floor: 3, content: '第二条实时回帖' },
+                        ],
+                    },
+                });
+            }
             return route.fulfill({
                 status: 500,
                 json: { code: 500, message: 'temporary failure' },
@@ -414,6 +436,13 @@ test.describe('Android App bridge', () => {
 
         await page.goto('/thread/123/1', { waitUntil: 'domcontentloaded' });
         await expect(page.getByText('自动涮锅测试主题')).toBeVisible();
+        const initialThreadRequests = threadRequestCount;
+        const claimButton = page.getByRole('button', { name: '抢！', exact: true });
+        await claimButton.click();
+        await expect(page.getByPlaceholder('已经抢光啦')).toBeVisible();
+        await expect(claimButton).toBeDisabled();
+        expect(threadRequestCount).toBe(initialThreadRequests);
+
         const contentInput = page.locator('#content-input');
         await contentInput.evaluate((element) => {
             const textarea = element as HTMLTextAreaElement;
@@ -447,12 +476,20 @@ test.describe('Android App bridge', () => {
         await expect(autoRefreshSwitch).toBeChecked();
         const requestsAfterStart = threadRequestCount;
 
-        reverbSocket?.send(JSON.stringify({
+        const sendNewPost = (id: number, floor: number) => reverbSocket?.send(JSON.stringify({
             event: 'NewPost',
             channel: 'thread_123',
-            data: JSON.stringify({ post_id: 1001, thread_id: 123, post_floor: 1 }),
+            data: JSON.stringify({ post_id: id, thread_id: 123, post_floor: floor }),
         }));
-        await expect.poll(() => postRequestCount).toBe(1);
+        sendNewPost(1001, 2);
+        sendNewPost(1002, 3);
+        sendNewPost(1001, 2);
+        await expect(page.getByText('第一条实时回帖')).toHaveCount(1);
+        await expect(page.getByText('第二条实时回帖')).toHaveCount(1);
+        expect(postBatches).toEqual([['1001', '1002']]);
+
+        sendNewPost(1003, 4);
+        await expect.poll(() => postBatches.length).toBe(2);
         await expect.poll(() => threadRequestCount).toBe(requestsAfterStart + 1);
         await expect(autoRefreshSwitch).toBeChecked();
         const requestsAfterPostFetchRecovery = threadRequestCount;

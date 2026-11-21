@@ -53,7 +53,7 @@
                     :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
                     @show-accuse-modal="AccuseCreateModalCom?.show" :no-hongbao-pic-mode="noHongbaoPicMode"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" />
+                    @refresh-hongbao="refreshHongbaoPost" @admin-handle="AdminActionModalCom?.show" />
                 <!-- 投票、菠菜、红包、众筹等组件（插在中间） -->
                 <VoteComponent ref="VoteComponentCom" v-if="threadData.vote_question_id !== null"
                     :vote-id="threadData.vote_question_id" />
@@ -76,7 +76,7 @@
                     :admin-mode="adminMode" :no-mention-mode="noMentionMode" @show-reward-modal="RewardModalCom?.show"
                     @show-accuse-modal="AccuseCreateModalCom?.show" :no-hongbao-pic-mode="noHongbaoPicMode"
                     @quote-click="postInputCom?.quoteHandle" @refresh-posts-list="handleFetchPostsList(false)"
-                    @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
+                    @refresh-hongbao="refreshHongbaoPost" @admin-handle="AdminActionModalCom?.show" ref="PostItemComs" />
             </n-flex>
 
             <!-- 自动涮锅和分页导航 -->
@@ -204,7 +204,7 @@
 
 <script setup lang="ts">
 import { accuseCreatePoster, type AccuseCreateParams } from '@/api/methods/accuse'
-import { newPostPoster, postGetter, type newPostParams, type postData, type postParams } from '@/api/methods/posts'
+import { newPostPoster, postGetter, postsBatchGetter, type newPostParams, type postData } from '@/api/methods/posts'
 import { postsListGetter, type getPostsListParams } from '@/api/methods/threads'
 import { useEcho } from '@/js/echo.js'
 import getNewPostKey from '@/js/func/getNewPostKey'
@@ -517,6 +517,29 @@ const threadData = computed(() => postsListData.value.thread_data)
 const forumData = computed(() => postsListData.value.forum_data)
 const yourPostsList = computed(() => postsListData.value.your_post_floors)
 
+async function refreshHongbaoPost(postId: number) {
+    const posts = postsDataRaw.value
+    const threadId = props.threadId
+    const page = props.page
+    const search = props.search
+    try {
+        const post = await postGetter({
+            binggan: userStore.binggan!,
+            thread_id: threadId,
+            post_id: postId,
+        }).send(true)
+        if (props.threadId !== threadId || props.page !== page || props.search !== search || postsDataRaw.value !== posts) return
+
+        const index = posts.findIndex((item) => item.id === postId)
+        if (index >= 0) posts.splice(index, 1, post)
+    } catch {
+        // 详情已被移除等情况下，通过列表同步当前页。
+        if (props.threadId === threadId && props.page === page && props.search === search && postsDataRaw.value === posts) {
+            handleFetchPostsList()
+        }
+    }
+}
+
 //回复数据处理（第一种屏蔽等）
 const postsData = computed(() => {
     let postsData: postData[]
@@ -623,6 +646,17 @@ let postListeningFailureShown = false
 // 每次启停都会推进代数，用来丢弃上一轮异步请求的迟到响应。
 let postListeningGeneration = 0
 let postConnectionStateHandler: ((states: { previous: string, current: string }) => void) | null = null
+const pendingPostIds = new Set<number>()
+let postBatchTimer: ReturnType<typeof setTimeout> | undefined
+let postBatchRequest: number[] | null = null
+
+function clearPostBatch() {
+    clearTimeout(postBatchTimer)
+    postBatchTimer = undefined
+    pendingPostIds.clear()
+    postBatchRequest = null
+}
+
 interface broadcastNewPost {
     post_id: number,
     thread_id: number,
@@ -648,6 +682,7 @@ function postListeningErrorMessage(error: unknown) {
 
 function stopPostListening() {
     postListeningGeneration += 1
+    clearPostBatch()
     postListeningRequested.value = false
     postListeningReady.value = false
     postChannelSubscribed = false
@@ -732,6 +767,7 @@ function reconcileCurrentPage(reason: string): Promise<boolean> {
     if (!postListeningRequested.value) return Promise.resolve(false)
     // 所有恢复来源共享同一个补拉任务，防止重连和前台事件造成并发请求。
     if (postReconcilePromise) return postReconcilePromise
+    clearPostBatch()
 
     const reconcile = async () => {
         let success: boolean
@@ -749,71 +785,82 @@ function reconcileCurrentPage(reason: string): Promise<boolean> {
     return promise
 }
 
-function listenNewPost(response: broadcastNewPost) {//执行监听的回调
+function listenNewPost(response: broadcastNewPost) {
     logPostListening('BROADCAST_RX', {
         thread_id: response.thread_id,
         post_id: response.post_id,
         post_floor: response.post_floor,
     })
-    if (!postListeningRequested.value) return
-    if (response.post_floor >= props.page * 200) {
-        //如果新回复通知中，楼层号大于本页的，则关闭监听并显示翻页选项
-        postListenShowNextPage.value = true
-        stopPostListening()
-    } else if (postReconcilePromise) {
+    if (!postListeningRequested.value || response.thread_id !== props.threadId) return
+    if (postReconcilePromise) {
         postBroadcastDuringReconcile = true
-    } else {
-        //否则，请求新回复数据
-        const postExist = postsListData.value.posts_data.data.find((post) => post.id === response.post_id)
-        if (!postExist) {
-            //如果post_id不存在，才去获取新数据
-            void getPostDataAndPush(response.thread_id, response.post_id)
-        }
+        return
     }
+    if (response.post_floor >= props.page * 200) {
+        // 补齐本页后由补拉流程显示翻页提示。
+        void reconcileCurrentPage('page-boundary')
+        return
+    }
+    if (postBatchRequest?.includes(response.post_id) || postsDataRaw.value.some((post) => post.id === response.post_id)) return
+
+    pendingPostIds.add(response.post_id)
+    postBatchTimer ??= setTimeout(() => {
+        postBatchTimer = undefined
+        void fetchPostBatch()
+    }, 200)
 }
-async function getPostDataAndPush(threadId: number, postId: number) {//获取单个回复数据并插入到数据中
-    const requestGeneration = postListeningGeneration
-    const params: postParams = {
-        binggan: userStore.binggan!,
-        post_id: postId,
-        thread_id: threadId,
-    }
-    logPostListening('POST_FETCH_START', { thread_id: threadId, post_id: postId })
+
+async function fetchPostBatch() {
+    if (postBatchRequest || pendingPostIds.size === 0) return
+
+    const threadId = props.threadId
+    const postIds = [...pendingPostIds].slice(0, 50)
+    postIds.forEach((id) => pendingPostIds.delete(id))
+    postBatchRequest = postIds
+    logPostListening('POST_FETCH_START', { thread_id: threadId, post_ids: postIds })
     try {
-        const postData = await postGetter(params).send(true)
-        logPostListening('POST_FETCH_OK', { thread_id: threadId, post_id: postId })
-        if (!postListeningRequested.value ||
-            postListeningGeneration !== requestGeneration ||
-            postsListData.value.posts_data.data.some((post) => post.id === postId)
-        ) {
+        const received = await postsBatchGetter(threadId, postIds, userStore.binggan!).send(true)
+        if (postBatchRequest !== postIds) return
+        if (received.length !== postIds.length) {
+            await reconcileCurrentPage('incomplete-post-batch')
             return
         }
-        postsListData.value.posts_data.data.push(postData)
-        postsListData.value.posts_data.data.sort((left, right) => left.floor - right.floor)
-        if (commonStore.userCustom.hongbaoThenStop && postData.hongbao_id !== null) {
-            //如果刷出来红包，并且启动了“自动涮锅遇到红包暂停”功能，则停止自动涮锅
-            window.$message.info('有红包！停止涮锅！（个人中心开启了红包自动停止涮锅）')
-            stopPostListening()
+
+        logPostListening('POST_FETCH_OK', { thread_id: threadId, post_ids: postIds })
+        const posts = postsDataRaw.value
+        const existing = new Set(posts.map((post) => post.id))
+        const scrollTopNow = document.body.clientHeight - document.documentElement.scrollTop
+        for (const post of received) {
+            if (existing.has(post.id)) continue
+            posts.push(post)
+            if (commonStore.userCustom.hongbaoThenStop && post.hongbao_id !== null) {
+                window.$message.info('有红包！停止涮锅！（个人中心开启了红包自动停止涮锅）')
+                stopPostListening()
+                break
+            }
         }
-        const scrollTopNow =
-            document.body.clientHeight - document.documentElement.scrollTop; //用于使窗口位置保持不变
+        posts.sort((left, right) => left.floor - right.floor || left.id - right.id)
         nextTick(() => {
             if (postInputCom.value?.isTyping || commonStore.userCustom.holdPageWhenListening) {
-                //如果正在输入或者个人中心选择了保持不动，则使窗口位置保持不变
-                document.documentElement.scrollTop =
-                    document.body.clientHeight - scrollTopNow;
+                document.documentElement.scrollTop = document.body.clientHeight - scrollTopNow
             }
-        });
+        })
     } catch (error) {
+        if (postBatchRequest !== postIds) return
         logPostListening('POST_FETCH_ERROR', {
             thread_id: threadId,
-            post_id: postId,
+            post_ids: postIds,
             error: postListeningErrorMessage(error),
         })
-        // 广播已收到但详情接口失败时，用当前页补拉兜底，避免静默漏帖。
         await reconcileCurrentPage('post-fetch-error')
+    } finally {
+        if (postBatchRequest === postIds) {
+            postBatchRequest = null
+            if (postBatchTimer === undefined) void fetchPostBatch()
+        }
     }
 }
+
 function startPostListening() {
     if (postListeningRequested.value) return
     postListeningGeneration += 1
@@ -870,7 +917,10 @@ function handleAndroidForeground() {
 }
 
 onMounted(() => window.addEventListener('cpttmm:foreground', handleAndroidForeground))
-onUnmounted(() => window.removeEventListener('cpttmm:foreground', handleAndroidForeground))
+onUnmounted(() => {
+    window.removeEventListener('cpttmm:foreground', handleAndroidForeground)
+    stopPostListening()
+})
 onDeactivated(() => {
     stopPostListening()
 })

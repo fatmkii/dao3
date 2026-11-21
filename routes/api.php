@@ -134,6 +134,7 @@ Route::prefix('threads')->middleware('auth:sanctum')->group(function () {
 
 //Post系列
 Route::prefix('posts')->middleware('auth:sanctum')->group(function () {
+    Route::get('/batch', [PostController::class, 'showBatch'])->middleware('CheckBinggan:show');
     Route::get('/{id}', [PostController::class, 'show'])->middleware('CheckBinggan:show'); //获得单个帖子数据
     Route::post('/create', [PostController::class, 'create'])->middleware('throttle:new_post')->middleware('CheckBinggan:create')->middleware('ThrottlePost'); //新帖子
     Route::delete('/{id}', [PostController::class, 'destroy'])->middleware('CheckBinggan:create'); //删除帖子
