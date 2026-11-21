@@ -401,22 +401,26 @@ class ThreadController extends Controller
         //     $posts->appendPost0($CurrentThread->posts()->first()); //为第2页及之后增加0楼
         // }
 
-        //如果有提供binggan，为每个post输入binggan，用来判断is_your_post（为前端提供是否是用户自己帖子的判据）
-        //如果有提供binggan，为每个thread输入binggan，用来判断is_your_thread（为前端提供是否是用户自己帖子的判据）
-        if ($request->query('binggan')) {
+        $readerBinggan = $user->binggan;
+        $readerId = $user->id;
+        $includeOwnership = $request->query('binggan') === $readerBinggan;
+
+        if ($includeOwnership) {
             foreach ($posts as $post) {
-                $post->setBinggan($request->query('binggan'));
-                $post->setUserID($user->id);
+                $post->setBinggan($readerBinggan);
+                $post->setUserID($readerId);
             }
-            $CurrentThread->setBinggan($request->query('binggan'));
+            $CurrentThread->setBinggan($readerBinggan);
             $CurrentThread->makeVisible('is_your_thread');
         }
 
-        //如果有提供binggan，生成一个该用户发言的floor楼号清单，使前端标记用户被回复的清空
-        if ($request->query('binggan') && $request->mention) {
-            $your_post_floors = $CurrentThread->posts()->where('created_binggan', $user->binggan)->orderBy('id', 'desc')->limit(50)->pluck('floor');
-        } else {
-            $your_post_floors = [];
+        $your_post_floors = [];
+        if ($includeOwnership && $request->mention) {
+            $your_post_floors = $CurrentThread->posts()
+                ->where('created_binggan', $readerBinggan)
+                ->orderBy('id', 'desc')
+                ->limit(50)
+                ->pluck('floor');
         }
 
         //为反精分帖子加上created_binggan_hash

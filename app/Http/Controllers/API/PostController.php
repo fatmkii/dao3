@@ -227,7 +227,7 @@ class PostController extends Controller
             ]);
         }
 
-        $this->preparePostForReader($request, $thread, $post);
+        $this->preparePostsForReader($request, $thread, [$post]);
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -256,9 +256,7 @@ class PostController extends Controller
             ->orderBy('floor')
             ->orderBy('id')
             ->get();
-        foreach ($posts as $post) {
-            $this->preparePostForReader($request, $thread, $post);
-        }
+        $this->preparePostsForReader($request, $thread, $posts);
 
         return response()->json([
             'code' => ResponseCode::SUCCESS,
@@ -380,27 +378,27 @@ class PostController extends Controller
         return $CurrentThread;
     }
 
-    private function preparePostForReader(Request $request, Thread $CurrentThread, Post $post): void
+    private function preparePostsForReader(Request $request, Thread $thread, iterable $posts): void
     {
         $user = $request->user();
-        //如果有提供binggan，为每个post输入binggan，用来判断is_your_post（为前端提供是否是用户自己帖子的判据）
-        if ($user && $request->query('binggan') === $user->binggan) {
-            $post->setBinggan($user->binggan);
-        }
+        $readerBinggan = $user->binggan;
+        $readerId = $user->id;
+        $includeOwnership = $request->query('binggan') === $readerBinggan;
+        $antiJingfen = $thread->anti_jingfen;
+        $showAuthorBinggan = $user->admin == 99;
 
-        //如果有提供$user，为每个post输入user_id，用来判断is_your_post（为前端提供是否是用户自己帖子的判据）
-        if ($user) {
-            $post->setUserID($user->id);
-        }
+        foreach ($posts as $post) {
+            if ($includeOwnership) {
+                $post->setBinggan($readerBinggan);
+            }
+            $post->setUserID($readerId);
 
-        //为反精分帖子加上created_binggan_hash
-        if ($CurrentThread->anti_jingfen) {
-            $post->append('created_binggan_hash');
-        }
-
-        //为超管加入发帖者饼干显示
-        if ($user && $user->admin == 99) {
-            $post->makeVisible('created_binggan');
+            if ($antiJingfen) {
+                $post->append('created_binggan_hash');
+            }
+            if ($showAuthorBinggan) {
+                $post->makeVisible('created_binggan');
+            }
         }
     }
 

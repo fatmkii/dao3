@@ -257,6 +257,39 @@ class ThreadFirstPostTest extends TestCase
         $this->getJson('/api/threads/10001')->assertJsonPath('data.thread_data.can_view_first_post_history', false);
     }
 
+    public function test_thread_ownership_and_deleted_content_use_the_authenticated_reader(): void
+    {
+        $this->post->forceFill(['is_deleted' => 2])->saveQuietly();
+        $url = '/api/threads/10001?mention=1';
+        $authorUrl = $url.'&binggan='.$this->author->binggan;
+
+        $this->getJson($authorUrl)
+            ->assertJsonPath('code', ResponseCode::SUCCESS)
+            ->assertJsonPath('data.thread_data.is_your_thread', true)
+            ->assertJsonPath('data.posts_data.data.0.is_your_post', true)
+            ->assertJsonPath('data.posts_data.data.0.content', 'A')
+            ->assertJsonPath('data.your_post_floors', [0]);
+
+        $this->getJson($url)
+            ->assertJsonMissingPath('data.thread_data.is_your_thread')
+            ->assertJsonPath('data.posts_data.data.0.is_your_post', null)
+            ->assertJsonPath('data.your_post_floors', []);
+
+        $reader = User::factory()->create();
+        Sanctum::actingAs($reader, ['normal']);
+        $this->getJson($url.'&binggan='.$reader->binggan)
+            ->assertJsonPath('data.thread_data.is_your_thread', false)
+            ->assertJsonPath('data.posts_data.data.0.is_your_post', false);
+
+        $this->getJson($authorUrl)
+            ->assertJsonPath('code', ResponseCode::SUCCESS)
+            ->assertJsonMissingPath('data.thread_data.is_your_thread')
+            ->assertJsonPath('data.posts_data.data.0.is_your_post', null)
+            ->assertJsonPath('data.posts_data.data.0.content', '*此贴已被管理员删除*')
+            ->assertJsonPath('data.posts_data.data.0.nickname', '****')
+            ->assertJsonPath('data.your_post_floors', []);
+    }
+
     public function test_missing_first_post_is_not_replaced_by_a_reply(): void
     {
         $this->post->forceFill(['floor' => 1])->saveQuietly();
